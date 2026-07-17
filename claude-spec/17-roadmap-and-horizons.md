@@ -66,7 +66,13 @@ uv workspace; `evonn_shared` (contract models, budget/telemetry/seeding
 models, run identity, JSON writers, LM cache validation);
 `shared-benchmarks` skeleton with Tier A + tier1_core benchmarks and audit
 metadata; CI scripts and both CI lanes.
-Exit: contracts import everywhere; Tier A packs audit green.
+Exit: contracts import everywhere; Tier A packs audit green; the
+**Foundation Integrity Gate** passes — tests for named RNG stream
+derivation, uninterrupted-vs-resumed equivalence, atomic checksummed
+checkpoint publication, immutable canonical evaluation records, pure
+read-only export, and honest measurement-vs-proxy labeling. No trusted
+evidence claim may precede this gate; wherever NEAT terminology is used
+later, genuine speciation behavior is part of the same integrity bar.
 
 ### Phase 1 — Contenders + Compare core
 Contender zoo (required floors) with exports; Compare `fair-matrix`,

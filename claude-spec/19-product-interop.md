@@ -21,9 +21,11 @@ Product rejections are never Lab failures; both are information.
 
 ## What The Lab Publishes
 
-Five export surfaces, all of which already exist in this spec — the interop
-requirement is only that they stay **versioned, digest-addressed, and
-append-only**:
+Five export surfaces. Four already exist in this spec and need only stay
+**versioned, digest-addressed, and append-only**; the fifth — mechanism
+dossiers — is genuinely new implementation work: it needs a schema, a
+validator, worked examples, versioning, and negative-result handling before
+Gate I1 (producer conformance) can pass:
 
 1. **Benchmark identities and packs** (ch. 02). The canonical benchmark ID
    registry is append-only and published; an ID never changes meaning.
@@ -33,7 +35,7 @@ append-only**:
    contract of chapter 11 is the shared minimum schema. Schema changes are
    semantically versioned with a changelog; fields are never silently
    repurposed.
-3. **Mechanism dossiers** (new, small). When a research finding stabilizes
+3. **Mechanism dossiers** (new — schema + validator required). When a research finding stabilizes
    — the kind of thing that today lands in `RESEARCH_NOTES.md` — the owning
    engine SHOULD distill it into a short dossier: claim, expected effect
    and scope, evidence registry labels, known risks and negative results.

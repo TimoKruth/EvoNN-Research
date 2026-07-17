@@ -50,3 +50,15 @@ parents:
   TEST:
     source: 13-testing-and-release.md
     acceptance: [ACCEPT-001, ACCEPT-010, ACCEPT-020, ACCEPT-030, ACCEPT-040, ACCEPT-050, ACCEPT-060, ACCEPT-070, ACCEPT-080, ACCEPT-090]
+  INTEROP:
+    source: 19-research-interop.md
+    requirements: [INTEROP-001, INTEROP-002, INTEROP-003, INTEROP-004, INTEROP-005, INTEROP-006, INTEROP-007, INTEROP-008, INTEROP-009]
+    acceptance_status: pending
+    acceptance_note: >-
+      Acceptance IDs for the interop family are not yet assigned. Before
+      implementation freeze, define ACCEPT-1xx entries covering: dossier
+      schema validation, fail-closed canonical-ID mapping, converter
+      loss-labeling with bidirectional golden fixtures (valid, invalid,
+      corrupt, old-version), trust-ladder transitions including automatic
+      staleness, append-only interop registry, and reference-consumer
+      qualification against Lab producer fixtures.
