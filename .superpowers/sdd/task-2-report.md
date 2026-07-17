@@ -358,3 +358,114 @@ Output: no output; exit status 0.
 - Confirmed a research observation heading is not active-plan evidence, while the existing unclassified alternate-plan regression still fails closed.
 - Confirmed malformed status identity, gate, item container, missing required item, and non-mapping item all fail closed without exceptions.
 - Confirmed the direct repository validator remains green and no Task 3 workspace, CI, or package scope was added.
+
+## Re-review fixes
+
+### Implementation changes
+
+- Expanded `governance/b0-status.yaml` to represent exactly B0.1 through B0.6. B0.3/B0.4/B0.5 are explicitly `open` with `open_reason: unimplemented`; B0.1/B0.6 retain `locally_satisfied`; B0.2 retains its remote-only open reason.
+- Decoupled overall Gate B0 state from B0.2. The validator now derives top-level `closed` only when all six item statuses are `closed`; every partial state, including B0.2 closed while B0.3–B0.5 remain open, requires top-level `open`.
+- Added exact six-ID validation and per-item state/reason validation. The remote-closure fixture now closes only B0.2 and correctly leaves overall B0 open; an all-six-closed future state is also validated.
+- Added untyped research-log semantics for recognized research directories and observation/log names. Plan-like names such as `research/EXECUTION_PLAN_OBSERVATIONS.md` and root `EXECUTION_PLAN_OBSERVATIONS.md` are non-plan logs without execution-plan metadata, while explicit execution-plan metadata in a research path is still discovered and validated.
+- Preserved fail-closed classification for actual root/package plan-like documents such as `packages/example/ALT_PLAN.md`.
+
+### Files changed by re-review fixes
+
+- `governance/b0-status.yaml`
+- `scripts/policy/validate_repository_governance.py`
+- `tests/policy/test_repository_governance.py`
+- `.superpowers/sdd/task-2-report.md`
+
+### Re-review RED commands and exact output
+
+Complete six-item and derived Gate B0 status regression:
+
+```text
+$ python3 -m pytest -q --tb=line tests/policy/test_repository_governance.py::test_local_only_authority_keeps_b02_open_and_requires_null_url tests/policy/test_repository_governance.py::test_overall_b0_closes_only_when_all_six_items_are_closed
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+/Users/timokruth/Projekte/EvoNN/.claude/worktrees/lab-plan-implementation/tests/policy/test_repository_governance.py:196: AssertionError: assert {'B0.1', 'B0.2', 'B0.6'} == {'B0.1', 'B0....B0.5', 'B0.6'}
+/Users/timokruth/Projekte/EvoNN/.claude/worktrees/lab-plan-implementation/tests/policy/test_repository_governance.py:286: AssertionError: assert []
+=========================== short test summary info ============================
+FAILED tests/policy/test_repository_governance.py::test_local_only_authority_keeps_b02_open_and_requires_null_url
+FAILED tests/policy/test_repository_governance.py::test_overall_b0_closes_only_when_all_six_items_are_closed
+2 failed in 1.04s
+```
+
+Expected reason: the checked-in status omitted B0.3–B0.5, and the validator incorrectly accepted top-level `closed` when only B0.2 was closed.
+
+Research path/name regression:
+
+```text
+$ python3 -m pytest -q --tb=line tests/policy/test_repository_governance.py::test_research_plan_like_paths_and_names_are_logs_unless_explicitly_typed
+F                                                                        [100%]
+=================================== FAILURES ===================================
+/Users/timokruth/Projekte/EvoNN/.claude/worktrees/lab-plan-implementation/tests/policy/test_repository_governance.py:112: AssertionError: assert [PosixPath('E...RVATIONS.md')] == []
+=========================== short test summary info ============================
+FAILED tests/policy/test_repository_governance.py::test_research_plan_like_paths_and_names_are_logs_unless_explicitly_typed
+1 failed in 0.02s
+```
+
+Expected reason: `PLAN_LIKE_NAME` classified observation-log filenames as plans regardless of research path/name semantics.
+
+### Re-review GREEN commands and exact output
+
+```text
+$ python3 -m pytest -q tests/policy/test_repository_governance.py::test_local_only_authority_keeps_b02_open_and_requires_null_url tests/policy/test_repository_governance.py::test_overall_b0_closes_only_when_all_six_items_are_closed
+..                                                                       [100%]
+2 passed in 0.83s
+
+$ python3 -m pytest -q tests/policy/test_repository_governance.py::test_research_plan_like_paths_and_names_are_logs_unless_explicitly_typed
+.                                                                        [100%]
+1 passed in 0.02s
+```
+
+### Re-review final verification
+
+Focused governance suite:
+
+```text
+$ python3 -m pytest -q tests/policy/test_repository_governance.py
+..........................                                               [100%]
+26 passed in 2.64s
+```
+
+Complete currently available suite:
+
+```text
+$ python3 -m pytest -q
+..........................                                               [100%]
+26 passed in 3.54s
+```
+
+Direct validator:
+
+```text
+$ python3 scripts/policy/validate_repository_governance.py
+Repository governance policy: PASS
+```
+
+Compile validation:
+
+```text
+$ python3 -m py_compile scripts/policy/validate_repository_governance.py tests/policy/test_repository_governance.py
+```
+
+Output: no output; exit status 0.
+
+Diff validation:
+
+```text
+$ git diff --check
+```
+
+Output: no output; exit status 0.
+
+### Re-review self-review
+
+- Confirmed the checked-in status contains exactly B0.1–B0.6 and directly records B0.3/B0.4/B0.5 as open/unimplemented.
+- Confirmed closing B0.2 against a configured authoritative remote leaves top-level B0 open while any other item remains non-closed.
+- Confirmed top-level B0 closed is rejected for partial item closure and accepted only when all six items are closed.
+- Confirmed untyped research-path and observation-name documents are excluded from plan classification, including root filename allowlisting, while explicit execution-plan metadata remains active in research paths.
+- Confirmed the existing package-level unclassified plan regression remains fail-closed.
+- Confirmed no Task 3 workspace, package, import-boundary, or CI implementation was added.

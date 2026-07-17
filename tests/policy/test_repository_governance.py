@@ -103,6 +103,24 @@ def test_execution_plan_observation_heading_is_not_an_active_plan(validator, tmp
     assert validator.validate_plan_metadata(tmp_path) == []
 
 
+def test_research_plan_like_paths_and_names_are_logs_unless_explicitly_typed(validator, tmp_path: Path) -> None:
+    research_log = tmp_path / "research/EXECUTION_PLAN_OBSERVATIONS.md"
+    research_log.parent.mkdir(parents=True)
+    root_observations = tmp_path / "EXECUTION_PLAN_OBSERVATIONS.md"
+    for path in (research_log, root_observations):
+        path.write_text("# Execution Plan\n\nStatus: active\n", encoding="utf-8")
+    assert validator.find_active_execution_plans(tmp_path) == []
+    assert validator.validate_plan_metadata(tmp_path) == []
+    assert validator.validate_root_plan_filenames(tmp_path) == []
+
+    research_log.write_text(
+        "---\ndocument_kind: execution_plan\nstatus: active\nauthoritative: true\n---\n# Execution Plan\n",
+        encoding="utf-8",
+    )
+    assert validator.find_active_execution_plans(tmp_path) == [Path("research/EXECUTION_PLAN_OBSERVATIONS.md")]
+    assert validator.validate_plan_metadata(tmp_path) == []
+
+
 def test_archived_project_plans_must_be_explicitly_non_authoritative(validator, tmp_path: Path) -> None:
     archive = tmp_path / "archive"
     archive.mkdir()
@@ -175,11 +193,16 @@ def test_local_only_authority_keeps_b02_open_and_requires_null_url(
     assert any("gate status" in error for error in validator.validate_provenance(duplicated_status, REPO_ROOT))
     assert all(entry["origin_state"] == "local-only/provisional" for entry in manifest["sources"])
     assert all(entry["upstream_url"] is None for entry in manifest["sources"])
+    assert set(b0_status["items"]) == {"B0.1", "B0.2", "B0.3", "B0.4", "B0.5", "B0.6"}
     assert b0_status["items"]["B0.2"] == {
         "status": "open",
         "open_reason": "authoritative_remote_url_absent",
         "evidence": "governance/authority-provenance.yaml is local-only/provisional with null upstream URLs",
     }
+    for item_id in ("B0.3", "B0.4", "B0.5"):
+        assert b0_status["items"][item_id]["status"] == "open"
+        assert b0_status["items"][item_id]["open_reason"] == "unimplemented"
+    assert b0_status["status"] == "open"
     assert validator.validate_b0_status(b0_status, manifest, REPO_ROOT) == []
 
 
@@ -200,19 +223,26 @@ def test_b0_status_identity_and_required_item_shape_fail_closed(validator, manif
     del missing_item["items"]["B0.6"]
     assert validator.validate_b0_status(missing_item, manifest, REPO_ROOT)
 
+    extra_item = copy.deepcopy(b0_status)
+    extra_item["items"]["B0.7"] = {"status": "open"}
+    assert validator.validate_b0_status(extra_item, manifest, REPO_ROOT)
+
     malformed_item = copy.deepcopy(b0_status)
     malformed_item["items"]["B0.1"] = "locally_satisfied"
     assert validator.validate_b0_status(malformed_item, manifest, REPO_ROOT)
 
 
-def _closed_b0_status() -> dict:
+def _b02_closed_b0_status() -> dict:
     return {
         "document_kind": "gate_status",
         "gate": "B0",
-        "status": "closed",
+        "status": "open",
         "items": {
             "B0.1": {"status": "locally_satisfied"},
             "B0.2": {"status": "closed", "open_reason": None},
+            "B0.3": {"status": "open", "open_reason": "unimplemented"},
+            "B0.4": {"status": "open", "open_reason": "unimplemented"},
+            "B0.5": {"status": "open", "open_reason": "unimplemented"},
             "B0.6": {"status": "locally_satisfied"},
         },
     }
@@ -241,7 +271,26 @@ def test_configured_real_remote_can_close_b02_without_changing_source_pin_or_dig
     before = [(e["source_commit"], e["git_object_id"], e["content_digest"]) for e in manifest["sources"]]
     after = [(e["source_commit"], e["git_object_id"], e["content_digest"]) for e in upgraded["sources"]]
     assert before == after
-    assert validator.validate_b0_status(_closed_b0_status(), upgraded, tmp_path) == []
+    status = _b02_closed_b0_status()
+    assert status["status"] == "open"
+    assert validator.validate_b0_status(status, upgraded, tmp_path) == []
+
+
+def test_overall_b0_closes_only_when_all_six_items_are_closed(validator, manifest: dict, tmp_path: Path) -> None:
+    remote_url = "https://code.example.org/authority/evonn.git"
+    _configure_remote(tmp_path, remote_url)
+    upgraded = _remote_pinned_manifest(manifest, remote_url)
+
+    falsely_closed = _b02_closed_b0_status()
+    falsely_closed["status"] = "closed"
+    assert validator.validate_b0_status(falsely_closed, upgraded, tmp_path)
+
+    fully_closed = _b02_closed_b0_status()
+    fully_closed["status"] = "closed"
+    for item in fully_closed["items"].values():
+        item["status"] = "closed"
+        item["open_reason"] = None
+    assert validator.validate_b0_status(fully_closed, upgraded, tmp_path) == []
 
 
 @pytest.mark.parametrize(
@@ -258,7 +307,7 @@ def test_configured_real_remote_can_close_b02_without_changing_source_pin_or_dig
 def test_local_or_file_git_remotes_cannot_close_b02(validator, manifest: dict, tmp_path: Path, local_url: str) -> None:
     _configure_remote(tmp_path, local_url)
     upgraded = _remote_pinned_manifest(manifest, local_url)
-    errors = validator.validate_b0_status(_closed_b0_status(), upgraded, tmp_path)
+    errors = validator.validate_b0_status(_b02_closed_b0_status(), upgraded, tmp_path)
     assert any("authoritative HTTPS or SSH URL" in error for error in errors)
 
 
@@ -272,18 +321,18 @@ def test_unknown_inconsistent_or_unconfigured_remote_authority_fails_closed(
     for entry in unknown["sources"]:
         entry["origin_state"] = "authoritative-remote"
         entry["upstream_url"] = configured_url
-    assert validator.validate_b0_status(_closed_b0_status(), unknown, tmp_path)
+    assert validator.validate_b0_status(_b02_closed_b0_status(), unknown, tmp_path)
 
     inconsistent = copy.deepcopy(unknown)
     inconsistent["authority_state"] = "remote-pinned"
     inconsistent["sources"][0]["origin_state"] = "local-only/provisional"
-    assert validator.validate_b0_status(_closed_b0_status(), inconsistent, tmp_path)
+    assert validator.validate_b0_status(_b02_closed_b0_status(), inconsistent, tmp_path)
 
     fake = copy.deepcopy(inconsistent)
     for entry in fake["sources"]:
         entry["origin_state"] = "authoritative-remote"
         entry["upstream_url"] = "https://fake.example.invalid/not-configured.git"
-    errors = validator.validate_b0_status(_closed_b0_status(), fake, tmp_path)
+    errors = validator.validate_b0_status(_b02_closed_b0_status(), fake, tmp_path)
     assert any("configured Git remote" in error for error in errors)
 
 

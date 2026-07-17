@@ -16,8 +16,11 @@ import yaml
 
 
 ALLOWED_ROOT_PLAN_FILENAMES: Set[str] = {"CONSOLIDATED_PLAN.md"}
+REQUIRED_B0_ITEM_IDS: Tuple[str, ...] = ("B0.1", "B0.2", "B0.3", "B0.4", "B0.5", "B0.6")
 EXCLUDED_PROSE_SCAN_TREES: Set[str] = {"archive", "claude-spec", "claudex-spec"}
 IGNORED_INTERNAL_TREES: Set[str] = {".git", ".claude", ".superpowers", ".pytest_cache"}
+RESEARCH_LOG_DIRECTORIES: Set[str] = {"research", "research-log", "research-logs", "research_log", "research_logs"}
+RESEARCH_LOG_NAME = re.compile(r"(?:^|[_-])(?:OBSERVATIONS?|RESEARCH[_-]LOG|EXPERIMENT[_-]LOG)$", re.I)
 PINNED_SOURCE_COMMIT = "2c622528ac31f9e86d3fd9e03fab3279b3819d72"
 REQUIRED_ENTRY_FIELDS: Set[str] = {
     "id",
@@ -109,6 +112,14 @@ def _markdown_files(root: Path) -> Iterable[Path]:
         yield path
 
 
+def _is_untyped_research_log(relative: Path, metadata: Mapping[str, Any]) -> bool:
+    if metadata.get("document_kind") == "execution_plan":
+        return False
+    in_research_directory = any(part.lower() in RESEARCH_LOG_DIRECTORIES for part in relative.parts[:-1])
+    research_log_name = bool(RESEARCH_LOG_NAME.search(relative.stem))
+    return in_research_directory or research_log_name
+
+
 def _is_plan_candidate(path: Path, text: str, metadata: Mapping[str, Any]) -> bool:
     return (
         bool(PLAN_LIKE_NAME.search(path.name))
@@ -126,6 +137,8 @@ def find_active_execution_plans(root: Path) -> List[Path]:
             continue
         metadata = read_frontmatter(path)
         explicitly_active = metadata.get("document_kind") == "execution_plan" and metadata.get("status") == "active"
+        if _is_untyped_research_log(relative, metadata):
+            continue
         text = path.read_text(encoding="utf-8")
         prose_active = any(pattern.search(text) for pattern in ACTIVE_PLAN_PATTERNS)
         unclassified_active = PLAN_HEADING.search(text) and ACTIVE_STATUS.search(text)
@@ -142,6 +155,8 @@ def validate_plan_metadata(root: Path) -> List[str]:
             continue
         text = path.read_text(encoding="utf-8")
         metadata = read_frontmatter(path)
+        if _is_untyped_research_log(relative, metadata):
+            continue
         if not _is_plan_candidate(path, text, metadata):
             continue
         if metadata.get("document_kind") != "execution_plan":
@@ -162,6 +177,8 @@ def validate_root_plan_filenames(root: Path) -> List[str]:
     errors: List[str] = []
     for path in root.glob("*.md"):
         metadata = read_frontmatter(path)
+        if _is_untyped_research_log(path.relative_to(root), metadata):
+            continue
         looks_like_plan = bool(PLAN_LIKE_NAME.search(path.name)) or metadata.get("document_kind") == "execution_plan"
         if looks_like_plan and path.name not in ALLOWED_ROOT_PLAN_FILENAMES:
             errors.append(f"root plan filename is not allowlisted: {path.name}")
@@ -400,23 +417,37 @@ def validate_b0_status(status: Mapping[str, Any], manifest: Mapping[str, Any], r
         items: Mapping[str, Any] = {}
     else:
         items = raw_items
+        if set(items) != set(REQUIRED_B0_ITEM_IDS):
+            errors.append(f"B0 status item IDs must be exactly {list(REQUIRED_B0_ITEM_IDS)}")
     item_mappings: Dict[str, Mapping[str, Any]] = {}
-    for item_id in ("B0.1", "B0.2", "B0.6"):
+    for item_id in REQUIRED_B0_ITEM_IDS:
         item = items.get(item_id)
         if not isinstance(item, Mapping):
             errors.append(f"{item_id} status item must be a mapping")
             continue
         item_mappings[item_id] = item
-        if not isinstance(item.get("status"), str) or not item.get("status"):
+        item_status = item.get("status")
+        if not isinstance(item_status, str) or not item_status:
             errors.append(f"{item_id} status item must contain a non-empty status")
+        if item_status == "open" and not item.get("open_reason"):
+            errors.append(f"{item_id} open status must contain open_reason")
+        if item_status == "closed" and item.get("open_reason") is not None:
+            errors.append(f"{item_id} closed status must clear open_reason")
+    for item_id in ("B0.1", "B0.6"):
+        if item_mappings.get(item_id, {}).get("status") not in {"locally_satisfied", "closed"}:
+            errors.append(f"{item_id} must be locally_satisfied or closed")
+    for item_id in ("B0.3", "B0.4", "B0.5"):
+        if item_mappings.get(item_id, {}).get("status") not in {"open", "closed"}:
+            errors.append(f"{item_id} must be open or closed")
     b02 = item_mappings.get("B0.2", {})
     if "open_reason" not in b02:
         errors.append("B0.2 status item must contain open_reason")
-    if b02.get("status") in {"open", "closed"} and status.get("status") != b02.get("status"):
-        errors.append("B0 top-level status must match B0.2 status")
-    for item_id in ("B0.1", "B0.6"):
-        if item_mappings.get(item_id, {}).get("status") != "locally_satisfied":
-            errors.append(f"{item_id} must be locally_satisfied")
+    all_items_closed = len(item_mappings) == len(REQUIRED_B0_ITEM_IDS) and all(
+        item.get("status") == "closed" for item in item_mappings.values()
+    )
+    derived_gate_status = "closed" if all_items_closed else "open"
+    if status.get("status") != derived_gate_status:
+        errors.append(f"B0 top-level status must be {derived_gate_status} for the declared item states")
 
     authority_state = manifest.get("authority_state")
     raw_sources = manifest.get("sources", [])
