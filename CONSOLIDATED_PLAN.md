@@ -1,3 +1,18 @@
+---
+document_kind: execution_plan
+status: active
+revision: 2
+version: "2"
+authoritative: true
+b0_repository_model:
+  python_package_skeleton_count: 7
+  data_only_skeleton: shared-benchmarks/
+  benchmark_helpers_module: evonn_shared.benchmarks
+  data_only_check_script: scripts/ci/benchmarks-checks.sh
+  python_import_validation: required
+  data_skeleton_validation: layout_and_loader
+---
+
 # EvoNN Lab (claude-spec) — Master Execution Plan
 
 **Revision:** 2 (integrates `archive/2026-07-17-LAB_PLAN_CRITIQUE.md`; status was `REVISE_BEFORE_BOOTSTRAP`, now revised)
@@ -163,11 +178,17 @@ from all reporting surfaces (Phases 1/3 → WP-7.3).
   `claudex-spec/19-research-interop.md` (consumer acceptance is governed
   by the Product chapter, not by Lab documents). A recorded procedure
   defines how spec upgrades are reviewed and reflected in traceability.
-- [ ] **B0.3** Package skeletons for all eight packages (Shared,
-  shared-benchmarks, Contenders, Compare, Prism, Topograph, Stratograph,
-  Primordia): importable module, empty test, per-package check script.
-- [ ] **B0.4** Import-direction policy tests green across all skeletons
-  (engine↛engine, shared↛engines).
+- [ ] **B0.3** seven importable Python package skeletons (Shared,
+  Contenders, Compare, Prism, Topograph, Stratograph, Primordia), each with
+  an importable module, empty test, and per-package check script; plus
+  one tested data-only `shared-benchmarks/` skeleton with an independently
+  invocable dedicated check script (`scripts/ci/benchmarks-checks.sh`).
+  Benchmark resolution helpers live in `evonn_shared.benchmarks`;
+  `shared-benchmarks/` is not a Python package.
+- [ ] **B0.4** Import-direction policy tests green across all seven Python
+  skeletons (engine↛engine, shared↛engines). The data-only
+  `shared-benchmarks/` skeleton is layout- and catalog-loader-validated, not
+  import-validated.
 - [ ] **B0.5** Both CI hosts execute real (non-stub) no-op workflows:
   Linux trust lane and macOS engine lane; Linux install proves MLX is
   platform-conditional; CI fixture artifacts carry exact host/runtime
@@ -254,9 +275,10 @@ loader signatures (B→A for validators).
   terminology in claims or docs.
 
 **Phase 0 exit (contract evidence):** all WPs green; both CI lanes green;
-"contracts import in all Phase 0 packages **and all B0 skeletons**"
-(import-direction suite); integrity suite green including the reference
-resume proof; Tier A packs load-validated. The integrity gate remains
+contracts import in all Phase 0 packages and all seven Python B0 skeletons
+(import-direction suite); the data-only `shared-benchmarks/` B0 skeleton passes
+its layout and catalog-loader checks; integrity suite green including the
+reference resume proof; Tier A packs load-validated. The integrity gate remains
 **open-labeled** for engine-specific resume/speciation hooks until each
 engine proves them — a placeholder can never represent engine integrity.
 
@@ -714,8 +736,8 @@ provenance-envelope schema (A→B, co-signed before fixture work starts).
 
 ## Immediate Next Actions
 
-1. Execute **Gate B0** (repository, pinned authorities, skeletons, both CI
-   lanes, policy tests); install this file as `CONSOLIDATED_PLAN.md`.
+1. Continue **Gate B0** with the remaining skeleton, import-boundary, and
+   dual-host CI work; the plan and provisional authority controls are installed.
 2. Expand **WP-0.1** as the first nested checklist in the consolidated
    plan and execute.
 3. Proceed through Phase 0 in order; hold the Foundation Integrity Gate

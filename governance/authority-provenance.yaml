@@ -1,0 +1,53 @@
+schema_version: 1
+status: provisional
+authority_state: local-only/provisional
+digest_method: canonical-sha256-tree-v1
+sources:
+  - id: claude-spec
+    scope: directory
+    path: claude-spec/
+    normative_role: Lab normative specification; wins over the execution plan on disagreement
+    origin_state: local-only/provisional
+    upstream_url: null
+    source_commit: 2c622528ac31f9e86d3fd9e03fab3279b3819d72
+    declared_version: 0.1.0-draft.1
+    imported_at: "2026-07-17T14:49:43Z"
+    git_object_type: tree
+    git_object_id: 0f43ade62e57d743b94410ebadbb193ac5284618
+    content_digest:
+      algorithm: sha256
+      value: 89298a056b9f37d94a3cfa4e404c9f04f33b558929a9fbb60070f14eb51478a9
+    consumer_acceptance_authority: false
+    supersedes: null
+  - id: program-charter
+    scope: file
+    path: PROGRAM_CHARTER.md
+    normative_role: Program boundaries, workstreams, and interop gating relationships
+    origin_state: local-only/provisional
+    upstream_url: null
+    source_commit: 2c622528ac31f9e86d3fd9e03fab3279b3819d72
+    declared_version: rev.2
+    imported_at: "2026-07-17T14:49:43Z"
+    git_object_type: blob
+    git_object_id: c0b000d449352308ef7387a25519dc9258b85659
+    content_digest:
+      algorithm: sha256
+      value: cdbc578234d31076649f5b2c013f82fb5887b03be653c99b729dd57fa8598330
+    consumer_acceptance_authority: false
+    supersedes: null
+  - id: product-research-interop
+    scope: file
+    path: claudex-spec/19-research-interop.md
+    normative_role: Product consumer acceptance and Product-owned I2 authority
+    origin_state: local-only/provisional
+    upstream_url: null
+    source_commit: 2c622528ac31f9e86d3fd9e03fab3279b3819d72
+    declared_version: 1.0.0-draft
+    imported_at: "2026-07-17T14:49:43Z"
+    git_object_type: blob
+    git_object_id: a53716b253cb870efb4916883c3348c4dd5dbe07
+    content_digest:
+      algorithm: sha256
+      value: 55979195c29aec4bb0bd34ab893f4b1797d99e2227e1f6ee07907622b6af8833
+    consumer_acceptance_authority: true
+    supersedes: null

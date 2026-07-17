@@ -1,0 +1,18 @@
+document_kind: gate_status
+gate: B0
+status: open
+checked_in_at: "2026-07-17T14:49:43Z"
+items:
+  B0.1:
+    status: locally_satisfied
+    evidence: implementation work is on agent/b0-bootstrap, not main
+  B0.2:
+    status: open
+    open_reason: authoritative_remote_url_absent
+    evidence: governance/authority-provenance.yaml is local-only/provisional with null upstream URLs
+  B0.6:
+    status: locally_satisfied
+    evidence: fail-closed single-active-plan policy validation is installed
+notes:
+  - B0.2 remains formally open solely because no real authoritative remote URL exists.
+  - This artifact records contract/bootstrap evidence only; it is not Phase 0 export evidence.
