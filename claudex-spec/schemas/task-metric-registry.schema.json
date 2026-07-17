@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evonn.local/schemas/task-metric-registry/1.0.0",
+  "title": "EvoNN Task or Metric Registry Entry",
+  "oneOf": [
+    {"type": "object", "additionalProperties": false, "required": ["kind", "id", "version", "digest", "input_contract", "target_contract", "prediction_contract", "batching", "masking", "decoding", "aggregation_units", "supported_modalities"], "properties": {"kind": {"const": "task"}, "id": {"type": "string"}, "version": {"type": "string"}, "digest": {"$ref": "#/$defs/digest"}, "input_contract": {"type": "object"}, "target_contract": {"type": "object"}, "prediction_contract": {"type": "object"}, "batching": {"type": "object"}, "masking": {"type": "object"}, "decoding": {"type": "object"}, "aggregation_units": {"type": "array", "items": {"type": "string"}}, "supported_modalities": {"type": "array", "items": {"type": "string"}}}},
+    {"type": "object", "additionalProperties": false, "required": ["kind", "id", "version", "digest", "direction", "domain", "prediction_contract", "target_contract", "weighting", "reduction", "tie_policy", "invalid_policy", "uncertainty", "golden_vectors_digest"], "properties": {"kind": {"const": "metric"}, "id": {"type": "string"}, "version": {"type": "string"}, "digest": {"$ref": "#/$defs/digest"}, "direction": {"enum": ["min", "max"]}, "domain": {"type": "object"}, "prediction_contract": {"type": "object"}, "target_contract": {"type": "object"}, "weighting": {"type": "object"}, "reduction": {"type": "object"}, "tie_policy": {"type": "object"}, "invalid_policy": {"type": "object"}, "uncertainty": {"type": "object"}, "golden_vectors_digest": {"$ref": "#/$defs/digest"}}}
+  ],
+  "$defs": {"digest": {"type": "object", "additionalProperties": false, "required": ["algorithm", "value"], "properties": {"algorithm": {"enum": ["sha256", "sha512"]}, "value": {"type": "string", "pattern": "^[0-9a-f]{64}([0-9a-f]{64})?$"}}}}
+}

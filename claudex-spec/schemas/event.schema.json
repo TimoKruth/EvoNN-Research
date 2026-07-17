@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evonn.local/schemas/event/1.0.0",
+  "title": "EvoNN Domain Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "event_id", "aggregate_type", "aggregate_id", "sequence", "event_type", "occurred_at", "actor", "correlation_id", "causation_id", "payload", "redaction_class"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "event_id": {"$ref": "#/$defs/ulid"},
+    "aggregate_type": {"type": "string"},
+    "aggregate_id": {"$ref": "#/$defs/ulid"},
+    "sequence": {"type": "integer", "minimum": 1},
+    "event_type": {"type": "string"},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "actor": {"type": "object"},
+    "correlation_id": {"$ref": "#/$defs/ulid"},
+    "causation_id": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/ulid"}]},
+    "payload": {"type": "object"},
+    "redaction_class": {"enum": ["public", "internal", "sensitive", "restricted"]}
+  },
+  "$defs": {"ulid": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"}}
+}

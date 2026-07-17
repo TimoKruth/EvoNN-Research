@@ -1,0 +1,52 @@
+schema_version: 1.0.0
+policy:
+  unnumbered_normative_clauses: inherit_from_nearest_parent
+  implementation_freeze_requirement: every_clause_resolved
+parents:
+  CHARTER:
+    source: 00-charter.md
+    acceptance: [ACCEPT-001, ACCEPT-004, ACCEPT-090, ACCEPT-091]
+  PRD-UX-CLI:
+    source: 01-product-and-ux.md
+    acceptance: [ACCEPT-001, ACCEPT-002, ACCEPT-003, ACCEPT-060, ACCEPT-061, ACCEPT-062, ACCEPT-063, ACCEPT-064]
+  ARCH-DOM-CFG:
+    sources: [02-system-architecture.md, 03-domain-and-contracts.md]
+    schemas: [run-envelope.schema.json, event.schema.json, budget-amendment.schema.json]
+    acceptance: [ACCEPT-003, ACCEPT-040, ACCEPT-041, ACCEPT-042, ACCEPT-043, ACCEPT-044]
+  DATA:
+    source: 04-data-and-benchmarks.md
+    schemas: [dataset-descriptor.schema.json, split-artifact.schema.json, task-metric-registry.schema.json, external-asset.schema.json]
+    acceptance: [ACCEPT-010, ACCEPT-011, ACCEPT-012, ACCEPT-013, ACCEPT-014]
+  PORT-SEARCH:
+    source: 05-search-portfolio.md
+    acceptance: [ACCEPT-020, ACCEPT-021, ACCEPT-022, ACCEPT-023, ACCEPT-024, ACCEPT-025]
+  TRAIN-EVAL-BUD-REPRO:
+    source: 06-training-evaluation-and-budgets.md
+    schemas: [evaluation-artifact.schema.json, confirmatory-evidence.schema.json, budget-amendment.schema.json]
+    acceptance: [ACCEPT-030, ACCEPT-031, ACCEPT-032, ACCEPT-033, ACCEPT-034, ACCEPT-043]
+  ORCH-REL:
+    source: 07-orchestration-and-reliability.md
+    schemas: [event.schema.json]
+    acceptance: [ACCEPT-040, ACCEPT-041, ACCEPT-042, ACCEPT-044, ACCEPT-045]
+  STORE:
+    source: 08-persistence-and-artifacts.md
+    schemas: [native-bundle.schema.json]
+    acceptance: [ACCEPT-045, ACCEPT-070, ACCEPT-071, ACCEPT-072]
+  RUNTIME:
+    source: 09-runtime-and-portability.md
+    schemas: [backend-capability.schema.json]
+    acceptance: [ACCEPT-050, ACCEPT-051, ACCEPT-052, ACCEPT-053]
+  OBS:
+    source: 10-web-cli-and-observability.md
+    schemas: [event.schema.json]
+    acceptance: [ACCEPT-060, ACCEPT-061, ACCEPT-062, ACCEPT-063, ACCEPT-064]
+  DEP:
+    source: 11-deployment-and-inference.md
+    schemas: [native-bundle.schema.json]
+    acceptance: [ACCEPT-070, ACCEPT-071, ACCEPT-072, ACCEPT-073, ACCEPT-074]
+  SEC:
+    source: 12-security-privacy-and-supply-chain.md
+    acceptance: [ACCEPT-080, ACCEPT-081, ACCEPT-082, ACCEPT-083, ACCEPT-084]
+  TEST:
+    source: 13-testing-and-release.md
+    acceptance: [ACCEPT-001, ACCEPT-010, ACCEPT-020, ACCEPT-030, ACCEPT-040, ACCEPT-050, ACCEPT-060, ACCEPT-070, ACCEPT-080, ACCEPT-090]

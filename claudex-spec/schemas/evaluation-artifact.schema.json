@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evonn.local/schemas/evaluation-artifact/1.0.0",
+  "title": "EvoNN Evaluation Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "record_kind", "evaluation_id", "job_id", "attempt_id", "candidate", "data", "runtime", "fidelity", "budget", "outcome", "metrics", "started_at", "finished_at"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "record_kind": {"enum": ["preflight", "execution"]},
+    "evaluation_id": {"$ref": "#/$defs/ulid"},
+    "job_id": {"$ref": "#/$defs/ulid"},
+    "attempt_id": {"$ref": "#/$defs/ulid"},
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "spec_digest", "origin"],
+      "properties": {"id": {"$ref": "#/$defs/ulid"}, "spec_digest": {"$ref": "#/$defs/digest"}, "origin": {"type": "string"}}
+    },
+    "compiled_model": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "object", "additionalProperties": false, "required": ["artifact_digest", "compiler_id", "compiler_version"], "properties": {"artifact_digest": {"$ref": "#/$defs/digest"}, "compiler_id": {"type": "string"}, "compiler_version": {"type": "string"}}}
+      ]
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataset_version_id", "split_id", "role", "preprocessing_digest"],
+      "properties": {
+        "dataset_version_id": {"$ref": "#/$defs/ulid"},
+        "split_id": {"$ref": "#/$defs/ulid"},
+        "role": {"enum": ["train", "validation", "calibration", "fold"]},
+        "fold": {"type": ["integer", "null"]},
+        "preprocessing_digest": {"$ref": "#/$defs/digest"},
+        "fitted_state_digest": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/digest"}]}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend", "backend_version", "capability_digest", "platform_fingerprint"],
+      "properties": {"backend": {"type": "string"}, "backend_version": {"type": "string"}, "capability_digest": {"$ref": "#/$defs/digest"}, "platform_fingerprint": {"$ref": "#/$defs/digest"}}
+    },
+    "fidelity": {"type": "object", "additionalProperties": true, "required": ["id", "digest"], "properties": {"id": {"type": "string"}, "digest": {"$ref": "#/$defs/digest"}}},
+    "rng": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stream_seeds", "state_artifact"],
+      "properties": {"stream_seeds": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}}, "state_artifact": {"$ref": "#/$defs/digest"}}
+    },
+    "initial_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "prior_cost_class"],
+      "properties": {"kind": {"enum": ["fresh", "checkpoint", "inherited", "pretrained", "adapter"]}, "artifact_digest": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/digest"}]}, "prior_cost_class": {"enum": ["none", "external_pretraining", "free_prior", "reported_prior", "charged_prior"]}}
+    },
+    "budget": {"type": "object", "additionalProperties": false, "required": ["declared", "observed"], "properties": {"declared": {"type": "object"}, "observed": {"type": "object"}}},
+    "outcome": {"type": "object", "additionalProperties": false, "required": ["status", "reason_code"], "properties": {"status": {"enum": ["ok", "budget_exhausted_valid", "pruned", "ineligible", "unsupported", "skipped", "failed", "interrupted", "cancelled", "invalid"]}, "reason_code": {"type": ["string", "null"]}, "diagnostic_ref": {"type": ["string", "null"]}}},
+    "metrics": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["metric_id", "metric_version", "metric_digest", "value", "direction", "utility", "utility_policy_digest"], "properties": {"metric_id": {"type": "string"}, "metric_version": {"type": "string"}, "metric_digest": {"$ref": "#/$defs/digest"}, "value": {"type": ["number", "null"]}, "direction": {"enum": ["min", "max"]}, "utility": {"type": ["number", "null"]}, "utility_policy_digest": {"$ref": "#/$defs/digest"}}}},
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wall_seconds", "cpu_seconds", "peak_host_memory_bytes", "parameter_count", "serialized_model_bytes", "optimizer_steps", "examples_or_tokens"],
+      "properties": {"wall_seconds": {"type": "number", "minimum": 0}, "cpu_seconds": {"type": "number", "minimum": 0}, "accelerator_seconds": {"type": ["number", "null"], "minimum": 0}, "peak_host_memory_bytes": {"type": "integer", "minimum": 0}, "peak_accelerator_memory_bytes": {"type": ["integer", "null"], "minimum": 0}, "parameter_count": {"type": ["integer", "null"], "minimum": 0}, "serialized_model_bytes": {"type": ["integer", "null"], "minimum": 0}, "optimizer_steps": {"type": "integer", "minimum": 0}, "examples_or_tokens": {"type": "integer", "minimum": 0}}
+    },
+    "artifacts": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["role", "digest"], "properties": {"role": {"enum": ["weights", "checkpoint", "predictions", "fitted_preprocessing", "diagnostics", "report", "other"]}, "digest": {"$ref": "#/$defs/digest"}}}},
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "started_at": {"type": "string", "format": "date-time"},
+    "finished_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"record_kind": {"const": "preflight"}}},
+      "then": {
+        "properties": {
+          "outcome": {"properties": {"status": {"enum": ["ineligible", "unsupported", "skipped", "invalid"]}, "reason_code": {"type": "string", "minLength": 1}}},
+          "metrics": {"maxItems": 0},
+          "artifacts": {"maxItems": 0}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"record_kind": {"const": "execution"}}},
+      "then": {"required": ["compiled_model", "rng", "initial_state", "resources", "artifacts"]}
+    },
+    {
+      "if": {"properties": {"outcome": {"properties": {"status": {"enum": ["failed", "invalid", "ineligible", "unsupported", "interrupted", "cancelled"]}}}}},
+      "then": {"properties": {"outcome": {"properties": {"reason_code": {"type": "string", "minLength": 1}}}}
+    }
+  ],
+  "$defs": {
+    "ulid": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+    "digest": {"type": "object", "additionalProperties": false, "required": ["algorithm", "value"], "properties": {"algorithm": {"enum": ["sha256", "sha512"]}, "value": {"type": "string", "pattern": "^[0-9a-f]{64}([0-9a-f]{64})?$"}}}
+  }
+}

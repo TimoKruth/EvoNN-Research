@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evonn.local/schemas/error/1.0.0",
+  "title": "EvoNN Error Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "error_id", "code", "category", "summary", "operation", "durable_state_created", "retryability", "recovery", "diagnostic_ref", "occurred_at"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "error_id": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+    "code": {"type": "string", "pattern": "^[A-Z][A-Z0-9_.-]+$"},
+    "category": {"enum": ["configuration", "policy", "data", "integrity", "privacy_license", "model", "compilation", "training", "numerical", "resource", "backend", "persistence", "worker", "export", "security", "internal"]},
+    "summary": {"type": "string", "minLength": 1},
+    "operation": {"type": "string"},
+    "object_ref": {"type": ["object", "null"]},
+    "durable_state_created": {"type": "boolean"},
+    "retryability": {"enum": ["automatic", "manual_same_settings", "requires_new_candidate", "not_retryable"]},
+    "recovery": {"type": "array", "items": {"type": "string"}},
+    "diagnostic_ref": {"type": ["string", "null"]},
+    "occurred_at": {"type": "string", "format": "date-time"}
+  }
+}

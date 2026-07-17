@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evonn.local/schemas/candidate-checkpoint/1.0.0",
+  "title": "EvoNN Candidate or Checkpoint",
+  "oneOf": [
+    {"type": "object", "additionalProperties": false, "required": ["kind", "candidate_id", "spec_digest", "engine", "model_spec", "training_policy", "external_assets", "lineage"], "properties": {"kind": {"const": "candidate"}, "candidate_id": {"$ref": "#/$defs/ulid"}, "spec_digest": {"$ref": "#/$defs/digest"}, "engine": {"type": "object"}, "model_spec": {"type": "object"}, "training_policy": {"type": "object"}, "external_assets": {"type": "array", "items": {"$ref": "#/$defs/digest"}}, "lineage": {"type": "object"}}},
+    {"type": "object", "additionalProperties": false, "required": ["kind", "checkpoint_id", "job_id", "phase", "next_operation", "state_digest", "rng_state_digest", "budget_digest", "previous_checkpoint_digest", "created_at"], "properties": {"kind": {"const": "checkpoint"}, "checkpoint_id": {"$ref": "#/$defs/ulid"}, "job_id": {"$ref": "#/$defs/ulid"}, "phase": {"type": "string"}, "next_operation": {"type": "string"}, "state_digest": {"$ref": "#/$defs/digest"}, "rng_state_digest": {"$ref": "#/$defs/digest"}, "budget_digest": {"$ref": "#/$defs/digest"}, "previous_checkpoint_digest": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/digest"}]}, "created_at": {"type": "string", "format": "date-time"}}}
+  ],
+  "$defs": {"ulid": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"}, "digest": {"type": "object", "additionalProperties": false, "required": ["algorithm", "value"], "properties": {"algorithm": {"enum": ["sha256", "sha512"]}, "value": {"type": "string", "pattern": "^[0-9a-f]{64}([0-9a-f]{64})?$"}}}}
+}

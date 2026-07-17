@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evonn.local/schemas/run-envelope/1.0.0",
+  "title": "EvoNN Resolved Run Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "job_id", "project_id", "objective", "lineage", "dataset_version_id", "split_id", "task", "metrics", "root_seed", "rng_streams", "budget", "runtime", "network_policy", "retention_policy", "portfolio", "recommendation_policy", "constraints", "environment_lock_digest", "actor", "created_at"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "job_id": {"$ref": "#/$defs/ulid"},
+    "project_id": {"$ref": "#/$defs/ulid"},
+    "objective": {"type": "string", "minLength": 1},
+    "lineage": {"type": "object", "additionalProperties": false, "properties": {"parent_job_id": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/ulid"}]}, "source_plan_id": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/ulid"}]}}},
+    "dataset_version_id": {"$ref": "#/$defs/ulid"},
+    "split_id": {"$ref": "#/$defs/ulid"},
+    "task": {"$ref": "#/$defs/versionedRef"},
+    "metrics": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/versionedRef"}},
+    "root_seed": {"type": "integer", "minimum": 0},
+    "rng_streams": {"type": "object", "required": ["derivation", "names"], "properties": {"derivation": {"type": "string"}, "names": {"type": "array", "minItems": 11, "uniqueItems": true, "items": {"type": "string"}}}},
+    "budget": {"$ref": "#/$defs/budget"},
+    "runtime": {"type": "object", "additionalProperties": false, "required": ["allowed_backends", "platform_class", "capability_digests"], "properties": {"allowed_backends": {"type": "array", "minItems": 1, "items": {"type": "string"}}, "platform_class": {"type": "string"}, "capability_digests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/digest"}}}},
+    "network_policy": {"type": "object", "additionalProperties": false, "required": ["worker_default", "allowlist"], "properties": {"worker_default": {"enum": ["deny", "restricted", "allow"]}, "allowlist": {"type": "array", "items": {"type": "string"}}}},
+    "retention_policy": {"type": "object", "additionalProperties": false, "required": ["class"], "properties": {"class": {"enum": ["temporary", "cache", "intermediate", "checkpoint", "final_model", "promoted_evidence", "legal_hold"]}, "retain_days": {"type": ["integer", "null"], "minimum": 0}}},
+    "portfolio": {"type": "object", "additionalProperties": false, "required": ["mode", "enabled_strategies", "disabled_strategies"], "properties": {"mode": {"enum": ["automatic", "guided", "expert"]}, "enabled_strategies": {"type": "array", "items": {"type": "string"}}, "disabled_strategies": {"type": "array", "items": {"type": "string"}}, "engine_configs": {"type": "object"}}},
+    "recommendation_policy": {"$ref": "#/$defs/versionedRef"},
+    "constraints": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["id", "kind", "operator", "value"], "properties": {"id": {"type": "string"}, "kind": {"enum": ["hard", "preference"]}, "operator": {"enum": ["lt", "lte", "eq", "gte", "gt", "required"]}, "value": {}}}},
+    "environment_lock_digest": {"$ref": "#/$defs/digest"},
+    "actor": {"type": "object", "additionalProperties": false, "required": ["type", "id"], "properties": {"type": {"enum": ["user", "system", "automation"]}, "id": {"type": "string"}}},
+    "created_at": {"type": "string", "format": "date-time"},
+    "extensions": {"type": "object", "propertyNames": {"pattern": "^[a-z0-9_.-]+@[0-9]+\\.[0-9]+\\.[0-9]+$"}}
+  },
+  "$defs": {
+    "ulid": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+    "digest": {"type": "object", "additionalProperties": false, "required": ["algorithm", "value"], "properties": {"algorithm": {"enum": ["sha256", "sha512"]}, "value": {"type": "string", "pattern": "^[0-9a-f]{64}([0-9a-f]{64})?$"}}},
+    "versionedRef": {"type": "object", "additionalProperties": false, "required": ["id", "version", "digest"], "properties": {"id": {"type": "string", "minLength": 1}, "version": {"type": "string", "minLength": 1}, "digest": {"$ref": "#/$defs/digest"}}},
+    "budget": {"type": "object", "additionalProperties": false, "required": ["evaluation_slots", "wall_clock_seconds", "max_workers", "amendment_policy"], "properties": {"evaluation_slots": {"type": "integer", "minimum": 1}, "wall_clock_seconds": {"type": "number", "exclusiveMinimum": 0}, "optimizer_steps": {"type": ["integer", "null"], "minimum": 1}, "max_workers": {"type": "integer", "minimum": 1}, "max_memory_bytes": {"type": ["integer", "null"], "minimum": 1}, "max_artifact_bytes": {"type": ["integer", "null"], "minimum": 1}, "amendment_policy": {"enum": ["forbid", "increase_only", "controlled"]}}}
+  }
+}

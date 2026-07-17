@@ -51,6 +51,7 @@ to implement against.
 | 16 | [16-legacy-tracks.md](./16-legacy-tracks.md) | Full spec of the ancestral tracks (EvoNN A, EvoNN-2 B, Symbiosis, Hybrid) and what they teach |
 | 17 | [17-roadmap-and-horizons.md](./17-roadmap-and-horizons.md) | Horizons, build phases, workstreams, definition of done |
 | 18 | [18-engineering-standards.md](./18-engineering-standards.md) | Repo/git/PR policy, CI, testing, documentation policy |
+| 19 | [19-product-interop.md](./19-product-interop.md) | Export surfaces and obligations toward the claudex-spec product track |
 
 ## Normative Language
 

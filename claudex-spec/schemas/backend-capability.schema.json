@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evonn.local/schemas/backend-capability/1.0.0",
+  "title": "EvoNN Backend Capability Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "backend_id", "backend_version", "manifest_digest", "platforms", "devices", "tasks", "modalities", "operators", "dtypes", "determinism_class", "serialization", "export_targets", "quarantines"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "backend_id": {"type": "string"},
+    "backend_version": {"type": "string"},
+    "manifest_digest": {"$ref": "#/$defs/digest"},
+    "platforms": {"type": "array", "items": {"type": "string"}},
+    "devices": {"type": "array", "items": {"type": "string"}},
+    "tasks": {"type": "array", "items": {"type": "string"}},
+    "modalities": {"type": "array", "items": {"type": "string"}},
+    "operators": {"type": "array", "items": {"type": "object"}},
+    "dtypes": {"type": "array", "items": {"type": "string"}},
+    "determinism_class": {"enum": ["D0", "D1", "D2", "D3"]},
+    "serialization": {"type": "array", "items": {"type": "string"}},
+    "export_targets": {"type": "array", "items": {"type": "string"}},
+    "quarantines": {"type": "array", "items": {"type": "object"}}
+  },
+  "$defs": {"digest": {"type": "object", "additionalProperties": false, "required": ["algorithm", "value"], "properties": {"algorithm": {"enum": ["sha256", "sha512"]}, "value": {"type": "string", "pattern": "^[0-9a-f]{64}([0-9a-f]{64})?$"}}}}
+}

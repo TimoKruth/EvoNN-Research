@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evonn.local/schemas/budget-amendment/1.0.0",
+  "title": "EvoNN Budget Amendment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "amendment_id", "job_id", "base_envelope_digest", "previous_effective_budget_digest", "new_limits", "reason", "actor", "created_at"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "amendment_id": {"$ref": "#/$defs/ulid"},
+    "job_id": {"$ref": "#/$defs/ulid"},
+    "base_envelope_digest": {"$ref": "#/$defs/digest"},
+    "previous_effective_budget_digest": {"$ref": "#/$defs/digest"},
+    "new_limits": {"type": "object", "minProperties": 1},
+    "reason": {"type": "string", "minLength": 1},
+    "actor": {"type": "object"},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "ulid": {"type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"},
+    "digest": {"type": "object", "additionalProperties": false, "required": ["algorithm", "value"], "properties": {"algorithm": {"enum": ["sha256", "sha512"]}, "value": {"type": "string", "pattern": "^[0-9a-f]{64}([0-9a-f]{64})?$"}}}
+  }
+}

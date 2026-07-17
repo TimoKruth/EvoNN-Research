@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://evonn.local/schemas/artifact-descriptor/1.0.0",
+  "title": "EvoNN Artifact Descriptor",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "digest", "size_bytes", "media_type", "artifact_type", "artifact_schema_version", "producer", "created_at", "logical_role", "dependencies", "integrity_status", "governance", "retention_class"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "digest": {"$ref": "#/$defs/digest"},
+    "size_bytes": {"type": "integer", "minimum": 0},
+    "media_type": {"type": "string"},
+    "artifact_type": {"type": "string"},
+    "artifact_schema_version": {"type": "string"},
+    "producer": {"type": "object"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "logical_role": {"type": "string"},
+    "dependencies": {"type": "array", "items": {"$ref": "#/$defs/digest"}},
+    "integrity_status": {"enum": ["verified", "quarantined", "failed", "revoked"]},
+    "authenticity_status": {"enum": ["verified", "allowlisted_source", "user_approved_local", "unverified", "failed"]},
+    "governance": {"type": "object"},
+    "retention_class": {"enum": ["temporary", "cache", "intermediate", "checkpoint", "final_model", "promoted_evidence", "legal_hold"]},
+    "signature_ref": {"type": ["object", "null"]},
+    "sbom_ref": {"type": ["object", "null"]}
+  },
+  "$defs": {"digest": {"type": "object", "additionalProperties": false, "required": ["algorithm", "value"], "properties": {"algorithm": {"enum": ["sha256", "sha512"]}, "value": {"type": "string", "pattern": "^[0-9a-f]{64}([0-9a-f]{64})?$"}}}}
+}

@@ -1,0 +1,51 @@
+schema_version: 1.0.0
+job_id: 01ARZ3NDEKTSV4RRFFQ69G5FAW
+project_id: 01ARZ3NDEKTSV4RRFFQ69G5FAV
+objective: Predict churn under a 100 MiB bundle constraint.
+lineage:
+  parent_job_id: null
+  source_plan_id: null
+dataset_version_id: 01ARZ3NDEKTSV4RRFFQ69G5FAZ
+split_id: 01ARZ3NDEKTSV4RRFFQ69G5FAY
+task:
+  id: supervised.classification
+  version: 1.0.0
+  digest: {algorithm: sha256, value: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+metrics:
+  - id: classification.macro_f1
+    version: 1.0.0
+    digest: {algorithm: sha256, value: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb}
+root_seed: 42
+rng_streams:
+  derivation: hkdf-sha256/v1
+  names: [search, data_generation, split, model_init, data_order, augmentation, mutation_crossover, benchmark_sampling, worker, stochastic_inference, statistics]
+budget:
+  evaluation_slots: 128
+  wall_clock_seconds: 14400
+  max_workers: 4
+  amendment_policy: controlled
+runtime:
+  allowed_backends: [mlx, pytorch]
+  platform_class: local-decision-grade
+  capability_digests:
+    - {algorithm: sha256, value: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc}
+network_policy:
+  worker_default: deny
+  allowlist: []
+retention_policy:
+  class: promoted_evidence
+  retain_days: null
+portfolio:
+  mode: automatic
+  enabled_strategies: [contenders, family, topology, hierarchy, primitive, adaptation, ensemble]
+  disabled_strategies: []
+recommendation_policy:
+  id: constrained-utility
+  version: 1.0.0
+  digest: {algorithm: sha256, value: dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd}
+constraints:
+  - {id: deploy.coreml, kind: preference, operator: required, value: true}
+  - {id: model.serialized_bytes, kind: hard, operator: lte, value: 104857600}
+environment_lock_digest: {algorithm: sha256, value: eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee}
+actor: {type: user, id: local-user}
+created_at: "2026-07-17T12:00:00Z"

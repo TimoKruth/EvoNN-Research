@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EvoNN — claude-spec vs claudex-spec</title>
+<style>
+  :root{
+    --paper:#F6F7F4; --card:#FFFFFF; --ink:#232A31; --muted:#5C6670;
+    --line:#DFE4DE; --spine:#B9C2BA;
+    --claude:#3E7C4F; --claude-deep:#2E5F3C; --claude-tint:#EAF2EB; --claude-line:#C6DCCB;
+    --codex:#5851B8; --codex-deep:#443E96; --codex-tint:#ECEBF7; --codex-line:#CDCAEC;
+    --serif:"Iowan Old Style","Charter","Palatino",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Segoe UI,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#14181B; --card:#1C2126; --ink:#E8EAE6; --muted:#9AA4AC;
+      --line:#2A3138; --spine:#3D464D;
+      --claude:#7FBF8F; --claude-deep:#9ED4AC; --claude-tint:#1E2A22; --claude-line:#2F4636;
+      --codex:#9B94E8; --codex-deep:#B3ADF2; --codex-tint:#232134; --codex-line:#3B3760;
+    }
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);
+       font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+
+  /* ---------- header ---------- */
+  header{padding:64px 0 34px;border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;
+           text-transform:uppercase;color:var(--muted)}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(34px,4.6vw,54px);
+     line-height:1.08;margin:14px 0 18px;letter-spacing:-.01em}
+  h1 .cl{color:var(--claude-deep)} h1 .cx{color:var(--codex-deep)}
+  .thesis{max-width:760px;font-size:17px;color:var(--muted)}
+  .thesis strong{color:var(--ink);font-weight:600}
+
+  /* ---------- identity cards ---------- */
+  .ids{display:grid;grid-template-columns:1fr 120px 1fr;gap:0;margin:38px 0 0;align-items:stretch}
+  .idcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 24px}
+  .idcard.claude{border-top:3px solid var(--claude)}
+  .idcard.codex{border-top:3px solid var(--codex)}
+  .idcard h2{font-family:var(--mono);font-size:17px;font-weight:700;letter-spacing:-.01em}
+  .idcard.claude h2{color:var(--claude-deep)} .idcard.codex h2{color:var(--codex-deep)}
+  .idcard .by{font-size:12.5px;color:var(--muted);margin:3px 0 14px}
+  .stats{display:grid;grid-template-columns:repeat(4,auto);gap:6px 22px;justify-content:start}
+  .stat b{display:block;font-family:var(--serif);font-size:21px;font-weight:600;line-height:1.1}
+  .stat span{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;
+             text-transform:uppercase;color:var(--muted)}
+  .idmid{display:flex;align-items:center;justify-content:center;color:var(--muted);
+         font-family:var(--serif);font-style:italic;font-size:15px}
+
+  /* ---------- sticky rail ---------- */
+  .rail{position:sticky;top:0;z-index:10;background:var(--paper);
+        border-bottom:1px solid var(--line);padding:10px 0}
+  .rail .in{display:grid;grid-template-columns:1fr 120px 1fr;align-items:center}
+  .rail .name{font-family:var(--mono);font-size:13px;font-weight:700}
+  .rail .name.l{color:var(--claude-deep)} .rail .name.r{color:var(--codex-deep);text-align:right}
+  .rail .mid{text-align:center;font-family:var(--mono);font-size:10.5px;
+             letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+  /* ---------- comparison rows ---------- */
+  .rows{padding:34px 0 8px}
+  .row{display:grid;grid-template-columns:1fr 120px 1fr;gap:0 18px;
+       padding:26px 0;border-bottom:1px solid var(--line);align-items:start}
+  .row:last-child{border-bottom:none}
+
+  .cell{background:var(--card);border:1px solid var(--line);border-radius:10px;
+        padding:18px 20px;height:100%}
+  .cell.claude{border-left:3px solid var(--claude);background:linear-gradient(90deg,var(--claude-tint),var(--card) 42%)}
+  .cell.codex{border-right:3px solid var(--codex);background:linear-gradient(270deg,var(--codex-tint),var(--card) 42%)}
+  .cell p{font-size:14px}
+  .cell p b{font-weight:600}
+  .chips{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:99px;
+        border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+  .claude .chip{border-color:var(--claude-line);color:var(--claude-deep)}
+  .codex .chip{border-color:var(--codex-line);color:var(--codex-deep)}
+
+  /* ---------- spine ---------- */
+  .spine{display:flex;flex-direction:column;align-items:center;gap:8px;
+         padding-top:6px;text-align:center;position:relative}
+  .dim{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.1em;
+       text-transform:uppercase;color:var(--ink);max-width:110px}
+  .meter{position:relative;width:96px;height:14px;flex:none}
+  .meter .track{position:absolute;left:0;right:0;top:6px;height:2px;
+                background:var(--spine);border-radius:2px}
+  .meter .tick{position:absolute;left:50%;top:2px;width:1px;height:10px;
+               background:var(--spine);transform:translateX(-.5px)}
+  .meter .dot{position:absolute;top:3px;width:8px;height:8px;border-radius:50%;
+              transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+  .meter .dot.l{left:calc(50% - 4px);background:var(--claude);transform:translateX(0)}
+  .meter .dot.r{left:calc(50% - 4px);background:var(--codex);transform:translateX(0)}
+  .row.reveal .meter .dot.l{transform:translateX(calc(var(--d) * -40px))}
+  .row.reveal .meter .dot.r{transform:translateX(calc(var(--d) *  40px))}
+  .verdict{font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+           text-transform:uppercase;color:var(--muted)}
+
+  /* row entrance */
+  .row{opacity:0;transform:translateY(10px);
+       transition:opacity .5s ease,transform .5s ease}
+  .row.reveal{opacity:1;transform:none}
+
+  /* ---------- agreement band ---------- */
+  .agree{margin:56px 0;border:1px solid var(--line);border-radius:14px;
+         background:var(--card);overflow:hidden}
+  .agree .head{display:flex;align-items:center;gap:14px;padding:22px 26px 0}
+  .agree .meter{width:60px}
+  .agree .meter .dot.l{transform:translateX(-3px)}
+  .agree .meter .dot.r{transform:translateX(3px)}
+  .agree h3{font-family:var(--serif);font-size:23px;font-weight:600}
+  .agree .sub{padding:6px 26px 0;color:var(--muted);font-size:14px;max-width:720px}
+  .agree .chips{padding:16px 26px 24px;gap:8px}
+  .agree .chip{font-size:11.5px;padding:5px 12px;
+               background:linear-gradient(90deg,var(--claude-tint),var(--codex-tint));
+               border:none;color:var(--ink)}
+
+  /* ---------- deep dives ---------- */
+  .dives{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:8px 0 56px}
+  .dive{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 22px 20px}
+  .dive .k{font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+           text-transform:uppercase;color:var(--muted)}
+  .dive h4{font-family:var(--serif);font-size:19px;font-weight:600;margin:6px 0 10px}
+  .dive p{font-size:13.5px;color:var(--muted)}
+  .dive p b{color:var(--ink);font-weight:600}
+  .dive ul{margin:8px 0 0 16px;font-size:13px;color:var(--muted)}
+  .dive li{margin:3px 0}
+
+  /* ---------- core & shell ---------- */
+  .shell{display:grid;grid-template-columns:220px 1fr;gap:30px;align-items:center;
+         background:var(--card);border:1px solid var(--line);border-radius:14px;
+         padding:30px 32px;margin-bottom:64px}
+  .shell h3{font-family:var(--serif);font-size:23px;font-weight:600;margin-bottom:8px}
+  .shell p{font-size:14px;color:var(--muted);max-width:640px}
+  .shell p b{color:var(--ink)}
+  .shell svg text{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em}
+
+  footer{padding:0 0 46px;color:var(--muted);font-size:12.5px;
+         font-family:var(--mono);border-top:1px solid var(--line);padding-top:18px;
+         margin-bottom:30px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:860px){
+    .ids{grid-template-columns:1fr;gap:12px}
+    .idmid{padding:2px 0}
+    .rail .in{grid-template-columns:1fr auto 1fr}
+    .row{grid-template-columns:1fr;gap:12px}
+    .spine{order:-1;flex-direction:row;justify-content:flex-start;gap:14px;
+           border-bottom:1px dashed var(--line);padding:0 2px 10px}
+    .dim{max-width:none;text-align:left}
+    .dives{grid-template-columns:1fr}
+    .shell{grid-template-columns:1fr;text-align:left}
+    .stats{grid-template-columns:repeat(4,auto);gap:6px 16px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .row{opacity:1;transform:none;transition:none}
+    .meter .dot{transition:none}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">EvoNN · specification comparison · 2026-07-17</div>
+    <h1>One program, <span class="cl">two</span> <span class="cx">blueprints</span>.</h1>
+    <p class="thesis"><strong>claude-spec rebuilds the research program you have; claudex-spec designs
+    the product it could become.</strong> Both distill the same Evo Neural Nets ecosystem — and agree on
+    its core ideas to a striking degree — but they answer different questions: <em>how should this
+    research platform be rebuilt?</em> versus <em>what should a practitioner-facing product look like?</em></p>
+
+    <div class="ids">
+      <div class="idcard claude">
+        <h2>claude-spec</h2>
+        <div class="by">Greenfield rebuild of the research platform · prose-normative chapters</div>
+        <div class="stats">
+          <div class="stat"><b>20</b><span>files</span></div>
+          <div class="stat"><b>19</b><span>chapters</span></div>
+          <div class="stat"><b>~2.7k</b><span>lines</span></div>
+          <div class="stat"><b>0</b><span>schemas</span></div>
+        </div>
+      </div>
+      <div class="idmid">versus</div>
+      <div class="idcard codex">
+        <h2>claudex-spec</h2>
+        <div class="by">Clean-slate product specification · RFC-2119 requirement IDs</div>
+        <div class="stats">
+          <div class="stat"><b>46</b><span>files</span></div>
+          <div class="stat"><b>19+7</b><span>ch + ADRs</span></div>
+          <div class="stat"><b>~2.9k</b><span>lines</span></div>
+          <div class="stat"><b>15</b><span>schemas</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="rail">
+  <div class="wrap in">
+    <div class="name l">claude-spec</div>
+    <div class="mid">divergence</div>
+    <div class="name r">claudex-spec</div>
+  </div>
+</div>
+
+<main class="wrap">
+  <section class="rows">
+
+    <div class="row" style="--d:1">
+      <div class="cell claude">
+        <p><b>A research platform.</b> Four search engines, Compare, Contenders, the benchmark ladder,
+        and the evidence loop — rebuilt faithfully with structural debt removed. Continuity is the point:
+        lanes, budgets, and workflows carry over.</p>
+        <div class="chips"><span class="chip">research first</span><span class="chip">continuity</span><span class="chip">evidence loop</span></div>
+      </div>
+      <div class="spine"><div class="dim">What it specifies</div>
+        <div class="meter"><div class="track"></div><div class="tick"></div><div class="dot l"></div><div class="dot r"></div></div>
+        <div class="verdict">opposed</div>
+      </div>
+      <div class="cell codex">
+        <p><b>A local-first product.</b> Data and constraints in, verified deployable model out. Research
+        discipline becomes internal assurance. Explicitly a clean break: no prior command, schema, or run
+        format survives.</p>
+        <div class="chips"><span class="chip">product first</span><span class="chip">CHARTER-013 clean break</span><span class="chip">deployable model</span></div>
+      </div>
+    </div>
+
+    <div class="row" style="--d:1">
+      <div class="cell claude">
+        <p><b>The researcher drives.</b> Pick a lane and preset, run fair-matrix, promote evidence to the
+        registry, judge branches through the decision gate. Engine names, tiers, and budgets are the
+        user's daily vocabulary.</p>
+        <div class="chips"><span class="chip">fair-matrix</span><span class="chip">decision gate</span><span class="chip">tier1_core @ 64</span></div>
+      </div>
+      <div class="spine"><div class="dim">User &amp; operating loop</div>
+        <div class="meter"><div class="track"></div><div class="tick"></div><div class="dot l"></div><div class="dot r"></div></div>
+        <div class="verdict">opposed</div>
+      </div>
+      <div class="cell codex">
+        <p><b>The planner drives.</b> An automatic portfolio runs probes, allocates budget adaptively,
+        and returns a Pareto set plus recommendation. Guided, automatic, and expert modes; automatic mode
+        must not require knowing engine names.</p>
+        <div class="chips"><span class="chip">portfolio planner</span><span class="chip">PRD-003</span><span class="chip">Pareto + recommendation</span></div>
+      </div>
+    </div>
+
+    <div class="row" style="--d:.8">
+      <div class="cell claude">
+        <p><b>Four evolutionary engines</b> — Prism, Topograph, Stratograph, Primordia — measured against
+        a fixed non-evolutionary contender floor. The scientific question is which search abstraction
+        wins where.</p>
+        <div class="chips"><span class="chip">4 engines + contenders</span><span class="chip">distinct abstractions</span></div>
+      </div>
+      <div class="spine"><div class="dim">Model universe</div>
+        <div class="meter"><div class="track"></div><div class="tick"></div><div class="dot l"></div><div class="dot r"></div></div>
+        <div class="verdict">divergent</div>
+      </div>
+      <div class="cell codex">
+        <p><b>Nine mandatory strategy branches.</b> The same four lineages plus pretrained/foundation
+        models with PEFT adapters, compression/distillation, ensembles/routers/cascades, and
+        cross-strategy hybrid synthesis.</p>
+        <div class="chips"><span class="chip">9 branches</span><span class="chip">pretrained + LoRA</span><span class="chip">ensembles &amp; hybrids</span></div>
+      </div>
+    </div>
+
+    <div class="row" style="--d:.8">
+      <div class="cell claude">
+        <p><b>Benchmarks as the world.</b> A shared catalog with canonical IDs, parity packs, and the
+        Tier A–E difficulty ladder with admission gates. The system's job is honest comparison on that
+        surface.</p>
+        <div class="chips"><span class="chip">Tier A–E ladder</span><span class="chip">canonical IDs</span><span class="chip">additive packs</span></div>
+      </div>
+      <div class="spine"><div class="dim">Data &amp; benchmarks</div>
+        <div class="meter"><div class="track"></div><div class="tick"></div><div class="dot l"></div><div class="dot r"></div></div>
+        <div class="verdict">divergent</div>
+      </div>
+      <div class="cell codex">
+        <p><b>User data as the world.</b> Immutable versioned dataset descriptors, split artifacts, stable
+        sample identity, dependence groups, temporal embargo, and contamination tracking for every
+        pretrained asset. Benchmarks become one governed dataset class.</p>
+        <div class="chips"><span class="chip">dataset governance</span><span class="chip">split artifacts</span><span class="chip">contamination status</span></div>
+      </div>
+    </div>
+
+    <div class="row" style="--d:.8">
+      <div class="cell claude">
+        <p><b>Comparative fairness.</b> Budget contract and accounting policy, contender floors, repeated
+        seeds, lane operating states. Rigor answers: <em>was this comparison between systems honest?</em></p>
+        <div class="chips"><span class="chip">budget truth</span><span class="chip">lane states</span><span class="chip">L0–L4 outputs</span></div>
+      </div>
+      <div class="spine"><div class="dim">Fairness &amp; leakage</div>
+        <div class="meter"><div class="track"></div><div class="tick"></div><div class="dot l"></div><div class="dot r"></div></div>
+        <div class="verdict">divergent</div>
+      </div>
+      <div class="cell codex">
+        <p><b>Statistical fairness.</b> Physical capability separation: training, validation, final-refit,
+        and confirmatory-test evaluators run as isolated processes, and search code can never touch test
+        labels. Single-shot test by default. Rigor answers: <em>is this single result valid at all?</em></p>
+        <div class="chips"><span class="chip">ARCH-006 test isolation</span><span class="chip">single-shot test</span><span class="chip">nested CV</span></div>
+      </div>
+    </div>
+
+    <div class="row" style="--d:.8">
+      <div class="cell claude">
+        <p><b>Files as the protocol.</b> A uv monorepo where engines are CLIs exchanging export files
+        (manifest / results / summary); Compare orchestrates and audits. Static dashboards plus the
+        Observatory web view.</p>
+        <div class="chips"><span class="chip">uv workspace</span><span class="chip">export contract</span><span class="chip">CLI orchestration</span></div>
+      </div>
+      <div class="spine"><div class="dim">System architecture</div>
+        <div class="meter"><div class="track"></div><div class="tick"></div><div class="dot l"></div><div class="dot r"></div></div>
+        <div class="verdict">divergent</div>
+      </div>
+      <div class="cell codex">
+        <p><b>A full application.</b> Control plane with plan compiler, scheduler, and leased isolated
+        workers; SQLite-WAL metadata via SQLAlchemy/Alembic; event outbox; content-addressed artifact
+        store; Ray for resource scheduling; React + FastAPI web app with WCAG 2.2 AA.</p>
+        <div class="chips"><span class="chip">control plane</span><span class="chip">worker leases</span><span class="chip">event sourcing</span><span class="chip">React UI</span></div>
+      </div>
+    </div>
+
+    <div class="row" style="--d:.5">
+      <div class="cell claude">
+        <p><b>MLX is truth; Linux validates.</b> The NumPy fallback runs smoke, regression, and
+        compare-grade checks — but Linux results are never decision-grade for engine training claims.</p>
+        <div class="chips"><span class="chip">MLX truth path</span><span class="chip">numpy fallback</span></div>
+      </div>
+      <div class="spine"><div class="dim">Runtime &amp; portability</div>
+        <div class="meter"><div class="track"></div><div class="tick"></div><div class="dot l"></div><div class="dot r"></div></div>
+        <div class="verdict">variant</div>
+      </div>
+      <div class="cell codex">
+        <p><b>Linux is decision-grade from v1</b> via qualified MLX and PyTorch profiles. Backends
+        publish capability manifests; every result declares a determinism class (D0–D3); PyTorch is a
+        first-class interoperability backend.</p>
+        <div class="chips"><span class="chip">capability manifests</span><span class="chip">D0–D3 determinism</span><span class="chip">PyTorch interop</span></div>
+      </div>
+    </div>
+
+    <div class="row" style="--d:1">
+      <div class="cell claude">
+        <p><b>Deployment as evidence.</b> Bytes, latency, and quantization retention are metrics in the
+        comparison; the "topology atlas" of deployable graphs is a long-run vision, not a shipping
+        artifact.</p>
+        <div class="chips"><span class="chip">deployment-aware metrics</span><span class="chip">topology atlas (vision)</span></div>
+      </div>
+      <div class="spine"><div class="dim">Deployment</div>
+        <div class="meter"><div class="track"></div><div class="tick"></div><div class="dot l"></div><div class="dot r"></div></div>
+        <div class="verdict">opposed</div>
+      </div>
+      <div class="cell codex">
+        <p><b>Deployment as the product.</b> Dependency-complete native bundles with offline
+        verification, Core ML export gated on numerical parity, safetensors/skops-only serialization,
+        SBOMs, signing, model cards.</p>
+        <div class="chips"><span class="chip">native bundle</span><span class="chip">Core ML parity gate</span><span class="chip">SBOM + signing</span></div>
+      </div>
+    </div>
+
+    <div class="row" style="--d:1">
+      <div class="cell claude">
+        <p><b>Trusted research context.</b> Governance is the git/PR policy and the research decision
+        gate. No threat model — appropriate for a single-operator lab, silent about hostile inputs.</p>
+        <div class="chips"><span class="chip">PR policy</span><span class="chip">no threat model</span></div>
+      </div>
+      <div class="spine"><div class="dim">Security &amp; governance</div>
+        <div class="meter"><div class="track"></div><div class="tick"></div><div class="dot l"></div><div class="dot r"></div></div>
+        <div class="verdict">opposed</div>
+      </div>
+      <div class="cell codex">
+        <p><b>A dedicated security chapter.</b> Hostile-archive extraction defenses, network allowlists,
+        no pickle for untrusted artifacts, sandboxed workers, licenses and privacy failing closed for
+        decision-grade work.</p>
+        <div class="chips"><span class="chip">hostile archives</span><span class="chip">fail closed</span><span class="chip">worker sandbox</span></div>
+      </div>
+    </div>
+
+    <div class="row" style="--d:.5">
+      <div class="cell claude">
+        <p><b>Operational prose.</b> Commands, workflows, and lane tables are the spec. The deprecated
+        tracks are specced in full, with named resurrection candidates (Observatory, Hybrid engine,
+        external contender harness).</p>
+        <div class="chips"><span class="chip">prose-normative</span><span class="chip">legacy in full</span></div>
+      </div>
+      <div class="spine"><div class="dim">Spec style &amp; rigor</div>
+        <div class="meter"><div class="track"></div><div class="tick"></div><div class="dot l"></div><div class="dot r"></div></div>
+        <div class="verdict">variant</div>
+      </div>
+      <div class="cell codex">
+        <p><b>Formal traceability.</b> RFC-2119 requirement IDs, a machine-readable traceability index,
+        15 JSON Schemas, 7 ADRs, a v1 conformance matrix, and quantified targets — p95 event-to-UI ≤ 5 s,
+        host classes, spike thresholds.</p>
+        <div class="chips"><span class="chip">requirement IDs</span><span class="chip">traceability.yaml</span><span class="chip">conformance matrix</span></div>
+      </div>
+    </div>
+
+    <div class="row" style="--d:.8">
+      <div class="cell claude">
+        <p><b>Incremental and buildable now.</b> Phases 0–7 largely port existing code; one researcher
+        can execute it. <b>Risk:</b> faithfully re-encodes today's implementation debt.</p>
+        <div class="chips"><span class="chip">phases 0–7</span><span class="chip">portable code</span><span class="chip">low ship risk</span></div>
+      </div>
+      <div class="spine"><div class="dim">Roadmap &amp; buildability</div>
+        <div class="meter"><div class="track"></div><div class="tick"></div><div class="dot l"></div><div class="dot r"></div></div>
+        <div class="verdict">divergent</div>
+      </div>
+      <div class="cell codex">
+        <p><b>A hardened v1 across seven modality classes,</b> a web app, orchestration, and deployment
+        tooling — honest dependency ordering, but 5–10× the build surface. <b>Risk:</b> v1 never ships.</p>
+        <div class="chips"><span class="chip">horizons 0–7</span><span class="chip">7 modality gates</span><span class="chip">high ship risk</span></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- agreement band -->
+  <section class="agree">
+    <div class="head">
+      <div class="meter"><div class="track"></div><div class="dot l"></div><div class="dot r"></div></div>
+      <h3>Where the two specs converge</h3>
+    </div>
+    <p class="sub">Written independently, both kept the research program's actual intellectual core —
+    the shared list below is close to a definition of what EvoNN <em>is</em>, regardless of packaging.</p>
+    <div class="chips">
+      <span class="chip">local-first, no cloud dependency</span>
+      <span class="chip">Python 3.13 · uv · Pydantic 2 · Typer</span>
+      <span class="chip">MLX on Apple Silicon</span>
+      <span class="chip">per-run DuckDB, single writer</span>
+      <span class="chip">distinct engines — no universal genome</span>
+      <span class="chip">four engine lineages preserved</span>
+      <span class="chip">typed artifact interop, never imports</span>
+      <span class="chip">contenders as mandatory floor</span>
+      <span class="chip">multi-fidelity with honest accounting</span>
+      <span class="chip">prior-cost classes (free / reported / charged)</span>
+      <span class="chip">versioned QD descriptors</span>
+      <span class="chip">visible failed / unsupported / skipped</span>
+      <span class="chip">evidence promotion + staleness</span>
+      <span class="chip">engine portfolio statuses</span>
+    </div>
+  </section>
+
+  <!-- deep dives -->
+  <section class="dives">
+    <div class="dive">
+      <div class="k">divergence 01</div>
+      <h4>What “fair” means</h4>
+      <p>claude-spec's rigor is <b>comparative</b>: budget contracts, contender floors, repeated seeds,
+      lane states. claudex-spec's rigor is <b>statistical</b>: leakage, preprocessing scope, duplicate
+      families, and contamination, enforced by process boundaries. They are complementary — one guards
+      the comparison, the other guards the result.</p>
+    </div>
+    <div class="dive">
+      <div class="k">divergence 02</div>
+      <h4>The implicit code review</h4>
+      <p>claudex-spec's “Fix” list is an audit of the current codebase that claude-spec inherits more
+      trustingly:</p>
+      <ul>
+        <li>unseeded MLX / NumPy / worker randomness</li>
+        <li>resume that doesn't reproduce uninterrupted runs</li>
+        <li>non-atomic checkpoints</li>
+        <li>parameter/byte proxies labeled as measurements</li>
+        <li>NEAT claims without active speciation</li>
+        <li>export paths that retrain</li>
+      </ul>
+      <p style="margin-top:8px">If accurate, these belong in <b>either</b> build.</p>
+    </div>
+    <div class="dive">
+      <div class="k">divergence 03</div>
+      <h4>Scope vs shippability</h4>
+      <p>The risk profiles are opposite. claude-spec can be executed incrementally by one person but may
+      <b>re-encode today's debt</b>. claudex-spec fixes the debt by construction but demands a web app,
+      an orchestration layer, nine engines, and a security program before v1 — it may <b>never reach
+      done</b>.</p>
+    </div>
+  </section>
+
+  <!-- core & shell -->
+  <section class="shell">
+    <svg viewBox="0 0 200 200" width="200" height="200" role="img"
+         aria-label="Diagram: claude-spec research core nested inside the claudex-spec product shell">
+      <circle cx="100" cy="100" r="88" fill="none" stroke="var(--codex)" stroke-width="2.5" stroke-dasharray="5 5"/>
+      <circle cx="100" cy="100" r="52" fill="var(--claude-tint)" stroke="var(--claude)" stroke-width="2.5"/>
+      <text x="100" y="96" text-anchor="middle" fill="var(--claude-deep)">claude-spec</text>
+      <text x="100" y="110" text-anchor="middle" fill="var(--claude-deep)">research core</text>
+      <text x="100" y="24" text-anchor="middle" fill="var(--codex-deep)">claudex-spec</text>
+      <text x="100" y="188" text-anchor="middle" fill="var(--codex-deep)">product shell</text>
+    </svg>
+    <div>
+      <h3>They compose: core and shell</h3>
+      <p>Build the <b>research core from claude-spec</b> — engines, ladder, comparison evidence — and
+      cherry-pick claudex-spec's contracts today: the evaluation artifact, the RNG stream model, atomic
+      checkpoint publication, physical test-label separation, and the full “Fix” list. The
+      <b>claudex-spec product shell</b> — dataset governance, orchestration, web UX, verified deployment
+      bundles — can wrap that core later without changing what it proved.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <span>sources: EvoNN/claude-spec (20 files) · EvoNN/claudex-spec (46 files)</span>
+  <span>divergence meter: aligned → variant → divergent → opposed</span>
+</footer>
+
+<script>
+  (function(){
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var rows = document.querySelectorAll('.row');
+    if (reduced || !('IntersectionObserver' in window)){
+      rows.forEach(function(r){ r.classList.add('reveal'); });
+      return;
+    }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting){ e.target.classList.add('reveal'); io.unobserve(e.target); }
+      });
+    }, {threshold:.18});
+    rows.forEach(function(r){ io.observe(r); });
+  })();
+</script>
+</body>
+</html>

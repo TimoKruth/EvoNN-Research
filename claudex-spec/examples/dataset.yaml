@@ -1,0 +1,78 @@
+schema_version: 1.0.0
+dataset_id: 01ARZ3NDEKTSV4RRFFQ69G5FAX
+dataset_version_id: 01ARZ3NDEKTSV4RRFFQ69G5FAZ
+slug: example/customer-churn
+dataset_version: 1.0.0
+canonical_digest: {algorithm: sha256, value: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff}
+title: Example customer churn snapshot
+owner: {authority: Example Organization, contact: null}
+lifecycle: active
+sources:
+  - uri: file:///datasets/customer-churn.parquet
+    publisher: Example Organization
+    acquired_at: "2026-07-17T10:00:00Z"
+    resolved_revision: snapshot-2026-07-17
+    media_type: application/vnd.apache.parquet
+    packaging: raw
+    size_bytes: 1234567
+    checksum: {algorithm: sha256, value: "0000000000000000000000000000000000000000000000000000000000000000"}
+    signature: null
+    license_status: approved
+    privacy_class: internal
+    authentication_class: null
+provenance:
+  lineage_digest: {algorithm: sha256, value: "1111111111111111111111111111111111111111111111111111111111111111"}
+  acquisition_recipe: {kind: local_snapshot, version: 1.0.0}
+  citations: []
+sample_identity:
+  rule: canonical_hash(customer_id)
+  group_keys: [customer_id]
+  time_key: null
+  availability_time_key: null
+  geography_key: null
+  duplicate_family_rule: exact_customer_id
+modalities:
+  - name: features
+    kind: tabular
+    required: true
+    schema:
+      fields:
+        tenure_months: {type: float, minimum: 0}
+        plan: {type: categorical}
+    units: null
+    encoding: parquet
+    missing_semantics: null means unknown
+multimodal_alignment: null
+target:
+  name: churned
+  schema: {type: boolean}
+  ontology: {false: retained, true: churned}
+governance:
+  license_status: approved
+  license_id: LicenseRef-Internal-Approved
+  license_terms: {model_training: allowed, redistribution: prohibited}
+  privacy_class: internal
+  personal_data: [customer_id]
+  jurisdictions: []
+  permitted_uses: [model_training, local_evaluation]
+  processing_locations: [local_host]
+  retention_days: 365
+  deletion_policy: delete source and derived artifacts unless legal hold applies
+  preview_policy: redacted
+split_policy:
+  strategy: stratified_group_holdout
+  version: 1.0.0
+  seed: 42
+  group_keys: [customer_id]
+  stratification_keys: [churned]
+  temporal_cutoff: null
+  embargo: null
+  near_duplicate_policy: {method: exact_id, action: colocate}
+preprocessing:
+  - op: tabular.impute_numeric
+    version: 1.0.0
+    scope: train_fitted
+    params: {strategy: median}
+    implementation_digest: {algorithm: sha256, value: "2222222222222222222222222222222222222222222222222222222222222222"}
+known_limitations:
+  - Historical observational data; predictions are not causal estimates.
