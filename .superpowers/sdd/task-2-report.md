@@ -190,3 +190,171 @@ Output: no output; exit status 0.
 
 - Expected and fail-closed: B0.2 remains formally open because this checkout has no configured authoritative remote. No URL was invented.
 - This pre-bootstrap policy suite uses the available `pytest` and PyYAML environment. Dependency pinning belongs to the later workspace bootstrap task and was intentionally not introduced here.
+
+## Post-review fixes
+
+### Implementation changes
+
+Addressed every Critical, Important, and requested Minor reviewer finding without expanding beyond Task 2:
+
+- Hardened remote identity normalization to reject `file:`, `file://`, filesystem paths, Windows drive paths, localhost names, loopback addresses, unspecified addresses, and link-local addresses. SCP-style identities now require a syntactically valid SSH host/path, and B0.2 still requires normalized identity equality with a configured Git remote.
+- Changed provenance parsing to validate every source-list element before lookup construction, reject non-mapping entries, reject empty/non-string IDs, reject duplicate IDs without overwriting, and retain required-field validation for incomplete duplicates. Working-tree digest validation now also fails closed on non-mapping source entries.
+- Broadened archive candidate recognition for versioned/completed plan and checklist names such as `OLD_PLAN_v2.md` and `IMPLEMENTATION_CHECKLIST_DONE.md`, while excluding analysis names such as `LAB_PLAN_CRITIQUE.md`, `EXECUTION_PLAN_OBSERVATIONS.md`, and `PLANNING_NOTES.md` unless explicit execution-plan metadata says otherwise.
+- Strengthened execution-plan heading detection so a heading must end in `Execution Plan`; research headings such as `# Execution plan observations` are not classified as plans, while `# Alternate Execution Plan` plus active status still fails closed without metadata.
+- Added fail-closed B0 status identity/shape validation for `document_kind`, `gate`, top-level status, `items` mapping, all required item mappings/statuses, B0.2 `open_reason`, and top-level/B0.2 status consistency.
+
+### Files changed by review fixes
+
+- `scripts/policy/validate_repository_governance.py`
+- `tests/policy/test_repository_governance.py`
+- `.superpowers/sdd/task-2-report.md`
+
+### Review regression RED commands and exact output
+
+Critical local/file transport regression:
+
+```text
+$ python3 -m pytest -q --tb=line tests/policy/test_repository_governance.py::test_local_or_file_git_remotes_cannot_close_b02
+F...FF                                                                   [100%]
+=================================== FAILURES ===================================
+/Users/timokruth/Projekte/EvoNN/.claude/worktrees/lab-plan-implementation/tests/policy/test_repository_governance.py:262: assert False
+/Users/timokruth/Projekte/EvoNN/.claude/worktrees/lab-plan-implementation/tests/policy/test_repository_governance.py:262: assert False
+/Users/timokruth/Projekte/EvoNN/.claude/worktrees/lab-plan-implementation/tests/policy/test_repository_governance.py:262: assert False
+=========================== short test summary info ============================
+FAILED tests/policy/test_repository_governance.py::test_local_or_file_git_remotes_cannot_close_b02[file:/tmp/evonn.git]
+FAILED tests/policy/test_repository_governance.py::test_local_or_file_git_remotes_cannot_close_b02[localhost:/tmp/evonn.git]
+FAILED tests/policy/test_repository_governance.py::test_local_or_file_git_remotes_cannot_close_b02[127.0.0.1:/tmp/evonn.git]
+3 failed, 3 passed in 0.32s
+```
+
+Expected reason: `file:/...`, localhost SCP syntax, and loopback SCP syntax normalized as acceptable configured remotes.
+
+Malformed/duplicate provenance regression:
+
+```text
+$ python3 -m pytest -q --tb=line tests/policy/test_repository_governance.py::test_provenance_rejects_non_mapping_duplicate_and_incomplete_entries
+F                                                                        [100%]
+=================================== FAILURES ===================================
+/Users/timokruth/Projekte/EvoNN/.claude/worktrees/lab-plan-implementation/scripts/policy/validate_repository_governance.py:221: AttributeError: 'str' object has no attribute 'get'
+=========================== short test summary info ============================
+FAILED tests/policy/test_repository_governance.py::test_provenance_rejects_non_mapping_duplicate_and_incomplete_entries
+1 failed in 0.10s
+```
+
+Expected reason: source entries were filtered/collapsed into a dictionary before every list element was validated, and digest validation assumed mappings.
+
+Archive candidate regression:
+
+```text
+$ python3 -m pytest -q --tb=line tests/policy/test_repository_governance.py::test_versioned_and_completed_archive_plan_names_require_metadata_without_false_positives
+F                                                                        [100%]
+=================================== FAILURES ===================================
+/Users/timokruth/Projekte/EvoNN/.claude/worktrees/lab-plan-implementation/tests/policy/test_repository_governance.py:130: assert False
+=========================== short test summary info ============================
+FAILED tests/policy/test_repository_governance.py::test_versioned_and_completed_archive_plan_names_require_metadata_without_false_positives
+1 failed in 0.02s
+```
+
+Expected reason: archive recognition only matched names ending immediately in `PLAN.md` or `CHECKLIST.md`.
+
+Research-log heading regression:
+
+```text
+$ python3 -m pytest -q --tb=line tests/policy/test_repository_governance.py::test_execution_plan_observation_heading_is_not_an_active_plan
+F                                                                        [100%]
+=================================== FAILURES ===================================
+/Users/timokruth/Projekte/EvoNN/.claude/worktrees/lab-plan-implementation/tests/policy/test_repository_governance.py:102: AssertionError: assert [PosixPath('r...rvations.md')] == []
+=========================== short test summary info ============================
+FAILED tests/policy/test_repository_governance.py::test_execution_plan_observation_heading_is_not_an_active_plan
+1 failed in 0.02s
+```
+
+Expected reason: the heading matcher accepted any heading containing `execution plan`, including observation logs.
+
+B0 status schema regression:
+
+```text
+$ python3 -m pytest -q --tb=line tests/policy/test_repository_governance.py::test_b0_status_identity_and_required_item_shape_fail_closed
+F                                                                        [100%]
+=================================== FAILURES ===================================
+/Users/timokruth/Projekte/EvoNN/.claude/worktrees/lab-plan-implementation/tests/policy/test_repository_governance.py:189: AssertionError: assert []
+=========================== short test summary info ============================
+FAILED tests/policy/test_repository_governance.py::test_b0_status_identity_and_required_item_shape_fail_closed
+1 failed in 0.03s
+```
+
+Expected reason: the validator did not yet authenticate the status artifact identity or required schema.
+
+### Review regression GREEN commands and exact output
+
+```text
+$ python3 -m pytest -q tests/policy/test_repository_governance.py::test_local_or_file_git_remotes_cannot_close_b02
+......                                                                   [100%]
+6 passed in 0.39s
+
+$ python3 -m pytest -q tests/policy/test_repository_governance.py::test_provenance_rejects_non_mapping_duplicate_and_incomplete_entries
+.                                                                        [100%]
+1 passed in 0.56s
+
+$ python3 -m pytest -q tests/policy/test_repository_governance.py::test_versioned_and_completed_archive_plan_names_require_metadata_without_false_positives
+.                                                                        [100%]
+1 passed in 0.02s
+
+$ python3 -m pytest -q tests/policy/test_repository_governance.py::test_execution_plan_observation_heading_is_not_an_active_plan
+.                                                                        [100%]
+1 passed in 0.02s
+
+$ python3 -m pytest -q tests/policy/test_repository_governance.py::test_b0_status_identity_and_required_item_shape_fail_closed
+.                                                                        [100%]
+1 passed in 0.03s
+```
+
+### Post-review final verification
+
+Focused governance suite:
+
+```text
+$ python3 -m pytest -q tests/policy/test_repository_governance.py
+........................                                                 [100%]
+24 passed in 3.65s
+```
+
+Complete currently available suite:
+
+```text
+$ python3 -m pytest -q
+........................                                                 [100%]
+24 passed in 3.46s
+```
+
+Direct validator:
+
+```text
+$ python3 scripts/policy/validate_repository_governance.py
+Repository governance policy: PASS
+```
+
+Compile validation:
+
+```text
+$ python3 -m py_compile scripts/policy/validate_repository_governance.py tests/policy/test_repository_governance.py
+```
+
+Output: no output; exit status 0.
+
+Diff validation:
+
+```text
+$ git diff --check
+```
+
+Output: no output; exit status 0.
+
+### Post-review self-review
+
+- Confirmed every listed local transport fails even when the same value is configured as a Git remote; configured HTTPS authority remains accepted.
+- Confirmed non-mapping and duplicate provenance entries produce validation errors rather than exceptions or silent overwrite, and incomplete duplicates receive required-field errors.
+- Confirmed both named archive regressions require explicit `authoritative: false` metadata and the named critique/observation/planning false positives remain ignored.
+- Confirmed a research observation heading is not active-plan evidence, while the existing unclassified alternate-plan regression still fails closed.
+- Confirmed malformed status identity, gate, item container, missing required item, and non-mapping item all fail closed without exceptions.
+- Confirmed the direct repository validator remains green and no Task 3 workspace, CI, or package scope was added.

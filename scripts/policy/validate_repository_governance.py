@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 from pathlib import Path
 import re
 import subprocess
@@ -72,9 +73,12 @@ ACTIVE_PLAN_PATTERNS: Sequence[re.Pattern[str]] = (
     re.compile(r"^\s*this (?:document|file) is (?:the|an) active execution plan\b", re.I | re.M),
 )
 PLAN_LIKE_NAME = re.compile(r"(?:^|[_-])(?:PLAN|CHECKLIST)(?:[_-]|\.md$)", re.I)
-PLAN_HEADING = re.compile(r"^#{1,6}\s+.*\bexecution plan\b", re.I | re.M)
+PLAN_HEADING = re.compile(r"^#{1,6}\s+.*\bexecution plan\s*$", re.I | re.M)
 ACTIVE_STATUS = re.compile(r"^\s*(?:\*\*)?status(?::\*\*|(?:\*\*)?\s*:)[ \t]*(?:\*\*)?active\b", re.I | re.M)
-ARCHIVED_PLAN_NAME = re.compile(r"(?:^|[_-])(?:PLAN|CHECKLIST)\.md$", re.I)
+ARCHIVE_PLAN_SUFFIX = re.compile(
+    r"^(?:v?\d+|rev\d+|done|final|archive|archived|old|complete|completed|draft|backup)$",
+    re.I,
+)
 UTC_TIMESTAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 EXPECTED_B0_REPOSITORY_MODEL: Mapping[str, Any] = {
     "python_package_skeleton_count": 7,
@@ -164,6 +168,17 @@ def validate_root_plan_filenames(root: Path) -> List[str]:
     return errors
 
 
+def _archive_name_is_plan_candidate(name: str) -> bool:
+    tokens = [token for token in re.split(r"[_-]+", Path(name).stem) if token]
+    for index, token in enumerate(tokens):
+        if token.upper() not in {"PLAN", "CHECKLIST"}:
+            continue
+        suffix = tokens[index + 1 :]
+        if not suffix or all(ARCHIVE_PLAN_SUFFIX.fullmatch(part) for part in suffix):
+            return True
+    return False
+
+
 def validate_archived_plans(root: Path) -> List[str]:
     errors: List[str] = []
     archive = root / "archive"
@@ -171,7 +186,7 @@ def validate_archived_plans(root: Path) -> List[str]:
         return errors
     for path in archive.rglob("*.md"):
         metadata = read_frontmatter(path)
-        is_plan = metadata.get("document_kind") == "execution_plan" or bool(ARCHIVED_PLAN_NAME.search(path.name))
+        is_plan = metadata.get("document_kind") == "execution_plan" or _archive_name_is_plan_candidate(path.name)
         if not is_plan:
             continue
         if metadata.get("authoritative") is not False:
@@ -217,7 +232,10 @@ def _entry_digest(entry: Mapping[str, Any]) -> Any:
 
 def validate_working_tree_digests(manifest: Mapping[str, Any], repo_root: Path) -> List[str]:
     errors: List[str] = []
-    for entry in manifest.get("sources", []):
+    for index, entry in enumerate(manifest.get("sources", [])):
+        if not isinstance(entry, Mapping):
+            errors.append(f"provenance source entry {index} must be a mapping")
+            continue
         path_value = entry.get("path")
         if not isinstance(path_value, str):
             errors.append(f"{entry.get('id', '<unknown>')}: missing path")
@@ -241,8 +259,24 @@ def validate_provenance(manifest: Mapping[str, Any], repo_root: Path) -> List[st
         errors.append("provenance digest_method must be canonical-sha256-tree-v1")
     sources = manifest.get("sources")
     if not isinstance(sources, list):
-        return ["provenance sources must be a list"]
-    entries = {entry.get("id"): entry for entry in sources if isinstance(entry, dict)}
+        errors.append("provenance sources must be a list")
+        return errors
+    entries: Dict[str, Mapping[str, Any]] = {}
+    for index, entry in enumerate(sources):
+        if not isinstance(entry, Mapping):
+            errors.append(f"provenance source entry {index} must be a mapping")
+            continue
+        source_id = entry.get("id")
+        missing = REQUIRED_ENTRY_FIELDS - set(entry)
+        if missing:
+            errors.append(f"{source_id or f'source entry {index}'}: missing fields {sorted(missing)}")
+        if not isinstance(source_id, str) or not source_id:
+            errors.append(f"provenance source entry {index} must have a non-empty string id")
+            continue
+        if source_id in entries:
+            errors.append(f"duplicate provenance source id: {source_id}")
+            continue
+        entries[source_id] = entry
     if set(entries) != set(EXPECTED_SOURCES):
         errors.append(f"provenance source IDs must be exactly {sorted(EXPECTED_SOURCES)}")
     for source_id, expected in EXPECTED_SOURCES.items():
@@ -282,29 +316,59 @@ def validate_provenance(manifest: Mapping[str, Any], repo_root: Path) -> List[st
                 errors.append(f"{source_id}: content digest does not match pinned commit bytes")
         except (KeyError, subprocess.CalledProcessError) as exc:
             errors.append(f"{source_id}: cannot verify pinned Git bytes: {exc}")
-    authoritative = [entry.get("id") for entry in sources if isinstance(entry, dict) and entry.get("consumer_acceptance_authority") is True]
+    authoritative = [
+        entry.get("id")
+        for entry in sources
+        if isinstance(entry, Mapping) and entry.get("consumer_acceptance_authority") is True
+    ]
     if authoritative != ["product-research-interop"]:
         errors.append("only product-research-interop may have consumer acceptance authority")
     errors.extend(validate_working_tree_digests(manifest, repo_root))
     return errors
 
 
+def _is_authoritative_remote_host(host: str) -> bool:
+    normalized = host.strip("[]").rstrip(".").lower()
+    if not normalized or normalized in {"file", "localhost"} or normalized.endswith(".localhost"):
+        return False
+    try:
+        address = ipaddress.ip_address(normalized)
+    except ValueError:
+        labels = normalized.split(".")
+        return all(
+            label
+            and len(label) <= 63
+            and not label.startswith("-")
+            and not label.endswith("-")
+            and re.fullmatch(r"[a-z0-9-]+", label)
+            for label in labels
+        )
+    return not (address.is_loopback or address.is_unspecified or address.is_link_local)
+
+
 def _normalize_remote_identity(url: Any) -> Any:
     if not isinstance(url, str) or not url.strip():
         return None
     value = url.strip().rstrip("/")
-    scp_match = re.fullmatch(r"(?:[^@/]+@)?([^:/]+):(.+)", value)
+    if re.match(r"^[A-Za-z]:[\\/]", value):
+        return None
+    scp_match = re.fullmatch(
+        r"(?:(?:[A-Za-z0-9._-]+)@)?(?P<host>\[[0-9A-Fa-f:]+\]|[A-Za-z0-9][A-Za-z0-9.-]*):(?P<path>.+)",
+        value,
+    )
     if scp_match and "://" not in value:
-        host, path = scp_match.groups()
+        host, path = scp_match.group("host"), scp_match.group("path")
     else:
         parsed = urlparse(value)
         if parsed.scheme not in {"https", "ssh"} or not parsed.hostname:
             return None
         host, path = parsed.hostname, parsed.path
+    if not _is_authoritative_remote_host(host):
+        return None
     path = path.strip("/")
     if path.endswith(".git"):
         path = path[:-4]
-    return f"{host.lower()}/{path}" if path else None
+    return f"{host.strip('[]').lower()}/{path}" if path else None
 
 
 def _configured_remote_identities(repo_root: Path) -> Set[str]:
@@ -323,13 +387,44 @@ def _configured_remote_identities(repo_root: Path) -> Set[str]:
 
 def validate_b0_status(status: Mapping[str, Any], manifest: Mapping[str, Any], repo_root: Path) -> List[str]:
     errors: List[str] = []
-    items = status.get("items", {})
+    if status.get("document_kind") != "gate_status":
+        errors.append("B0 status document_kind must be gate_status")
+    if status.get("gate") != "B0":
+        errors.append("B0 status gate must be B0")
+    if status.get("status") not in {"open", "closed"}:
+        errors.append("B0 top-level status must be open or closed")
+
+    raw_items = status.get("items")
+    if not isinstance(raw_items, Mapping):
+        errors.append("B0 status items must be a mapping")
+        items: Mapping[str, Any] = {}
+    else:
+        items = raw_items
+    item_mappings: Dict[str, Mapping[str, Any]] = {}
+    for item_id in ("B0.1", "B0.2", "B0.6"):
+        item = items.get(item_id)
+        if not isinstance(item, Mapping):
+            errors.append(f"{item_id} status item must be a mapping")
+            continue
+        item_mappings[item_id] = item
+        if not isinstance(item.get("status"), str) or not item.get("status"):
+            errors.append(f"{item_id} status item must contain a non-empty status")
+    b02 = item_mappings.get("B0.2", {})
+    if "open_reason" not in b02:
+        errors.append("B0.2 status item must contain open_reason")
+    if b02.get("status") in {"open", "closed"} and status.get("status") != b02.get("status"):
+        errors.append("B0 top-level status must match B0.2 status")
     for item_id in ("B0.1", "B0.6"):
-        if items.get(item_id, {}).get("status") != "locally_satisfied":
+        if item_mappings.get(item_id, {}).get("status") != "locally_satisfied":
             errors.append(f"{item_id} must be locally_satisfied")
+
     authority_state = manifest.get("authority_state")
-    b02 = items.get("B0.2", {})
-    sources = manifest.get("sources", [])
+    raw_sources = manifest.get("sources", [])
+    if not isinstance(raw_sources, list) or any(not isinstance(entry, Mapping) for entry in raw_sources):
+        errors.append("provenance sources must be mappings before B0 status can be evaluated")
+        sources: List[Mapping[str, Any]] = []
+    else:
+        sources = raw_sources
     if authority_state not in {"local-only/provisional", "remote-pinned"}:
         errors.append(f"unknown authority_state fails closed: {authority_state!r}")
     elif authority_state == "local-only/provisional":

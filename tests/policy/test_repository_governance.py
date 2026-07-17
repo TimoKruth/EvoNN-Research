@@ -95,6 +95,14 @@ def test_plan_scanner_does_not_classify_governance_or_research_prose_as_plans(va
     assert validator.validate_plan_metadata(tmp_path) == []
 
 
+def test_execution_plan_observation_heading_is_not_an_active_plan(validator, tmp_path: Path) -> None:
+    log = tmp_path / "research/2026-07-17-observations.md"
+    log.parent.mkdir(parents=True)
+    log.write_text("# Execution plan observations\n\nStatus: active\n", encoding="utf-8")
+    assert validator.find_active_execution_plans(tmp_path) == []
+    assert validator.validate_plan_metadata(tmp_path) == []
+
+
 def test_archived_project_plans_must_be_explicitly_non_authoritative(validator, tmp_path: Path) -> None:
     archive = tmp_path / "archive"
     archive.mkdir()
@@ -108,12 +116,31 @@ def test_archived_project_plans_must_be_explicitly_non_authoritative(validator, 
     assert validator.validate_archived_plans(tmp_path) == []
 
 
+def test_versioned_and_completed_archive_plan_names_require_metadata_without_false_positives(
+    validator, tmp_path: Path
+) -> None:
+    archive = tmp_path / "archive"
+    archive.mkdir()
+    plan_candidates = (archive / "OLD_PLAN_v2.md", archive / "IMPLEMENTATION_CHECKLIST_DONE.md")
+    for path in plan_candidates:
+        path.write_text("archived work\n", encoding="utf-8")
+    for name in ("LAB_PLAN_CRITIQUE.md", "EXECUTION_PLAN_OBSERVATIONS.md", "PLANNING_NOTES.md"):
+        (archive / name).write_text("analysis only\n", encoding="utf-8")
+    errors = validator.validate_archived_plans(tmp_path)
+    assert all(any(path.name in error for error in errors) for path in plan_candidates)
+    assert not any("CRITIQUE" in error or "OBSERVATIONS" in error or "PLANNING_NOTES" in error for error in errors)
+
+    metadata = "---\ndocument_kind: execution_plan\nstatus: archived\nauthoritative: false\n---\n"
+    for path in plan_candidates:
+        path.write_text(metadata, encoding="utf-8")
+    assert validator.validate_archived_plans(tmp_path) == []
+
+
 def test_provenance_manifest_matches_independent_trust_anchor(validator, manifest: dict) -> None:
     assert validator.validate_provenance(manifest, REPO_ROOT) == []
-    entries = {entry["id"]: entry for entry in manifest["sources"]}
-    assert set(entries) == set(validator.EXPECTED_SOURCES)
-    for source_id, expected in validator.EXPECTED_SOURCES.items():
-        entry = entries[source_id]
+    assert len(manifest["sources"]) == len(validator.EXPECTED_SOURCES)
+    for entry, (source_id, expected) in zip(manifest["sources"], validator.EXPECTED_SOURCES.items()):
+        assert entry["id"] == source_id
         for field in (
             "scope",
             "path",
@@ -125,6 +152,16 @@ def test_provenance_manifest_matches_independent_trust_anchor(validator, manifes
         ):
             assert entry[field] == expected[field]
         assert entry["content_digest"]["value"] == expected["digest"]
+
+
+def test_provenance_rejects_non_mapping_duplicate_and_incomplete_entries(validator, manifest: dict) -> None:
+    malformed = copy.deepcopy(manifest)
+    malformed["sources"].append("not-a-mapping")
+    malformed["sources"].append({"id": "claude-spec"})
+    errors = validator.validate_provenance(malformed, REPO_ROOT)
+    assert any("source entry" in error and "mapping" in error for error in errors)
+    assert any("duplicate provenance source id: claude-spec" in error for error in errors)
+    assert any("claude-spec" in error and "missing fields" in error for error in errors)
 
 
 def test_local_only_authority_keeps_b02_open_and_requires_null_url(
@@ -146,10 +183,33 @@ def test_local_only_authority_keeps_b02_open_and_requires_null_url(
     assert validator.validate_b0_status(b0_status, manifest, REPO_ROOT) == []
 
 
+def test_b0_status_identity_and_required_item_shape_fail_closed(validator, manifest: dict, b0_status: dict) -> None:
+    wrong_kind = copy.deepcopy(b0_status)
+    wrong_kind["document_kind"] = "note"
+    assert validator.validate_b0_status(wrong_kind, manifest, REPO_ROOT)
+
+    wrong_gate = copy.deepcopy(b0_status)
+    wrong_gate["gate"] = "B1"
+    assert validator.validate_b0_status(wrong_gate, manifest, REPO_ROOT)
+
+    non_mapping_items = copy.deepcopy(b0_status)
+    non_mapping_items["items"] = []
+    assert validator.validate_b0_status(non_mapping_items, manifest, REPO_ROOT)
+
+    missing_item = copy.deepcopy(b0_status)
+    del missing_item["items"]["B0.6"]
+    assert validator.validate_b0_status(missing_item, manifest, REPO_ROOT)
+
+    malformed_item = copy.deepcopy(b0_status)
+    malformed_item["items"]["B0.1"] = "locally_satisfied"
+    assert validator.validate_b0_status(malformed_item, manifest, REPO_ROOT)
+
+
 def _closed_b0_status() -> dict:
     return {
         "document_kind": "gate_status",
         "gate": "B0",
+        "status": "closed",
         "items": {
             "B0.1": {"status": "locally_satisfied"},
             "B0.2": {"status": "closed", "open_reason": None},
@@ -163,20 +223,43 @@ def _configure_remote(repo: Path, url: str) -> None:
     subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", url], check=True)
 
 
+def _remote_pinned_manifest(manifest: dict, url: str) -> dict:
+    upgraded = copy.deepcopy(manifest)
+    upgraded["authority_state"] = "remote-pinned"
+    for entry in upgraded["sources"]:
+        entry["origin_state"] = "authoritative-remote"
+        entry["upstream_url"] = url
+    return upgraded
+
+
 def test_configured_real_remote_can_close_b02_without_changing_source_pin_or_digest(
     validator, manifest: dict, tmp_path: Path
 ) -> None:
     remote_url = "https://code.example.org/authority/evonn.git"
     _configure_remote(tmp_path, remote_url)
-    upgraded = copy.deepcopy(manifest)
-    upgraded["authority_state"] = "remote-pinned"
-    for entry in upgraded["sources"]:
-        entry["origin_state"] = "authoritative-remote"
-        entry["upstream_url"] = remote_url
+    upgraded = _remote_pinned_manifest(manifest, remote_url)
     before = [(e["source_commit"], e["git_object_id"], e["content_digest"]) for e in manifest["sources"]]
     after = [(e["source_commit"], e["git_object_id"], e["content_digest"]) for e in upgraded["sources"]]
     assert before == after
     assert validator.validate_b0_status(_closed_b0_status(), upgraded, tmp_path) == []
+
+
+@pytest.mark.parametrize(
+    "local_url",
+    [
+        "file:/tmp/evonn.git",
+        "file:///tmp/evonn.git",
+        "/tmp/evonn.git",
+        "../evonn.git",
+        "localhost:/tmp/evonn.git",
+        "127.0.0.1:/tmp/evonn.git",
+    ],
+)
+def test_local_or_file_git_remotes_cannot_close_b02(validator, manifest: dict, tmp_path: Path, local_url: str) -> None:
+    _configure_remote(tmp_path, local_url)
+    upgraded = _remote_pinned_manifest(manifest, local_url)
+    errors = validator.validate_b0_status(_closed_b0_status(), upgraded, tmp_path)
+    assert any("authoritative HTTPS or SSH URL" in error for error in errors)
 
 
 def test_unknown_inconsistent_or_unconfigured_remote_authority_fails_closed(
