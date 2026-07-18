@@ -5,12 +5,13 @@ from __future__ import annotations
 
 import ast
 from collections import Counter
-import importlib.util
 from pathlib import Path
 import re
 import sys
 import tomllib
 from typing import Any, NamedTuple
+
+from evonn_shared.benchmarks import find_data_skeleton_violations
 
 
 class PackageSpec(NamedTuple):
@@ -49,12 +50,24 @@ def requirement_name(requirement: str) -> str | None:
     return normalize_distribution_name(match.group(1)) if match else None
 
 
-def _diagnostic(repo_root: Path, path: Path, line: int, source: str, message: str) -> str:
+def _diagnostic(
+    repo_root: Path,
+    path: Path,
+    line: int,
+    source: str,
+    message: str,
+    column: int = 1,
+    end_line: int | None = None,
+    end_column: int | None = None,
+) -> str:
     try:
         relative = path.relative_to(repo_root).as_posix()
     except ValueError:
         relative = path.as_posix()
-    return f"{relative}:{max(line, 1)}: {source}: {message}"
+    location = f"{relative}:{max(line, 1)}:{max(column, 1)}"
+    if end_line is not None and end_column is not None:
+        location += f"-{max(end_line, 1)}:{max(end_column, 1)}"
+    return f"{location}: {source}: {message}"
 
 
 def _load_toml(path: Path, repo_root: Path, source: str, diagnostics: list[str]) -> dict[str, Any] | None:
@@ -232,9 +245,9 @@ def _workspace_members(root_metadata: dict[str, Any]) -> list[Any]:
 
 
 def _symlinks_at_or_below(root: Path) -> list[Path]:
-    paths = [root] if root.is_symlink() else []
-    if root.is_dir():
-        paths.extend(path for path in root.rglob("*") if path.is_symlink())
+    if root.is_symlink():
+        return [root]
+    paths = [path for path in root.rglob("*") if path.is_symlink()] if root.is_dir() else []
     return sorted(set(paths), key=lambda item: item.as_posix().encode("utf-8"))
 
 
@@ -319,8 +332,10 @@ def validate_workspace_members(repo_root: Path) -> list[str]:
                     "workspace member path must not be a symbolic link",
                 )
             )
+            continue
         source_root = member_root / "src"
-        for link in _symlinks_at_or_below(source_root):
+        source_links = _symlinks_at_or_below(source_root)
+        for link in source_links:
             diagnostics.append(
                 _diagnostic(
                     repo_root,
@@ -330,22 +345,44 @@ def validate_workspace_members(repo_root: Path) -> list[str]:
                     "production source path must not be a symbolic link",
                 )
             )
-        if not source_root.is_dir():
-            diagnostics.append(
-                _diagnostic(repo_root, source_root, 1, spec.distribution, "required production src directory is missing")
-            )
-        else:
-            for entry in sorted(source_root.iterdir(), key=lambda item: item.name.encode("utf-8")):
-                if entry.name != spec.import_root:
-                    diagnostics.append(
-                        _diagnostic(
-                            repo_root,
-                            entry,
-                            1,
-                            spec.distribution,
-                            f"unexpected top-level src entry; expected only '{spec.import_root}'",
-                        )
+        if not source_root.is_symlink():
+            if not source_root.is_dir():
+                diagnostics.append(
+                    _diagnostic(
+                        repo_root,
+                        source_root,
+                        1,
+                        spec.distribution,
+                        "required production src directory is missing",
                     )
+                )
+            else:
+                for entry in sorted(source_root.iterdir(), key=lambda item: item.name.encode("utf-8")):
+                    if entry.name != spec.import_root:
+                        diagnostics.append(
+                            _diagnostic(
+                                repo_root,
+                                entry,
+                                1,
+                                spec.distribution,
+                                f"unexpected top-level src entry; expected only '{spec.import_root}'",
+                            )
+                        )
+        if spec.distribution == "evonn-shared":
+            benchmark_policy = source_root / spec.import_root / "benchmarks.py"
+            blocked_by_symlink = any(
+                benchmark_policy == link or link in benchmark_policy.parents for link in source_links
+            )
+            if blocked_by_symlink or not benchmark_policy.is_file():
+                diagnostics.append(
+                    _diagnostic(
+                        repo_root,
+                        benchmark_policy,
+                        1,
+                        spec.distribution,
+                        "canonical benchmark policy module must be a regular non-symlink production file",
+                    )
+                )
         manifest = member_root / "pyproject.toml"
         locator = TomlLocator(manifest)
         if manifest.is_symlink():
@@ -719,20 +756,48 @@ def validate_dependencies(repo_root: Path) -> list[str]:
     return sorted(set(diagnostics), key=lambda item: item.encode("utf-8"))
 
 
-_FORBIDDEN_PROVIDER_IMPORTS = {"runpy", "builtins"}
-_FORBIDDEN_FROM_IMPORTS = {
-    "importlib": {"import_module", "*"},
-    "runpy": {"run_module", "*"},
-    "builtins": {"__import__", "exec", "eval", "getattr", "hasattr", "setattr", "delattr", "*"},
-    "operator": {"attrgetter", "methodcaller", "*"},
+_RESERVED_PRIMITIVE_KINDS = {
+    "importlib": "provider",
+    "import_module": "provider",
+    "runpy": "provider",
+    "run_module": "provider",
+    "builtins": "provider",
+    "__import__": "execution",
+    "exec": "execution",
+    "eval": "execution",
+    "getattr": "builtin-reflection",
+    "hasattr": "builtin-reflection",
+    "setattr": "builtin-reflection",
+    "delattr": "builtin-reflection",
+    "attrgetter": "operator-reflection",
+    "methodcaller": "operator-reflection",
+    "getitem": "operator-reflection",
+    "itemgetter": "operator-reflection",
+    "globals": "namespace",
+    "locals": "namespace",
+    "vars": "namespace",
+    "__builtins__": "namespace",
+    "__dict__": "namespace",
+    "__class__": "namespace",
+    "__getattribute__": "namespace",
+    "exec_module": "loader",
+    "load_module": "loader",
+    "__loader__": "loader",
+    "__spec__": "loader",
+    "entry_points": "metadata-plugin",
+    "EntryPoint": "metadata-plugin",
 }
-_FORBIDDEN_CALLS = {"__import__", "exec", "eval"}
-_FORBIDDEN_NAMESPACE_NAMES = {"__builtins__"}
-_BUILTIN_REFLECTION_HELPERS = {"getattr", "hasattr", "setattr", "delattr"}
-_OPERATOR_REFLECTION_HELPERS = {"attrgetter", "methodcaller"}
-_FORBIDDEN_REFLECTION_NAMES = {"import_module", "run_module", "__import__", "exec", "eval"}
-_FORBIDDEN_ATTRIBUTE_ACQUISITIONS = _FORBIDDEN_REFLECTION_NAMES | _OPERATOR_REFLECTION_HELPERS
-_FORBIDDEN_SUBSCRIPT_ACQUISITIONS = _FORBIDDEN_ATTRIBUTE_ACQUISITIONS | _BUILTIN_REFLECTION_HELPERS
+_RESERVED_PRIMITIVE_NAMES = frozenset(_RESERVED_PRIMITIVE_KINDS)
+_BUILTIN_REFLECTION_HELPERS = frozenset(
+    name for name, kind in _RESERVED_PRIMITIVE_KINDS.items() if kind == "builtin-reflection"
+)
+_METADATA_PLUGIN_APIS = frozenset(
+    name for name, kind in _RESERVED_PRIMITIVE_KINDS.items() if kind == "metadata-plugin"
+)
+_PROVIDER_STAR_MODULES = {"importlib", "runpy", "builtins", "operator"}
+_ALLOWED_IMPORTLIB_METADATA_NAMES = {"version", "PackageNotFoundError"}
+_MAPPING_LOOKUP_METHODS = {"get", "__getitem__", "setdefault", "pop"}
+_UNBOUND_LOOKUP_APIS = {"dict": {"get", "__getitem__"}, "object": {"__getattribute__"}}
 
 
 class _StrictPythonPolicy(ast.NodeVisitor):
@@ -740,53 +805,88 @@ class _StrictPythonPolicy(ast.NodeVisitor):
         self,
         repo_root: Path,
         path: Path,
+        source_text: str,
         source_distribution: str,
         allowed_targets: set[str],
         diagnostics: list[str],
     ) -> None:
         self.repo_root = repo_root
         self.path = path
+        self.source_lines = source_text.splitlines()
         self.source_distribution = source_distribution
         self.allowed_targets = allowed_targets
         self.diagnostics = diagnostics
 
-    def _error(self, line: int, message: str) -> None:
+    def _character_column(self, line: int, byte_offset: int) -> int:
+        if not 1 <= line <= len(self.source_lines):
+            return byte_offset + 1
+        prefix = self.source_lines[line - 1].encode("utf-8")[:byte_offset]
+        return len(prefix.decode("utf-8")) + 1
+
+    def _error(self, node: ast.AST, message: str) -> None:
+        line = getattr(node, "lineno", 1)
+        end_line = getattr(node, "end_lineno", line)
         self.diagnostics.append(
-            _diagnostic(self.repo_root, self.path, line, self.source_distribution, message)
+            _diagnostic(
+                self.repo_root,
+                self.path,
+                line,
+                self.source_distribution,
+                message,
+                self._character_column(line, getattr(node, "col_offset", 0)),
+                end_line,
+                self._character_column(end_line, getattr(node, "end_col_offset", 0)),
+            )
         )
 
-    def _check_static_import(self, module_name: str, line: int) -> None:
+    def _check_static_import(self, module_name: str, node: ast.AST) -> None:
         target = SPEC_BY_IMPORT_ROOT.get(module_name.partition(".")[0])
         if target and target.distribution != self.source_distribution and target.distribution not in self.allowed_targets:
             self._error(
-                line,
+                node,
                 f"forbidden import edge {self.source_distribution} -> {target.distribution} via {module_name}",
             )
 
     def visit_Import(self, node: ast.Import) -> None:
         for alias in node.names:
-            self._check_static_import(alias.name, node.lineno)
+            self._check_static_import(alias.name, node)
             root = alias.name.partition(".")[0]
-            if alias.name == "importlib" or root in _FORBIDDEN_PROVIDER_IMPORTS:
+            allowed_metadata = alias.name == "importlib.metadata" and alias.asname is None
+            if (root == "importlib" and not allowed_metadata) or root in {"runpy", "builtins"}:
                 self._error(
-                    node.lineno,
+                    node,
                     f"forbidden dynamic-loading primitive import: {alias.name}",
                 )
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         if node.level == 0 and node.module:
-            self._check_static_import(node.module, node.lineno)
-        if node.level != 0 or not node.module:
+            self._check_static_import(node.module, node)
+        if node.level == 0 and node.module == "importlib.metadata":
+            for alias in node.names:
+                if alias.name not in _ALLOWED_IMPORTLIB_METADATA_NAMES:
+                    primitive = node.module if alias.name == "*" else alias.name
+                    self._error(node, f"forbidden importlib.metadata acquisition: {primitive}")
             return
-        forbidden = _FORBIDDEN_FROM_IMPORTS.get(node.module)
-        if not forbidden:
-            return
-        for alias in node.names:
-            if alias.name in forbidden:
+        if node.level == 0 and node.module == "importlib":
+            for alias in node.names:
                 primitive = node.module if alias.name == "*" else alias.name
                 self._error(
-                    node.lineno,
+                    node,
                     f"forbidden dynamic-loading primitive import: {primitive} from {node.module}",
+                )
+            return
+        if node.level == 0 and node.module and node.module.startswith("importlib."):
+            self._error(node, f"forbidden dynamic-loading primitive import: {node.module}")
+            return
+        module_name = node.module or "." * node.level
+        for alias in node.names:
+            if alias.name in _RESERVED_PRIMITIVE_NAMES or (
+                alias.name == "*" and node.level == 0 and node.module in _PROVIDER_STAR_MODULES
+            ):
+                primitive = module_name if alias.name == "*" else alias.name
+                self._error(
+                    node,
+                    f"forbidden dynamic-loading primitive import: {primitive} from {module_name}",
                 )
 
     @staticmethod
@@ -803,29 +903,69 @@ class _StrictPythonPolicy(ast.NodeVisitor):
             return expression.value
         return None
 
+    @staticmethod
+    def _is_importlib_metadata_prefix(node: ast.Attribute) -> bool:
+        return (
+            node.attr == "metadata"
+            and isinstance(node.value, ast.Name)
+            and node.value.id == "importlib"
+        )
+
+    @staticmethod
+    def _contains_metadata_plugin_api(node: ast.AST) -> bool:
+        return any(
+            (isinstance(descendant, ast.Attribute) and descendant.attr in _METADATA_PLUGIN_APIS)
+            or (isinstance(descendant, ast.Name) and descendant.id in _METADATA_PLUGIN_APIS)
+            for descendant in ast.walk(node)
+        )
+
     def visit_Name(self, node: ast.Name) -> None:
-        if not isinstance(node.ctx, ast.Load):
-            return
-        if node.id in _FORBIDDEN_NAMESPACE_NAMES:
-            self._error(node.lineno, f"forbidden builtin namespace access: {node.id}")
-        elif node.id in _FORBIDDEN_CALLS:
-            self._error(node.lineno, f"forbidden dynamic execution primitive reference: {node.id}")
-        elif node.id in _BUILTIN_REFLECTION_HELPERS:
-            self._error(node.lineno, f"forbidden reflection primitive acquisition: {node.id}")
+        if isinstance(node.ctx, ast.Load) and node.id in _RESERVED_PRIMITIVE_NAMES:
+            kind = _RESERVED_PRIMITIVE_KINDS[node.id]
+            self._error(node, f"forbidden {kind} primitive reference: {node.id}")
 
     def visit_Attribute(self, node: ast.Attribute) -> None:
-        if isinstance(node.ctx, ast.Load) and node.attr in _FORBIDDEN_ATTRIBUTE_ACQUISITIONS:
-            self._error(node.lineno, f"forbidden dynamic primitive attribute acquisition: {node.attr}")
+        direct_metadata_attribute = (
+            isinstance(node.value, ast.Attribute) and self._is_importlib_metadata_prefix(node.value)
+        )
+        if isinstance(node.ctx, ast.Load):
+            if node.attr in _RESERVED_PRIMITIVE_NAMES:
+                self._error(node, f"forbidden reserved primitive attribute acquisition: {node.attr}")
+            elif (
+                isinstance(node.value, ast.Name)
+                and node.attr in _UNBOUND_LOOKUP_APIS.get(node.value.id, set())
+            ):
+                self._error(node, f"forbidden unbound namespace lookup acquisition: {node.value.id}.{node.attr}")
+            elif node.attr == "load" and self._contains_metadata_plugin_api(node.value):
+                self._error(node, "forbidden importlib.metadata entry-point load acquisition")
+            elif direct_metadata_attribute and node.attr not in _ALLOWED_IMPORTLIB_METADATA_NAMES:
+                self._error(node, f"forbidden importlib.metadata attribute acquisition: {node.attr}")
+        if direct_metadata_attribute:
+            return
+        if self._is_importlib_metadata_prefix(node):
+            self._error(node, "forbidden importlib.metadata module acquisition")
+            return
         self.generic_visit(node)
 
     def visit_Subscript(self, node: ast.Subscript) -> None:
         reflected = self._literal_string(node.slice)
-        if reflected in _FORBIDDEN_SUBSCRIPT_ACQUISITIONS:
-            self._error(node.lineno, f"forbidden explicit reflection naming dynamic primitive: {reflected}")
+        if reflected in _RESERVED_PRIMITIVE_NAMES:
+            self._error(node, f"forbidden explicit reflection naming reserved primitive: {reflected}")
         self.generic_visit(node)
 
     def visit_Call(self, node: ast.Call) -> None:
         function_name = self._call_name(node.func)
+        if (
+            isinstance(node.func, ast.Attribute)
+            and function_name in _MAPPING_LOOKUP_METHODS
+            and node.args
+        ):
+            reflected = self._literal_string(node.args[0])
+            if reflected in _RESERVED_PRIMITIVE_NAMES:
+                self._error(
+                    node,
+                    f"forbidden mapping {function_name} acquisition of dynamic primitive: {reflected}",
+                )
         direct_builtin_reflection = (
             isinstance(node.func, ast.Name) and function_name in _BUILTIN_REFLECTION_HELPERS
         )
@@ -833,12 +973,12 @@ class _StrictPythonPolicy(ast.NodeVisitor):
             reflected = self._literal_string(node.args[1]) if len(node.args) > 1 else None
             if reflected is None:
                 self._error(
-                    node.lineno,
+                    node,
                     f"forbidden non-literal reflection: {function_name} requires a literal safe attribute-name argument",
                 )
-            elif reflected in _FORBIDDEN_SUBSCRIPT_ACQUISITIONS:
+            elif reflected in _RESERVED_PRIMITIVE_NAMES:
                 self._error(
-                    node.lineno,
+                    node,
                     f"forbidden explicit reflection naming dynamic primitive: {reflected}",
                 )
             for argument in node.args:
@@ -867,19 +1007,27 @@ def validate_scripts_topology(repo_root: Path) -> list[str]:
 def _production_python_files(repo_root: Path) -> list[tuple[Path, str, set[str]]]:
     files: list[tuple[Path, str, set[str]]] = []
     for spec in PACKAGE_SPECS:
-        source_root = repo_root / spec.directory / "src"
-        if not source_root.is_dir():
+        member_root = repo_root / spec.directory
+        source_root = member_root / "src"
+        if member_root.is_symlink() or source_root.is_symlink() or not source_root.is_dir():
             continue
+        links = set(_symlinks_at_or_below(source_root))
         files.extend(
             (path, spec.distribution, ALLOWED_INTERNAL_TARGETS[spec.distribution])
             for path in source_root.rglob("*.py")
+            if not any(path == link or link in path.parents for link in links)
         )
 
     scripts_root = repo_root / "scripts"
     if scripts_root.is_dir() and not scripts_root.is_symlink():
         for path in scripts_root.rglob("*.py"):
             if not path.is_symlink():
-                files.append((path, "repository-scripts", set()))
+                allowed_targets = (
+                    {"evonn-shared"}
+                    if path.relative_to(scripts_root).as_posix() == "policy/validate_import_boundaries.py"
+                    else set()
+                )
+                files.append((path, "repository-scripts", allowed_targets))
     return sorted(files, key=lambda item: item[0].relative_to(repo_root).as_posix().encode("utf-8"))
 
 
@@ -899,6 +1047,7 @@ def validate_python_imports(repo_root: Path) -> list[str]:
         _StrictPythonPolicy(
             repo_root,
             path,
+            source,
             source_distribution,
             allowed_targets,
             diagnostics,
@@ -906,24 +1055,13 @@ def validate_python_imports(repo_root: Path) -> list[str]:
     return sorted(set(diagnostics), key=lambda item: item.encode("utf-8"))
 
 
-def _load_benchmark_invariant(repo_root: Path) -> Any:
-    module_path = repo_root / "EvoNN-Shared/src/evonn_shared/benchmarks.py"
-    spec = importlib.util.spec_from_file_location("_evonn_shared_benchmark_policy", module_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"cannot load {module_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
 def validate_shared_benchmarks(repo_root: Path) -> list[str]:
     """Apply the shared package's canonical data-only benchmark layout invariant."""
     diagnostics: list[str] = []
     data_root = repo_root / "shared-benchmarks"
     try:
-        invariant = _load_benchmark_invariant(repo_root)
-        violations = invariant.find_data_skeleton_violations(data_root)
-    except (AttributeError, ImportError, OSError, SyntaxError) as exc:
+        violations = find_data_skeleton_violations(data_root)
+    except OSError as exc:
         diagnostics.append(
             _diagnostic(
                 repo_root,

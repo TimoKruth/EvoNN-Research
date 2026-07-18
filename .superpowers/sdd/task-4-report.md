@@ -1405,3 +1405,384 @@ The external symlink targets were not scanned, and the checked-in repository sti
 ## Concerns
 
 None. B0.4 remains honestly closed under the finite strict syntactic policy. No dynamic-import interpreter, whole-file exemption, provider-wide suppression, scripts symlink bypass, or dead helper remains. Task 5 remains intentionally unimplemented.
+
+## Final bounded strict-policy fixes
+
+### Partial-work inspection
+
+The inherited uncommitted diff was limited to `scripts/policy/validate_import_boundaries.py` and `tests/policy/test_import_boundaries.py`. The static `evonn_shared.benchmarks` import, scripts-to-Shared internal edge, importlib-submodule checks, reflection/`__builtins__` acquisition sets, and their tests were consistent with the binding strict syntactic architecture and were retained. The missing pieces were AST-column diagnostic identity/rendering, bare-name handling, and the precise `importlib.metadata` chain exception.
+
+### RED evidence
+
+The first focused run was made before completing the inherited implementation:
+
+```sh
+uv run --locked --group dev pytest -q --tb=no tests/policy/test_import_boundaries.py -k 'namespace_and_reflection_attribute_acquisition or importlib_submodules_other_than_metadata or same_line_primitive_diagnostics or bare_dynamic_and_reflection_primitive_names or importlib_metadata_attribute_chain or repository_scripts_may_import_only_evonn_shared'
+```
+
+Exact output:
+
+```text
+........FFFFFFFF..                                                       [100%]
+=========================== short test summary info ============================
+FAILED tests/policy/test_import_boundaries.py::test_same_line_primitive_diagnostics_preserve_ast_columns
+FAILED tests/policy/test_import_boundaries.py::test_bare_dynamic_and_reflection_primitive_names_are_banned[import_module]
+FAILED tests/policy/test_import_boundaries.py::test_bare_dynamic_and_reflection_primitive_names_are_banned[runpy]
+FAILED tests/policy/test_import_boundaries.py::test_bare_dynamic_and_reflection_primitive_names_are_banned[run_module]
+FAILED tests/policy/test_import_boundaries.py::test_bare_dynamic_and_reflection_primitive_names_are_banned[builtins]
+FAILED tests/policy/test_import_boundaries.py::test_bare_dynamic_and_reflection_primitive_names_are_banned[attrgetter]
+FAILED tests/policy/test_import_boundaries.py::test_bare_dynamic_and_reflection_primitive_names_are_banned[methodcaller]
+FAILED tests/policy/test_import_boundaries.py::test_bare_dynamic_and_reflection_primitive_names_are_banned[importlib]
+8 failed, 10 passed, 67 deselected in 0.58s
+```
+
+The ten passing cases proved the retained partial work for static loading, scripts boundary, and indirect reflection/namespace bans. The eight failures isolated the unfinished bare-name and same-line diagnostic behavior.
+
+### Implementation
+
+- Removed `importlib.util`-based validator execution of the Shared benchmark invariant and now statically imports `find_data_skeleton_violations` from the installed `evonn_shared` workspace package.
+- Repository scripts may statically import `evonn_shared` as their only internal EvoNN target; engine, Compare, and Contenders imports remain forbidden.
+- Banned every `importlib` submodule except exact `importlib.metadata`, and added `exec_module` attribute acquisition to the strict primitive set.
+- Added bare `Load` bans for `importlib`, `import_module`, `runpy`, `run_module`, `builtins`, `attrgetter`, and `methodcaller` while syntactically exempting exact chains rooted at `importlib.metadata`.
+- Added builtin reflection helpers and `__builtins__` to forbidden attribute acquisition, and added `__builtins__` to literal subscript/reflection targets.
+- Python AST diagnostics now include one-based AST columns in `file:line:column` rendering and therefore in string identity; metadata/topology/data diagnostics retain the stable default column `1`.
+- Updated integration assertions for independent overlapping primitive diagnostics and added the exact `import importlib.metadata; provider = importlib` regression.
+
+### Focused GREEN evidence
+
+```sh
+uv run --locked --group dev pytest -q --tb=no tests/policy/test_import_boundaries.py -k 'namespace_and_reflection_attribute_acquisition or importlib_submodules_other_than_metadata or same_line_primitive_diagnostics or bare_dynamic_and_reflection_primitive_names or importlib_metadata or repository_scripts_may_import_only_evonn_shared'
+```
+
+Exact output:
+
+```text
+...................                                                      [100%]
+19 passed, 67 deselected in 0.71s
+```
+
+The same-line regression emits two distinct deterministic diagnostics at columns 1 and 12. The complete focused policy suite then passed:
+
+```text
+........................................................................ [ 83%]
+..............                                                           [100%]
+86 passed in 2.79s
+```
+
+### Final verification matrix
+
+```text
+== uv lock --check ==
+Resolved 15 packages in 6ms
+
+== uv sync --all-packages --group dev --locked ==
+Resolved 15 packages in 5ms
+Audited 14 packages in 0.23ms
+
+== uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py ==
+........................................................................ [ 83%]
+..............                                                           [100%]
+86 passed in 3.12s
+
+== uv run --locked --group dev pytest -q ==
+........................................................................ [ 52%]
+................................................................         [100%]
+136 passed in 8.63s
+
+== uv run --locked --group dev ruff check . ==
+All checks passed!
+
+== uv run --locked --group dev python scripts/policy/validate_import_boundaries.py ==
+Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
+
+== python3 scripts/policy/validate_repository_governance.py ==
+Repository governance policy: PASS
+```
+
+### Eight-script matrix from outside the repository
+
+Each absolute script path was launched with current directory `/tmp`:
+
+```text
+== shared-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== benchmarks-checks.sh ==
+Resolved 15 packages in 6ms
+All checks passed!
+...                                                                      [100%]
+3 passed in 0.53s
+== contenders-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== compare-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== prism-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== topograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== stratograph-checks.sh ==
+Resolved 15 packages in 6ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.01s
+== primordia-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.01s
+```
+
+### Files changed and self-review
+
+- `scripts/policy/validate_import_boundaries.py`
+- `tests/policy/test_import_boundaries.py`
+- `.superpowers/sdd/task-4-report.md`
+
+Self-review confirmed the implementation remains a bounded syntax-only visitor: no path-sensitive state, alias resolution, control-flow model, interprocedural analysis, exemption, or abstract interpreter was introduced. Static dependency/metadata/topology/data checks are unchanged except for uniform column rendering and the required installed-package benchmark import. `git diff --check` completed with no output.
+
+### Review-found metadata-prefix closure
+
+A focused pre-commit review found that the initial `importlib.metadata` exception returned from every chain rooted at that prefix. Although a forbidden final attribute was checked before the return, a forbidden intermediate attribute followed by a benign suffix could be hidden. Regressions were added before changing the visitor.
+
+RED command:
+
+```sh
+uv run --locked --group dev pytest -q --tb=no tests/policy/test_import_boundaries.py -k 'importlib_metadata_prefix_does_not_hide'
+```
+
+Exact RED output:
+
+```text
+FF.F                                                                     [100%]
+=========================== short test summary info ============================
+FAILED tests/policy/test_import_boundaries.py::test_importlib_metadata_prefix_does_not_hide_forbidden_outer_attributes[importlib.metadata.exec_module.safe-primitives0]
+FAILED tests/policy/test_import_boundaries.py::test_importlib_metadata_prefix_does_not_hide_forbidden_outer_attributes[importlib.metadata.__builtins__.safe-primitives1]
+FAILED tests/policy/test_import_boundaries.py::test_importlib_metadata_prefix_does_not_hide_forbidden_outer_attributes[importlib.metadata.__builtins__.__import__-primitives3]
+3 failed, 1 passed, 86 deselected in 0.18s
+```
+
+The exception was narrowed to the exact `importlib.metadata` prefix node. The visitor now continues recursively through every attribute above that prefix, checking forbidden attributes independently, while suppressing only the otherwise forbidden root `importlib` Name load. The allowed `importlib.metadata.version(...)` chain remains green.
+
+GREEN command:
+
+```sh
+uv run --locked --group dev pytest -q --tb=no tests/policy/test_import_boundaries.py -k 'importlib_metadata_prefix_does_not_hide or importlib_metadata_attribute_chain_remains_allowed or importlib_metadata_import_does_not_allow_bare'
+```
+
+Exact GREEN output:
+
+```text
+......                                                                   [100%]
+6 passed, 84 deselected in 0.61s
+```
+
+The complete policy suite immediately after the review fix produced:
+
+```text
+........................................................................ [ 80%]
+..................                                                       [100%]
+90 passed in 3.07s
+```
+
+### Concerns
+
+None. The validator must be executed in the synchronized workspace environment, as specified by `uv run --locked --group dev`; plain system-Python execution of the import-boundary validator is intentionally not the supported direct-policy command now that it uses the installed workspace package.
+
+## Consolidated final pre-commit review closure
+
+A final multi-angle review identified additional finite syntactic acquisitions within the same user-approved strict subset. Each group received a failing regression before implementation.
+
+### Source-symlink, namespace-map, and loader RED
+
+```sh
+uv run --locked --group dev pytest -q --tb=no tests/policy/test_import_boundaries.py -k 'symlinked_package_source_subtrees_are_not_read or namespace_reflection_primitive_names or mapping_lookup_methods or namespace_mapping_lookup_chain or benign_mapping_lookup or metadata_loader_and_spec'
+```
+
+Exact RED output:
+
+```text
+FF.FFFFFFFFF.F                                                           [100%]
+=========================== short test summary info ============================
+FAILED tests/policy/test_import_boundaries.py::test_symlinked_package_source_subtrees_are_not_read[EvoNN-Primordia-.]
+FAILED tests/policy/test_import_boundaries.py::test_symlinked_package_source_subtrees_are_not_read[EvoNN-Topograph-src]
+FAILED tests/policy/test_import_boundaries.py::test_namespace_reflection_primitive_names_are_banned[globals]
+FAILED tests/policy/test_import_boundaries.py::test_namespace_reflection_primitive_names_are_banned[locals]
+FAILED tests/policy/test_import_boundaries.py::test_namespace_reflection_primitive_names_are_banned[vars]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_methods_reject_literal_dangerous_acquisition_keys[get-__builtins__]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_methods_reject_literal_dangerous_acquisition_keys[__getitem__-__import__]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_methods_reject_literal_dangerous_acquisition_keys[setdefault-eval]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_methods_reject_literal_dangerous_acquisition_keys[pop-import_module]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_methods_reject_literal_dangerous_acquisition_keys[get-hasattr]
+FAILED tests/policy/test_import_boundaries.py::test_namespace_mapping_lookup_chain_is_banned
+FAILED tests/policy/test_import_boundaries.py::test_importlib_metadata_loader_and_spec_acquisition_are_banned
+12 failed, 2 passed, 90 deselected in 0.52s
+```
+
+### Metadata plugin RED
+
+```sh
+uv run --locked --group dev pytest -q --tb=no tests/policy/test_import_boundaries.py -k 'importlib_metadata_plugin_acquisition'
+```
+
+```text
+F                                                                        [100%]
+=========================== short test summary info ============================
+FAILED tests/policy/test_import_boundaries.py::test_importlib_metadata_plugin_acquisition_is_banned
+1 failed, 104 deselected in 0.57s
+```
+
+### Namespace-dunder and Unicode-column RED
+
+```sh
+uv run --locked --group dev pytest -q --tb=no tests/policy/test_import_boundaries.py -k 'builtin_namespace_dunder_import or namespace_getattribute_and_class_reflection or unicode_code_points'
+```
+
+```text
+FFF                                                                      [100%]
+=========================== short test summary info ============================
+FAILED tests/policy/test_import_boundaries.py::test_builtin_namespace_dunder_import_is_banned_before_computed_key_use
+FAILED tests/policy/test_import_boundaries.py::test_namespace_getattribute_and_class_reflection_are_banned
+FAILED tests/policy/test_import_boundaries.py::test_same_line_diagnostic_columns_use_unicode_code_points
+3 failed, 105 deselected in 0.29s
+```
+
+### Topology, metadata-alias, unbound-lookup, and identity RED
+
+```sh
+uv run --locked --group dev pytest -q --tb=no tests/policy/test_import_boundaries.py -k 'shared_benchmark_policy_module or exact_validator_script or metadata_module_alias or reserved_primitive_imports or unbound_namespace_lookup or nested_repeated_same_start or unicode_code_points or builtin_namespace_dunder_import or namespace_getattribute_and_class_reflection'
+```
+
+Exact RED summary:
+
+```text
+F.....FF.FF.FFFFFFF                                                      [100%]
+12 failed, 7 passed, 104 deselected in 1.28s
+```
+
+The failures covered the required canonical Shared benchmark policy file, reserved imports from arbitrary modules, unbound `dict` lookup acquisition, nested same-start diagnostic identity, UTF-8 byte-offset conversion, metadata module aliases/acquisition, and the exact validator-only Shared script edge.
+
+### Consolidated implementation
+
+- Package production collection now refuses to follow or read symlinked member roots, `src` roots, package directories, or Python files. Topology diagnostics remain, while external target content cannot add parse/import diagnostics.
+- Every validated root must contain exact `EvoNN-Shared/src/evonn_shared/benchmarks.py` as a regular non-symlink file; the ordinary production AST scan parses it without executing target code.
+- Only exact `scripts/policy/validate_import_boundaries.py` may import `evonn_shared`; every neighboring shipped script has zero allowed internal EvoNN targets.
+- `globals`, `locals`, `vars`, namespace dunders, `__getattribute__`, `dict.get`, `dict.__getitem__`, mapping lookup methods with dangerous literal keys, and operator `getitem`/`itemgetter` acquisition are rejected syntactically. Ordinary bound mapping lookup with safe/nonliteral keys remains allowed.
+- One canonical reserved-primitive map now drives bare-name, arbitrary-module `ImportFrom`, attribute, subscript, reflection, loader, namespace, operator, and metadata-plugin checks. It includes `exec_module`, `load_module`, `__loader__`, and `__spec__`.
+- The metadata surface no longer permits module aliases or standalone module acquisition. Exact `import importlib.metadata` is useful only as the syntactic prefix of approved direct attributes; direct `version` and `PackageNotFoundError` imports remain allowed. Entry-point APIs, distribution entry-point access, loader/spec acquisition, and syntactically identifiable `.load()` paths are banned.
+- Python diagnostics convert AST UTF-8 byte offsets to one-based Unicode code-point columns and include end positions (`file:start-line:start-column-end-line:end-column`). This preserves two `eval` nodes on one line and repeated nested acquisitions sharing the same start position, while metadata/topology diagnostics retain `file:line:1`.
+
+### Consolidated focused GREEN
+
+```sh
+uv run --locked --group dev pytest -q --tb=no tests/policy/test_import_boundaries.py -k 'shared_benchmark_policy_module or exact_validator_script or metadata_module_alias or reserved_primitive_imports or unbound_namespace_lookup or nested_repeated_same_start or unicode_code_points or builtin_namespace_dunder_import or namespace_getattribute_and_class_reflection or safe_specific_and_optional_static_imports or bare_dynamic_and_reflection_primitive_names'
+```
+
+```text
+...............................                                          [100%]
+31 passed, 96 deselected in 1.14s
+```
+
+The complete policy suite after integration produced:
+
+```text
+........................................................................ [ 56%]
+.......................................................                  [100%]
+127 passed in 4.29s
+```
+
+### Superseding final verification matrix
+
+```text
+== uv lock --check ==
+Resolved 15 packages in 4ms
+
+== uv sync --all-packages --group dev --locked ==
+Resolved 15 packages in 4ms
+Audited 14 packages in 0.24ms
+
+== uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py ==
+........................................................................ [ 56%]
+.......................................................                  [100%]
+127 passed in 4.37s
+
+== uv run --locked --group dev pytest -q ==
+........................................................................ [ 40%]
+........................................................................ [ 81%]
+.................................                                        [100%]
+177 passed in 11.14s
+
+== uv run --locked --group dev ruff check . ==
+All checks passed!
+
+== uv run --locked --group dev python scripts/policy/validate_import_boundaries.py ==
+Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
+
+== python3 scripts/policy/validate_repository_governance.py ==
+Repository governance policy: PASS
+
+== git diff --check ==
+(no output; exit 0)
+```
+
+### Superseding eight-script matrix from `/tmp`
+
+```text
+== shared-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== benchmarks-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+...                                                                      [100%]
+3 passed in 0.59s
+== contenders-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== compare-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== prism-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== topograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== stratograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== primordia-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+```
+
+### Final concerns
+
+None beyond the intentional execution contract: the validator now uses the trusted installed `evonn_shared` helper and must be run through the synchronized locked workspace command. The validated target repository is inspected statically and its benchmark policy module is never executed.

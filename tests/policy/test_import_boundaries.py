@@ -137,7 +137,7 @@ def test_workspace_dependencies_match_allowed_matrix(validator, repository_copy:
 
     assert any("forbidden dependency edge evonn-prism -> evonn-topograph" in item for item in diagnostics)
     source_diagnostic = next(item for item in diagnostics if "workspace source edge evonn-prism -> evonn-topograph" in item)
-    assert f"pyproject.toml:{_line_number(manifest, '[tool.uv.sources.evonn-topograph]')}:" in source_diagnostic
+    assert f"pyproject.toml:{_line_number(manifest, '[tool.uv.sources.evonn-topograph]')}:1:" in source_diagnostic
     assert any("workspace source 'orphan-helper'" in item and "no matching" in item for item in diagnostics)
     assert not any("not-evonn-topograph-helper" in item for item in diagnostics)
 
@@ -172,9 +172,9 @@ forbidden-script = "evonn_primordia.cli:main"
     optional_line = _line_number(manifest, 'forbidden = ["EvoNN.Topograph')
     group_line = _line_number(manifest, 'forbidden = ["evonn-contenders')
     entry_line = _line_number(manifest, "forbidden-script =")
-    assert f"pyproject.toml:{optional_line}:" in optional
-    assert f"pyproject.toml:{group_line}:" in group
-    assert f"pyproject.toml:{entry_line}:" in entry
+    assert f"pyproject.toml:{optional_line}:1:" in optional
+    assert f"pyproject.toml:{group_line}:1:" in group
+    assert f"pyproject.toml:{entry_line}:1:" in entry
 
 
 def test_workspace_topology_and_import_identities_are_exact(validator, repository_copy: Path) -> None:
@@ -215,6 +215,42 @@ def test_workspace_and_manifest_symlinks_fail_closed(validator, repository_copy:
     assert any("linked.py:1" in item and "production source path must not be a symbolic link" in item for item in diagnostics)
 
 
+@pytest.mark.parametrize(
+    ("member", "relative_link"),
+    [
+        ("EvoNN-Primordia", "."),
+        ("EvoNN-Topograph", "src"),
+        ("EvoNN-Stratograph", "src/stratograph"),
+    ],
+)
+def test_symlinked_package_source_subtrees_are_not_read(
+    validator,
+    repository_copy: Path,
+    tmp_path: Path,
+    member: str,
+    relative_link: str,
+) -> None:
+    link = repository_copy / member
+    if relative_link != ".":
+        link /= relative_link
+    external = tmp_path / f"external-{member}-{relative_link.replace('/', '-')}"
+    shutil.move(link, external)
+    link.symlink_to(external, target_is_directory=True)
+
+    if relative_link == ".":
+        injected = external / "src/evonn_primordia/external_content.py"
+    elif relative_link == "src":
+        injected = external / "topograph/external_content.py"
+    else:
+        injected = external / "external_content.py"
+    injected.write_text("not valid Python !!!\n", encoding="utf-8")
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert any("must not be a symbolic link" in item and member in item for item in diagnostics)
+    assert not any("external_content.py" in item for item in diagnostics)
+
+
 def test_shared_benchmarks_is_data_only(validator, repository_copy: Path) -> None:
     benchmarks = repository_copy / "shared-benchmarks"
     (benchmarks / "pyproject.toml").write_text("[project]\nname='runtime-bypass'\n", encoding="utf-8")
@@ -225,10 +261,31 @@ def test_shared_benchmarks_is_data_only(validator, repository_copy: Path) -> Non
     diagnostics = _diagnostics(validator, repository_copy)
 
     assert len(diagnostics) == 3
-    assert any("catalog/__init__.py:1" in item and "Python package marker" in item for item in diagnostics)
-    assert any("pyproject.toml:1" in item and "Python package metadata" in item for item in diagnostics)
-    assert any("runtime.py:1" in item and "runtime Python file" in item for item in diagnostics)
+    assert any("catalog/__init__.py:1:1" in item and "Python package marker" in item for item in diagnostics)
+    assert any("pyproject.toml:1:1" in item and "Python package metadata" in item for item in diagnostics)
+    assert any("runtime.py:1:1" in item and "runtime Python file" in item for item in diagnostics)
     assert not any("tests/helper.py" in item for item in diagnostics)
+
+
+def test_shared_benchmark_policy_module_is_regular_and_parsed(
+    validator, repository_copy: Path, tmp_path: Path
+) -> None:
+    module = repository_copy / "EvoNN-Shared/src/evonn_shared/benchmarks.py"
+    external = tmp_path / "external-benchmarks.py"
+    external.write_text("not valid Python !!!\n", encoding="utf-8")
+    module.unlink()
+    module.symlink_to(external)
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert any("benchmarks.py:1:1" in item and "must not be a symbolic link" in item for item in diagnostics)
+    assert any("benchmarks.py:1:1" in item and "regular non-symlink" in item for item in diagnostics)
+    assert not any("cannot parse production Python" in item and "benchmarks.py" in item for item in diagnostics)
+
+    module.unlink()
+    module.write_text("not valid Python !!!\n", encoding="utf-8")
+    diagnostics = _diagnostics(validator, repository_copy)
+    assert any("benchmarks.py:1:1" in item and "cannot parse production Python" in item for item in diagnostics)
 
 
 @pytest.mark.parametrize(
@@ -262,6 +319,26 @@ def test_dynamic_loading_provider_imports_are_strictly_banned(
     assert "provider.py:1" in diagnostics[0]
     assert "dynamic-loading primitive" in diagnostics[0]
     assert primitive in diagnostics[0]
+
+
+def test_builtin_namespace_dunder_import_is_banned_before_computed_key_use(
+    validator, repository_copy: Path
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/builtin_namespace_import.py",
+        '''from builtins import __dict__ as namespace
+key = "__" + "import__"
+loader = namespace[key]
+''',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "builtin_namespace_import.py:1:1" in diagnostics[0]
+    assert "__dict__" in diagnostics[0]
 
 
 @pytest.mark.parametrize(
@@ -320,6 +397,29 @@ def test_reflection_primitive_acquisition_is_strictly_banned(
 
 
 @pytest.mark.parametrize(
+    ("source", "primitive"),
+    [
+        ("from operator import getitem as lookup\n", "getitem"),
+        ("from operator import itemgetter as lookup\n", "itemgetter"),
+        ("import operator\nlookup = operator.getitem\n", "getitem"),
+        ("import operator\nlookup = operator.itemgetter\n", "itemgetter"),
+        ("from helpers import exec_module as run\n", "exec_module"),
+        ("from helpers import load_module as run\n", "load_module"),
+    ],
+)
+def test_reserved_primitive_imports_and_operator_acquisition_are_banned(
+    validator, repository_copy: Path, source: str, primitive: str
+) -> None:
+    _append_source(repository_copy, "EvoNN-Prism", "prism/reserved_import.py", source)
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "reserved_import.py:" in diagnostics[0]
+    assert primitive in diagnostics[0]
+
+
+@pytest.mark.parametrize(
     ("receiver", "helper"),
     [("globals()", "getattr"), ("__builtins__", "hasattr"), ("container", "setattr"), ("helpers", "delattr")],
 )
@@ -335,12 +435,12 @@ def test_subscript_reflection_helper_acquisition_is_strictly_banned(
 
     diagnostics = _diagnostics(validator, repository_copy)
 
-    expected_count = 2 if receiver == "__builtins__" else 1
+    expected_count = 2 if receiver in {"__builtins__", "globals()"} else 1
     assert len(diagnostics) == expected_count
     assert all("reflection_subscript.py:1" in item for item in diagnostics)
     assert any(helper in item for item in diagnostics)
     if receiver == "__builtins__":
-        assert any("forbidden builtin namespace access" in item for item in diagnostics)
+        assert any("namespace primitive reference: __builtins__" in item for item in diagnostics)
 
 
 @pytest.mark.parametrize("helper", ["getattr", "hasattr", "setattr", "delattr"])
@@ -379,6 +479,154 @@ def test_direct_reflection_rejects_unknown_parameter_name(validator, repository_
     assert "literal safe attribute-name" in diagnostics[0]
 
 
+@pytest.mark.parametrize(
+    ("source", "primitive"),
+    [
+        ("value = module.getattr\n", "getattr"),
+        ("value = module.hasattr\n", "hasattr"),
+        ("value = module.setattr\n", "setattr"),
+        ("value = module.delattr\n", "delattr"),
+        ("value = module.__builtins__\n", "__builtins__"),
+        ('value = globals()["__builtins__"]\n', "__builtins__"),
+        ('value = getattr(module, "__builtins__")\n', "__builtins__"),
+    ],
+)
+def test_namespace_and_reflection_attribute_acquisition_is_banned(
+    validator, repository_copy: Path, source: str, primitive: str
+) -> None:
+    _append_source(repository_copy, "EvoNN-Prism", "prism/namespace_attribute.py", source)
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    expected_count = 2 if "globals()" in source else 1
+    assert len(diagnostics) == expected_count
+    assert all("namespace_attribute.py:1:" in item for item in diagnostics)
+    assert any(primitive in item for item in diagnostics)
+
+
+def test_namespace_getattribute_and_class_reflection_are_banned(
+    validator, repository_copy: Path
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/namespace_dunders.py",
+        '''import importlib.metadata
+plugins = importlib.metadata.__getattribute__("entry_points")()
+plugin_class = plugins[0].__class__
+loader = plugins[0].__getattribute__("load")
+namespace = importlib.metadata.__dict__
+''',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 4
+    assert any("namespace_dunders.py:2:11" in item and "__getattribute__" in item for item in diagnostics)
+    assert any("namespace_dunders.py:3:16" in item and "__class__" in item for item in diagnostics)
+    assert any("namespace_dunders.py:4:10" in item and "__getattribute__" in item for item in diagnostics)
+    assert any("namespace_dunders.py:5:13" in item and "__dict__" in item for item in diagnostics)
+
+
+@pytest.mark.parametrize("primitive", ["globals", "locals", "vars"])
+def test_namespace_reflection_primitive_names_are_banned(
+    validator, repository_copy: Path, primitive: str
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/namespace_primitive.py",
+        f"namespace = {primitive}()\n",
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "namespace_primitive.py:1:13" in diagnostics[0]
+    assert primitive in diagnostics[0]
+
+
+@pytest.mark.parametrize(
+    ("method", "key"),
+    [
+        ("get", "__builtins__"),
+        ("__getitem__", "__import__"),
+        ("setdefault", "eval"),
+        ("pop", "import_module"),
+        ("get", "hasattr"),
+    ],
+)
+def test_mapping_lookup_methods_reject_literal_dangerous_acquisition_keys(
+    validator, repository_copy: Path, method: str, key: str
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/mapping_lookup.py",
+        f'mapping.{method}("{key}")\n',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "mapping_lookup.py:1:1" in diagnostics[0]
+    assert method in diagnostics[0]
+    assert key in diagnostics[0]
+
+
+@pytest.mark.parametrize(
+    ("source", "primitive"),
+    [
+        ('lookup = dict.get\nlookup(mapping, "__builtins__")\n', "get"),
+        ('lookup = dict.__getitem__\nlookup(mapping, "__import__")\n', "__getitem__"),
+        ('lookup = object.__getattribute__\nlookup(plugin, "load")\n', "__getattribute__"),
+    ],
+)
+def test_unbound_namespace_lookup_apis_are_banned(
+    validator, repository_copy: Path, source: str, primitive: str
+) -> None:
+    _append_source(repository_copy, "EvoNN-Prism", "prism/unbound_lookup.py", source)
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "unbound_lookup.py:1:10" in diagnostics[0]
+    assert primitive in diagnostics[0]
+
+
+def test_namespace_mapping_lookup_chain_is_banned(validator, repository_copy: Path) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/namespace_mapping.py",
+        '''namespace = globals().get("__builtins__")
+loader = namespace.get("__import__")
+''',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 3
+    assert any("namespace_mapping.py:1:13" in item and "globals" in item for item in diagnostics)
+    assert any("namespace_mapping.py:1:13" in item and "__builtins__" in item for item in diagnostics)
+    assert any("namespace_mapping.py:2:10" in item and "__import__" in item for item in diagnostics)
+
+
+def test_benign_mapping_lookup_remains_allowed(validator, repository_copy: Path) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/benign_mapping.py",
+        '''value = mapping.get("safe_name")
+value = mapping.__getitem__(name)
+value = mapping.setdefault("safe_name", default)
+value = mapping.pop(name)
+''',
+    )
+
+    assert _diagnostics(validator, repository_copy) == []
+
+
 def test_benign_direct_reflection_calls_remain_allowed(validator, repository_copy: Path) -> None:
     _append_source(
         repository_copy,
@@ -407,9 +655,12 @@ def test_builtins_namespace_is_forbidden_in_package_and_shipped_script(
 
     diagnostics = _diagnostics(validator, repository_copy)
 
-    assert len(diagnostics) == 2
-    assert any("prism/builtins_namespace.py:1" in item and "__builtins__" in item for item in diagnostics)
-    assert any("scripts/tools/builtins_namespace.py:1" in item and "__builtins__" in item for item in diagnostics)
+    assert len(diagnostics) == 4
+    assert sum("prism/builtins_namespace.py:1" in item for item in diagnostics) == 2
+    assert any("mapping get" in item and "__import__" in item for item in diagnostics)
+    assert sum("scripts/tools/builtins_namespace.py:1" in item for item in diagnostics) == 2
+    assert any("__builtins__" in item for item in diagnostics)
+    assert any("__dict__" in item for item in diagnostics)
 
 
 def test_wrappers_containers_and_control_flow_are_blocked_at_primitive_acquisition(
@@ -454,12 +705,86 @@ loader = importlib.import_module
     diagnostics = _diagnostics(validator, repository_copy)
 
     assert diagnostics == sorted(diagnostics)
-    assert len(diagnostics) == 5
-    assert any("multiple_primitives.py:1" in item and "importlib" in item for item in diagnostics)
-    assert any("multiple_primitives.py:2" in item and "attrgetter" in item for item in diagnostics)
-    assert any("multiple_primitives.py:3" in item and "run_module" in item for item in diagnostics)
-    assert any("multiple_primitives.py:4" in item and "eval" in item for item in diagnostics)
-    assert any("multiple_primitives.py:5" in item and "import_module" in item for item in diagnostics)
+    assert len(diagnostics) == 6
+    assert any("multiple_primitives.py:1:1" in item and "importlib" in item for item in diagnostics)
+    assert any("multiple_primitives.py:2:1" in item and "attrgetter" in item for item in diagnostics)
+    assert any("multiple_primitives.py:3:1" in item and "run_module" in item for item in diagnostics)
+    assert any("multiple_primitives.py:4:1" in item and "eval" in item for item in diagnostics)
+    assert any("multiple_primitives.py:5:10" in item and "import_module" in item for item in diagnostics)
+    assert any(
+        "multiple_primitives.py:5:10" in item and "primitive reference: importlib" in item
+        for item in diagnostics
+    )
+
+
+def test_importlib_submodules_other_than_metadata_and_exec_module_are_banned(
+    validator, repository_copy: Path
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/importlib_util.py",
+        '''import importlib.util
+spec = importlib.util.spec_from_file_location("module", path)
+spec.loader.exec_module(module)
+''',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 3
+    assert any("importlib_util.py:1:1" in item and "importlib.util" in item for item in diagnostics)
+    assert any("importlib_util.py:2:8" in item and "importlib" in item for item in diagnostics)
+    assert any("importlib_util.py:3:1" in item and "exec_module" in item for item in diagnostics)
+
+
+def test_same_line_primitive_diagnostics_preserve_ast_columns(validator, repository_copy: Path) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/same_line.py",
+        "eval('1'); eval('2')\n",
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 2
+    assert any("same_line.py:1:1" in item for item in diagnostics)
+    assert any("same_line.py:1:12" in item for item in diagnostics)
+
+
+def test_nested_repeated_same_start_acquisitions_keep_distinct_identity(
+    validator, repository_copy: Path
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/nested_same_start.py",
+        "value = module.exec_module.exec_module\n",
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 2
+    assert len(set(diagnostics)) == 2
+    assert all("nested_same_start.py:1:9-" in item and "exec_module" in item for item in diagnostics)
+
+
+def test_same_line_diagnostic_columns_use_unicode_code_points(
+    validator, repository_copy: Path
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/unicode_columns.py",
+        "π = 0; eval('x'); eval('y')\n",
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 2
+    assert any("unicode_columns.py:1:8" in item for item in diagnostics)
+    assert any("unicode_columns.py:1:19" in item for item in diagnostics)
 
 
 def test_safe_specific_and_optional_static_imports_remain_allowed(validator, repository_copy: Path) -> None:
@@ -468,8 +793,6 @@ def test_safe_specific_and_optional_static_imports_remain_allowed(validator, rep
         "EvoNN-Prism",
         "prism/safe_imports.py",
         '''import importlib.metadata
-import importlib.metadata as metadata_api
-from importlib import metadata
 from importlib.metadata import version
 from runpy import run_path
 from builtins import len as builtin_len
@@ -485,6 +808,159 @@ except ImportError:
     assert _diagnostics(validator, repository_copy) == []
 
 
+@pytest.mark.parametrize(
+    "primitive",
+    [
+        "import_module",
+        "runpy",
+        "run_module",
+        "builtins",
+        "attrgetter",
+        "methodcaller",
+        "exec_module",
+        "load_module",
+        "__loader__",
+        "__spec__",
+        "importlib",
+    ],
+)
+def test_bare_dynamic_and_reflection_primitive_names_are_banned(
+    validator, repository_copy: Path, primitive: str
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/bare_primitive.py",
+        f"provider = {primitive}\n",
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "bare_primitive.py:1:12" in diagnostics[0]
+    assert primitive in diagnostics[0]
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "import importlib.metadata as md\n",
+        "from importlib import metadata\n",
+        "from importlib import metadata as md\n",
+        "metadata_module = importlib.metadata\n",
+    ],
+)
+def test_importlib_metadata_module_alias_or_acquisition_is_banned(
+    validator, repository_copy: Path, source: str
+) -> None:
+    _append_source(repository_copy, "EvoNN-Prism", "prism/metadata_alias.py", source)
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "metadata_alias.py:1:" in diagnostics[0]
+    assert "metadata" in diagnostics[0]
+
+
+def test_importlib_metadata_attribute_chain_remains_allowed(validator, repository_copy: Path) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/metadata_chain.py",
+        '''import importlib.metadata
+version = importlib.metadata.version("example")
+''',
+    )
+
+    assert _diagnostics(validator, repository_copy) == []
+
+
+@pytest.mark.parametrize(
+    ("expression", "primitives"),
+    [
+        ("importlib.metadata.exec_module.safe", ("exec_module",)),
+        ("importlib.metadata.__builtins__.safe", ("__builtins__",)),
+        ("importlib.metadata.__loader__.exec_module", ("__loader__", "exec_module")),
+        ("importlib.metadata.__builtins__.__import__", ("__builtins__", "__import__")),
+    ],
+)
+def test_importlib_metadata_prefix_does_not_hide_forbidden_outer_attributes(
+    validator, repository_copy: Path, expression: str, primitives: tuple[str, ...]
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/metadata_outer_attribute.py",
+        f"import importlib.metadata\nvalue = {expression}\n",
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == len(primitives)
+    assert all("metadata_outer_attribute.py:2:9" in item for item in diagnostics)
+    for primitive in primitives:
+        assert any(primitive in item for item in diagnostics)
+
+
+def test_importlib_metadata_plugin_acquisition_is_banned(
+    validator, repository_copy: Path
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/metadata_plugins.py",
+        '''from importlib.metadata import entry_points
+plugin = importlib.metadata.entry_points(group="example")[0].load()
+''',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 3
+    assert any("metadata_plugins.py:1:1" in item and "entry_points" in item for item in diagnostics)
+    assert any("metadata_plugins.py:2:10" in item and "entry_points" in item for item in diagnostics)
+    assert any("metadata_plugins.py:2:10" in item and "load" in item for item in diagnostics)
+
+
+def test_importlib_metadata_loader_and_spec_acquisition_are_banned(
+    validator, repository_copy: Path
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/metadata_loader.py",
+        '''import importlib.metadata
+loader = importlib.metadata.__loader__
+loader.load_module("module")
+spec = importlib.metadata.__spec__
+''',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 3
+    assert any("metadata_loader.py:2:10" in item and "__loader__" in item for item in diagnostics)
+    assert any("metadata_loader.py:3:1" in item and "load_module" in item for item in diagnostics)
+    assert any("metadata_loader.py:4:8" in item and "__spec__" in item for item in diagnostics)
+
+
+def test_importlib_metadata_import_does_not_allow_bare_importlib_name(
+    validator, repository_copy: Path
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/metadata_provider.py",
+        "import importlib.metadata\nprovider = importlib\n",
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "metadata_provider.py:2:12" in diagnostics[0]
+    assert "importlib" in diagnostics[0]
+
+
 def test_safe_specific_import_does_not_enable_dynamic_primitive_use(validator, repository_copy: Path) -> None:
     _append_source(
         repository_copy,
@@ -498,9 +974,31 @@ loader("topograph.runtime")
 
     diagnostics = _diagnostics(validator, repository_copy)
 
-    assert len(diagnostics) == 1
-    assert "specific_then_dynamic.py:2" in diagnostics[0]
-    assert "import_module" in diagnostics[0]
+    assert len(diagnostics) == 2
+    assert all("specific_then_dynamic.py:2:10" in item for item in diagnostics)
+    assert any("primitive reference: importlib" in item for item in diagnostics)
+    assert any("attribute acquisition: import_module" in item for item in diagnostics)
+
+
+def test_only_exact_validator_script_may_import_evonn_shared(
+    validator, repository_copy: Path
+) -> None:
+    _append_script(repository_copy, "tools/forbidden_shared.py", "import evonn_shared\n")
+    _append_script(repository_copy, "policy/neighbor.py", "from evonn_shared import benchmarks\n")
+    _append_script(repository_copy, "tools/forbidden_engine.py", "import prism\n")
+    _append_script(repository_copy, "tools/forbidden_compare.py", "from evonn_compare import runner\n")
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 4
+    assert any("forbidden_shared.py:1:1" in item and "repository-scripts -> evonn-shared" in item for item in diagnostics)
+    assert any("neighbor.py:1:1" in item and "repository-scripts -> evonn-shared" in item for item in diagnostics)
+    assert any("forbidden_engine.py:1:1" in item and "repository-scripts -> evonn-prism" in item for item in diagnostics)
+    assert any("forbidden_compare.py:1:1" in item and "repository-scripts -> evonn-compare" in item for item in diagnostics)
+    assert not any(
+        "scripts/policy/validate_import_boundaries.py" in item and "evonn-shared" in item
+        for item in diagnostics
+    )
 
 
 def test_scripts_topology_rejects_symlinked_files_and_directories(
@@ -520,8 +1018,8 @@ def test_scripts_topology_rejects_symlinked_files_and_directories(
     topology = [item for item in diagnostics if "shipped scripts path must not be a symbolic link" in item]
     assert len(topology) == 2
     assert topology == sorted(topology)
-    assert any("scripts/linked-tools:1" in item for item in topology)
-    assert any("scripts/linked.py:1" in item for item in topology)
+    assert any("scripts/linked-tools:1:1" in item for item in topology)
+    assert any("scripts/linked.py:1:1" in item for item in topology)
     assert not any("eval_bypass.py" in item or "external-script.py" in item for item in diagnostics)
 
 
