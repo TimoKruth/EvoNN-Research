@@ -210,7 +210,7 @@ def test_local_only_authority_keeps_b02_open_and_requires_null_url(
         "evidence": "permanent Python import, workspace dependency, and data-only benchmark policy passes",
     }
     assert b0_status["items"]["B0.5"]["status"] == "open"
-    assert b0_status["items"]["B0.5"]["open_reason"] == "unimplemented"
+    assert b0_status["items"]["B0.5"]["open_reason"] == "hosted_ci_not_executed"
     assert b0_status["status"] == "open"
     assert validator.validate_b0_status(b0_status, manifest, REPO_ROOT) == []
 

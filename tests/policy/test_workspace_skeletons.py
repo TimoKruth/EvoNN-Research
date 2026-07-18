@@ -10,16 +10,14 @@ from pathlib import Path
 
 import pytest
 
+from evonn_shared.backend_contract import EXPECTED_MANIFESTS, PACKAGE_CONTRACTS
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PACKAGES = {
-    "EvoNN-Shared": ("evonn-shared", "evonn_shared", "shared"),
-    "EvoNN-Compare": ("evonn-compare", "evonn_compare", "compare"),
-    "EvoNN-Contenders": ("evonn-contenders", "evonn_contenders", "contenders"),
-    "EvoNN-Prism": ("evonn-prism", "prism", "prism"),
-    "EvoNN-Topograph": ("evonn-topograph", "topograph", "topograph"),
-    "EvoNN-Stratograph": ("evonn-stratograph", "stratograph", "stratograph"),
-    "EvoNN-Primordia": ("evonn-primordia", "evonn_primordia", "primordia"),
+    package.directory: (package.distribution, package.module, package.system)
+    for package in PACKAGE_CONTRACTS
 }
+PACKAGE_CONTRACT_BY_DIRECTORY = {package.directory: package for package in PACKAGE_CONTRACTS}
 CHECK_SCRIPTS = {
     "shared-checks.sh",
     "benchmarks-checks.sh",
@@ -30,78 +28,7 @@ CHECK_SCRIPTS = {
     "stratograph-checks.sh",
     "primordia-checks.sh",
 }
-FALSE_EVIDENCE = {
-    "scientific": False,
-    "portability": False,
-    "producer_conformance": False,
-}
-MLX_CAPABILITY = {
-    "id": "mlx_native",
-    "platforms": ["darwin-arm64"],
-    "implemented": False,
-    "dependency": "mlx",
-    "dependency_condition": "Not declared in B0; platform-conditional dependency and runtime proof are deferred to Task 5.",
-}
-NUMPY_CAPABILITY = {
-    "id": "numpy_fallback",
-    "platforms": ["darwin", "linux"],
-    "implemented": False,
-    "dependency": "numpy",
-    "dependency_condition": "Not declared in B0; no fallback runtime is implemented or qualified.",
-}
-EXPECTED_MANIFESTS = {
-    "EvoNN-Shared/backend-capabilities.json": {
-        "schema_version": "1.0.0",
-        "system": "shared",
-        "runtime_role": "contract_substrate_non_execution",
-        "capabilities": [],
-        "evidence": FALSE_EVIDENCE,
-    },
-    "EvoNN-Compare/backend-capabilities.json": {
-        "schema_version": "1.0.0",
-        "system": "compare",
-        "runtime_role": "orchestration_non_execution",
-        "capabilities": [],
-        "evidence": FALSE_EVIDENCE,
-    },
-    "EvoNN-Contenders/backend-capabilities.json": {
-        "schema_version": "1.0.0",
-        "system": "contenders",
-        "runtime_role": "contender_skeleton",
-        "capabilities": [
-            {
-                "id": "sklearn_contender",
-                "platforms": ["darwin", "linux"],
-                "implemented": False,
-                "dependency": "scikit-learn",
-                "dependency_condition": "Not declared in B0; no contender runtime is implemented or qualified.",
-            }
-        ],
-        "evidence": FALSE_EVIDENCE,
-    },
-    **{
-        f"EvoNN-{directory}/backend-capabilities.json": {
-            "schema_version": "1.0.0",
-            "system": system,
-            "runtime_role": "engine_skeleton",
-            "capabilities": [MLX_CAPABILITY, NUMPY_CAPABILITY],
-            "evidence": FALSE_EVIDENCE,
-        }
-        for directory, system in (
-            ("Prism", "prism"),
-            ("Topograph", "topograph"),
-            ("Stratograph", "stratograph"),
-            ("Primordia", "primordia"),
-        )
-    },
-    "shared-benchmarks/backend-capabilities.json": {
-        "schema_version": "1.0.0",
-        "system": "shared-benchmarks",
-        "runtime_role": "data_only",
-        "capabilities": [],
-        "evidence": FALSE_EVIDENCE,
-    },
-}
+ALL_CHECK_SCRIPTS = CHECK_SCRIPTS | {"b0-policy-checks.sh"}
 
 
 def load_toml(path: Path) -> dict:
@@ -130,10 +57,9 @@ def test_package_metadata_and_installed_import_identity(directory: str, package:
     assert metadata["project"]["name"] == distribution
     assert metadata["project"]["requires-python"] == ">=3.13"
     assert metadata["build-system"]["build-backend"]
-    if distribution == "evonn-shared":
-        assert metadata["project"]["dependencies"] == []
-    else:
-        assert metadata["project"]["dependencies"] == ["evonn-shared"]
+    contract = PACKAGE_CONTRACT_BY_DIRECTORY[directory]
+    assert metadata["project"]["dependencies"] == list(contract.dependencies)
+    if distribution != "evonn-shared":
         assert metadata["tool"]["uv"]["sources"]["evonn-shared"] == {"workspace": True}
 
     imported = importlib.import_module(module_name)
@@ -194,10 +120,11 @@ def test_package_check_helper_rejects_unknown_distribution_identity(tmp_path: Pa
     assert "missing-evonn-distribution" in result.stderr
 
 
+@pytest.mark.all_check_scripts
 def test_all_named_check_scripts_execute_real_locked_checks_from_another_directory(tmp_path: Path) -> None:
     scripts_dir = REPO_ROOT / "scripts/ci"
     scripts = {path.name: path for path in scripts_dir.glob("*-checks.sh")}
-    assert set(scripts) == CHECK_SCRIPTS
+    assert set(scripts) == ALL_CHECK_SCRIPTS
 
     environment = os.environ.copy()
     environment["UV_PYTHON"] = sys.executable

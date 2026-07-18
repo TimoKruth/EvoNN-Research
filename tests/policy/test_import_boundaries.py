@@ -127,8 +127,18 @@ def test_workspace_dependencies_match_allowed_matrix(validator, repository_copy:
     manifest = repository_copy / "EvoNN-Prism/pyproject.toml"
     text = manifest.read_text(encoding="utf-8")
     text = text.replace(
-        'dependencies = ["evonn-shared"]',
-        'dependencies = [\n    "evonn-shared",\n    "evonn-topograph[fast]>=1 ; python_version >= \'3.13\'",\n    "not-evonn-topograph-helper",\n]',
+        '''dependencies = [
+    "evonn-shared",
+    "numpy>=2.1,<3",
+    "mlx>=0.25,<1; sys_platform == 'darwin' and platform_machine == 'arm64'",
+]''',
+        '''dependencies = [
+    "evonn-shared",
+    "numpy>=2.1,<3",
+    "mlx>=0.25,<1; sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "evonn-topograph[fast]>=1 ; python_version >= '3.13'",
+    "not-evonn-topograph-helper",
+]''',
     )
     text += '\n[tool.uv.sources.evonn-topograph]\nworkspace = true\n\n[tool.uv.sources.orphan-helper]\nworkspace = true\n'
     manifest.write_text(text, encoding="utf-8")
@@ -147,7 +157,11 @@ def test_project_dependency_entries_are_strings_and_group_includes_are_scoped(
 ) -> None:
     manifest = repository_copy / "EvoNN-Prism/pyproject.toml"
     text = manifest.read_text(encoding="utf-8").replace(
-        'dependencies = ["evonn-shared"]',
+        '''dependencies = [
+    "evonn-shared",
+    "numpy>=2.1,<3",
+    "mlx>=0.25,<1; sys_platform == 'darwin' and platform_machine == 'arm64'",
+]''',
         'dependencies = ["evonn-shared", { include-group = "base" }]',
     )
     text += '''
@@ -398,6 +412,35 @@ def test_dynamic_loading_provider_imports_are_strictly_banned(
     assert "provider.py:1" in diagnostics[0]
     assert "dynamic-loading primitive" in diagnostics[0]
     assert primitive in diagnostics[0]
+
+
+def test_only_exact_runtime_probe_may_call_static_mlx_eval(
+    validator, repository_copy: Path
+) -> None:
+    _append_script(repository_copy, "ci/runtime_probe.py", "import mlx.core as mx\nmx.eval(result)\n")
+    _append_script(repository_copy, "ci/mlx_neighbor.py", "import mlx.core as mx\nmx.eval(result)\n")
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "mlx_neighbor.py" in diagnostics[0]
+    assert "eval" in diagnostics[0]
+
+
+def test_runtime_probe_mlx_exception_does_not_allow_python_eval(
+    validator, repository_copy: Path
+) -> None:
+    _append_script(
+        repository_copy,
+        "ci/runtime_probe.py",
+        "import mlx.core as mx\nmx.eval(result)\neval('1 + 1')\n",
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "runtime_probe.py:3" in diagnostics[0]
+    assert "eval" in diagnostics[0]
 
 
 def test_builtin_namespace_dunder_import_is_banned_before_computed_key_use(
@@ -1087,13 +1130,20 @@ loader("topograph.runtime")
     assert any("attribute acquisition: import_module" in item for item in diagnostics)
 
 
-def test_only_exact_validator_script_may_import_evonn_shared(
+def test_only_exact_policy_and_runtime_scripts_may_import_workspace_packages(
     validator, repository_copy: Path
 ) -> None:
     _append_script(repository_copy, "tools/forbidden_shared.py", "import evonn_shared\n")
     _append_script(repository_copy, "policy/neighbor.py", "from evonn_shared import benchmarks\n")
     _append_script(repository_copy, "tools/forbidden_engine.py", "import prism\n")
     _append_script(repository_copy, "tools/forbidden_compare.py", "from evonn_compare import runner\n")
+    _append_script(
+        repository_copy,
+        "ci/runtime_probe.py",
+        "import evonn_compare\nimport evonn_contenders\nimport evonn_primordia\nimport evonn_shared\n"
+        "import prism\nimport stratograph\nimport topograph\n",
+    )
+    _append_script(repository_copy, "policy/validate_backend_capabilities.py", "import evonn_shared\n")
 
     diagnostics = _diagnostics(validator, repository_copy)
 
@@ -1103,8 +1153,13 @@ def test_only_exact_validator_script_may_import_evonn_shared(
     assert any("forbidden_engine.py:1:1" in item and "repository-scripts -> evonn-prism" in item for item in diagnostics)
     assert any("forbidden_compare.py:1:1" in item and "repository-scripts -> evonn-compare" in item for item in diagnostics)
     assert not any(
-        "scripts/policy/validate_import_boundaries.py" in item and "evonn-shared" in item
+        path in item
         for item in diagnostics
+        for path in (
+            "scripts/policy/validate_import_boundaries.py",
+            "scripts/policy/validate_backend_capabilities.py",
+            "scripts/ci/runtime_probe.py",
+        )
     )
 
 

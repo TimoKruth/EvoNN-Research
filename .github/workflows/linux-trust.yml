@@ -1,0 +1,60 @@
+name: B0 Linux trust lane
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux-trust:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Install pinned uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: "0.5.13"
+      - name: Install Python 3.13
+        run: uv python install 3.13
+      - name: Synchronize locked workspace
+        run: uv sync --all-packages --group dev --locked
+      - name: Prove MLX is absent on Linux
+        run: |
+          if uv pip show mlx >/dev/null 2>&1; then
+            printf '%s\n' 'MLX must not be installed in the Linux trust lane' >&2
+            exit 1
+          fi
+          printf '%s\n' 'MLX is absent from the synchronized Linux environment'
+      - name: Run common B0 policies
+        run: scripts/ci/b0-policy-checks.sh
+      - name: Run Linux trust package checks
+        run: |
+          scripts/ci/shared-checks.sh
+          scripts/ci/benchmarks-checks.sh
+          scripts/ci/compare-checks.sh
+          scripts/ci/contenders-checks.sh
+          scripts/ci/stratograph-checks.sh
+          scripts/ci/primordia-checks.sh
+      - name: Execute and validate NumPy runtime probe
+        run: |
+          uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py generate \
+            --backend numpy \
+            --system stratograph \
+            --manifest EvoNN-Stratograph/backend-capabilities.json \
+            --output .artifacts/b0/hosted/b0-runtime-probe.json \
+            --execution-mode hosted
+          uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py validate \
+            --input .artifacts/b0/hosted/b0-runtime-probe.json \
+            --execution-mode hosted \
+            --expected-backend numpy
+      - name: Upload Linux runtime evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: b0-linux-runtime-probe
+          path: .artifacts/b0/hosted/b0-runtime-probe.json
+          if-no-files-found: error

@@ -1,7 +1,7 @@
 document_kind: gate_status
 gate: B0
 status: open
-checked_in_at: "2026-07-18T08:08:53Z"
+checked_in_at: "2026-07-18T17:33:13Z"
 items:
   B0.1:
     status: locally_satisfied
@@ -20,11 +20,13 @@ items:
     evidence: permanent Python import, workspace dependency, and data-only benchmark policy passes
   B0.5:
     status: open
-    open_reason: unimplemented
-    evidence: dual-host CI implementation is outside this Task 2 slice
+    open_reason: hosted_ci_not_executed
+    evidence: dual-host workflows and honest local NumPy/MLX bootstrap probes are implemented; hosted workflow runs and artifacts do not yet exist
   B0.6:
     status: locally_satisfied
     evidence: fail-closed single-active-plan policy validation is installed
 notes:
   - B0.2 remains formally open solely because no real authoritative remote URL exists.
+  - B0.5 remains formally open until both hosted workflows execute and their uploaded runtime artifacts are collected.
+  - Local runtime probes are bootstrap contract evidence only; they are not hosted, scientific, or backend qualification evidence.
   - This artifact records contract/bootstrap evidence only; it is not Phase 0 export evidence.

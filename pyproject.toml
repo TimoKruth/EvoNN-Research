@@ -31,6 +31,10 @@ members = [
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib"]
+markers = [
+    "all_check_scripts: executes the full eight-script cross-host local matrix",
+    "b0_policy_script_selftest: invokes b0-policy-checks.sh and must be excluded by that script",
+]
 testpaths = [
     "tests",
     "EvoNN-Shared/tests",

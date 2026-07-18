@@ -36,6 +36,11 @@ ALLOWED_INTERNAL_TARGETS = {
     spec.distribution: (set() if spec.distribution == "evonn-shared" else {"evonn-shared"})
     for spec in PACKAGE_SPECS
 }
+SCRIPT_ALLOWED_INTERNAL_TARGETS = {
+    "policy/validate_import_boundaries.py": {"evonn-shared"},
+    "policy/validate_backend_capabilities.py": {"evonn-shared"},
+    "ci/runtime_probe.py": {spec.distribution for spec in PACKAGE_SPECS},
+}
 _REQUIREMENT_NAME = re.compile(r"^\s*([A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?)")
 
 
@@ -963,12 +968,25 @@ class _StrictPythonPolicy(ast.NodeVisitor):
             kind = _RESERVED_PRIMITIVE_KINDS[node.id]
             self._error(node, f"forbidden {kind} primitive reference: {node.id}")
 
+    def _is_exact_runtime_mlx_eval(self, node: ast.Attribute) -> bool:
+        try:
+            relative = self.path.relative_to(self.repo_root).as_posix()
+        except ValueError:
+            return False
+        return (
+            self.source_distribution == "repository-scripts"
+            and relative == "scripts/ci/runtime_probe.py"
+            and node.attr == "eval"
+            and isinstance(node.value, ast.Name)
+            and node.value.id == "mx"
+        )
+
     def visit_Attribute(self, node: ast.Attribute) -> None:
         direct_metadata_attribute = (
             isinstance(node.value, ast.Attribute) and self._is_importlib_metadata_prefix(node.value)
         )
         if isinstance(node.ctx, ast.Load):
-            if node.attr in _RESERVED_PRIMITIVE_NAMES:
+            if node.attr in _RESERVED_PRIMITIVE_NAMES and not self._is_exact_runtime_mlx_eval(node):
                 self._error(node, f"forbidden reserved primitive attribute acquisition: {node.attr}")
             elif (
                 isinstance(node.value, ast.Name)
@@ -1086,11 +1104,8 @@ def _production_python_files(repo_root: Path) -> list[tuple[Path, str, set[str]]
     if scripts_root.is_dir() and not scripts_root.is_symlink():
         for path in scripts_root.rglob("*.py"):
             if not path.is_symlink():
-                allowed_targets = (
-                    {"evonn-shared"}
-                    if path.relative_to(scripts_root).as_posix() == "policy/validate_import_boundaries.py"
-                    else set()
-                )
+                relative = path.relative_to(scripts_root).as_posix()
+                allowed_targets = SCRIPT_ALLOWED_INTERNAL_TARGETS[relative] if relative in SCRIPT_ALLOWED_INTERNAL_TARGETS else set()
                 files.append((path, "repository-scripts", allowed_targets))
     return sorted(files, key=lambda item: item[0].relative_to(repo_root).as_posix().encode("utf-8"))
 

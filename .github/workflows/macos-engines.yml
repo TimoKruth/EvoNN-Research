@@ -1,0 +1,54 @@
+name: B0 macOS engine lane
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macos-engines:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Install pinned uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990
+        with:
+          version: "0.5.13"
+      - name: Install Python 3.13
+        run: uv python install 3.13
+      - name: Synchronize locked workspace
+        run: uv sync --all-packages --group dev --locked
+      - name: Assert Apple Silicon host and MLX installation
+        run: |
+          test "$(uname -m)" = "arm64"
+          uv run --locked --all-packages --group dev python -c "import platform; assert platform.machine() == 'arm64'"
+          uv pip show mlx
+      - name: Run common B0 policies
+        run: scripts/ci/b0-policy-checks.sh
+      - name: Run macOS engine checks
+        run: |
+          scripts/ci/prism-checks.sh
+          scripts/ci/topograph-checks.sh
+      - name: Execute and validate MLX runtime probe
+        run: |
+          uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py generate \
+            --backend mlx \
+            --system prism \
+            --manifest EvoNN-Prism/backend-capabilities.json \
+            --output .artifacts/b0/hosted/b0-runtime-probe.json \
+            --execution-mode hosted
+          uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py validate \
+            --input .artifacts/b0/hosted/b0-runtime-probe.json \
+            --execution-mode hosted \
+            --expected-backend mlx
+      - name: Upload macOS runtime evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: b0-macos-runtime-probe
+          path: .artifacts/b0/hosted/b0-runtime-probe.json
+          if-no-files-found: error
