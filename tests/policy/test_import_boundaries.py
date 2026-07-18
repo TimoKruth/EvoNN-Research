@@ -313,6 +313,55 @@ loader("topograph.runtime")
     assert "evonn-prism -> evonn-topograph" in diagnostics[0]
 
 
+def test_match_cases_merge_loader_possibilities_without_pattern_leakage(
+    validator, repository_copy: Path
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/match_loader.py",
+        '''import importlib as provider
+match selector:
+    case {"kind": "loader"}:
+        loader = provider.import_module
+    case {"kind": "print", "provider": provider}:
+        loader = print
+loader("topograph.runtime")
+provider.import_module("stratograph.runtime")
+''',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 2
+    assert any("match_loader.py:7" in item and "evonn-prism -> evonn-topograph" in item for item in diagnostics)
+    assert any("match_loader.py:8" in item and "evonn-prism -> evonn-stratograph" in item for item in diagnostics)
+
+
+def test_try_handler_receives_every_feasible_body_prefix(validator, repository_copy: Path) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/try_prefix_loader.py",
+        '''import importlib
+loader = print
+try:
+    loader = importlib.import_module
+    risky()
+    loader = print
+except Exception:
+    pass
+loader("topograph.runtime")
+''',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "try_prefix_loader.py:9" in diagnostics[0]
+    assert "evonn-prism -> evonn-topograph" in diagnostics[0]
+
+
 def test_try_and_loop_merges_preserve_feasible_loaders(validator, repository_copy: Path) -> None:
     _append_source(
         repository_copy,
@@ -352,13 +401,57 @@ else:
 loader("topograph.runtime")
 ''',
     )
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/while_break_loader.py",
+        '''import importlib
+loader = print
+while flag:
+    loader = importlib.import_module
+    break
+    loader = print
+loader("evonn_primordia.runtime")
+''',
+    )
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/nested_break_loader.py",
+        '''import importlib
+loader = print
+for item in items:
+    loader = importlib.import_module
+    if flag:
+        break
+    loader = print
+loader("stratograph.runtime")
+''',
+    )
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/async_break_loader.py",
+        '''async def scan(items):
+    import importlib
+    loader = print
+    async for item in items:
+        loader = importlib.import_module
+        break
+        loader = print
+    loader("topograph.runtime")
+''',
+    )
 
     diagnostics = _diagnostics(validator, repository_copy)
 
-    assert len(diagnostics) == 3
+    assert len(diagnostics) == 6
     assert any("try_loader.py:7" in item and "evonn-prism -> evonn-topograph" in item for item in diagnostics)
     assert any("loop_loader.py:5" in item and "evonn-prism -> evonn-stratograph" in item for item in diagnostics)
     assert any("break_loader.py:8" in item and "evonn-prism -> evonn-topograph" in item for item in diagnostics)
+    assert any("while_break_loader.py:7" in item and "evonn-prism -> evonn-primordia" in item for item in diagnostics)
+    assert any("nested_break_loader.py:8" in item and "evonn-prism -> evonn-stratograph" in item for item in diagnostics)
+    assert any("async_break_loader.py:8" in item and "evonn-prism -> evonn-topograph" in item for item in diagnostics)
 
 
 def test_function_call_uses_global_bindings_available_at_invocation(validator, repository_copy: Path) -> None:
@@ -399,6 +492,21 @@ load()
     diagnostics = _diagnostics(validator, repository_copy)
 
     assert diagnostics == []
+
+
+def test_straight_line_overwrite_does_not_preserve_infeasible_loader(validator, repository_copy: Path) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/straight_overwrite.py",
+        '''import importlib
+loader = importlib.import_module
+loader = print
+loader("topograph.runtime")
+''',
+    )
+
+    assert _diagnostics(validator, repository_copy) == []
 
 
 def test_function_global_and_nonlocal_rebindings_propagate_at_calls(validator, repository_copy: Path) -> None:
@@ -458,6 +566,44 @@ provider.import_module("topograph.runtime")
     diagnostics = _diagnostics(validator, repository_copy)
 
     assert diagnostics == []
+
+
+def test_function_annotations_type_parameters_and_lambda_defaults_are_scanned(
+    validator, repository_copy: Path
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/annotation_loader.py",
+        '''import importlib as provider
+loader = provider.import_module
+
+def annotated[T: loader("topograph.runtime")](
+    value: provider.import_module("stratograph.runtime"),
+    *args: loader("evonn_primordia.runtime"),
+    keyword: provider.import_module("topograph.runtime"),
+    **kwargs: loader("stratograph.runtime"),
+) -> provider.import_module("evonn_primordia.runtime"):
+    return value
+
+callback = lambda value=loader("topograph.runtime"): value
+''',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 7
+    expected_lines = {
+        4: "evonn-prism -> evonn-topograph",
+        5: "evonn-prism -> evonn-stratograph",
+        6: "evonn-prism -> evonn-primordia",
+        7: "evonn-prism -> evonn-topograph",
+        8: "evonn-prism -> evonn-stratograph",
+        9: "evonn-prism -> evonn-primordia",
+        12: "evonn-prism -> evonn-topograph",
+    }
+    for line, edge in expected_lines.items():
+        assert any(f"annotation_loader.py:{line}" in item and edge in item for item in diagnostics)
 
 
 def test_runpy_module_aliases_fail_closed(validator, repository_copy: Path) -> None:

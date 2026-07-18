@@ -697,6 +697,145 @@ exit=1
 
 The checked-in repository launched from `/tmp` still returned the single PASS line.
 
+## Final control-flow re-review addendum
+
+### Remaining gaps reproduced
+
+Focused tests were added before implementation for match joins, intermediate try-prefix exception states, and annotation/default expressions.
+
+Command:
+
+```sh
+uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py -k 'match_cases or every_feasible_body_prefix or annotations_type_parameters'
+```
+
+Exact RED output:
+
+```text
+FFF                                                                      [100%]
+3 failed, 30 deselected in 0.13s
+```
+
+The failures proved:
+
+- match cases were analyzed sequentially, so the `print` case erased the loader case;
+- try handlers received only pre-body or fully completed body states, missing the state after loader assignment and before a raising call;
+- function parameter, vararg, keyword, return, PEP 695 type-parameter annotations, and lambda defaults were not visited.
+
+The earlier loop-break RED was expanded with exact for/while/async-for and nested-conditional break coverage, including statements after guaranteed break. A straight-line overwrite guard remains green and proves conservative unions are applied only at control-flow joins, not ordinary sequential rebinding.
+
+### Final implementation
+
+- Added match analysis from one pre-match state: the subject is visited once, every guard/case starts from the same state, pattern captures bind unknown only within that case outcome, and all cases plus no-match are unioned.
+- Try handlers now receive an outcome from every completed prefix before each potentially raising body statement. `else` runs only on normal body completion and `finally` is applied to every success/handler path.
+- Added abrupt statement channels for guaranteed `break`, `continue`, `return`, and `raise`; unreachable trailing statements are not visited.
+- Loop analysis retains zero-iteration, normal-else, body, direct break/continue, and nested conditional loop-exit outcomes for `while`, `for`, and `async for`.
+- Function exit outcomes are retained separately and unioned with normal completion, preserving global/nonlocal effects before return/raise.
+- Function definitions now scan all positional/keyword/vararg/kwarg annotations, return annotations, PEP 695 type parameters, decorators, and defaults. Lambdas scan all defaults and available argument annotations before entering their local scope; annotated assignments scan their annotation expression.
+
+Focused GREEN:
+
+```text
+.................................                                        [100%]
+33 passed in 0.87s
+```
+
+### Final verification matrix
+
+```text
+== uv lock --check ==
+Resolved 15 packages in 6ms
+
+== uv sync --all-packages --group dev --locked ==
+Resolved 15 packages in 13ms
+Audited 14 packages in 0.62ms
+
+== uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py ==
+.................................                                        [100%]
+33 passed in 0.87s
+
+== uv run --locked --group dev pytest -q ==
+........................................................................ [ 86%]
+...........                                                              [100%]
+83 passed in 6.66s
+
+== uv run --locked --group dev ruff check . ==
+All checks passed!
+
+== uv run --locked --group dev python scripts/policy/validate_import_boundaries.py ==
+Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
+
+== python3 scripts/policy/validate_repository_governance.py ==
+Repository governance policy: PASS
+```
+
+### Final eight-script matrix
+
+```text
+== shared-checks.sh ==
+Resolved 15 packages in 6ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.01s
+
+== benchmarks-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+...                                                                      [100%]
+3 passed in 0.16s
+
+== contenders-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== compare-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== prism-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== topograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== stratograph-checks.sh ==
+Resolved 15 packages in 6ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== primordia-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+```
+
+### Final CLI observation
+
+A synthetic repository combined match-case, intermediate try-prefix, abrupt loop, and annotation bypasses. Exact output:
+
+```text
+Import boundary policy: FAIL (4 violations)
+ERROR: EvoNN-Prism/src/prism/final_flow_bypass.py:16: evonn-prism: forbidden dynamic import edge evonn-prism -> evonn-stratograph via importlib.import_module
+ERROR: EvoNN-Prism/src/prism/final_flow_bypass.py:23: evonn-prism: forbidden dynamic import edge evonn-prism -> evonn-primordia via importlib.import_module
+ERROR: EvoNN-Prism/src/prism/final_flow_bypass.py:25: evonn-prism: forbidden dynamic import edge evonn-prism -> evonn-topograph via importlib.import_module
+ERROR: EvoNN-Prism/src/prism/final_flow_bypass.py:7: evonn-prism: forbidden dynamic import edge evonn-prism -> evonn-topograph via importlib.import_module
+exit=1
+```
+
+The checked-in repository still emitted the single PASS line when launched from `/tmp`.
+
 ## Concerns
 
-None. B0.4 remains honestly closed after the binding-lattice re-review and complete verification matrix passed. Task 5 still needs to wire this direct validator into dual-host CI/runtime probes; no Task 5 implementation was added here.
+None. B0.4 remains honestly closed after the final control-flow re-review and complete verification matrix passed. Task 5 remains intentionally unimplemented.

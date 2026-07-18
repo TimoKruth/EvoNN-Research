@@ -851,6 +851,44 @@ class _LocalBindingCollector(ast.NodeVisitor):
         return
 
 
+class _LoopExitFinder(ast.NodeVisitor):
+    def __init__(self) -> None:
+        self.found = False
+
+    def visit_Break(self, node: ast.Break) -> None:
+        self.found = True
+
+    def visit_Continue(self, node: ast.Continue) -> None:
+        self.found = True
+
+    def visit_For(self, node: ast.For) -> None:
+        return
+
+    visit_AsyncFor = visit_For
+
+    def visit_While(self, node: ast.While) -> None:
+        return
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        return
+
+    visit_AsyncFunctionDef = visit_FunctionDef
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        return
+
+    def visit_Lambda(self, node: ast.Lambda) -> None:
+        return
+
+
+def _contains_current_loop_exit(statement: ast.stmt) -> bool:
+    finder = _LoopExitFinder()
+    if isinstance(statement, (ast.For, ast.AsyncFor, ast.While)):
+        return False
+    finder.visit(statement)
+    return finder.found
+
+
 def _call_argument(call: ast.Call, keyword: str) -> ast.expr | None:
     if call.args:
         return call.args[0]
@@ -892,6 +930,7 @@ class _PythonImportAnalyzer(ast.NodeVisitor):
         self.functions: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
         self.external_functions: list[str] = []
         self.active_functions: set[str] = set()
+        self.function_exit_outcomes: list[list[list[_BindingScope]]] = []
 
     def visit_Module(self, node: ast.Module) -> None:
         self._visit_statements(node.body)
@@ -1009,9 +1048,12 @@ class _PythonImportAnalyzer(ast.NodeVisitor):
                 )
             )
 
-    def _visit_statements(self, statements: list[ast.stmt]) -> None:
+    def _visit_statements(self, statements: list[ast.stmt]) -> str | None:
         for statement in statements:
-            self.visit(statement)
+            channel = self.visit(statement)
+            if channel in {"break", "continue", "return", "raise"}:
+                return channel
+        return None
 
     def _merge_outcomes(self, original: list[_BindingScope], outcomes: list[list[_BindingScope]]) -> None:
         self.scopes = original
@@ -1067,6 +1109,7 @@ class _PythonImportAnalyzer(ast.NodeVisitor):
             self._bind_target(target, binding)
 
     def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+        self.visit(node.annotation)
         if node.value:
             self.visit(node.value)
             binding = self._expression_binding(node.value)
@@ -1085,6 +1128,28 @@ class _PythonImportAnalyzer(ast.NodeVisitor):
     def visit_Delete(self, node: ast.Delete) -> None:
         for target in node.targets:
             self._bind_target(target)
+
+    def visit_Break(self, node: ast.Break) -> str:
+        return "break"
+
+    def visit_Continue(self, node: ast.Continue) -> str:
+        return "continue"
+
+    def visit_Return(self, node: ast.Return) -> str:
+        if node.value:
+            self.visit(node.value)
+        if self.function_exit_outcomes:
+            self.function_exit_outcomes[-1].append([scope.clone() for scope in self.scopes])
+        return "return"
+
+    def visit_Raise(self, node: ast.Raise) -> str:
+        if node.exc:
+            self.visit(node.exc)
+        if node.cause:
+            self.visit(node.cause)
+        if self.function_exit_outcomes:
+            self.function_exit_outcomes[-1].append([scope.clone() for scope in self.scopes])
+        return "raise"
 
     def visit_Call(self, node: ast.Call) -> None:
         loaders, functions, binding_unknown = self._call_bindings(node)
@@ -1127,8 +1192,14 @@ class _PythonImportAnalyzer(ast.NodeVisitor):
         function_scope = self._function_scope(node)
         self.scopes.append(function_scope)
         self.active_functions.add(token)
+        self.function_exit_outcomes.append([])
         self._visit_statements(node.body)
+        exit_outcomes = self.function_exit_outcomes.pop()
         self.active_functions.remove(token)
+        if exit_outcomes:
+            function_scopes = self.scopes
+            outcomes = [[scope.clone() for scope in self.scopes], *exit_outcomes]
+            self._merge_outcomes(function_scopes, outcomes)
         outer_outcome = self.scopes[:-1]
         self.scopes = caller_scopes
         if not propagate:
@@ -1158,6 +1229,18 @@ class _PythonImportAnalyzer(ast.NodeVisitor):
         for expression in [*node.decorator_list, *node.args.defaults, *node.args.kw_defaults]:
             if expression:
                 self.visit(expression)
+        arguments = [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]
+        if node.args.vararg:
+            arguments.append(node.args.vararg)
+        if node.args.kwarg:
+            arguments.append(node.args.kwarg)
+        for argument in arguments:
+            if argument.annotation:
+                self.visit(argument.annotation)
+        if node.returns:
+            self.visit(node.returns)
+        for type_parameter in getattr(node, "type_params", []):
+            self.visit(type_parameter)
         token = f"function:{id(node)}"
         self.functions[token] = node
         if self.scopes[-1].kind in {"module", "class"}:
@@ -1186,37 +1269,86 @@ class _PythonImportAnalyzer(ast.NodeVisitor):
         self._bind(node.name, _UNKNOWN_BINDING)
 
     def visit_Lambda(self, node: ast.Lambda) -> None:
+        for expression in [*node.args.defaults, *node.args.kw_defaults]:
+            if expression:
+                self.visit(expression)
+        arguments = [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]
+        if node.args.vararg:
+            arguments.append(node.args.vararg)
+        if node.args.kwarg:
+            arguments.append(node.args.kwarg)
+        for argument in arguments:
+            if argument.annotation:
+                self.visit(argument.annotation)
         outer = self.scopes
         self.scopes = [scope.clone() for scope in outer]
         function_scope = _BindingScope("function")
-        for argument in [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]:
+        for argument in arguments:
             function_scope.bindings[argument.arg] = _UNKNOWN_BINDING
         self.scopes.append(function_scope)
         self.visit(node.body)
         self.scopes = outer
 
+    def _pattern_binding_names(self, pattern: ast.pattern) -> set[str]:
+        names: set[str] = set()
+        for item in ast.walk(pattern):
+            if isinstance(item, ast.MatchAs) and item.name:
+                names.add(item.name)
+            elif isinstance(item, ast.MatchStar) and item.name:
+                names.add(item.name)
+            elif isinstance(item, ast.MatchMapping) and item.rest:
+                names.add(item.rest)
+        return names
+
+    def visit_Match(self, node: ast.Match) -> None:
+        self.visit(node.subject)
+        original = self.scopes
+        outcomes: list[list[_BindingScope]] = [[scope.clone() for scope in original]]
+        for case in node.cases:
+            self.scopes = [scope.clone() for scope in original]
+            for name in self._pattern_binding_names(case.pattern):
+                self._bind(name, _UNKNOWN_BINDING)
+            if case.guard:
+                self.visit(case.guard)
+            self._visit_statements(case.body)
+            outcomes.append([scope.clone() for scope in self.scopes])
+        self._merge_outcomes(original, outcomes)
+
     def visit_If(self, node: ast.If) -> None:
         self.visit(node.test)
         self._analyze_branches([node.body, node.orelse])
 
+    def _analyze_loop(self, body: list[ast.stmt], orelse: list[ast.stmt], target: ast.expr | None = None) -> None:
+        original = self.scopes
+        outcomes: list[list[_BindingScope]] = []
+
+        self.scopes = [scope.clone() for scope in original]
+        self._visit_statements(orelse)
+        outcomes.append([scope.clone() for scope in self.scopes])
+
+        self.scopes = [scope.clone() for scope in original]
+        if target:
+            self._bind_target(target)
+        channel: str | None = None
+        for statement in body:
+            channel = self.visit(statement)
+            if _contains_current_loop_exit(statement):
+                outcomes.append([scope.clone() for scope in self.scopes])
+            if channel in {"break", "continue", "return", "raise"}:
+                break
+        outcomes.append([scope.clone() for scope in self.scopes])
+        if channel not in {"break", "return", "raise"}:
+            self._visit_statements(orelse)
+            outcomes.append([scope.clone() for scope in self.scopes])
+        self._merge_outcomes(original, outcomes)
+
     def visit_While(self, node: ast.While) -> None:
         self.visit(node.test)
-        self._analyze_branches([node.body + node.orelse, node.body, node.orelse])
+        self._analyze_loop(node.body, node.orelse)
 
     def visit_For(self, node: ast.For) -> None:
         self.visit(node.iter)
-        original = self.scopes
-        outcomes: list[list[_BindingScope]] = []
-        self.scopes = [scope.clone() for scope in original]
-        self._visit_statements(node.orelse)
-        outcomes.append([scope.clone() for scope in self.scopes])
-        self.scopes = [scope.clone() for scope in original]
-        self._bind_target(node.target)
-        self._visit_statements(node.body)
-        outcomes.append([scope.clone() for scope in self.scopes])
-        self._visit_statements(node.orelse)
-        outcomes.append([scope.clone() for scope in self.scopes])
-        self._merge_outcomes(original, outcomes)
+        self._analyze_loop(node.body, node.orelse, node.target)
 
     visit_AsyncFor = visit_For
 
@@ -1234,16 +1366,16 @@ class _PythonImportAnalyzer(ast.NodeVisitor):
         outcomes: list[list[_BindingScope]] = []
 
         self.scopes = [scope.clone() for scope in original]
-        self._visit_statements(node.body)
-        self._visit_statements(node.orelse)
+        body_channel = self._visit_statements(node.body)
+        if body_channel is None:
+            self._visit_statements(node.orelse)
         self._visit_statements(node.finalbody)
         outcomes.append([scope.clone() for scope in self.scopes])
 
         for handler in node.handlers:
-            for include_body in (False, True):
+            for prefix_length in range(len(node.body) + 1):
                 self.scopes = [scope.clone() for scope in original]
-                if include_body:
-                    self._visit_statements(node.body)
+                self._visit_statements(node.body[:prefix_length])
                 if handler.type:
                     self.visit(handler.type)
                 if handler.name:
