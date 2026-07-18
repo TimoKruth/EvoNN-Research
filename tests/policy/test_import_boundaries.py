@@ -295,6 +295,10 @@ def test_dynamic_execution_and_explicit_reflection_are_strictly_banned(
 @pytest.mark.parametrize(
     ("source", "primitive"),
     [
+        ('from builtins import getattr as reflect\nreflect(container, "import_module")\n', "getattr"),
+        ('from builtins import hasattr as reflect\n', "hasattr"),
+        ('from builtins import setattr as reflect\n', "setattr"),
+        ('from builtins import delattr as reflect\n', "delattr"),
         ('reflect = getattr\nreflect(container, "import_module")\n', "getattr"),
         ('consume(hasattr)\n', "hasattr"),
         ('from operator import attrgetter as acquire\nacquire("run_module")\n', "attrgetter"),
@@ -313,6 +317,63 @@ def test_reflection_primitive_acquisition_is_strictly_banned(
     assert len(diagnostics) == 1
     assert "reflection_alias.py" in diagnostics[0]
     assert primitive in diagnostics[0]
+
+
+@pytest.mark.parametrize(
+    ("receiver", "helper"),
+    [("globals()", "getattr"), ("__builtins__", "hasattr"), ("container", "setattr"), ("helpers", "delattr")],
+)
+def test_subscript_reflection_helper_acquisition_is_strictly_banned(
+    validator, repository_copy: Path, receiver: str, helper: str
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/reflection_subscript.py",
+        f'helper = {receiver}["{helper}"]\n',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "reflection_subscript.py:1" in diagnostics[0]
+    assert helper in diagnostics[0]
+
+
+@pytest.mark.parametrize("helper", ["getattr", "hasattr", "setattr", "delattr"])
+def test_direct_reflection_requires_literal_safe_attribute_name(
+    validator, repository_copy: Path, helper: str
+) -> None:
+    required_tail = ", value" if helper == "setattr" else ""
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/computed_reflection.py",
+        f'name = "import_module"\n{helper}(container, name{required_tail})\n',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "computed_reflection.py:2" in diagnostics[0]
+    assert helper in diagnostics[0]
+    assert "literal safe attribute-name" in diagnostics[0]
+
+
+def test_direct_reflection_rejects_unknown_parameter_name(validator, repository_copy: Path) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/parameter_reflection.py",
+        "def read(name):\n    return getattr(container, name)\n",
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "parameter_reflection.py:2" in diagnostics[0]
+    assert "getattr" in diagnostics[0]
+    assert "literal safe attribute-name" in diagnostics[0]
 
 
 def test_benign_direct_reflection_calls_remain_allowed(validator, repository_copy: Path) -> None:

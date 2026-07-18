@@ -742,12 +742,15 @@ _FORBIDDEN_PROVIDER_IMPORTS = {"runpy", "builtins"}
 _FORBIDDEN_FROM_IMPORTS = {
     "importlib": {"import_module", "*"},
     "runpy": {"run_module", "*"},
-    "builtins": {"__import__", "exec", "eval", "*"},
+    "builtins": {"__import__", "exec", "eval", "getattr", "hasattr", "setattr", "delattr", "*"},
     "operator": {"attrgetter", "methodcaller", "*"},
 }
 _FORBIDDEN_CALLS = {"__import__", "exec", "eval"}
+_BUILTIN_REFLECTION_HELPERS = {"getattr", "hasattr", "setattr", "delattr"}
+_OPERATOR_REFLECTION_HELPERS = {"attrgetter", "methodcaller"}
 _FORBIDDEN_REFLECTION_NAMES = {"import_module", "run_module", "__import__", "exec", "eval"}
-_FORBIDDEN_ATTRIBUTE_ACQUISITIONS = _FORBIDDEN_REFLECTION_NAMES | {"attrgetter", "methodcaller"}
+_FORBIDDEN_ATTRIBUTE_ACQUISITIONS = _FORBIDDEN_REFLECTION_NAMES | _OPERATOR_REFLECTION_HELPERS
+_FORBIDDEN_SUBSCRIPT_ACQUISITIONS = _FORBIDDEN_ATTRIBUTE_ACQUISITIONS | _BUILTIN_REFLECTION_HELPERS
 
 
 class _StrictPythonPolicy(ast.NodeVisitor):
@@ -826,7 +829,7 @@ class _StrictPythonPolicy(ast.NodeVisitor):
             return
         if node.id in _FORBIDDEN_CALLS:
             self._error(node.lineno, f"forbidden dynamic execution primitive reference: {node.id}")
-        elif node.id in {"getattr", "hasattr", "setattr", "delattr"}:
+        elif node.id in _BUILTIN_REFLECTION_HELPERS:
             self._error(node.lineno, f"forbidden reflection primitive acquisition: {node.id}")
 
     def visit_Attribute(self, node: ast.Attribute) -> None:
@@ -840,19 +843,23 @@ class _StrictPythonPolicy(ast.NodeVisitor):
 
     def visit_Subscript(self, node: ast.Subscript) -> None:
         reflected = self._literal_string(node.slice)
-        if reflected in _FORBIDDEN_REFLECTION_NAMES:
+        if reflected in _FORBIDDEN_SUBSCRIPT_ACQUISITIONS:
             self._error(node.lineno, f"forbidden explicit reflection naming dynamic primitive: {reflected}")
         self.generic_visit(node)
 
     def visit_Call(self, node: ast.Call) -> None:
         function_name = self._call_name(node.func)
         direct_builtin_reflection = (
-            isinstance(node.func, ast.Name)
-            and function_name in {"getattr", "hasattr", "setattr", "delattr"}
+            isinstance(node.func, ast.Name) and function_name in _BUILTIN_REFLECTION_HELPERS
         )
         if direct_builtin_reflection:
             reflected = self._literal_string(node.args[1]) if len(node.args) > 1 else None
-            if reflected in _FORBIDDEN_REFLECTION_NAMES:
+            if reflected is None:
+                self._error(
+                    node.lineno,
+                    f"forbidden non-literal reflection: {function_name} requires a literal safe attribute-name argument",
+                )
+            elif reflected in _FORBIDDEN_SUBSCRIPT_ACQUISITIONS:
                 self._error(
                     node.lineno,
                     f"forbidden explicit reflection naming dynamic primitive: {reflected}",

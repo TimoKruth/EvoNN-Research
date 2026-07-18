@@ -1136,6 +1136,137 @@ exit=1
 
 The benign direct `getattr(container, "safe_name")` produced no diagnostic, and the checked-in repository still emitted the single PASS line from `/tmp`.
 
+## Final strict reflection closure addendum
+
+### RED evidence
+
+Tests were added first for builtin reflection imports, reflection-helper subscripts, computed/parameter attribute names, and the literal-safe direct-call guard.
+
+Command:
+
+```sh
+uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py -k 'reflection_primitive_acquisition or subscript_reflection or requires_literal_safe or unknown_parameter or benign_direct_reflection'
+```
+
+Exact RED output:
+
+```text
+FFFF......FFFFFFFFF.                                                     [100%]
+13 failed, 7 passed, 43 deselected in 0.73s
+```
+
+The safe literal direct-reflection cases and previously closed operator/builtin-value cases remained green. The failures proved that builtin reflection imports, subscript acquisition names, and non-literal direct attribute names were still accepted.
+
+### Implementation
+
+- Added `getattr`, `hasattr`, `setattr`, and `delattr` to forbidden `from builtins import ...` acquisition, including aliases; the existing builtins star prohibition covers all four.
+- Expanded strict subscript-name rejection to builtin reflection helpers as well as dynamic-loader/execution and operator reflection names. `globals()["getattr"]`, `__builtins__["hasattr"]`, and arbitrary container subscripts now fail syntactically.
+- Direct `getattr`/`hasattr`/`setattr`/`delattr` calls are allowed only when argument position 2 is a literal string not present in the forbidden acquisition/primitive-name set.
+- Missing, computed, formatted, parameter-derived, or otherwise non-literal attribute names fail closed with a helper-specific diagnostic.
+- Literal safe names remain allowed and no binding/control-flow inference was added.
+
+Focused GREEN:
+
+```text
+...............................................................          [100%]
+63 passed in 2.06s
+```
+
+### Final verification matrix
+
+```text
+== uv lock --check ==
+Resolved 15 packages in 6ms
+
+== uv sync --all-packages --group dev --locked ==
+Resolved 15 packages in 5ms
+Audited 14 packages in 0.25ms
+
+== uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py ==
+...............................................................          [100%]
+63 passed in 2.06s
+
+== uv run --locked --group dev pytest -q ==
+........................................................................ [ 63%]
+.........................................                                [100%]
+113 passed in 8.30s
+
+== uv run --locked --group dev ruff check . ==
+All checks passed!
+
+== uv run --locked --group dev python scripts/policy/validate_import_boundaries.py ==
+Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
+
+== python3 scripts/policy/validate_repository_governance.py ==
+Repository governance policy: PASS
+```
+
+### Final eight-script matrix
+
+```text
+== shared-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== benchmarks-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+...                                                                      [100%]
+3 passed in 0.31s
+
+== contenders-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== compare-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== prism-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== topograph-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== stratograph-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== primordia-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+```
+
+### CLI observation
+
+A fixture containing a builtin reflection alias import, a subscript-acquired helper, a computed direct-reflection name, and a safe literal direct call produced:
+
+```text
+Import boundary policy: FAIL (3 violations)
+ERROR: EvoNN-Prism/src/prism/builtin_alias.py:1: evonn-prism: forbidden dynamic-loading primitive import: getattr from builtins
+ERROR: EvoNN-Prism/src/prism/computed_name.py:2: evonn-prism: forbidden non-literal reflection: getattr requires a literal safe attribute-name argument
+ERROR: EvoNN-Prism/src/prism/subscript_alias.py:1: evonn-prism: forbidden explicit reflection naming dynamic primitive: hasattr
+exit=1
+```
+
+The safe literal `getattr(container, "safe_name")` produced no diagnostic, and the checked-in repository still emitted the single PASS line from `/tmp`.
+
 ## Concerns
 
-None. B0.4 remains honestly closed under the strict syntactic primitive/acquisition prohibition with no whole-file exemptions. Any future exception requires an explicit reviewed node/use-specific policy update and justification. Task 5 remains intentionally unimplemented.
+None. B0.4 remains honestly closed under the final strict syntactic language subset. No dynamic-import flow interpreter or whole-file exemption exists. Any future exception requires an explicit reviewed node/use-specific policy update and justification. Task 5 remains intentionally unimplemented.
