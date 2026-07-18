@@ -11,7 +11,7 @@
     "governance/SPEC_TRACEABILITY.md": "99a22c482e823a7971faa95a45cd800e6ad56f301e27e37f6b2958512f4e0b91",
     "governance/SPEC_UPGRADE_PROCESS.md": "acc48a7857fb325399b734b3580b0fdd20b0c8b10c811be0ecce67cb7e890d22",
     "governance/authority-provenance.yaml": "4269ba59aa4ca7b3acc2aaef8f26be3d1df6dc0560d4ef4fe8478ceee60dc4bf",
-    "governance/b0-status.yaml": "864ac93e4a088b58b304e6616946c448d6b08cdaa742ba14b480812988114681",
+    "governance/b0-status.yaml": "5dcb5d2c814ee953adcf04e7acc1c0cc4386c392795a59d2b573ece3fc30a839",
     "pyproject.toml": "c2c6853f5b85fb8af4b7a3fad3c256c2c4833d759a8993a114754f151426063e",
     "research/logs/2026-07-18-dynamic-import-policy.md": "f3b3a7e18e7a1384b6bfaae04bb4802cb62a36e3043e0da278abc57412b04ead",
     "reviews/2026-07-18-b0-cross-review.md": "39afa085164b24e186fcbfd5ec6eaf80c6f44c968a11984f7280917377ecb258",
@@ -20,23 +20,23 @@
     "scripts/ci/contenders-checks.sh": "53416d07a32a395ebb1cc28ffc396a59c20b9137c3fdcdcd64eb2af6b9907078",
     "scripts/ci/primordia-checks.sh": "fb8cbce9c9fc16a56fe089eaf7bd34580d5786969721d9160383e3196a8a8a82",
     "scripts/ci/prism-checks.sh": "9dafbf352b07920bf06850781471a9f072f1c73ad6081d3103a0d1ca8351a004",
-    "scripts/ci/runtime_probe.py": "fcd9912f017e8c6c95d821c271407ea3fbc883f931657eed409ad772197e0455",
+    "scripts/ci/runtime_probe.py": "854b0dcbc9a79bb3bfc3b81921d0297dca84fc7ab38e32d74992bb3ce017c082",
     "scripts/ci/shared-checks.sh": "398aa3c8eaccfa80ce1600e0254e7854234268c38862b168405b24df0284fe36",
     "scripts/ci/stratograph-checks.sh": "8357ff6dd54bb00593864cd22c7efe885683e857bc243f4e59f344c6ffdc85fd",
     "scripts/ci/topograph-checks.sh": "3a30a37af9131d250667f8ffe874b0c85455a3bc191f0758da0a4da608c9fe10",
     "scripts/policy/validate_backend_capabilities.py": "c50676a5ec5146a1341f527c67d7f5974c979868b55fded4fdc3ef408322a268",
     "scripts/policy/validate_import_boundaries.py": "569b9ca84cba51ab55a929683a33ff5f5acc8e2a895f27ccff5bf1e96f3a8a84",
-    "scripts/policy/validate_repository_governance.py": "99966339ebce88201579fe173f46d6c91068bd1008c4947fd87ff3011a4b95b7",
-    "tests/ci/test_runtime_probe.py": "60da7c9dab0f7374c61725dbedbb2840d1a0aedd115bdab7e0902f43b4e4674c",
+    "scripts/policy/validate_repository_governance.py": "25380b35e312c08832e6df51af92b188b11cb72ba266b7ebe6f1fc096301de92",
+    "tests/ci/test_runtime_probe.py": "ca1e002ce021bf66ae1f0f3c36f1ea3bd25b06507aa62af329aed069926dbc86",
     "tests/policy/test_b0_ci_bootstrap.py": "fe59153056c25277fd77904cb8eac11c169125c63814b6e55ed774e161eeafc8",
-    "tests/policy/test_b0_integration_report.py": "57efdda559e2a0c24430b1eb7e8a4768eb6d090a8192d20c5f2ee06d40f2c176",
+    "tests/policy/test_b0_integration_report.py": "13dc9e1ef99af8b946f73d932dada06a9e4a2a01931c25d9eec1cd8bb139c27a",
     "tests/policy/test_backend_capabilities.py": "11b846dbafe23d3c024caf44d21dee676cd93af3890e6f1985086b0b1a0eacb9",
     "tests/policy/test_import_boundaries.py": "49092f5740c0e90a691ac898a073b890f393f942ac4de08b25a5190f4e846a5b",
     "tests/policy/test_repository_governance.py": "ab7abb107f53a50746d8cc0e07e629374371f457c427054a29d15d55b7c612c0",
     "tests/policy/test_workspace_skeletons.py": "e5abc19aa4ca75b3ba779591df9eddb4419347d87914d3576d5b319d563b50cf",
     "uv.lock": "efabedff03ddb0b0fbbff8a70ae87886e379fc244d7b102ffee9ee5b6a2f45c5"
   },
-  "evaluated_at": "2026-07-18T18:46:22Z",
+  "evaluated_at": "2026-07-18T19:15:03Z",
   "items": {
     "B0.1": {
       "evidence_paths": [
@@ -120,7 +120,7 @@
       "manifest_path": "EvoNN-Stratograph/backend-capabilities.json",
       "optional_local_evidence": true,
       "qualification": "bootstrap_probe_only",
-      "sha256": "4bdf295dccb51e41f1be1151064655df12bb90e6ef589f1d3f31c47b2db40d71",
+      "sha256": "5f9dbe0bc738829d1f66950ecd674760ea0b0dccb18db1c61992104100b111f6",
       "system": "stratograph"
     },
     {
@@ -134,7 +134,7 @@
       "manifest_path": "EvoNN-Prism/backend-capabilities.json",
       "optional_local_evidence": true,
       "qualification": "bootstrap_probe_only",
-      "sha256": "f0a8fb25a135a43ffb586d10b81d19d8a73d433ed706a41772b788b71dd2ed27",
+      "sha256": "48dd72bc28be24d6a1803974d36eef955fe20f93632424191f7ec2d25a83433b",
       "system": "prism"
     }
   ],
@@ -148,8 +148,8 @@
   "report_kind": "gate_b0_integration",
   "repository": {
     "branch": "agent/b0-bootstrap",
-    "evaluated_commit": "68fd1cf9cec7949e799e5da42a2c4c3b87b742ab",
-    "evaluated_tree": "6be06429ba8baeebbc797451b993e67a9cbc4a09",
+    "evaluated_commit": "ca424270ffc9cd9c2eecf3382c63840cc44b381a",
+    "evaluated_tree": "9dfdc567456a5788d5524169c1f7522ad88d52f1",
     "relationship": "implementation commit immediately before the evidence-only report commit"
   },
   "schema_version": "1.0.0",

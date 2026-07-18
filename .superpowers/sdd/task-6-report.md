@@ -649,3 +649,16 @@ Every script also reported `All checks passed!` and resolved the same 18-package
 - No remote configured and no push performed.
 - Exact blockers remain B0.2 `authoritative_remote_url_absent` and B0.5 `hosted_ci_not_executed`.
 - Gate B0 remains open, parallel handoff remains false, and Phase 0 remains unstarted.
+
+### Addendum — joint fixes R4/R5/R6 (2026-07-18, reviewer-authored)
+
+Cross-review delta findings R4 (artifact-coupled policy test), R5
+(HEAD-anchored report verification blocking merge and later development),
+and R6 (HEAD-anchored local probe validation) were fixed in the
+implementation commit directly preceding this evidence-only commit; see
+`reviews/2026-07-18-b0-cross-review-addendum.md`. Report verification is
+now anchored to the committed evidence-only revision, local probes were
+regenerated at the new evaluated commit, and all checked-in evidence
+digests were recomputed. Gate B0 state is unchanged: open on B0.2 and
+B0.5. These joint fixes require reciprocal review by the implementing
+agent.
