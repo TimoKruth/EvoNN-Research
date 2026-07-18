@@ -524,6 +524,179 @@ The checked-in repository launched from `/tmp` still produced:
 Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
 ```
 
+## Binding-lattice re-review addendum
+
+### Critical reproduced
+
+The coordinator re-review found that conflicting control-flow bindings were collapsed to an ignored unknown value, and that function bodies only saw globals from definition time. Focused tests were written first for branch, try, loop, invocation-time global, pre-invocation rebinding, nested global, and nonlocal behavior.
+
+Initial RED command:
+
+```sh
+uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py -k 'branch_merge or try_and_loop or global_bindings_available or global_and_nonlocal'
+```
+
+Exact output:
+
+```text
+FFFF                                                                     [100%]
+4 failed, 23 deselected in 0.23s
+```
+
+The failures proved that:
+
+- `importlib.import_module` on one `if` branch was erased by `print` on the other;
+- try and zero-iteration loop paths lost feasible loader bindings;
+- a function defined before its global provider import was not checked when called after the import;
+- global/nonlocal writes from called functions were not propagated, causing both missed runtime bindings and stale false-positive bindings.
+
+A pre-invocation rebind regression then demonstrated the inverse definition-time bug:
+
+```text
+F                                                                        [100%]
+1 failed in 0.09s
+```
+
+`provider` was `importlib` when the function was defined but `print` when called; definition-time-only analysis incorrectly reported the function body.
+
+A nested global propagation regression also failed before its fix:
+
+```text
+F                                                                        [100%]
+1 failed in 0.08s
+```
+
+The nested function's `global provider = print` effect was discarded when the outer function returned.
+
+A final loop-`break` regression produced:
+
+```text
+F                                                                        [100%]
+1 failed in 0.08s
+```
+
+The normal loop-`else` outcome overwrote a loader established before `break`; the loop merge was extended to retain the feasible body-without-else outcome.
+
+### Binding-lattice implementation
+
+- Replaced scalar binding states with a lattice value containing a set of feasible known provider/loader/function identities plus an independent unknown-callable flag.
+- Control-flow joins now union feasible identities; uncertainty can coexist with a known loader and can no longer erase it.
+- Added conservative merges for `if`, `while`, `for`/`async for`, `try`/`try*`/`except`/`else`/`finally`, and with-target rebinding. Loop joins retain zero-iteration, normal-else, and break/early-exit body outcomes so a feasible loader cannot be overwritten by the loop `else` path.
+- Function definitions register callable identities. Direct/aliased/branch-possible function calls re-analyze bodies against bindings available at invocation, while declaration scans mask module globals and still catch local imports.
+- Top-level and class functions are also checked against final module globals for externally feasible invocation.
+- Exact calls propagate module-global and enclosing-function nonlocal effects, including effects made by nested called functions. Possible calls union their effects with the non-call/other-call paths.
+- Rebinding before and after calls remains source ordered; an unknown arbitrary callable by itself is not treated as a loader.
+
+Focused lattice GREEN:
+
+```text
+.....                                                                    [100%]
+5 passed, 23 deselected in 0.23s
+```
+
+Complete policy GREEN after the nested-global regression:
+
+```text
+.............................                                            [100%]
+29 passed in 0.71s
+```
+
+### Final required matrix after binding-lattice fix
+
+```text
+== uv lock --check ==
+Resolved 15 packages in 5ms
+
+== uv sync --all-packages --group dev --locked ==
+Resolved 15 packages in 5ms
+Audited 14 packages in 0.28ms
+
+== uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py ==
+.............................                                            [100%]
+29 passed in 0.71s
+
+== uv run --locked --group dev pytest -q ==
+........................................................................ [ 91%]
+.......                                                                  [100%]
+79 passed in 7.61s
+
+== uv run --locked --group dev ruff check . ==
+All checks passed!
+
+== uv run --locked --group dev python scripts/policy/validate_import_boundaries.py ==
+Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
+
+== python3 scripts/policy/validate_repository_governance.py ==
+Repository governance policy: PASS
+```
+
+### Final eight-script matrix after binding-lattice fix
+
+```text
+== shared-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.01s
+
+== benchmarks-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+...                                                                      [100%]
+3 passed in 0.14s
+
+== contenders-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== compare-checks.sh ==
+Resolved 15 packages in 6ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== prism-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== topograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== stratograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== primordia-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+```
+
+### Final lattice CLI observation
+
+A temporary repository combined the exact branch, try, zero-iteration loop, and invocation-time global bypasses. The CLI returned:
+
+```text
+Import boundary policy: FAIL (4 violations)
+ERROR: EvoNN-Prism/src/prism/lattice_bypass.py:13: evonn-prism: forbidden dynamic import edge evonn-prism -> evonn-stratograph via importlib.import_module
+ERROR: EvoNN-Prism/src/prism/lattice_bypass.py:18: evonn-prism: forbidden dynamic import edge evonn-prism -> evonn-primordia via importlib.import_module
+ERROR: EvoNN-Prism/src/prism/lattice_bypass.py:21: evonn-prism: forbidden dynamic import edge evonn-prism -> evonn-topograph via importlib.import_module
+ERROR: EvoNN-Prism/src/prism/lattice_bypass.py:6: evonn-prism: forbidden dynamic import edge evonn-prism -> evonn-topograph via importlib.import_module
+exit=1
+```
+
+The checked-in repository launched from `/tmp` still returned the single PASS line.
+
 ## Concerns
 
-None. B0.4 remains honestly closed after all coordinator regressions and the complete verification matrix passed. Task 5 still needs to wire this direct validator into dual-host CI/runtime probes; no Task 5 implementation was added here.
+None. B0.4 remains honestly closed after the binding-lattice re-review and complete verification matrix passed. Task 5 still needs to wire this direct validator into dual-host CI/runtime probes; no Task 5 implementation was added here.
