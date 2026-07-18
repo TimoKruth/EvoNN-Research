@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import ipaddress
+import json
 from pathlib import Path
 import re
 import subprocess
@@ -90,6 +91,104 @@ EXPECTED_B0_REPOSITORY_MODEL: Mapping[str, Any] = {
     "data_only_check_script": "scripts/ci/benchmarks-checks.sh",
     "python_import_validation": "required",
     "data_skeleton_validation": "layout_and_loader",
+}
+B0_REPORT_SCHEMA_VERSION = "1.0.0"
+B0_REPORT_KIND = "gate_b0_integration"
+B0_REPORT_BLOCKERS: Mapping[str, str] = {
+    "B0.2": "authoritative_remote_url_absent",
+    "B0.5": "hosted_ci_not_executed",
+}
+B0_REPORT_NEXT_TRANSITION = (
+    "After B0.2 and B0.5 both close, rerun joint Gate B0 integration, then jointly freeze the Phase 0 "
+    "interfaces before Lane A and Lane B branches begin."
+)
+B0_REPORT_LOCAL_PROBES: Mapping[str, Mapping[str, str]] = {
+    "numpy": {
+        "artifact_path": ".artifacts/b0/local/numpy/b0-runtime-probe.json",
+        "system": "stratograph",
+        "manifest_path": "EvoNN-Stratograph/backend-capabilities.json",
+    },
+    "mlx": {
+        "artifact_path": ".artifacts/b0/local/mlx/b0-runtime-probe.json",
+        "system": "prism",
+        "manifest_path": "EvoNN-Prism/backend-capabilities.json",
+    },
+}
+B0_REPORT_WORKFLOWS: Tuple[Mapping[str, Any], ...] = (
+    {
+        "path": ".github/workflows/linux-trust.yml",
+        "name": "B0 Linux trust lane",
+        "runner": "ubuntu-latest",
+        "python_version": "3.13",
+        "uv_version": "0.5.13",
+        "actions": [
+            "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990",
+            "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+        ],
+    },
+    {
+        "path": ".github/workflows/macos-engines.yml",
+        "name": "B0 macOS engine lane",
+        "runner": "macos-15",
+        "python_version": "3.13",
+        "uv_version": "0.5.13",
+        "actions": [
+            "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990",
+            "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+        ],
+    },
+)
+B0_REPORT_VERIFICATION_COMMANDS: Tuple[str, ...] = (
+    "uv lock --check",
+    "uv sync --all-packages --group dev --locked",
+    "uv run --locked --group dev pytest -q",
+    "uv run --locked --group dev ruff check .",
+    "uv run --locked --group dev python scripts/policy/validate_import_boundaries.py",
+    "python3 scripts/policy/validate_repository_governance.py",
+    "uv run --locked --group dev python scripts/policy/validate_backend_capabilities.py",
+    "scripts/ci/b0-policy-checks.sh",
+    "scripts/ci/shared-checks.sh (from /tmp)",
+    "scripts/ci/benchmarks-checks.sh (from /tmp)",
+    "scripts/ci/compare-checks.sh (from /tmp)",
+    "scripts/ci/contenders-checks.sh (from /tmp)",
+    "scripts/ci/prism-checks.sh (from /tmp)",
+    "scripts/ci/topograph-checks.sh (from /tmp)",
+    "scripts/ci/stratograph-checks.sh (from /tmp)",
+    "scripts/ci/primordia-checks.sh (from /tmp)",
+    (
+        "uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py generate --backend numpy "
+        "--system stratograph --manifest EvoNN-Stratograph/backend-capabilities.json "
+        "--output .artifacts/b0/local/numpy/b0-runtime-probe.json --execution-mode local"
+    ),
+    (
+        "uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py validate "
+        "--input .artifacts/b0/local/numpy/b0-runtime-probe.json --execution-mode local --expected-backend numpy"
+    ),
+    (
+        "uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py generate --backend mlx "
+        "--system prism --manifest EvoNN-Prism/backend-capabilities.json "
+        "--output .artifacts/b0/local/mlx/b0-runtime-probe.json --execution-mode local"
+    ),
+    (
+        "uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py validate "
+        "--input .artifacts/b0/local/mlx/b0-runtime-probe.json --execution-mode local --expected-backend mlx"
+    ),
+    "uv run --locked --group dev pytest -q tests/policy/test_b0_ci_bootstrap.py",
+    "git diff --check",
+)
+FORBIDDEN_HOSTED_REPORT_KEYS: Set[str] = {
+    "run_id",
+    "run_url",
+    "run_attempt",
+    "attempt",
+    "hosted_run_id",
+    "hosted_run_url",
+    "hosted_run_attempt",
+    "hosted_artifact",
+    "hosted_artifacts",
+    "artifact_url",
 }
 
 
@@ -481,10 +580,272 @@ def validate_b0_status(status: Mapping[str, Any], manifest: Mapping[str, Any], r
     return errors
 
 
+def _find_forbidden_hosted_report_keys(value: Any, prefix: str = "report") -> List[str]:
+    findings: List[str] = []
+    if isinstance(value, Mapping):
+        for key, child in value.items():
+            key_text = str(key)
+            child_prefix = f"{prefix}.{key_text}"
+            if key_text in FORBIDDEN_HOSTED_REPORT_KEYS:
+                findings.append(child_prefix)
+            findings.extend(_find_forbidden_hosted_report_keys(child, child_prefix))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            findings.extend(_find_forbidden_hosted_report_keys(child, f"{prefix}[{index}]"))
+    return findings
+
+
+def _valid_sha256(value: Any) -> bool:
+    return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
+
+
+def _checked_in_report_path(repo_root: Path, relative: Any) -> Path | None:
+    if not isinstance(relative, str) or not relative or Path(relative).is_absolute():
+        return None
+    relative_path = Path(relative)
+    if ".." in relative_path.parts or relative_path.as_posix() != relative:
+        return None
+    candidate = repo_root / relative_path
+    if candidate.is_symlink() or not candidate.is_file():
+        return None
+    try:
+        candidate.resolve().relative_to(repo_root.resolve())
+    except ValueError:
+        return None
+    return candidate
+
+
+def validate_local_probe_evidence(
+    entries: Any,
+    repo_root: Path,
+    evaluated_commit: Any,
+) -> List[str]:
+    errors: List[str] = []
+    if not isinstance(entries, list):
+        return ["B0 report local_runtime_probes must be a list"]
+    if [entry.get("backend") if isinstance(entry, Mapping) else None for entry in entries] != ["numpy", "mlx"]:
+        errors.append("B0 report local_runtime_probes must contain numpy then mlx")
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, Mapping):
+            errors.append(f"B0 report local runtime probe {index} must be a mapping")
+            continue
+        backend = entry.get("backend")
+        expected = B0_REPORT_LOCAL_PROBES[backend] if backend in B0_REPORT_LOCAL_PROBES else None
+        if expected is None:
+            errors.append(f"B0 report local runtime probe {index} has unknown backend {backend!r}")
+            continue
+        for field, expected_value in expected.items():
+            actual_value = entry[field] if field in entry else None
+            if actual_value != expected_value:
+                errors.append(f"B0 report {backend} local probe {field} must be {expected_value}")
+        if entry.get("execution_scope") != "local":
+            errors.append(f"B0 report {backend} local probe must set execution_scope to local")
+        if entry.get("evidence_scope") != "local_bootstrap_only":
+            errors.append(f"B0 report {backend} local probe must be labeled local_bootstrap_only")
+        if entry.get("qualification") != "bootstrap_probe_only":
+            errors.append(f"B0 report {backend} local probe must set bootstrap_probe_only qualification")
+        if entry.get("optional_local_evidence") is not True:
+            errors.append(f"B0 report {backend} local probe must be optional local evidence")
+        if not _valid_sha256(entry.get("sha256")):
+            errors.append(f"B0 report {backend} local probe must record a SHA-256 digest")
+        for field in ("backend_version", "host_os", "host_architecture"):
+            value = entry[field] if field in entry else None
+            if not isinstance(value, str) or not value:
+                errors.append(f"B0 report {backend} local probe must record {field}")
+
+        artifact_path = repo_root / str(expected["artifact_path"])
+        if not artifact_path.exists():
+            continue
+        if artifact_path.is_symlink() or not artifact_path.is_file():
+            errors.append(f"B0 report {backend} local probe artifact must be a regular non-symlink file")
+            continue
+        content = artifact_path.read_bytes()
+        if _sha256(content) != entry.get("sha256"):
+            errors.append(f"B0 report {backend} local probe SHA-256 does not match the present artifact")
+        try:
+            artifact = json.loads(content)
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            errors.append(f"B0 report {backend} local probe artifact is not valid JSON: {exc}")
+            continue
+        if not isinstance(artifact, Mapping):
+            errors.append(f"B0 report {backend} local probe artifact must contain a JSON object")
+            continue
+        if artifact.get("repository_commit") != evaluated_commit:
+            errors.append(f"B0 report {backend} local probe commit does not match the evaluated implementation commit")
+        if artifact.get("schema_version") != "1.0.0" or artifact.get("probe_kind") != "b0_runtime_backend_bootstrap":
+            errors.append(f"B0 report {backend} local probe schema/kind is invalid")
+        if artifact.get("status") != "passed" or artifact.get("qualification") != "bootstrap_probe_only":
+            errors.append(f"B0 report {backend} local probe is not passed bootstrap-only evidence")
+        if artifact.get("system_under_test") != expected["system"]:
+            errors.append(f"B0 report {backend} local probe system does not match its canonical system")
+        artifact_backend = artifact.get("backend")
+        if not isinstance(artifact_backend, Mapping):
+            errors.append(f"B0 report {backend} local probe backend block must be a mapping")
+        else:
+            if artifact_backend.get("distribution") != backend:
+                errors.append(f"B0 report {backend} local probe backend distribution is inconsistent")
+            if artifact_backend.get("version") != entry.get("backend_version"):
+                errors.append(f"B0 report {backend} local probe backend version is inconsistent")
+        artifact_host = artifact.get("host")
+        if not isinstance(artifact_host, Mapping):
+            errors.append(f"B0 report {backend} local probe host block must be a mapping")
+        else:
+            if artifact_host.get("os_name") != entry.get("host_os"):
+                errors.append(f"B0 report {backend} local probe host OS is inconsistent")
+            if artifact_host.get("architecture") != entry.get("host_architecture"):
+                errors.append(f"B0 report {backend} local probe host architecture is inconsistent")
+        artifact_manifest = artifact.get("manifest")
+        if not isinstance(artifact_manifest, Mapping) or artifact_manifest.get("path") != expected["manifest_path"]:
+            errors.append(f"B0 report {backend} local probe manifest path is not canonical")
+        workflow = artifact.get("workflow")
+        local_workflow = isinstance(workflow, Mapping) and all(
+            (workflow[field] if field in workflow else None) == "local" for field in ("name", "run_id", "attempt")
+        )
+        if not local_workflow:
+            errors.append(f"B0 report {backend} local probe does not contain local workflow placeholders")
+    return errors
+
+
+def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], repo_root: Path) -> List[str]:
+    errors: List[str] = []
+    if report.get("schema_version") != B0_REPORT_SCHEMA_VERSION:
+        errors.append(f"B0 report schema_version must be {B0_REPORT_SCHEMA_VERSION}")
+    if report.get("report_kind") != B0_REPORT_KIND:
+        errors.append(f"B0 report report_kind must be {B0_REPORT_KIND}")
+    evaluated_at = report.get("evaluated_at")
+    if not isinstance(evaluated_at, str) or not UTC_TIMESTAMP.match(evaluated_at):
+        errors.append("B0 report evaluated_at must be a UTC ISO-8601 timestamp")
+    for path in _find_forbidden_hosted_report_keys(report):
+        errors.append(f"B0 report contains forbidden hosted evidence field: {path}")
+
+    repository = report.get("repository")
+    if not isinstance(repository, Mapping):
+        errors.append("B0 report repository must be a mapping")
+        repository = {}
+    evaluated_commit = repository.get("evaluated_commit")
+    evaluated_tree = repository.get("evaluated_tree")
+    if not isinstance(evaluated_commit, str) or re.fullmatch(r"[0-9a-f]{40}", evaluated_commit) is None:
+        errors.append("B0 report evaluated_commit must be a full Git commit ID")
+    if not isinstance(evaluated_tree, str) or re.fullmatch(r"[0-9a-f]{40}", evaluated_tree) is None:
+        errors.append("B0 report evaluated_tree must be a full Git tree ID")
+    if repository.get("relationship") != "implementation commit immediately before the evidence-only report commit":
+        errors.append("B0 report must document the implementation/evidence-only commit relationship")
+    if isinstance(evaluated_commit, str) and re.fullmatch(r"[0-9a-f]{40}", evaluated_commit):
+        try:
+            actual_tree = _git(repo_root, "rev-parse", f"{evaluated_commit}^{{tree}}").decode().strip()
+            if actual_tree != evaluated_tree:
+                errors.append("B0 report evaluated_tree does not match evaluated_commit")
+            head = _git(repo_root, "rev-parse", "HEAD").decode().strip()
+            if head != evaluated_commit:
+                parent = _git(repo_root, "rev-parse", "HEAD^").decode().strip()
+                if parent != evaluated_commit:
+                    errors.append("B0 report evaluated_commit must be HEAD or the direct parent of the evidence-only report commit")
+                else:
+                    changed = {
+                        line
+                        for line in _git(repo_root, "diff", "--name-only", f"{evaluated_commit}..{head}")
+                        .decode("utf-8")
+                        .splitlines()
+                        if line
+                    }
+                    allowed = {"governance/b0-report.json", ".superpowers/sdd/task-6-report.md"}
+                    if not changed or not changed <= allowed:
+                        errors.append("B0 report commit must be an evidence-only child of the evaluated implementation commit")
+        except subprocess.CalledProcessError as exc:
+            errors.append(f"B0 report cannot verify evaluated Git identity: {exc}")
+
+    if report.get("overall_state") != "open" or status.get("status") != "open":
+        errors.append("B0 report overall_state and governance/b0-status.yaml must both remain open")
+    if report.get("blockers") != dict(B0_REPORT_BLOCKERS):
+        errors.append("B0 report blockers must be the exact B0.2 and B0.5 blocker codes")
+    if report.get("parallel_handoff_ready") is not False:
+        errors.append("B0 report parallel_handoff_ready must remain false")
+    if report.get("parallel_handoff_blockers") != ["B0.2", "B0.5"]:
+        errors.append("B0 report parallel_handoff_blockers must be exactly [B0.2, B0.5]")
+    if report.get("next_transition") != B0_REPORT_NEXT_TRANSITION:
+        errors.append("B0 report next_transition does not match the required joint Phase 0 handoff")
+
+    status_items = status.get("items")
+    report_items = report.get("items")
+    if not isinstance(status_items, Mapping) or not isinstance(report_items, Mapping):
+        errors.append("B0 report and governance/b0-status.yaml items must be mappings")
+        status_items = {}
+        report_items = {}
+    elif set(report_items) != set(REQUIRED_B0_ITEM_IDS):
+        errors.append(f"B0 report item IDs must be exactly {list(REQUIRED_B0_ITEM_IDS)}")
+    referenced_paths: Set[str] = set()
+    local_artifact_paths = {entry["artifact_path"] for entry in B0_REPORT_LOCAL_PROBES.values()}
+    for item_id in REQUIRED_B0_ITEM_IDS:
+        report_item = report_items[item_id] if item_id in report_items else None
+        status_item = status_items[item_id] if item_id in status_items else None
+        if not isinstance(report_item, Mapping) or not isinstance(status_item, Mapping):
+            errors.append(f"B0 report/status item {item_id} must be a mapping")
+            continue
+        if report_item.get("state") != status_item.get("status"):
+            errors.append(f"B0 report {item_id} state does not match governance/b0-status.yaml")
+        expected_reason = status_item.get("open_reason") if status_item.get("status") == "open" else None
+        if report_item.get("reason") != expected_reason:
+            errors.append(f"B0 report {item_id} reason does not match governance/b0-status.yaml")
+        evidence_paths = report_item.get("evidence_paths")
+        if not isinstance(evidence_paths, list) or not evidence_paths or any(not isinstance(path, str) for path in evidence_paths):
+            errors.append(f"B0 report {item_id} evidence_paths must be a non-empty string list")
+        else:
+            referenced_paths.update(path for path in evidence_paths if path not in local_artifact_paths)
+
+    workflows = report.get("workflows")
+    if workflows != list(B0_REPORT_WORKFLOWS):
+        errors.append("B0 report workflows do not match the immutable workflow/action/runner contracts")
+    else:
+        referenced_paths.update(workflow["path"] for workflow in B0_REPORT_WORKFLOWS)
+
+    probes = report.get("local_runtime_probes")
+    errors.extend(validate_local_probe_evidence(probes, repo_root, evaluated_commit))
+
+    checked_in = report.get("checked_in_evidence")
+    if not isinstance(checked_in, Mapping):
+        errors.append("B0 report checked_in_evidence must be a path-to-SHA-256 mapping")
+        checked_in = {}
+    if "governance/b0-report.json" in checked_in:
+        errors.append("B0 report must not contain a self-referential digest")
+    referenced_paths.update({"CONSOLIDATED_PLAN.md", "PARALLEL_WORK_GUIDE.md", "governance/b0-status.yaml"})
+    if set(checked_in) != referenced_paths:
+        errors.append("B0 report checked_in_evidence paths must exactly cover every referenced checked-in evidence path")
+    for relative, expected_digest in checked_in.items():
+        if not _valid_sha256(expected_digest):
+            errors.append(f"B0 report checked-in evidence {relative} must record a SHA-256 digest")
+            continue
+        path = _checked_in_report_path(repo_root, relative)
+        if path is None:
+            errors.append(f"B0 report checked-in evidence path is missing, unsafe, or not a regular file: {relative}")
+            continue
+        if _sha256(path.read_bytes()) != expected_digest:
+            errors.append(f"B0 report checked-in evidence SHA-256 does not match: {relative}")
+
+    verification = report.get("verification")
+    expected_commands = [{"command": command, "result": "pass"} for command in B0_REPORT_VERIFICATION_COMMANDS]
+    if not isinstance(verification, Mapping):
+        errors.append("B0 report verification must be a mapping")
+    else:
+        if verification.get("overall") != "pass":
+            errors.append("B0 report verification overall result must be pass")
+        if verification.get("commands") != expected_commands:
+            errors.append("B0 report verification commands/results do not match the full required local command set")
+        if verification.get("summary") != {"passed": len(B0_REPORT_VERIFICATION_COMMANDS), "failed": 0}:
+            errors.append("B0 report verification summary must count every required command as passed")
+    return errors
+
+
 def _load_yaml(path: Path) -> Dict[str, Any]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         raise ValueError(f"{path} must contain a YAML mapping")
+    return data
+
+
+def _load_json(path: Path) -> Dict[str, Any]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a JSON object")
     return data
 
 
@@ -522,6 +883,13 @@ def validate_repository(repo_root: Path) -> List[str]:
         errors.extend(validate_b0_status(status, manifest, repo_root))
     except (OSError, ValueError, yaml.YAMLError) as exc:
         errors.append(f"cannot load B0 status: {exc}")
+        status = {}
+    report_path = repo_root / "governance/b0-report.json"
+    try:
+        report = _load_json(report_path)
+        errors.extend(validate_b0_report(report, status, repo_root))
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        errors.append(f"cannot load B0 integration report: {exc}")
     for required_doc in ("SPEC_UPGRADE_PROCESS.md", "SPEC_TRACEABILITY.md"):
         if not (repo_root / "governance" / required_doc).is_file():
             errors.append(f"governance/{required_doc} is missing")
