@@ -323,3 +323,159 @@ Report:
 ## Concerns
 
 None. The installed local uv is 0.5.13, and the implemented workspace/dependency-group commands were executed successfully with it; the metadata also follows the current documented uv workspace model requested by the brief.
+
+## Review-fix addendum
+
+A post-implementation review found two mandatory contract gaps and one small check-script interface issue. They were corrected with a fresh TDD cycle without expanding into Task 4 or Task 5.
+
+### Review-fix RED
+
+Tests were added first for malformed required path types, the exact eight-manifest contract, and use of the distribution argument by the shared package-check helper.
+
+Command:
+
+```sh
+uv run --locked --group dev pytest -q --tb=short shared-benchmarks/tests/test_skeleton.py tests/policy/test_workspace_skeletons.py::test_all_backend_manifests_match_the_exact_truthful_b0_contract tests/policy/test_workspace_skeletons.py::test_package_check_helper_rejects_unknown_distribution_identity
+```
+
+Exact output:
+
+```text
+.FFFF                                                                    [100%]
+=================================== FAILURES ===================================
+_____________ test_required_directory_replaced_by_file_is_rejected _____________
+shared-benchmarks/tests/test_skeleton.py:20: in test_required_directory_replaced_by_file_is_rejected
+    with pytest.raises(ValueError, match="Required shared benchmark directory is not a directory: catalog"):
+E   Failed: DID NOT RAISE ValueError
+_____________ test_required_file_replaced_by_directory_is_rejected _____________
+shared-benchmarks/tests/test_skeleton.py:30: in test_required_file_replaced_by_directory_is_rejected
+    with pytest.raises(ValueError, match="Required shared benchmark file is not a file: README.md"):
+E   Failed: DID NOT RAISE ValueError
+_______ test_all_backend_manifests_match_the_exact_truthful_b0_contract ________
+tests/policy/test_workspace_skeletons.py:175: in test_all_backend_manifests_match_the_exact_truthful_b0_contract
+    assert manifest == expected, relative_path
+E   AssertionError: EvoNN-Contenders/backend-capabilities.json
+E   assert {'schema_vers...', ...}], ...} == {'schema_vers...', ...}], ...}
+E     Differing items:
+E     {'capabilities': [{'id': 'sklearn_contender', 'platforms': ['darwin', 'linux'], 'implemented': False, 'dependency': 'scikit-learn (not declared until runtime implementation)', ...}]} != {'capabilities': [{'id': 'sklearn_contender', 'platforms': ['darwin', 'linux'], 'implemented': False, 'dependency': 'scikit-learn', ...}]}
+_______ test_package_check_helper_rejects_unknown_distribution_identity ________
+tests/policy/test_workspace_skeletons.py:194: in test_package_check_helper_rejects_unknown_distribution_identity
+    assert result.returncode != 0
+E   assert 0 != 0
+=========================== short test summary info ============================
+FAILED shared-benchmarks/tests/test_skeleton.py::test_required_directory_replaced_by_file_is_rejected
+FAILED shared-benchmarks/tests/test_skeleton.py::test_required_file_replaced_by_directory_is_rejected
+FAILED tests/policy/test_workspace_skeletons.py::test_all_backend_manifests_match_the_exact_truthful_b0_contract
+FAILED tests/policy/test_workspace_skeletons.py::test_package_check_helper_rejects_unknown_distribution_identity
+4 failed, 1 passed in 0.37s
+```
+
+These failures demonstrated all three review findings: `exists()` accepted wrong path types, manifests did not expose the exact separated `dependency`/`dependency_condition` contract, and the shell helper ignored its distribution argument.
+
+### Review-fix implementation
+
+- `validate_data_skeleton` now requires `is_dir()` for every required directory and `is_file()` for every required file, with separate, path-specific errors.
+- Data-local tests now replace `catalog/` with a file and `README.md` with a directory and verify clear rejection messages.
+- The policy contract now maps all eight manifest paths to exact complete JSON values: schema, system, runtime role, capability IDs, platforms, implemented state, dependency, dependency condition, and false evidence claims.
+- Engine and Contenders manifests now separate package names (`mlx`, `numpy`, `scikit-learn`) from truthful `dependency_condition` declarations.
+- `run_python_package_checks` now uses `importlib.metadata.version(distribution)` and requires it to equal the imported module version. A behavioral test proves an unknown distribution is rejected.
+- B0.3 remains closed because the corrected contract and all verification lanes pass; B0.2/B0.4/B0.5 and overall B0 remain open.
+
+Files changed by the review fix:
+
+- `EvoNN-Shared/src/evonn_shared/benchmarks.py`
+- `shared-benchmarks/tests/test_skeleton.py`
+- `tests/policy/test_workspace_skeletons.py`
+- `scripts/ci/_common.sh`
+- `EvoNN-Contenders/backend-capabilities.json`
+- `EvoNN-Prism/backend-capabilities.json`
+- `EvoNN-Topograph/backend-capabilities.json`
+- `EvoNN-Stratograph/backend-capabilities.json`
+- `EvoNN-Primordia/backend-capabilities.json`
+- `.superpowers/sdd/task-3-report.md`
+
+### Review-fix GREEN
+
+Command:
+
+```sh
+uv run --locked --group dev pytest -q --tb=short shared-benchmarks/tests/test_skeleton.py tests/policy/test_workspace_skeletons.py::test_all_backend_manifests_match_the_exact_truthful_b0_contract tests/policy/test_workspace_skeletons.py::test_package_check_helper_rejects_unknown_distribution_identity
+```
+
+Exact output:
+
+```text
+.....                                                                    [100%]
+5 passed in 0.42s
+```
+
+### Review-fix final verification
+
+```text
+== uv lock --check ==
+Resolved 15 packages in 6ms
+
+== uv sync --all-packages --group dev --locked ==
+Resolved 15 packages in 5ms
+Audited 14 packages in 0.27ms
+
+== uv run --locked --group dev pytest -q ==
+..................................................                       [100%]
+50 passed in 6.12s
+
+== uv run --locked --group dev ruff check . ==
+All checks passed!
+
+== explicit package imports ==
+all seven distribution/module identities: PASS
+
+== shared-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== benchmarks-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+...                                                                      [100%]
+3 passed in 0.02s
+
+== contenders-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== compare-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== prism-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.01s
+
+== topograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.01s
+
+== stratograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.01s
+
+== primordia-checks.sh ==
+Resolved 15 packages in 6ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+```
+
+Final review-fix result: PASS with no concerns.

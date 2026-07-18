@@ -19,9 +19,15 @@ def resolve_data_root(repository_root: Path | None = None) -> Path:
 def validate_data_skeleton(data_root: Path | None = None) -> Path:
     """Validate the required B0 layout and reject runtime package content."""
     root = (data_root or resolve_data_root()).resolve()
-    missing = [relative for relative in (*_REQUIRED_DIRECTORIES, *_REQUIRED_FILES) if not (root / relative).exists()]
-    if missing:
-        raise ValueError(f"Missing shared benchmark skeleton paths: {', '.join(missing)}")
+    invalid_directories = [relative for relative in _REQUIRED_DIRECTORIES if not (root / relative).is_dir()]
+    if invalid_directories:
+        raise ValueError(
+            f"Required shared benchmark directory is not a directory: {', '.join(invalid_directories)}"
+        )
+
+    invalid_files = [relative for relative in _REQUIRED_FILES if not (root / relative).is_file()]
+    if invalid_files:
+        raise ValueError(f"Required shared benchmark file is not a file: {', '.join(invalid_files)}")
 
     package_markers = sorted(path.relative_to(root).as_posix() for marker in _PACKAGE_MARKERS for path in root.rglob(marker))
     if package_markers:

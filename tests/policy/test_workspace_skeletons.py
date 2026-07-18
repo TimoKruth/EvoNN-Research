@@ -30,7 +30,78 @@ CHECK_SCRIPTS = {
     "stratograph-checks.sh",
     "primordia-checks.sh",
 }
-ENGINE_SYSTEMS = {"prism", "topograph", "stratograph", "primordia"}
+FALSE_EVIDENCE = {
+    "scientific": False,
+    "portability": False,
+    "producer_conformance": False,
+}
+MLX_CAPABILITY = {
+    "id": "mlx_native",
+    "platforms": ["darwin-arm64"],
+    "implemented": False,
+    "dependency": "mlx",
+    "dependency_condition": "Not declared in B0; platform-conditional dependency and runtime proof are deferred to Task 5.",
+}
+NUMPY_CAPABILITY = {
+    "id": "numpy_fallback",
+    "platforms": ["darwin", "linux"],
+    "implemented": False,
+    "dependency": "numpy",
+    "dependency_condition": "Not declared in B0; no fallback runtime is implemented or qualified.",
+}
+EXPECTED_MANIFESTS = {
+    "EvoNN-Shared/backend-capabilities.json": {
+        "schema_version": "1.0.0",
+        "system": "shared",
+        "runtime_role": "contract_substrate_non_execution",
+        "capabilities": [],
+        "evidence": FALSE_EVIDENCE,
+    },
+    "EvoNN-Compare/backend-capabilities.json": {
+        "schema_version": "1.0.0",
+        "system": "compare",
+        "runtime_role": "orchestration_non_execution",
+        "capabilities": [],
+        "evidence": FALSE_EVIDENCE,
+    },
+    "EvoNN-Contenders/backend-capabilities.json": {
+        "schema_version": "1.0.0",
+        "system": "contenders",
+        "runtime_role": "contender_skeleton",
+        "capabilities": [
+            {
+                "id": "sklearn_contender",
+                "platforms": ["darwin", "linux"],
+                "implemented": False,
+                "dependency": "scikit-learn",
+                "dependency_condition": "Not declared in B0; no contender runtime is implemented or qualified.",
+            }
+        ],
+        "evidence": FALSE_EVIDENCE,
+    },
+    **{
+        f"EvoNN-{directory}/backend-capabilities.json": {
+            "schema_version": "1.0.0",
+            "system": system,
+            "runtime_role": "engine_skeleton",
+            "capabilities": [MLX_CAPABILITY, NUMPY_CAPABILITY],
+            "evidence": FALSE_EVIDENCE,
+        }
+        for directory, system in (
+            ("Prism", "prism"),
+            ("Topograph", "topograph"),
+            ("Stratograph", "stratograph"),
+            ("Primordia", "primordia"),
+        )
+    },
+    "shared-benchmarks/backend-capabilities.json": {
+        "schema_version": "1.0.0",
+        "system": "shared-benchmarks",
+        "runtime_role": "data_only",
+        "capabilities": [],
+        "evidence": FALSE_EVIDENCE,
+    },
+}
 
 
 def load_toml(path: Path) -> dict:
@@ -96,37 +167,31 @@ def test_shared_benchmarks_rejects_python_package_markers(tmp_path: Path) -> Non
         validate_data_skeleton(data_root)
 
 
-def test_all_backend_manifests_are_truthful_b0_declarations() -> None:
-    manifest_paths = [REPO_ROOT / directory / "backend-capabilities.json" for directory in PACKAGES]
-    manifest_paths.append(REPO_ROOT / "shared-benchmarks/backend-capabilities.json")
+def test_all_backend_manifests_match_the_exact_truthful_b0_contract() -> None:
+    assert len(EXPECTED_MANIFESTS) == 8
+    for relative_path, expected in EXPECTED_MANIFESTS.items():
+        manifest = json.loads((REPO_ROOT / relative_path).read_text(encoding="utf-8"))
+        assert manifest == expected, relative_path
 
-    assert len(manifest_paths) == 8
-    for path in manifest_paths:
-        manifest = json.loads(path.read_text(encoding="utf-8"))
-        assert manifest["schema_version"] == "1.0.0"
-        assert manifest["system"]
-        assert manifest["runtime_role"]
-        assert manifest["evidence"] == {
-            "scientific": False,
-            "portability": False,
-            "producer_conformance": False,
-        }
-        assert all(capability["implemented"] is False for capability in manifest["capabilities"])
 
-        if manifest["system"] in ENGINE_SYSTEMS:
-            assert [capability["id"] for capability in manifest["capabilities"]] == [
-                "mlx_native",
-                "numpy_fallback",
-            ]
-            mlx, numpy = manifest["capabilities"]
-            assert mlx["platforms"] == ["darwin-arm64"]
-            assert mlx["dependency"] == "mlx (not declared until Task 5)"
-            assert numpy["platforms"] == ["darwin", "linux"]
-            assert numpy["dependency"] == "numpy (not declared until runtime implementation)"
-        elif manifest["system"] == "contenders":
-            assert [capability["id"] for capability in manifest["capabilities"]] == ["sklearn_contender"]
-        else:
-            assert manifest["capabilities"] == []
+def test_package_check_helper_rejects_unknown_distribution_identity(tmp_path: Path) -> None:
+    common = REPO_ROOT / "scripts/ci/_common.sh"
+    result = subprocess.run(
+        [
+            "bash",
+            "-c",
+            'source "$1"; run_python_package_checks missing-evonn-distribution EvoNN-Shared evonn_shared shared',
+            "bash",
+            str(common),
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "missing-evonn-distribution" in result.stderr
 
 
 def test_all_named_check_scripts_execute_real_locked_checks_from_another_directory(tmp_path: Path) -> None:

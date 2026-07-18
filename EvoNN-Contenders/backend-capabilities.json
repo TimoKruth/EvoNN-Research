@@ -7,8 +7,8 @@
       "id": "sklearn_contender",
       "platforms": ["darwin", "linux"],
       "implemented": false,
-      "dependency": "scikit-learn (not declared until runtime implementation)",
-      "condition": "No contender fitting or export runtime exists at B0."
+      "dependency": "scikit-learn",
+      "dependency_condition": "Not declared in B0; no contender runtime is implemented or qualified."
     }
   ],
   "evidence": {

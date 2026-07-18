@@ -7,15 +7,15 @@
       "id": "mlx_native",
       "platforms": ["darwin-arm64"],
       "implemented": false,
-      "dependency": "mlx (not declared until Task 5)",
-      "condition": "Platform dependency and runtime proof are deferred to Task 5."
+      "dependency": "mlx",
+      "dependency_condition": "Not declared in B0; platform-conditional dependency and runtime proof are deferred to Task 5."
     },
     {
       "id": "numpy_fallback",
       "platforms": ["darwin", "linux"],
       "implemented": false,
-      "dependency": "numpy (not declared until runtime implementation)",
-      "condition": "No portable execution path is implemented or qualified at B0."
+      "dependency": "numpy",
+      "dependency_condition": "Not declared in B0; no fallback runtime is implemented or qualified."
     }
   ],
   "evidence": {
