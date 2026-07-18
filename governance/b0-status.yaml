@@ -1,7 +1,7 @@
 document_kind: gate_status
 gate: B0
 status: open
-checked_in_at: "2026-07-18T04:03:57Z"
+checked_in_at: "2026-07-18T04:45:40Z"
 items:
   B0.1:
     status: locally_satisfied
@@ -15,9 +15,9 @@ items:
     open_reason: null
     evidence: seven Python package skeletons, the data-only benchmark skeleton, and eight local checks pass
   B0.4:
-    status: open
-    open_reason: unimplemented
-    evidence: import-direction validation depends on the B0.3 skeletons
+    status: closed
+    open_reason: null
+    evidence: permanent Python import, workspace dependency, and data-only benchmark policy passes
   B0.5:
     status: open
     open_reason: unimplemented

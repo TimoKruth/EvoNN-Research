@@ -204,9 +204,13 @@ def test_local_only_authority_keeps_b02_open_and_requires_null_url(
         "open_reason": None,
         "evidence": "seven Python package skeletons, the data-only benchmark skeleton, and eight local checks pass",
     }
-    for item_id in ("B0.4", "B0.5"):
-        assert b0_status["items"][item_id]["status"] == "open"
-        assert b0_status["items"][item_id]["open_reason"] == "unimplemented"
+    assert b0_status["items"]["B0.4"] == {
+        "status": "closed",
+        "open_reason": None,
+        "evidence": "permanent Python import, workspace dependency, and data-only benchmark policy passes",
+    }
+    assert b0_status["items"]["B0.5"]["status"] == "open"
+    assert b0_status["items"]["B0.5"]["open_reason"] == "unimplemented"
     assert b0_status["status"] == "open"
     assert validator.validate_b0_status(b0_status, manifest, REPO_ROOT) == []
 
