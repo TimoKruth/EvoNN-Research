@@ -1,3 +1,18 @@
+---
+document_kind: execution_plan
+status: active
+revision: 2
+version: "2"
+authoritative: true
+b0_repository_model:
+  python_package_skeleton_count: 7
+  data_only_skeleton: shared-benchmarks/
+  benchmark_helpers_module: evonn_shared.benchmarks
+  data_only_check_script: scripts/ci/benchmarks-checks.sh
+  python_import_validation: required
+  data_skeleton_validation: layout_and_loader
+---
+
 # EvoNN Lab (claude-spec) — Master Execution Plan
 
 **Revision:** 2 (integrates `archive/2026-07-17-LAB_PLAN_CRITIQUE.md`; status was `REVISE_BEFORE_BOOTSTRAP`, now revised)
@@ -154,8 +169,8 @@ from all reporting surfaces (Phases 1/3 → WP-7.3).
 
 ## Gate B0 — Reproducible Authority And Repository Bootstrap
 
-- [ ] **B0.1** Lab repository created; work starts on an implementation
-  branch, never `main`.
+- [x] **B0.1** Lab repository created; work starts on an implementation
+  branch, never `main`. Local evidence: work is on `agent/b0-bootstrap`.
 - [ ] **B0.2** Governing sources pinned with a checked-in provenance
   manifest (upstream URL, exact commit, declared spec version, import
   date, tree digest) — commit-pinned submodule or subtree preferred:
@@ -163,21 +178,34 @@ from all reporting surfaces (Phases 1/3 → WP-7.3).
   `claudex-spec/19-research-interop.md` (consumer acceptance is governed
   by the Product chapter, not by Lab documents). A recorded procedure
   defines how spec upgrades are reviewed and reflected in traceability.
-- [ ] **B0.3** Package skeletons for all eight packages (Shared,
-  shared-benchmarks, Contenders, Compare, Prism, Topograph, Stratograph,
-  Primordia): importable module, empty test, per-package check script.
-- [ ] **B0.4** Import-direction policy tests green across all skeletons
-  (engine↛engine, shared↛engines).
+  **Open blocker:** `authoritative_remote_url_absent`; the current pin is
+  truthful local-only/provisional authority with null upstream URLs.
+- [x] **B0.3** seven importable Python package skeletons (Shared,
+  Contenders, Compare, Prism, Topograph, Stratograph, Primordia), each with
+  an importable module, empty test, and per-package check script; plus
+  one tested data-only `shared-benchmarks/` skeleton with an independently
+  invocable dedicated check script (`scripts/ci/benchmarks-checks.sh`).
+  Benchmark resolution helpers live in `evonn_shared.benchmarks`;
+  `shared-benchmarks/` is not a Python package. Local package/data checks pass.
+- [x] **B0.4** Import-direction policy tests green across all seven Python
+  skeletons (engine↛engine, shared↛engines). The data-only
+  `shared-benchmarks/` skeleton is layout- and catalog-loader-validated, not
+  import-validated. The permanent policy validator passes locally.
 - [ ] **B0.5** Both CI hosts execute real (non-stub) no-op workflows:
   Linux trust lane and macOS engine lane; Linux install proves MLX is
   platform-conditional; CI fixture artifacts carry exact host/runtime
   metadata; skeletons declare backend-capability manifests.
-- [ ] **B0.6** Single-active-plan policy test green.
+  **Open blocker:** `hosted_ci_not_executed`; workflow contracts and local
+  bootstrap probes pass, but no hosted runs or uploaded artifacts exist.
+- [x] **B0.6** Single-active-plan policy test green; the consolidated plan
+  remains the sole active execution plan.
 
 **Lane split & sync:** B0 is executed **jointly** (it is small and creates
 the shared ground both lanes stand on).
 
-**Exit (contract evidence):** all six items green in CI on both hosts.
+**Exit (contract evidence):** Gate B0 exit remains open; Phase 0 cannot begin.
+B0.2 and B0.5 must both close, then joint integration must pass on the hosted
+Linux and macOS evidence before the Phase 0 interfaces are frozen.
 
 ---
 
@@ -254,9 +282,10 @@ loader signatures (B→A for validators).
   terminology in claims or docs.
 
 **Phase 0 exit (contract evidence):** all WPs green; both CI lanes green;
-"contracts import in all Phase 0 packages **and all B0 skeletons**"
-(import-direction suite); integrity suite green including the reference
-resume proof; Tier A packs load-validated. The integrity gate remains
+contracts import in all Phase 0 packages and all seven Python B0 skeletons
+(import-direction suite); the data-only `shared-benchmarks/` B0 skeleton passes
+its layout and catalog-loader checks; integrity suite green including the
+reference resume proof; Tier A packs load-validated. The integrity gate remains
 **open-labeled** for engine-specific resume/speciation hooks until each
 engine proves them — a placeholder can never represent engine integrity.
 
@@ -714,9 +743,11 @@ provenance-envelope schema (A→B, co-signed before fixture work starts).
 
 ## Immediate Next Actions
 
-1. Execute **Gate B0** (repository, pinned authorities, skeletons, both CI
-   lanes, policy tests); install this file as `CONSOLIDATED_PLAN.md`.
-2. Expand **WP-0.1** as the first nested checklist in the consolidated
-   plan and execute.
-3. Proceed through Phase 0 in order; hold the Foundation Integrity Gate
-   review at phase exit before starting Phase 1.
+1. Create the authoritative repository remote.
+2. Update provenance and close B0.2 only after every pinned authority URL
+   matches that configured remote.
+3. Run both hosted workflows, collect their uploaded artifacts, and close B0.5
+   only after the Linux and macOS evidence validates.
+4. Rerun joint Gate B0 integration and keep the gate open on any failed item.
+5. After all six items close, freeze the Phase 0 interfaces and split Lane A/Lane B
+   exactly as defined in the Phase 0 lane block.

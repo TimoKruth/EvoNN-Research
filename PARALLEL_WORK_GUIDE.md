@@ -1,115 +1,48 @@
-# Parallel Work Guide — Who Can Build What, When
+---
+document_kind: guide
+status: current
+authoritative: false
+---
 
-**Audience:** any agent joining this program. Read this first; details live
-in `PROGRAM_CHARTER.md` (program level) and `LAB_PLAN.md` (Lab level).
+# Parallel Work Guide
 
-## The One-Minute Version
+This is a non-authoritative operating guide. `CONSOLIDATED_PLAN.md`, the pinned specifications, and the program charter remain the governing sources. If this guide drifts from them, those sources win.
 
-There are **two levels of parallelism**:
+## Level 1 — Lab and Product repositories
 
-1. **Program level:** the Lab (research platform, claude-spec) and the
-   Product (claudex-spec) are separate repos that never share code. They
-   can be built fully in parallel, forever. The only coordination is the
-   interop boundary: schemas first, conformance on each side, then real
-   artifacts flow.
-2. **Lab level:** inside the Lab, work runs in **phases that are strictly
-   sequential** (0 → 7), but **each phase splits into two parallel lanes
-   (A and B)** with a joint integration step at the end.
+The Lab and Product repositories can develop in parallel and independently. Product foundations do not wait for Lab progress, and neither repository imports the other's code; real artifact influence waits for Lab I1 and Product I2. Only after both producer and consumer conformance pass may the first real crossing be registered. Before then, fixtures and co-signed schemas allow parallel build without authorizing real Lab-derived influence on Product behavior.
 
-The rhythm inside every Lab phase:
+## Level 2 — Lab phase lanes
 
-```
-freeze interfaces → work in parallel (A ∥ B) → cross-review each other
-→ integrate jointly → pass the exit gate together → next phase
-```
+Lab phases remain sequential: Gate B0, then Phases 0 through 7. Inside each phase, Lane A and Lane B may work in parallel only after the phase interfaces are jointly frozen. The operating rhythm is:
 
-## Program Level: What Is Parallel Across The Two Projects
+**freeze interfaces → parallel lanes → cross-review → joint integration → joint gate**
 
-| | Parallel? | Why |
-|---|---|---|
-| Lab development ∥ Product development | ✅ always | separate repos, zero code sharing, typed-artifact boundary only |
-| Lab research ∥ Product foundations (contracts, persistence, data governance, web) | ✅ always | Product existence never waits on Lab progress |
-| Interop schema/fixture work (I0) | ✅ both sides, once co-signed | each side builds its half against shared fixtures |
-| **Real Lab artifacts influencing the Product** | ⛔ sequential | requires **I1** (Lab producer conformance) **and** **I2** (Product consumer conformance) first; first real crossing = I3 |
-| Product adopting a Lab engine | ⛔ gated + optional | only after I3, via dossier + revalidation; never blocks Product progress |
-
-**Rule of the boundary:** Lab evidence is prior information for the
-Product, never proof. Product rejections flow back to the Lab as
-reverse-dossiers. Neither side ever blocks the other.
-
-## Lab Level: What Is Sequential
-
-**The phases themselves.** Each phase builds the ground the next one
-stands on — do not start a phase before the previous exit gate passed:
-
-```
-B0 → Phase 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7
-```
-
-- **B0** pins the specs and creates skeletons (joint, small).
-- **Phase 0** contracts + integrity — everything depends on these.
-- **Phase 1** trust layer (Contenders + Compare) **before** any engine —
-  engines must not define their own favorable comparison system.
-- **Phase 2** first engines need the trust layer to be measured.
-- **Phase 3** evidence/statistics need real engine output to aggregate.
-- **Phase 4** second engine cohort needs the evidence layer to be judged.
-- **Phase 5** transfer proof needs Primordia (seeds) + Topograph (consumer)
-  + the registry (classification).
-- **Phase 6** QD/portfolio/L-SCI need everything above as evidence base.
-- **Phase 7** hardening + Observatory need stable reporting surfaces.
-
-**Always joint (never parallel):** B0 bootstrap; the Foundation Integrity
-Gate; every phase exit decision; the transfer proof campaign (5.4); the
-L-SCI closure (6.6); portfolio statuses (6.5); release governance (7.5);
-interop gate evaluations.
-
-## Lab Level: What Is Parallel (The Lane Table)
-
-Within each phase, Lane A and Lane B own disjoint packages/modules:
-
-| Phase | Lane A | Lane B | Joint |
+| Phase | Lane A | Lane B | Joint work |
 |---|---|---|---|
-| 0 | contract/budget/telemetry models, identity + RNG | tooling/CI, checkpoints, RunStore, benchmarks, LM cache | integrity gate |
-| 1 | Contenders + audit/quality analyzers | Compare orchestration, trends, dashboard | exit fair-matrix |
-| 2 | **Prism** (whole engine) | **Topograph** (whole engine) | integration + telemetry conformance |
-| 3 | evidence registry + dashboard/L4 | report vocabularies + statistics | PR policy checker |
-| 4 | **Stratograph** (whole engine) | **Primordia** + Tier B packs | integration + CLI conformance |
-| 5 | seed schema + Topograph consumption | transfer surfaces + campaign manifest | the proof campaign |
-| 6 | QD, MAP-Elites, deferred hardware scope | LM diagnostic, tier hardening | portfolio + L-SCI |
-| 7 | performance workflow + optimization | Observatory + automation loop | release governance |
-| I (from Ph. 3) | versioning + dossier schema | fixtures + producer conformance | reverse-dossiers, I0/I1 |
+| 0 | WP-0.2, 0.3, 0.4, 0.5 | WP-0.1, 0.6, 0.7, 0.8, 0.9 | WP-0.10 integrity gate + phase exit |
+| 1 | WP-1.1, 1.2, 1.7, 1.8 | WP-1.3, 1.4, 1.5, 1.6 | phase-exit fair-matrix run |
+| 2 | WP-2.1–2.4 | WP-2.5–2.9 | WP-2.10 + exit cohort |
+| 3 | WP-3.1, 3.4 | WP-3.2, 3.3 | WP-3.5 + phase exit |
+| 4 | WP-4.1–4.4 | WP-4.5, 4.6, 4.7 | WP-4.8 + exit cohort |
+| 5 | WP-5.1, 5.2 | WP-5.3 | WP-5.4 transfer proof campaign |
+| 6 | WP-6.1, 6.2 | WP-6.3, 6.4 | WP-6.5 portfolio statuses + WP-6.6 L-SCI |
+| 7 | WP-7.1, 7.2 | WP-7.3, 7.4 | WP-7.5 release governance + phase exit |
 
-The engine phases (2 and 4) are the cleanest splits: the
-"engines-never-import-engines" rule means the lanes have **zero shared
-interfaces by design**.
+Lane ownership, branch naming, interface-change review, cross-review, and joint-integration rules are defined in `CONSOLIDATED_PLAN.md` and are not redefined here.
 
-## The Six Lane Rules (Short Form)
+## Joint and nonparallel points
 
-1. **Ownership** — touch only your lane's packages/modules for the phase.
-   A file collision between lanes is a process defect.
-2. **Interface freeze** — co-sign the phase's cross-lane
-   types/CLIs/schemas at phase start; mid-phase changes need a joint
-   mini-review.
-3. **Branches** — `agent/p<N>-lane-<a|b>-<slug>`; integrate on
-   `agent/p<N>-integrate`.
-4. **Cross-review** — your work merges only through a PR reviewed by the
-   *other* lane's agent, checked against the pinned spec and the WP
-   requirements. Review for real; you are accountable for what you
-   approve.
-5. **Joint integration** — merge both lanes, run full CI on both hosts +
-   integrity suite + cross-cutting suites + exit commands, fix defects
-   pairwise, *then* evaluate the exit gate together.
-6. **Fallback** — one agent alone runs the lanes sequentially (A then B);
-   the integration step still runs unchanged.
+The following remain joint decisions or nonparallel integration points: B0, Foundation Integrity Gate, phase exits, transfer proof, L-SCI, portfolio status, and release governance. A lane cannot close any of these unilaterally.
 
-## Practical Starting Points
+## Current authorization state
 
-- **Two agents on the Lab:** do B0 together, then take Lane A and Lane B
-  of Phase 0 (`LAB_PLAN.md` → "Lane split & sync" blocks per phase).
-- **One agent on the Lab, one on the Product:** the Lab agent follows
-  `LAB_PLAN.md`; the Product agent follows `claudex-spec/15` Horizons 0–2
-  in a new repo. Coordinate only on Workstream C (interop schemas) —
-  co-sign the dossier/fixture schemas when both sides reach them.
-- **Never do:** import code across the Lab/Product boundary; start a Lab
-  phase before the prior exit gate; let one lane's agent approve their
-  own work; treat Lab evidence as Product proof.
+Gate B0 local implementation is complete, but the gate remains open on B0.2 (`authoritative_remote_url_absent`) and B0.5 (`hosted_ci_not_executed`). Therefore the first lane split is not authorized, and no Phase 0 work may begin.
+
+After both blockers close and joint B0 integration passes, the first safe parallel point is Phase 0. Before branches begin, both lanes must jointly freeze the Phase 0 interfaces from the consolidated plan:
+
+- canonical-encoding/digest API, Lane A to Lane B for checkpoint checksums;
+- export model shapes, Lane A to Lane B for RunWorkspace fixtures;
+- catalog loader signatures, Lane B to Lane A for validators.
+
+Only then may Phase 0 split exactly as recorded above: Lane A owns WP-0.2 through WP-0.5; Lane B owns WP-0.1 and WP-0.6 through WP-0.9; WP-0.10 and the phase exit remain joint.

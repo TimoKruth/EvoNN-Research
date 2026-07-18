@@ -1,0 +1,279 @@
+{
+  "blockers": {
+    "B0.2": "authoritative_remote_url_absent",
+    "B0.5": "hosted_ci_not_executed"
+  },
+  "checked_in_evidence": {
+    ".github/workflows/linux-trust.yml": "715fee538f5751902ad4b2e0ffc262c73e5a4066a5b50f3bab1fa2def1bc00ee",
+    ".github/workflows/macos-engines.yml": "d06c402a85d35fc0773d435fd987f67a83fc24720b56af974032aff8d331c1f8",
+    "CONSOLIDATED_PLAN.md": "fdd039f99d86c20d5116fc965bb8b9ea1811a0bcc9dff6b35da36345f3586b52",
+    "PARALLEL_WORK_GUIDE.md": "642db3b5a3df5fc67a1d749a679b9b4cfb26edfaac1815894ffdcef39d3183c2",
+    "governance/SPEC_TRACEABILITY.md": "99a22c482e823a7971faa95a45cd800e6ad56f301e27e37f6b2958512f4e0b91",
+    "governance/SPEC_UPGRADE_PROCESS.md": "acc48a7857fb325399b734b3580b0fdd20b0c8b10c811be0ecce67cb7e890d22",
+    "governance/authority-provenance.yaml": "4269ba59aa4ca7b3acc2aaef8f26be3d1df6dc0560d4ef4fe8478ceee60dc4bf",
+    "governance/b0-status.yaml": "5dcb5d2c814ee953adcf04e7acc1c0cc4386c392795a59d2b573ece3fc30a839",
+    "pyproject.toml": "c2c6853f5b85fb8af4b7a3fad3c256c2c4833d759a8993a114754f151426063e",
+    "research/logs/2026-07-18-dynamic-import-policy.md": "f3b3a7e18e7a1384b6bfaae04bb4802cb62a36e3043e0da278abc57412b04ead",
+    "reviews/2026-07-18-b0-cross-review.md": "39afa085164b24e186fcbfd5ec6eaf80c6f44c968a11984f7280917377ecb258",
+    "scripts/ci/benchmarks-checks.sh": "d47d9bf909cc7d63e26c48f66e99ab330d1ce247a44c7a64a7abee15a2c968c5",
+    "scripts/ci/compare-checks.sh": "c6e33621a773d90e9f1b3b70f7dfaf1525230f3d90772af5a2280a96ec686300",
+    "scripts/ci/contenders-checks.sh": "53416d07a32a395ebb1cc28ffc396a59c20b9137c3fdcdcd64eb2af6b9907078",
+    "scripts/ci/primordia-checks.sh": "fb8cbce9c9fc16a56fe089eaf7bd34580d5786969721d9160383e3196a8a8a82",
+    "scripts/ci/prism-checks.sh": "9dafbf352b07920bf06850781471a9f072f1c73ad6081d3103a0d1ca8351a004",
+    "scripts/ci/runtime_probe.py": "854b0dcbc9a79bb3bfc3b81921d0297dca84fc7ab38e32d74992bb3ce017c082",
+    "scripts/ci/shared-checks.sh": "398aa3c8eaccfa80ce1600e0254e7854234268c38862b168405b24df0284fe36",
+    "scripts/ci/stratograph-checks.sh": "8357ff6dd54bb00593864cd22c7efe885683e857bc243f4e59f344c6ffdc85fd",
+    "scripts/ci/topograph-checks.sh": "3a30a37af9131d250667f8ffe874b0c85455a3bc191f0758da0a4da608c9fe10",
+    "scripts/policy/validate_backend_capabilities.py": "c50676a5ec5146a1341f527c67d7f5974c979868b55fded4fdc3ef408322a268",
+    "scripts/policy/validate_import_boundaries.py": "569b9ca84cba51ab55a929683a33ff5f5acc8e2a895f27ccff5bf1e96f3a8a84",
+    "scripts/policy/validate_repository_governance.py": "25380b35e312c08832e6df51af92b188b11cb72ba266b7ebe6f1fc096301de92",
+    "tests/ci/test_runtime_probe.py": "ca1e002ce021bf66ae1f0f3c36f1ea3bd25b06507aa62af329aed069926dbc86",
+    "tests/policy/test_b0_ci_bootstrap.py": "fe59153056c25277fd77904cb8eac11c169125c63814b6e55ed774e161eeafc8",
+    "tests/policy/test_b0_integration_report.py": "13dc9e1ef99af8b946f73d932dada06a9e4a2a01931c25d9eec1cd8bb139c27a",
+    "tests/policy/test_backend_capabilities.py": "11b846dbafe23d3c024caf44d21dee676cd93af3890e6f1985086b0b1a0eacb9",
+    "tests/policy/test_import_boundaries.py": "49092f5740c0e90a691ac898a073b890f393f942ac4de08b25a5190f4e846a5b",
+    "tests/policy/test_repository_governance.py": "ab7abb107f53a50746d8cc0e07e629374371f457c427054a29d15d55b7c612c0",
+    "tests/policy/test_workspace_skeletons.py": "e5abc19aa4ca75b3ba779591df9eddb4419347d87914d3576d5b319d563b50cf",
+    "uv.lock": "efabedff03ddb0b0fbbff8a70ae87886e379fc244d7b102ffee9ee5b6a2f45c5"
+  },
+  "evaluated_at": "2026-07-18T19:15:03Z",
+  "items": {
+    "B0.1": {
+      "evidence_paths": [
+        "CONSOLIDATED_PLAN.md",
+        "governance/b0-status.yaml"
+      ],
+      "reason": null,
+      "state": "locally_satisfied"
+    },
+    "B0.2": {
+      "evidence_paths": [
+        "governance/authority-provenance.yaml",
+        "governance/SPEC_UPGRADE_PROCESS.md",
+        "governance/SPEC_TRACEABILITY.md"
+      ],
+      "reason": "authoritative_remote_url_absent",
+      "state": "open"
+    },
+    "B0.3": {
+      "evidence_paths": [
+        "pyproject.toml",
+        "uv.lock",
+        "tests/policy/test_workspace_skeletons.py",
+        "scripts/ci/shared-checks.sh",
+        "scripts/ci/benchmarks-checks.sh",
+        "scripts/ci/compare-checks.sh",
+        "scripts/ci/contenders-checks.sh",
+        "scripts/ci/prism-checks.sh",
+        "scripts/ci/topograph-checks.sh",
+        "scripts/ci/stratograph-checks.sh",
+        "scripts/ci/primordia-checks.sh"
+      ],
+      "reason": null,
+      "state": "closed"
+    },
+    "B0.4": {
+      "evidence_paths": [
+        "scripts/policy/validate_import_boundaries.py",
+        "tests/policy/test_import_boundaries.py",
+        "research/logs/2026-07-18-dynamic-import-policy.md"
+      ],
+      "reason": null,
+      "state": "closed"
+    },
+    "B0.5": {
+      "evidence_paths": [
+        ".github/workflows/linux-trust.yml",
+        ".github/workflows/macos-engines.yml",
+        "scripts/ci/runtime_probe.py",
+        "scripts/policy/validate_backend_capabilities.py",
+        "tests/policy/test_b0_ci_bootstrap.py",
+        "tests/policy/test_backend_capabilities.py",
+        "tests/ci/test_runtime_probe.py",
+        ".artifacts/b0/local/numpy/b0-runtime-probe.json",
+        ".artifacts/b0/local/mlx/b0-runtime-probe.json"
+      ],
+      "reason": "hosted_ci_not_executed",
+      "state": "open"
+    },
+    "B0.6": {
+      "evidence_paths": [
+        "scripts/policy/validate_repository_governance.py",
+        "tests/policy/test_repository_governance.py",
+        "tests/policy/test_b0_integration_report.py",
+        "PARALLEL_WORK_GUIDE.md",
+        "reviews/2026-07-18-b0-cross-review.md"
+      ],
+      "reason": null,
+      "state": "locally_satisfied"
+    }
+  },
+  "local_runtime_probes": [
+    {
+      "artifact_path": ".artifacts/b0/local/numpy/b0-runtime-probe.json",
+      "backend": "numpy",
+      "backend_version": "2.5.1",
+      "evidence_scope": "local_bootstrap_only",
+      "execution_scope": "local",
+      "host_architecture": "arm64",
+      "host_os": "Darwin",
+      "manifest_path": "EvoNN-Stratograph/backend-capabilities.json",
+      "optional_local_evidence": true,
+      "qualification": "bootstrap_probe_only",
+      "sha256": "5f9dbe0bc738829d1f66950ecd674760ea0b0dccb18db1c61992104100b111f6",
+      "system": "stratograph"
+    },
+    {
+      "artifact_path": ".artifacts/b0/local/mlx/b0-runtime-probe.json",
+      "backend": "mlx",
+      "backend_version": "0.32.0",
+      "evidence_scope": "local_bootstrap_only",
+      "execution_scope": "local",
+      "host_architecture": "arm64",
+      "host_os": "Darwin",
+      "manifest_path": "EvoNN-Prism/backend-capabilities.json",
+      "optional_local_evidence": true,
+      "qualification": "bootstrap_probe_only",
+      "sha256": "48dd72bc28be24d6a1803974d36eef955fe20f93632424191f7ec2d25a83433b",
+      "system": "prism"
+    }
+  ],
+  "next_transition": "After B0.2 and B0.5 both close, rerun joint Gate B0 integration, then jointly freeze the Phase 0 interfaces before Lane A and Lane B branches begin.",
+  "overall_state": "open",
+  "parallel_handoff_blockers": [
+    "B0.2",
+    "B0.5"
+  ],
+  "parallel_handoff_ready": false,
+  "report_kind": "gate_b0_integration",
+  "repository": {
+    "branch": "agent/b0-bootstrap",
+    "evaluated_commit": "ca424270ffc9cd9c2eecf3382c63840cc44b381a",
+    "evaluated_tree": "9dfdc567456a5788d5524169c1f7522ad88d52f1",
+    "relationship": "implementation commit immediately before the evidence-only report commit"
+  },
+  "schema_version": "1.0.0",
+  "verification": {
+    "commands": [
+      {
+        "command": "uv lock --check",
+        "result": "pass"
+      },
+      {
+        "command": "uv sync --all-packages --group dev --locked",
+        "result": "pass"
+      },
+      {
+        "command": "uv run --locked --group dev pytest -q",
+        "result": "pass"
+      },
+      {
+        "command": "uv run --locked --group dev ruff check .",
+        "result": "pass"
+      },
+      {
+        "command": "uv run --locked --group dev python scripts/policy/validate_import_boundaries.py",
+        "result": "pass"
+      },
+      {
+        "command": "python3 scripts/policy/validate_repository_governance.py",
+        "result": "pass"
+      },
+      {
+        "command": "uv run --locked --group dev python scripts/policy/validate_backend_capabilities.py",
+        "result": "pass"
+      },
+      {
+        "command": "scripts/ci/b0-policy-checks.sh",
+        "result": "pass"
+      },
+      {
+        "command": "scripts/ci/shared-checks.sh (from /tmp)",
+        "result": "pass"
+      },
+      {
+        "command": "scripts/ci/benchmarks-checks.sh (from /tmp)",
+        "result": "pass"
+      },
+      {
+        "command": "scripts/ci/compare-checks.sh (from /tmp)",
+        "result": "pass"
+      },
+      {
+        "command": "scripts/ci/contenders-checks.sh (from /tmp)",
+        "result": "pass"
+      },
+      {
+        "command": "scripts/ci/prism-checks.sh (from /tmp)",
+        "result": "pass"
+      },
+      {
+        "command": "scripts/ci/topograph-checks.sh (from /tmp)",
+        "result": "pass"
+      },
+      {
+        "command": "scripts/ci/stratograph-checks.sh (from /tmp)",
+        "result": "pass"
+      },
+      {
+        "command": "scripts/ci/primordia-checks.sh (from /tmp)",
+        "result": "pass"
+      },
+      {
+        "command": "uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py generate --backend numpy --system stratograph --manifest EvoNN-Stratograph/backend-capabilities.json --output .artifacts/b0/local/numpy/b0-runtime-probe.json --execution-mode local",
+        "result": "pass"
+      },
+      {
+        "command": "uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py validate --input .artifacts/b0/local/numpy/b0-runtime-probe.json --execution-mode local --expected-backend numpy",
+        "result": "pass"
+      },
+      {
+        "command": "uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py generate --backend mlx --system prism --manifest EvoNN-Prism/backend-capabilities.json --output .artifacts/b0/local/mlx/b0-runtime-probe.json --execution-mode local",
+        "result": "pass"
+      },
+      {
+        "command": "uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py validate --input .artifacts/b0/local/mlx/b0-runtime-probe.json --execution-mode local --expected-backend mlx",
+        "result": "pass"
+      },
+      {
+        "command": "uv run --locked --group dev pytest -q tests/policy/test_b0_ci_bootstrap.py",
+        "result": "pass"
+      },
+      {
+        "command": "git diff --check",
+        "result": "pass"
+      }
+    ],
+    "overall": "pass",
+    "summary": {
+      "failed": 0,
+      "passed": 22
+    }
+  },
+  "workflows": [
+    {
+      "actions": [
+        "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+        "astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990",
+        "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"
+      ],
+      "name": "B0 Linux trust lane",
+      "path": ".github/workflows/linux-trust.yml",
+      "python_version": "3.13",
+      "runner": "ubuntu-latest",
+      "uv_version": "0.5.13"
+    },
+    {
+      "actions": [
+        "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+        "astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990",
+        "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"
+      ],
+      "name": "B0 macOS engine lane",
+      "path": ".github/workflows/macos-engines.yml",
+      "python_version": "3.13",
+      "runner": "macos-15",
+      "uv_version": "0.5.13"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "system": "contenders",
+  "runtime_role": "contender_skeleton",
+  "capabilities": [
+    {
+      "id": "sklearn_contender",
+      "platforms": ["darwin", "linux"],
+      "implemented": false,
+      "dependency": "scikit-learn",
+      "dependency_condition": "Not declared in B0; no contender runtime is implemented or qualified."
+    }
+  ],
+  "evidence": {
+    "scientific": false,
+    "portability": false,
+    "producer_conformance": false
+  }
+}
