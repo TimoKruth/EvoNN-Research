@@ -738,16 +738,16 @@ def validate_dependencies(repo_root: Path) -> list[str]:
     return sorted(set(diagnostics), key=lambda item: item.encode("utf-8"))
 
 
-STRICT_PRIMITIVE_EXEMPT_PATHS = {Path("scripts/policy/validate_import_boundaries.py")}
 _FORBIDDEN_PROVIDER_IMPORTS = {"runpy", "builtins"}
 _FORBIDDEN_FROM_IMPORTS = {
     "importlib": {"import_module", "*"},
     "runpy": {"run_module", "*"},
     "builtins": {"__import__", "exec", "eval", "*"},
+    "operator": {"attrgetter", "methodcaller", "*"},
 }
 _FORBIDDEN_CALLS = {"__import__", "exec", "eval"}
 _FORBIDDEN_REFLECTION_NAMES = {"import_module", "run_module", "__import__", "exec", "eval"}
-_REFLECTION_CALLS = {"getattr", "hasattr", "setattr", "delattr", "attrgetter", "methodcaller"}
+_FORBIDDEN_ATTRIBUTE_ACQUISITIONS = _FORBIDDEN_REFLECTION_NAMES | {"attrgetter", "methodcaller"}
 
 
 class _StrictPythonPolicy(ast.NodeVisitor):
@@ -758,14 +758,12 @@ class _StrictPythonPolicy(ast.NodeVisitor):
         source_distribution: str,
         allowed_targets: set[str],
         diagnostics: list[str],
-        primitive_exempt: bool,
     ) -> None:
         self.repo_root = repo_root
         self.path = path
         self.source_distribution = source_distribution
         self.allowed_targets = allowed_targets
         self.diagnostics = diagnostics
-        self.primitive_exempt = primitive_exempt
         self.provider_import_reported = False
 
     def _error(self, line: int, message: str) -> None:
@@ -784,8 +782,6 @@ class _StrictPythonPolicy(ast.NodeVisitor):
     def visit_Import(self, node: ast.Import) -> None:
         for alias in node.names:
             self._check_static_import(alias.name, node.lineno)
-            if self.primitive_exempt:
-                continue
             root = alias.name.partition(".")[0]
             if alias.name == "importlib" or root in _FORBIDDEN_PROVIDER_IMPORTS:
                 self.provider_import_reported = True
@@ -797,7 +793,7 @@ class _StrictPythonPolicy(ast.NodeVisitor):
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         if node.level == 0 and node.module:
             self._check_static_import(node.module, node.lineno)
-        if self.primitive_exempt or node.level != 0 or not node.module:
+        if node.level != 0 or not node.module:
             return
         forbidden = _FORBIDDEN_FROM_IMPORTS.get(node.module)
         if not forbidden:
@@ -826,73 +822,71 @@ class _StrictPythonPolicy(ast.NodeVisitor):
         return None
 
     def visit_Name(self, node: ast.Name) -> None:
-        if not self.primitive_exempt and isinstance(node.ctx, ast.Load) and node.id in _FORBIDDEN_CALLS:
+        if not isinstance(node.ctx, ast.Load):
+            return
+        if node.id in _FORBIDDEN_CALLS:
             self._error(node.lineno, f"forbidden dynamic execution primitive reference: {node.id}")
+        elif node.id in {"getattr", "hasattr", "setattr", "delattr"}:
+            self._error(node.lineno, f"forbidden reflection primitive acquisition: {node.id}")
 
     def visit_Attribute(self, node: ast.Attribute) -> None:
         if (
-            not self.primitive_exempt
-            and not self.provider_import_reported
+            not self.provider_import_reported
             and isinstance(node.ctx, ast.Load)
-            and node.attr in _FORBIDDEN_REFLECTION_NAMES
+            and node.attr in _FORBIDDEN_ATTRIBUTE_ACQUISITIONS
         ):
             self._error(node.lineno, f"forbidden dynamic primitive attribute acquisition: {node.attr}")
         self.generic_visit(node)
 
     def visit_Subscript(self, node: ast.Subscript) -> None:
-        if not self.primitive_exempt:
-            reflected = self._literal_string(node.slice)
-            if reflected in _FORBIDDEN_REFLECTION_NAMES:
-                self._error(node.lineno, f"forbidden explicit reflection naming dynamic primitive: {reflected}")
+        reflected = self._literal_string(node.slice)
+        if reflected in _FORBIDDEN_REFLECTION_NAMES:
+            self._error(node.lineno, f"forbidden explicit reflection naming dynamic primitive: {reflected}")
         self.generic_visit(node)
 
     def visit_Call(self, node: ast.Call) -> None:
-        if not self.primitive_exempt:
-            function_name = self._call_name(node.func)
-            if function_name in _REFLECTION_CALLS:
-                reflected: str | None = None
-                if function_name in {"getattr", "hasattr", "setattr", "delattr"} and len(node.args) > 1:
-                    reflected = self._literal_string(node.args[1])
-                elif function_name in {"attrgetter", "methodcaller"} and node.args:
-                    reflected = self._literal_string(node.args[0])
-                if reflected in _FORBIDDEN_REFLECTION_NAMES:
-                    self._error(
-                        node.lineno,
-                        f"forbidden explicit reflection naming dynamic primitive: {reflected}",
-                    )
+        function_name = self._call_name(node.func)
+        direct_builtin_reflection = (
+            isinstance(node.func, ast.Name)
+            and function_name in {"getattr", "hasattr", "setattr", "delattr"}
+        )
+        if direct_builtin_reflection:
+            reflected = self._literal_string(node.args[1]) if len(node.args) > 1 else None
+            if reflected in _FORBIDDEN_REFLECTION_NAMES:
+                self._error(
+                    node.lineno,
+                    f"forbidden explicit reflection naming dynamic primitive: {reflected}",
+                )
+            for argument in node.args:
+                self.visit(argument)
+            for keyword in node.keywords:
+                self.visit(keyword.value)
+            return
         self.generic_visit(node)
 
 
-def _production_python_files(repo_root: Path) -> list[tuple[Path, str, set[str], bool]]:
-    files: list[tuple[Path, str, set[str], bool]] = []
+def _production_python_files(repo_root: Path) -> list[tuple[Path, str, set[str]]]:
+    files: list[tuple[Path, str, set[str]]] = []
     for spec in PACKAGE_SPECS:
         source_root = repo_root / spec.directory / "src"
         if not source_root.is_dir():
             continue
         files.extend(
-            (path, spec.distribution, ALLOWED_INTERNAL_TARGETS[spec.distribution], False)
+            (path, spec.distribution, ALLOWED_INTERNAL_TARGETS[spec.distribution])
             for path in source_root.rglob("*.py")
         )
 
     scripts_root = repo_root / "scripts"
     if scripts_root.is_dir():
         for path in scripts_root.rglob("*.py"):
-            relative = path.relative_to(repo_root)
-            files.append(
-                (
-                    path,
-                    "repository-scripts",
-                    set(),
-                    relative in STRICT_PRIMITIVE_EXEMPT_PATHS,
-                )
-            )
+            files.append((path, "repository-scripts", set()))
     return sorted(files, key=lambda item: item[0].relative_to(repo_root).as_posix().encode("utf-8"))
 
 
 def validate_python_imports(repo_root: Path) -> list[str]:
     """Enforce static import edges and the strict production primitive ban."""
     diagnostics: list[str] = []
-    for path, source_distribution, allowed_targets, primitive_exempt in _production_python_files(repo_root):
+    for path, source_distribution, allowed_targets in _production_python_files(repo_root):
         try:
             source = path.read_text(encoding="utf-8")
             tree = ast.parse(source, filename=str(path))
@@ -908,7 +902,6 @@ def validate_python_imports(repo_root: Path) -> list[str]:
             source_distribution,
             allowed_targets,
             diagnostics,
-            primitive_exempt,
         ).visit(tree)
     return sorted(set(diagnostics), key=lambda item: item.encode("utf-8"))
 

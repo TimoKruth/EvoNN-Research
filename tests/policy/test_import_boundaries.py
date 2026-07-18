@@ -292,6 +292,44 @@ def test_dynamic_execution_and_explicit_reflection_are_strictly_banned(
     assert primitive in diagnostics[0]
 
 
+@pytest.mark.parametrize(
+    ("source", "primitive"),
+    [
+        ('reflect = getattr\nreflect(container, "import_module")\n', "getattr"),
+        ('consume(hasattr)\n', "hasattr"),
+        ('from operator import attrgetter as acquire\nacquire("run_module")\n', "attrgetter"),
+        ('from operator import methodcaller\n', "methodcaller"),
+        ('from operator import *\n', "operator"),
+        ('import operator\nacquire = operator.attrgetter\n', "attrgetter"),
+    ],
+)
+def test_reflection_primitive_acquisition_is_strictly_banned(
+    validator, repository_copy: Path, source: str, primitive: str
+) -> None:
+    _append_source(repository_copy, "EvoNN-Prism", "prism/reflection_alias.py", source)
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "reflection_alias.py" in diagnostics[0]
+    assert primitive in diagnostics[0]
+
+
+def test_benign_direct_reflection_calls_remain_allowed(validator, repository_copy: Path) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/benign_reflection.py",
+        '''value = getattr(container, "safe_name")
+exists = hasattr(container, "safe_name")
+setattr(container, "safe_name", value)
+delattr(container, "safe_name")
+''',
+    )
+
+    assert _diagnostics(validator, repository_copy) == []
+
+
 def test_wrappers_containers_and_control_flow_are_blocked_at_primitive_acquisition(
     validator, repository_copy: Path
 ) -> None:
@@ -357,19 +395,27 @@ loader("topograph.runtime")
     assert "import_module" in diagnostics[0]
 
 
-def test_production_scope_includes_shipped_scripts_with_exact_validator_allowlist(
+def test_production_scope_scans_validator_and_neighboring_path_variants(
     validator, repository_copy: Path
 ) -> None:
-    _append_script(repository_copy, "tools/forbidden.py", "import runpy\n")
-    _append_script(repository_copy, "policy/not_the_validator.py", "import importlib\n")
     copied_validator = repository_copy / "scripts/policy/validate_import_boundaries.py"
     assert copied_validator.is_file()
+    assert _diagnostics(validator, repository_copy) == []
+
+    copied_validator.write_text(
+        copied_validator.read_text(encoding="utf-8") + "\neval('1 + 1')\n",
+        encoding="utf-8",
+    )
+    _append_script(repository_copy, "tools/forbidden.py", "import runpy\n")
+    _append_script(repository_copy, "policy/not_the_validator.py", "import importlib\n")
+    _append_script(repository_copy, "policy/nested/validate_import_boundaries.py", "import builtins\n")
 
     diagnostics = _diagnostics(validator, repository_copy)
 
+    assert any("scripts/policy/validate_import_boundaries.py" in item and "eval" in item for item in diagnostics)
     assert any("scripts/tools/forbidden.py:1" in item and "runpy" in item for item in diagnostics)
     assert any("scripts/policy/not_the_validator.py:1" in item and "importlib" in item for item in diagnostics)
-    assert not any("scripts/policy/validate_import_boundaries.py" in item for item in diagnostics)
+    assert any("scripts/policy/nested/validate_import_boundaries.py:1" in item and "builtins" in item for item in diagnostics)
 
 
 def test_test_trees_are_exempt_but_similarly_named_production_paths_are_not(

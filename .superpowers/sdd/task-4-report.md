@@ -865,7 +865,7 @@ Production scope is exact:
 - every `.py` under all seven package `src/**` trees;
 - every shipped `.py` under `scripts/**`;
 - root and package `tests/**` remain outside production scope;
-- only `scripts/policy/validate_import_boundaries.py` receives the exact primitive-detector exemption; similarly named files and neighboring policy scripts are scanned normally;
+- `scripts/policy/validate_import_boundaries.py` is scanned by the same primitive policy as every other shipped script; there is no whole-file exemption. Only directly inspected benign reflection calls are syntactically distinguished from reflection-helper acquisition;
 - static forbidden internal imports are still checked in the validator and every other shipped script.
 
 The abandoned approach and strict replacement are recorded as non-authoritative negative evidence in `research/logs/2026-07-18-dynamic-import-policy.md`. Its frontmatter declares `document_kind: research_log`, `status: completed`, and `authoritative: false`; governance validation confirms it is not an active plan.
@@ -1004,6 +1004,138 @@ exit=1
 
 A standalone safe `importlib.metadata` plus optional MLX import remains allowed, and the checked-in repository launched from `/tmp` emitted the single PASS line.
 
+## Strict-ban reflection acquisition re-review
+
+### RED evidence
+
+The final strict-ban review reproduced two syntactic gaps: builtin reflection helpers could be aliased/passed as values, and the validator file had a path-wide exemption. Tests were added first for builtin reflection acquisition, aliased `operator.attrgetter`/`methodcaller`, operator star/attribute acquisition, benign direct reflection, exact-validator injection, neighboring names, and nested path variants.
+
+Command:
+
+```sh
+uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py -k 'reflection_primitive_acquisition or benign_direct_reflection or production_scope_scans'
+```
+
+Exact RED output:
+
+```text
+FFFFFF.F                                                                 [100%]
+7 failed, 1 passed, 42 deselected in 0.33s
+```
+
+The benign direct-reflection guard passed; all six acquisition variants and the injected `eval` in the exact validator path failed to produce required diagnostics.
+
+### Implementation
+
+- Builtin `getattr`, `hasattr`, `setattr`, and `delattr` are now forbidden when loaded as values for assignment, containers, arguments, defaults, or aliases.
+- Direct calls to those four builtins are inspected syntactically without treating the function name as acquisition: dangerous primitive-name literals fail, while precise benign names remain allowed.
+- `from operator import attrgetter`, `methodcaller`, or `*` fails at import, including aliases.
+- `operator.attrgetter` and `operator.methodcaller` attribute acquisition fails without tracking aliases or control flow.
+- The entire validator-path exemption was deleted. The validator, neighboring scripts, same-basename files, and nested path variants all receive identical import/execution/reflection checks.
+- An injected `eval('1 + 1')` in `scripts/policy/validate_import_boundaries.py` now fails; the unmodified validator remains green without any exception.
+
+Focused GREEN:
+
+```text
+..................................................                       [100%]
+50 passed in 1.65s
+```
+
+### Final verification matrix
+
+```text
+== uv lock --check ==
+Resolved 15 packages in 5ms
+
+== uv sync --all-packages --group dev --locked ==
+Resolved 15 packages in 5ms
+Audited 14 packages in 0.22ms
+
+== uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py ==
+..................................................                       [100%]
+50 passed in 1.65s
+
+== uv run --locked --group dev pytest -q ==
+........................................................................ [ 72%]
+............................                                             [100%]
+100 passed in 7.06s
+
+== uv run --locked --group dev ruff check . ==
+All checks passed!
+
+== uv run --locked --group dev python scripts/policy/validate_import_boundaries.py ==
+Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
+
+== python3 scripts/policy/validate_repository_governance.py ==
+Repository governance policy: PASS
+```
+
+### Final eight-script matrix
+
+```text
+== shared-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== benchmarks-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+...                                                                      [100%]
+3 passed in 0.25s
+
+== contenders-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== compare-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== prism-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== topograph-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== stratograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== primordia-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+```
+
+### CLI observation
+
+A fixture containing `reflect = getattr`, an aliased `operator.attrgetter`, benign direct `getattr`, and an injected `eval` in the exact validator path produced:
+
+```text
+Import boundary policy: FAIL (3 violations)
+ERROR: EvoNN-Prism/src/prism/operator_alias.py:1: evonn-prism: forbidden dynamic-loading primitive import: attrgetter from operator
+ERROR: EvoNN-Prism/src/prism/reflection_alias.py:1: evonn-prism: forbidden reflection primitive acquisition: getattr
+ERROR: scripts/policy/validate_import_boundaries.py:972: repository-scripts: forbidden dynamic execution primitive reference: eval
+exit=1
+```
+
+The benign direct `getattr(container, "safe_name")` produced no diagnostic, and the checked-in repository still emitted the single PASS line from `/tmp`.
+
 ## Concerns
 
-None. B0.4 remains honestly closed under the simpler strict primitive prohibition. Any future dynamic-loading exception requires an explicit reviewed policy update, a narrow exact allowlist, and written justification. Task 5 remains intentionally unimplemented.
+None. B0.4 remains honestly closed under the strict syntactic primitive/acquisition prohibition with no whole-file exemptions. Any future exception requires an explicit reviewed node/use-specific policy update and justification. Task 5 remains intentionally unimplemented.
