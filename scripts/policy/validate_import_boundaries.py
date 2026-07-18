@@ -575,7 +575,7 @@ def _runtime_entry_point_surfaces(
 ) -> list[tuple[str, tuple[str, ...], str, Any]]:
     entries: list[tuple[str, tuple[str, ...], str, Any]] = []
     for table_name in ("scripts", "gui-scripts"):
-        table = project.get(table_name)
+        table = project[table_name] if table_name in project else None
         if isinstance(table, dict):
             entries.extend(
                 (f"project.{table_name}.{name}", ("project", table_name), str(name), value)
@@ -604,13 +604,48 @@ def _validate_dependency_context(
     source: str,
     diagnostics: list[str],
 ) -> None:
-    allowed_targets = ALLOWED_INTERNAL_TARGETS.get(source, set())
+    allowed_targets = ALLOWED_INTERNAL_TARGETS[source] if source in ALLOWED_INTERNAL_TARGETS else set()
     locator = TomlLocator(manifest)
     dependency_names: set[str] = set()
     dependency_lines: dict[str, int] = {}
+    groups = metadata.get("dependency-groups")
+    dependency_groups = groups if isinstance(groups, dict) else {}
     for surface, requirements in _dependency_surfaces(metadata, manifest, locator, repo_root, source, diagnostics):
         for dependency in requirements:
-            if isinstance(dependency, dict) and set(dependency) == {"include-group"}:
+            if isinstance(dependency, dict) and surface.startswith("dependency-groups."):
+                line = _dependency_location(locator, surface)
+                if set(dependency) != {"include-group"} or not isinstance(dependency["include-group"], str) or not dependency["include-group"].strip():
+                    diagnostics.append(
+                        _diagnostic(
+                            repo_root,
+                            manifest,
+                            line,
+                            source,
+                            f"{surface} include-group must be a non-empty string in a single-key table",
+                        )
+                    )
+                    continue
+                included_group = dependency["include-group"]
+                if included_group not in dependency_groups:
+                    diagnostics.append(
+                        _diagnostic(
+                            repo_root,
+                            manifest,
+                            line,
+                            source,
+                            f"{surface} references missing dependency group {included_group!r}",
+                        )
+                    )
+                elif not isinstance(dependency_groups[included_group], list):
+                    diagnostics.append(
+                        _diagnostic(
+                            repo_root,
+                            manifest,
+                            line,
+                            source,
+                            f"{surface} references invalid dependency group {included_group!r}; expected a list",
+                        )
+                    )
                 continue
             if not isinstance(dependency, str):
                 diagnostics.append(
@@ -636,7 +671,8 @@ def _validate_dependency_context(
                 )
                 continue
             dependency_names.add(target)
-            dependency_lines.setdefault(target, _dependency_location(locator, surface, dependency))
+            if target not in dependency_lines:
+                dependency_lines[target] = _dependency_location(locator, surface, dependency)
             if target in SPEC_BY_DISTRIBUTION and target not in allowed_targets:
                 diagnostics.append(
                     _diagnostic(
@@ -711,7 +747,7 @@ def _validate_dependency_context(
                 _diagnostic(
                     repo_root,
                     manifest,
-                    dependency_lines.get(target, 1),
+                    dependency_lines[target] if target in dependency_lines else 1,
                     source,
                     f"internal dependency '{target}' must have a matching workspace = true source",
                 )
@@ -728,7 +764,8 @@ def _validate_dependency_context(
             )
             continue
         module_name = target_value.partition(":")[0].strip()
-        target_spec = SPEC_BY_IMPORT_ROOT.get(module_name.partition(".")[0])
+        import_root = module_name.partition(".")[0]
+        target_spec = SPEC_BY_IMPORT_ROOT[import_root] if import_root in SPEC_BY_IMPORT_ROOT else None
         if target_spec and target_spec.distribution != source and target_spec.distribution not in allowed_targets:
             diagnostics.append(
                 _diagnostic(
@@ -797,6 +834,7 @@ _METADATA_PLUGIN_APIS = frozenset(
 _PROVIDER_STAR_MODULES = {"importlib", "runpy", "builtins", "operator"}
 _ALLOWED_IMPORTLIB_METADATA_NAMES = {"version", "PackageNotFoundError"}
 _MAPPING_LOOKUP_METHODS = {"get", "__getitem__", "setdefault", "pop"}
+_MAPPING_POSITIONAL_COUNTS = {"get": {1, 2}, "__getitem__": {1}, "setdefault": {1, 2}, "pop": {1, 2}}
 _UNBOUND_LOOKUP_APIS = {"dict": {"get", "__getitem__"}, "object": {"__getattribute__"}}
 
 
@@ -840,7 +878,8 @@ class _StrictPythonPolicy(ast.NodeVisitor):
         )
 
     def _check_static_import(self, module_name: str, node: ast.AST) -> None:
-        target = SPEC_BY_IMPORT_ROOT.get(module_name.partition(".")[0])
+        import_root = module_name.partition(".")[0]
+        target = SPEC_BY_IMPORT_ROOT[import_root] if import_root in SPEC_BY_IMPORT_ROOT else None
         if target and target.distribution != self.source_distribution and target.distribution not in self.allowed_targets:
             self._error(
                 node,
@@ -933,7 +972,8 @@ class _StrictPythonPolicy(ast.NodeVisitor):
                 self._error(node, f"forbidden reserved primitive attribute acquisition: {node.attr}")
             elif (
                 isinstance(node.value, ast.Name)
-                and node.attr in _UNBOUND_LOOKUP_APIS.get(node.value.id, set())
+                and node.value.id in _UNBOUND_LOOKUP_APIS
+                and node.attr in _UNBOUND_LOOKUP_APIS[node.value.id]
             ):
                 self._error(node, f"forbidden unbound namespace lookup acquisition: {node.value.id}.{node.attr}")
             elif node.attr == "load" and self._contains_metadata_plugin_api(node.value):
@@ -953,19 +993,43 @@ class _StrictPythonPolicy(ast.NodeVisitor):
             self._error(node, f"forbidden explicit reflection naming reserved primitive: {reflected}")
         self.generic_visit(node)
 
+    @staticmethod
+    def _expanded_positional_arguments(node: ast.Call) -> list[ast.expr] | None:
+        expanded: list[ast.expr] = []
+        for argument in node.args:
+            if not isinstance(argument, ast.Starred):
+                expanded.append(argument)
+            elif isinstance(argument.value, (ast.List, ast.Tuple)):
+                expanded.extend(argument.value.elts)
+            else:
+                return None
+        return expanded
+
+    def _check_mapping_lookup_call(self, node: ast.Call, function_name: str) -> None:
+        arguments = self._expanded_positional_arguments(node)
+        keyword_key = next((keyword.value for keyword in node.keywords if keyword.arg == "key"), None)
+        key_expression = arguments[0] if arguments else keyword_key
+        reflected = self._literal_string(key_expression)
+        valid_form = (
+            arguments is not None
+            and len(arguments) in _MAPPING_POSITIONAL_COUNTS[function_name]
+            and not node.keywords
+        )
+        if reflected in _RESERVED_PRIMITIVE_NAMES:
+            self._error(
+                node,
+                f"forbidden mapping {function_name} acquisition of reserved primitive: {reflected}",
+            )
+        elif not valid_form or reflected is None:
+            self._error(
+                node,
+                f"forbidden mapping {function_name} call: requires a literal safe key in a valid positional call form",
+            )
+
     def visit_Call(self, node: ast.Call) -> None:
         function_name = self._call_name(node.func)
-        if (
-            isinstance(node.func, ast.Attribute)
-            and function_name in _MAPPING_LOOKUP_METHODS
-            and node.args
-        ):
-            reflected = self._literal_string(node.args[0])
-            if reflected in _RESERVED_PRIMITIVE_NAMES:
-                self._error(
-                    node,
-                    f"forbidden mapping {function_name} acquisition of dynamic primitive: {reflected}",
-                )
+        if isinstance(node.func, ast.Attribute) and function_name in _MAPPING_LOOKUP_METHODS:
+            self._check_mapping_lookup_call(node, function_name)
         direct_builtin_reflection = (
             isinstance(node.func, ast.Name) and function_name in _BUILTIN_REFLECTION_HELPERS
         )

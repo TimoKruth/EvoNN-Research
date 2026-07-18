@@ -1786,3 +1786,145 @@ All checks passed!
 ### Final concerns
 
 None beyond the intentional execution contract: the validator now uses the trusted installed `evonn_shared` helper and must be run through the synchronized locked workspace command. The validated target repository is inspected statically and its benchmark policy module is never executed.
+
+## Final approval review closure
+
+The coordinator's final approval review identified three remaining bounded cases: incomplete mapping-call shape analysis, invalid PEP 621 include-group acceptance, and benchmark-root symlink traversal. All three were reproduced before implementation.
+
+### RED evidence
+
+Command:
+
+```sh
+uv run --locked --group dev pytest -q --tb=no tests/policy/test_import_boundaries.py -k 'mapping_lookup_call_forms or project_dependency_entries or shared_benchmark_root_symlink' shared-benchmarks/tests/test_skeleton.py -k 'mapping_lookup_call_forms or project_dependency_entries or shared_benchmark_root_symlink or symlinked_root or symlinked_descendant'
+```
+
+Exact RED output:
+
+```text
+FFFFFFFFFFFFF.                                                           [100%]
+=========================== short test summary info ============================
+FAILED tests/policy/test_import_boundaries.py::test_project_dependency_entries_are_strings_and_group_includes_are_scoped
+FAILED tests/policy/test_import_boundaries.py::test_shared_benchmark_root_symlink_stops_before_external_inspection
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_call_forms_fail_closed_unless_key_is_literal_and_safe[mapping.get(key="__builtins__")\n]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_call_forms_fail_closed_unless_key_is_literal_and_safe[mapping.__getitem__(key="__import__")\n]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_call_forms_fail_closed_unless_key_is_literal_and_safe[mapping.setdefault(key="eval", default=value)\n]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_call_forms_fail_closed_unless_key_is_literal_and_safe[mapping.pop(key="import_module")\n]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_call_forms_fail_closed_unless_key_is_literal_and_safe[mapping.get(*("__builtins__",))\n]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_call_forms_fail_closed_unless_key_is_literal_and_safe[mapping.pop(*( "__import__", default))\n]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_call_forms_fail_closed_unless_key_is_literal_and_safe[mapping.get(name)\n]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_call_forms_fail_closed_unless_key_is_literal_and_safe[mapping.__getitem__(*keys)\n]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_call_forms_fail_closed_unless_key_is_literal_and_safe[mapping.setdefault()\n]
+FAILED tests/policy/test_import_boundaries.py::test_mapping_lookup_call_forms_fail_closed_unless_key_is_literal_and_safe[mapping.pop("safe_name", default=value)\n]
+FAILED shared-benchmarks/tests/test_skeleton.py::test_symlinked_root_stops_before_external_content_inspection
+13 failed, 1 passed, 130 deselected in 1.25s
+```
+
+The descendant-symlink regression was already green because recursive globbing did not descend into directory symlinks, but explicit blocking was still added so later required-layout and marker checks cannot inspect or duplicate-diagnose any symlink path.
+
+### Implementation
+
+- Mapping `get`, `__getitem__`, `setdefault`, and `pop` calls now statically expand literal starred list/tuple arguments, enforce method-specific positional arity, reject all keyword call forms, require a literal string key, reject reserved literal keys, and fail closed on missing, nonliteral, `*args`, or `**kwargs` keys. Safe positional literal keys and safe literal tuple expansion remain allowed.
+- Existing shipped policy scripts were rewritten to use membership plus subscription for variable-key lookups, keeping the checked-in production tree inside the same strict subset rather than exempting it.
+- `project.dependencies` and every `project.optional-dependencies` group now accept PEP 508 strings only. `{ include-group = ... }` tables are accepted solely in `dependency-groups` list surfaces; the validator rejects malformed entries, missing referenced groups, and referenced groups whose value is not a list, at the owning group key line.
+- `find_data_skeleton_violations` now returns immediately for a symlinked benchmark root, before `is_dir`, `rglob`, or required-layout checks. Descendant symlinks are recorded once and their paths/subtrees are skipped by required-directory, required-file, metadata-marker, package-marker, and runtime-Python checks.
+
+### Focused GREEN evidence
+
+The exact RED command after implementation produced:
+
+```text
+..............                                                           [100%]
+14 passed, 130 deselected in 0.44s
+```
+
+The combined policy and benchmark skeleton suites produced:
+
+```text
+........................................................................ [ 50%]
+........................................................................ [100%]
+144 passed in 4.75s
+```
+
+### Final approval verification matrix
+
+```text
+== uv lock --check ==
+Resolved 15 packages in 5ms
+
+== uv sync --all-packages --group dev --locked ==
+Resolved 15 packages in 5ms
+Audited 14 packages in 0.23ms
+
+== uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py ==
+........................................................................ [ 51%]
+...................................................................      [100%]
+139 passed in 4.87s
+
+== uv run --locked --group dev pytest -q ==
+........................................................................ [ 37%]
+........................................................................ [ 75%]
+...............................................                          [100%]
+191 passed in 11.23s
+
+== uv run --locked --group dev ruff check . ==
+All checks passed!
+
+== uv run --locked --group dev python scripts/policy/validate_import_boundaries.py ==
+Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
+
+== python3 scripts/policy/validate_repository_governance.py ==
+Repository governance policy: PASS
+
+== git diff --check ==
+(no output; exit 0)
+```
+
+### Final approval eight-script matrix from `/tmp`
+
+```text
+== shared-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== benchmarks-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+.....                                                                    [100%]
+5 passed in 0.65s
+== contenders-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== compare-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== prism-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== topograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== stratograph-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+== primordia-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+```
+
+### Final approval concerns
+
+None. The three approval findings are closed without exemptions, target execution, alias tracking, or an abstract interpreter.

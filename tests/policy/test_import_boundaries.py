@@ -142,6 +142,65 @@ def test_workspace_dependencies_match_allowed_matrix(validator, repository_copy:
     assert not any("not-evonn-topograph-helper" in item for item in diagnostics)
 
 
+def test_project_dependency_entries_are_strings_and_group_includes_are_scoped(
+    validator, repository_copy: Path
+) -> None:
+    manifest = repository_copy / "EvoNN-Prism/pyproject.toml"
+    text = manifest.read_text(encoding="utf-8").replace(
+        'dependencies = ["evonn-shared"]',
+        'dependencies = ["evonn-shared", { include-group = "base" }]',
+    )
+    text += '''
+[project.optional-dependencies]
+invalid = [{ include-group = "base" }]
+
+[dependency-groups]
+base = ["pytest"]
+valid = [{ include-group = "base" }]
+missing = [{ include-group = "absent" }]
+invalid-entry = [{ include-group = 7 }]
+broken = "not-a-list"
+ref-broken = [{ include-group = "broken" }]
+'''
+    manifest.write_text(text, encoding="utf-8")
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    project_line = _line_number(manifest, 'dependencies = ["evonn-shared",')
+    optional_line = _line_number(manifest, "invalid =")
+    missing_line = _line_number(manifest, "missing =")
+    invalid_entry_line = _line_number(manifest, "invalid-entry =")
+    broken_line = _line_number(manifest, "broken =")
+    ref_broken_line = _line_number(manifest, "ref-broken =")
+    assert any(
+        f"pyproject.toml:{project_line}:1" in item
+        and "project.dependencies dependency must be a PEP 508 string" in item
+        for item in diagnostics
+    )
+    assert any(
+        f"pyproject.toml:{optional_line}:1" in item
+        and "project.optional-dependencies.invalid dependency must be a PEP 508 string" in item
+        for item in diagnostics
+    )
+    assert any(
+        f"pyproject.toml:{missing_line}:1" in item and "missing dependency group 'absent'" in item
+        for item in diagnostics
+    )
+    assert any(
+        f"pyproject.toml:{invalid_entry_line}:1" in item and "include-group must be a non-empty string" in item
+        for item in diagnostics
+    )
+    assert any(
+        f"pyproject.toml:{broken_line}:1" in item and "dependency-groups.broken must be a list" in item
+        for item in diagnostics
+    )
+    assert any(
+        f"pyproject.toml:{ref_broken_line}:1" in item and "invalid dependency group 'broken'" in item
+        for item in diagnostics
+    )
+    assert not any("dependency-groups.valid" in item for item in diagnostics)
+
+
 def test_optional_group_entry_point_and_source_alternatives_are_validated(validator, repository_copy: Path) -> None:
     manifest = repository_copy / "EvoNN-Prism/pyproject.toml"
     text = manifest.read_text(encoding="utf-8").replace(
@@ -265,6 +324,26 @@ def test_shared_benchmarks_is_data_only(validator, repository_copy: Path) -> Non
     assert any("pyproject.toml:1:1" in item and "Python package metadata" in item for item in diagnostics)
     assert any("runtime.py:1:1" in item and "runtime Python file" in item for item in diagnostics)
     assert not any("tests/helper.py" in item for item in diagnostics)
+
+
+def test_shared_benchmark_root_symlink_stops_before_external_inspection(
+    validator, repository_copy: Path, tmp_path: Path
+) -> None:
+    benchmarks = repository_copy / "shared-benchmarks"
+    shutil.rmtree(benchmarks)
+    external = tmp_path / "external-benchmarks"
+    external.mkdir()
+    (external / "runtime.py").write_text("eval('external')\n", encoding="utf-8")
+    benchmarks.symlink_to(external, target_is_directory=True)
+
+    diagnostics = _diagnostics(validator, repository_copy)
+    benchmark_diagnostics = [item for item in diagnostics if "shared-benchmarks" in item]
+
+    assert len(benchmark_diagnostics) == 1
+    assert "shared-benchmarks:1:1" in benchmark_diagnostics[0]
+    assert "symbolic link" in benchmark_diagnostics[0]
+    assert "runtime.py" not in benchmark_diagnostics[0]
+    assert not any("Required shared benchmark" in item for item in benchmark_diagnostics)
 
 
 def test_shared_benchmark_policy_module_is_regular_and_parsed(
@@ -612,15 +691,43 @@ loader = namespace.get("__import__")
     assert any("namespace_mapping.py:2:10" in item and "__import__" in item for item in diagnostics)
 
 
+@pytest.mark.parametrize(
+    "source",
+    [
+        'mapping.get(key="__builtins__")\n',
+        'mapping.__getitem__(key="__import__")\n',
+        'mapping.setdefault(key="eval", default=value)\n',
+        'mapping.pop(key="import_module")\n',
+        'mapping.get(*("__builtins__",))\n',
+        'mapping.pop(*( "__import__", default))\n',
+        'mapping.get(name)\n',
+        'mapping.__getitem__(*keys)\n',
+        'mapping.setdefault()\n',
+        'mapping.pop("safe_name", default=value)\n',
+    ],
+)
+def test_mapping_lookup_call_forms_fail_closed_unless_key_is_literal_and_safe(
+    validator, repository_copy: Path, source: str
+) -> None:
+    _append_source(repository_copy, "EvoNN-Prism", "prism/mapping_call_form.py", source)
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 1
+    assert "mapping_call_form.py:1:1" in diagnostics[0]
+    assert "mapping" in diagnostics[0]
+
+
 def test_benign_mapping_lookup_remains_allowed(validator, repository_copy: Path) -> None:
     _append_source(
         repository_copy,
         "EvoNN-Prism",
         "prism/benign_mapping.py",
         '''value = mapping.get("safe_name")
-value = mapping.__getitem__(name)
+value = mapping.__getitem__("safe_name")
 value = mapping.setdefault("safe_name", default)
-value = mapping.pop(name)
+value = mapping.pop("safe_name")
+value = mapping.get(*("safe_name",))
 ''',
     )
 

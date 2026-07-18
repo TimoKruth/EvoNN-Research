@@ -297,7 +297,7 @@ def validate_provenance(manifest: Mapping[str, Any], repo_root: Path) -> List[st
     if set(entries) != set(EXPECTED_SOURCES):
         errors.append(f"provenance source IDs must be exactly {sorted(EXPECTED_SOURCES)}")
     for source_id, expected in EXPECTED_SOURCES.items():
-        entry = entries.get(source_id)
+        entry = entries[source_id] if source_id in entries else None
         if not entry:
             continue
         missing = REQUIRED_ENTRY_FIELDS - set(entry)
@@ -307,7 +307,7 @@ def validate_provenance(manifest: Mapping[str, Any], repo_root: Path) -> List[st
         if not entry.get("normative_role"):
             errors.append(f"{source_id}: normative_role must be non-empty")
         for field in ("scope", "path", "source_commit", "declared_version", "git_object_type", "git_object_id", "consumer_acceptance_authority"):
-            if entry.get(field) != expected[field]:
+            if entry[field] != expected[field]:
                 errors.append(f"{source_id}: {field} does not match the required pin")
         if entry.get("supersedes") is not None:
             errors.append(f"{source_id}: initial pin must set supersedes to null")
@@ -421,7 +421,7 @@ def validate_b0_status(status: Mapping[str, Any], manifest: Mapping[str, Any], r
             errors.append(f"B0 status item IDs must be exactly {list(REQUIRED_B0_ITEM_IDS)}")
     item_mappings: Dict[str, Mapping[str, Any]] = {}
     for item_id in REQUIRED_B0_ITEM_IDS:
-        item = items.get(item_id)
+        item = items[item_id] if item_id in items else None
         if not isinstance(item, Mapping):
             errors.append(f"{item_id} status item must be a mapping")
             continue
@@ -434,10 +434,12 @@ def validate_b0_status(status: Mapping[str, Any], manifest: Mapping[str, Any], r
         if item_status == "closed" and item.get("open_reason") is not None:
             errors.append(f"{item_id} closed status must clear open_reason")
     for item_id in ("B0.1", "B0.6"):
-        if item_mappings.get(item_id, {}).get("status") not in {"locally_satisfied", "closed"}:
+        item = item_mappings[item_id] if item_id in item_mappings else {}
+        if item.get("status") not in {"locally_satisfied", "closed"}:
             errors.append(f"{item_id} must be locally_satisfied or closed")
     for item_id in ("B0.3", "B0.4", "B0.5"):
-        if item_mappings.get(item_id, {}).get("status") not in {"open", "closed"}:
+        item = item_mappings[item_id] if item_id in item_mappings else {}
+        if item.get("status") not in {"open", "closed"}:
             errors.append(f"{item_id} must be open or closed")
     b02 = item_mappings.get("B0.2", {})
     if "open_reason" not in b02:
@@ -501,7 +503,7 @@ def validate_repository(repo_root: Path) -> List[str]:
         metadata = read_frontmatter(plan_path)
         expected_metadata = {"document_kind": "execution_plan", "status": "active", "revision": 2}
         for key, value in expected_metadata.items():
-            if metadata.get(key) != value:
+            if (metadata[key] if key in metadata else None) != value:
                 errors.append(f"CONSOLIDATED_PLAN.md frontmatter must set {key}: {value}")
         if metadata.get("b0_repository_model") != EXPECTED_B0_REPOSITORY_MODEL:
             errors.append("CONSOLIDATED_PLAN.md must declare the normative B0 repository model")
