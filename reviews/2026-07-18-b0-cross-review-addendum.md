@@ -85,3 +85,13 @@ implementation commit followed by a regenerated evidence-only commit
 (fresh local probes, updated `evaluated_commit`/digests). Gate B0 status
 is unchanged: open on B0.2 (`authoritative_remote_url_absent`) and B0.5
 (`hosted_ci_not_executed`).
+
+### R7 — lockfile-uniqueness test scanned internal trees (post-merge finding)
+
+`test_single_root_lockfile_is_current` rglobbed the whole repository for
+`uv.lock` files excluding only `.git`, so any linked worktree under
+`.claude/worktrees/` (which this project's own tooling creates) broke the
+test. Fixed by excluding the same internal trees the governance validator
+already ignores. Under the R5 anchored-verification semantics this fix
+needed no evidence regeneration — the first practical confirmation that
+later development no longer invalidates the frozen B0 evidence.
