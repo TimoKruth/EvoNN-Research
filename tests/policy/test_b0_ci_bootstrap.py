@@ -47,6 +47,21 @@ def _uses(steps: list[dict]) -> list[str]:
     return [str(step["uses"]) for step in steps if "uses" in step]
 
 
+@pytest.mark.parametrize(
+    ("workflow_name", "job_name"),
+    (("linux-trust.yml", "linux-trust"), ("macos-engines.yml", "macos-engines")),
+)
+def test_hosted_workflows_fetch_full_git_history(workflow_name: str, job_name: str) -> None:
+    workflow, _ = _workflow(workflow_name)
+    checkout = next(
+        step
+        for step in _steps(_job(workflow, job_name))
+        if str(step.get("uses", "")).startswith("actions/checkout@")
+    )
+
+    assert checkout["with"]["fetch-depth"] == 0
+
+
 def test_linux_workflow_has_exact_trust_lane_contract() -> None:
     workflow, text = _workflow("linux-trust.yml")
     job = _job(workflow, "linux-trust")
