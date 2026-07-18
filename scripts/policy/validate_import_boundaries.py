@@ -843,6 +843,56 @@ _MAPPING_POSITIONAL_COUNTS = {"get": {1, 2}, "__getitem__": {1}, "setdefault": {
 _UNBOUND_LOOKUP_APIS = {"dict": {"get", "__getitem__"}, "object": {"__getattribute__"}}
 
 
+def _approved_runtime_mlx_eval_attribute(repo_root: Path, path: Path, tree: ast.Module) -> ast.Attribute | None:
+    try:
+        relative = path.relative_to(repo_root).as_posix()
+    except ValueError:
+        return None
+    if relative != "scripts/ci/runtime_probe.py":
+        return None
+    functions = [
+        node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "_run_mlx_operation"
+    ]
+    if len(functions) != 1:
+        return None
+    function = functions[0]
+    exact_imports = [
+        statement
+        for statement in function.body
+        if isinstance(statement, ast.Import)
+        and len(statement.names) == 1
+        and statement.names[0].name == "mlx.core"
+        and statement.names[0].asname == "mx"
+    ]
+    if len(exact_imports) != 1:
+        return None
+    calls = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "eval"
+        and isinstance(node.func.value, ast.Name)
+        and node.func.value.id == "mx"
+    ]
+    if len(calls) != 1:
+        return None
+    call = calls[0]
+    direct_statements = [
+        statement for statement in function.body if isinstance(statement, ast.Expr) and statement.value is call
+    ]
+    if len(direct_statements) != 1:
+        return None
+    if (
+        len(call.args) != 1
+        or not isinstance(call.args[0], ast.Name)
+        or call.args[0].id != "result"
+        or call.keywords
+    ):
+        return None
+    return call.func
+
+
 class _StrictPythonPolicy(ast.NodeVisitor):
     def __init__(
         self,
@@ -852,6 +902,7 @@ class _StrictPythonPolicy(ast.NodeVisitor):
         source_distribution: str,
         allowed_targets: set[str],
         diagnostics: list[str],
+        approved_mlx_eval_attribute: ast.Attribute | None,
     ) -> None:
         self.repo_root = repo_root
         self.path = path
@@ -859,6 +910,7 @@ class _StrictPythonPolicy(ast.NodeVisitor):
         self.source_distribution = source_distribution
         self.allowed_targets = allowed_targets
         self.diagnostics = diagnostics
+        self.approved_mlx_eval_attribute = approved_mlx_eval_attribute
 
     def _character_column(self, line: int, byte_offset: int) -> int:
         if not 1 <= line <= len(self.source_lines):
@@ -968,25 +1020,12 @@ class _StrictPythonPolicy(ast.NodeVisitor):
             kind = _RESERVED_PRIMITIVE_KINDS[node.id]
             self._error(node, f"forbidden {kind} primitive reference: {node.id}")
 
-    def _is_exact_runtime_mlx_eval(self, node: ast.Attribute) -> bool:
-        try:
-            relative = self.path.relative_to(self.repo_root).as_posix()
-        except ValueError:
-            return False
-        return (
-            self.source_distribution == "repository-scripts"
-            and relative == "scripts/ci/runtime_probe.py"
-            and node.attr == "eval"
-            and isinstance(node.value, ast.Name)
-            and node.value.id == "mx"
-        )
-
     def visit_Attribute(self, node: ast.Attribute) -> None:
         direct_metadata_attribute = (
             isinstance(node.value, ast.Attribute) and self._is_importlib_metadata_prefix(node.value)
         )
         if isinstance(node.ctx, ast.Load):
-            if node.attr in _RESERVED_PRIMITIVE_NAMES and not self._is_exact_runtime_mlx_eval(node):
+            if node.attr in _RESERVED_PRIMITIVE_NAMES and node is not self.approved_mlx_eval_attribute:
                 self._error(node, f"forbidden reserved primitive attribute acquisition: {node.attr}")
             elif (
                 isinstance(node.value, ast.Name)
@@ -1130,6 +1169,7 @@ def validate_python_imports(repo_root: Path) -> list[str]:
             source_distribution,
             allowed_targets,
             diagnostics,
+            _approved_runtime_mlx_eval_attribute(repo_root, path, tree),
         ).visit(tree)
     return sorted(set(diagnostics), key=lambda item: item.encode("utf-8"))
 

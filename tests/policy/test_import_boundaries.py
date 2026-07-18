@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import importlib.util
 from pathlib import Path
 import shutil
@@ -414,33 +415,75 @@ def test_dynamic_loading_provider_imports_are_strictly_banned(
     assert primitive in diagnostics[0]
 
 
-def test_only_exact_runtime_probe_may_call_static_mlx_eval(
+def test_runtime_probe_contains_exactly_one_structurally_approved_mlx_eval(validator) -> None:
+    path = REPO_ROOT / "scripts/ci/runtime_probe.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    functions = [
+        node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "_run_mlx_operation"
+    ]
+    assert len(functions) == 1
+    function = functions[0]
+    imports = [
+        node
+        for node in function.body
+        if isinstance(node, ast.Import)
+        and len(node.names) == 1
+        and node.names[0].name == "mlx.core"
+        and node.names[0].asname == "mx"
+    ]
+    assert len(imports) == 1
+    calls = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and isinstance(node.func.value, ast.Name)
+        and node.func.value.id == "mx"
+        and node.func.attr == "eval"
+    ]
+    assert len(calls) == 1
+    assert len(calls[0].args) == 1
+    assert isinstance(calls[0].args[0], ast.Name) and calls[0].args[0].id == "result"
+    assert calls[0].keywords == []
+    assert _diagnostics(validator, REPO_ROOT) == []
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda source: source.replace("mx.eval(result)", "mx.eval(result)\n    mx.eval(result)"),
+        lambda source: source.replace("mx.eval(result)", "mx.eval(other)"),
+        lambda source: source.replace("mx.eval(result)", "mx.eval(result, result)"),
+        lambda source: source.replace("mx.eval(result)", "mx.eval(result=result)"),
+        lambda source: source.replace("import mlx.core as mx", "import mlx.core as backend"),
+        lambda source: source.replace("import mlx.core as mx", "import mlx.core as backend").replace(
+            "mx.eval(result)", "backend.eval(result)"
+        ),
+        lambda source: source.replace("def _run_mlx_operation", "def _renamed_mlx_operation"),
+    ],
+)
+def test_runtime_probe_mlx_eval_exception_fails_closed_on_structural_drift(
+    validator, repository_copy: Path, mutation
+) -> None:
+    path = repository_copy / "scripts/ci/runtime_probe.py"
+    path.write_text(mutation(path.read_text(encoding="utf-8")), encoding="utf-8")
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert any("runtime_probe.py" in diagnostic and "eval" in diagnostic for diagnostic in diagnostics)
+
+
+def test_runtime_probe_mlx_eval_exception_rejects_neighbor_and_python_eval(
     validator, repository_copy: Path
 ) -> None:
-    _append_script(repository_copy, "ci/runtime_probe.py", "import mlx.core as mx\nmx.eval(result)\n")
     _append_script(repository_copy, "ci/mlx_neighbor.py", "import mlx.core as mx\nmx.eval(result)\n")
+    runtime = repository_copy / "scripts/ci/runtime_probe.py"
+    runtime.write_text(runtime.read_text(encoding="utf-8") + "\neval('1 + 1')\n", encoding="utf-8")
 
     diagnostics = _diagnostics(validator, repository_copy)
 
-    assert len(diagnostics) == 1
-    assert "mlx_neighbor.py" in diagnostics[0]
-    assert "eval" in diagnostics[0]
-
-
-def test_runtime_probe_mlx_exception_does_not_allow_python_eval(
-    validator, repository_copy: Path
-) -> None:
-    _append_script(
-        repository_copy,
-        "ci/runtime_probe.py",
-        "import mlx.core as mx\nmx.eval(result)\neval('1 + 1')\n",
-    )
-
-    diagnostics = _diagnostics(validator, repository_copy)
-
-    assert len(diagnostics) == 1
-    assert "runtime_probe.py:3" in diagnostics[0]
-    assert "eval" in diagnostics[0]
+    assert any("mlx_neighbor.py" in diagnostic and "eval" in diagnostic for diagnostic in diagnostics)
+    assert any("runtime_probe.py" in diagnostic and "primitive reference: eval" in diagnostic for diagnostic in diagnostics)
 
 
 def test_builtin_namespace_dunder_import_is_banned_before_computed_key_use(

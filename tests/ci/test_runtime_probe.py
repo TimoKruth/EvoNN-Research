@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 import sys
 from pathlib import Path
 
 import pytest
 
+from evonn_shared.backend_contract import PACKAGE_BY_SYSTEM
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PROBE_PATH = REPO_ROOT / "scripts/ci/runtime_probe.py"
 sys.path.insert(0, str(REPO_ROOT))
-MANIFEST = Path("EvoNN-Prism/backend-capabilities.json")
+MANIFEST = Path(PACKAGE_BY_SYSTEM["prism"].manifest_path)
 TIMESTAMPS = ("2026-07-18T12:00:00Z", "2026-07-18T12:00:01Z")
 RUNTIME = {
     "os_name": "Darwin",
@@ -265,6 +268,45 @@ def test_validator_reports_malformed_system_without_crashing(tmp_path: Path) -> 
     assert any("system under test" in diagnostic for diagnostic in _validate(path))
 
 
+def test_generation_rejects_copied_noncanonical_manifest_for_system(tmp_path: Path) -> None:
+    copied = REPO_ROOT / ".runtime-probe-test-copy.json"
+    shutil.copy2(REPO_ROOT / MANIFEST, copied)
+    try:
+        with pytest.raises(ValueError, match="exact canonical manifest"):
+            _write_probe(tmp_path, manifest_path=Path(copied.name))
+    finally:
+        copied.unlink(missing_ok=True)
+
+
+def test_validation_rejects_copied_noncanonical_manifest_with_matching_digest(tmp_path: Path) -> None:
+    path = _write_probe(tmp_path)
+    copied = REPO_ROOT / ".runtime-probe-test-copy.json"
+    shutil.copy2(REPO_ROOT / MANIFEST, copied)
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["manifest"] = {
+            "path": copied.name,
+            "sha256": hashlib.sha256(copied.read_bytes()).hexdigest(),
+        }
+        path.write_text(json.dumps(data), encoding="utf-8")
+
+        diagnostics = _validate(path)
+
+        assert any("exact canonical manifest" in diagnostic for diagnostic in diagnostics)
+    finally:
+        copied.unlink(missing_ok=True)
+
+
+def test_manifest_path_rejects_symlink_even_when_target_is_canonical(tmp_path: Path) -> None:
+    link = REPO_ROOT / ".runtime-probe-test-link.json"
+    link.symlink_to(REPO_ROOT / MANIFEST)
+    try:
+        with pytest.raises(ValueError, match="symbolic link"):
+            _write_probe(tmp_path, manifest_path=Path(link.name))
+    finally:
+        link.unlink(missing_ok=True)
+
+
 def test_manifest_path_cannot_escape_repository_through_symlink(tmp_path: Path) -> None:
     outside = tmp_path / "outside.json"
     outside.write_text("{}", encoding="utf-8")
@@ -272,7 +314,7 @@ def test_manifest_path_cannot_escape_repository_through_symlink(tmp_path: Path) 
     link.symlink_to(outside)
     output = tmp_path / "b0-runtime-probe.json"
     try:
-        with pytest.raises(ValueError, match="repository root"):
+        with pytest.raises(ValueError, match="symbolic link"):
             _write_probe(tmp_path, manifest_path=Path(link.name), output_path=output)
         assert not output.exists()
     finally:

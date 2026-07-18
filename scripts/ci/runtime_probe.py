@@ -22,6 +22,7 @@ from evonn_shared.backend_contract import (
     ENGINE_CONTRACTS,
     MLX_CAPABILITY,
     NUMPY_CAPABILITY,
+    PACKAGE_BY_SYSTEM,
     PACKAGE_CONTRACTS,
 )
 
@@ -118,6 +119,11 @@ def _safe_manifest(repo_root: Path, manifest_path: Path) -> tuple[Path, str]:
     if manifest_path.is_absolute():
         raise ValueError("manifest path must be repository-relative")
     root = repo_root.resolve()
+    current = root
+    for part in manifest_path.parts:
+        current = current / part
+        if current.is_symlink():
+            raise ValueError("manifest path must not contain a symbolic link")
     resolved = (root / manifest_path).resolve(strict=True)
     try:
         relative = resolved.relative_to(root)
@@ -126,6 +132,14 @@ def _safe_manifest(repo_root: Path, manifest_path: Path) -> tuple[Path, str]:
     if not resolved.is_file():
         raise ValueError("manifest path must identify a regular file")
     return resolved, relative.as_posix()
+
+
+def _system_manifest(repo_root: Path, system: str, manifest_path: Path) -> tuple[Path, str]:
+    expected_path = PACKAGE_BY_SYSTEM[system].manifest_path
+    manifest_file, manifest_relative = _safe_manifest(repo_root, manifest_path)
+    if manifest_path.as_posix() != expected_path or manifest_relative != expected_path:
+        raise ValueError(f"{system} requires exact canonical manifest {expected_path}")
+    return manifest_file, manifest_relative
 
 
 def _manifest_digest(path: Path) -> str:
@@ -285,7 +299,7 @@ def write_runtime_probe(
     if execution_mode not in {"local", "hosted"}:
         raise ValueError("execution mode must be local or hosted")
 
-    manifest_file, manifest_relative = _safe_manifest(repo_root, manifest_path)
+    manifest_file, manifest_relative = _system_manifest(repo_root, system, manifest_path)
     manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
     if not isinstance(manifest, Mapping):
         raise ValueError("backend capability manifest must be an object")
@@ -547,7 +561,9 @@ def validate_runtime_probe(
             diagnostics.append("manifest path must be repository-relative")
         else:
             try:
-                manifest_file, manifest_relative = _safe_manifest(repo_root, Path(raw_manifest_path))
+                if not isinstance(system, str) or system not in PACKAGE_BY_SYSTEM:
+                    raise ValueError("cannot establish canonical manifest for invalid system")
+                manifest_file, manifest_relative = _system_manifest(repo_root, system, Path(raw_manifest_path))
                 if manifest_relative != raw_manifest_path:
                     diagnostics.append("manifest path is not canonical and repository-relative")
                 actual_digest = _manifest_digest(manifest_file)
