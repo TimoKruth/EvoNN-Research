@@ -335,9 +335,12 @@ def test_subscript_reflection_helper_acquisition_is_strictly_banned(
 
     diagnostics = _diagnostics(validator, repository_copy)
 
-    assert len(diagnostics) == 1
-    assert "reflection_subscript.py:1" in diagnostics[0]
-    assert helper in diagnostics[0]
+    expected_count = 2 if receiver == "__builtins__" else 1
+    assert len(diagnostics) == expected_count
+    assert all("reflection_subscript.py:1" in item for item in diagnostics)
+    assert any(helper in item for item in diagnostics)
+    if receiver == "__builtins__":
+        assert any("forbidden builtin namespace access" in item for item in diagnostics)
 
 
 @pytest.mark.parametrize("helper", ["getattr", "hasattr", "setattr", "delattr"])
@@ -391,6 +394,24 @@ delattr(container, "safe_name")
     assert _diagnostics(validator, repository_copy) == []
 
 
+def test_builtins_namespace_is_forbidden_in_package_and_shipped_script(
+    validator, repository_copy: Path
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/builtins_namespace.py",
+        "loader = __builtins__.get('__import__')\n",
+    )
+    _append_script(repository_copy, "tools/builtins_namespace.py", "namespace = __builtins__.__dict__\n")
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 2
+    assert any("prism/builtins_namespace.py:1" in item and "__builtins__" in item for item in diagnostics)
+    assert any("scripts/tools/builtins_namespace.py:1" in item and "__builtins__" in item for item in diagnostics)
+
+
 def test_wrappers_containers_and_control_flow_are_blocked_at_primitive_acquisition(
     validator, repository_copy: Path
 ) -> None:
@@ -410,9 +431,35 @@ selected("topograph.runtime")
 
     diagnostics = _diagnostics(validator, repository_copy)
 
-    assert len(diagnostics) == 1
-    assert "wrapper.py:1" in diagnostics[0]
-    assert "importlib" in diagnostics[0]
+    assert len(diagnostics) == 2
+    assert any("wrapper.py:1" in item and "importlib" in item for item in diagnostics)
+    assert any("wrapper.py:2" in item and "import_module" in item for item in diagnostics)
+
+
+def test_provider_import_does_not_suppress_independent_later_violations(
+    validator, repository_copy: Path
+) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/multiple_primitives.py",
+        '''import importlib
+from operator import attrgetter
+getattr(container, "run_module")
+eval("1 + 1")
+loader = importlib.import_module
+''',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert diagnostics == sorted(diagnostics)
+    assert len(diagnostics) == 5
+    assert any("multiple_primitives.py:1" in item and "importlib" in item for item in diagnostics)
+    assert any("multiple_primitives.py:2" in item and "attrgetter" in item for item in diagnostics)
+    assert any("multiple_primitives.py:3" in item and "run_module" in item for item in diagnostics)
+    assert any("multiple_primitives.py:4" in item and "eval" in item for item in diagnostics)
+    assert any("multiple_primitives.py:5" in item and "import_module" in item for item in diagnostics)
 
 
 def test_safe_specific_and_optional_static_imports_remain_allowed(validator, repository_copy: Path) -> None:
@@ -454,6 +501,35 @@ loader("topograph.runtime")
     assert len(diagnostics) == 1
     assert "specific_then_dynamic.py:2" in diagnostics[0]
     assert "import_module" in diagnostics[0]
+
+
+def test_scripts_topology_rejects_symlinked_files_and_directories(
+    validator, repository_copy: Path, tmp_path: Path
+) -> None:
+    external_directory = tmp_path / "external-tools"
+    external_directory.mkdir()
+    (external_directory / "eval_bypass.py").write_text("eval('1 + 1')\n", encoding="utf-8")
+    (repository_copy / "scripts/linked-tools").symlink_to(external_directory, target_is_directory=True)
+
+    external_python = tmp_path / "external-script.py"
+    external_python.write_text("import runpy\n", encoding="utf-8")
+    (repository_copy / "scripts/linked.py").symlink_to(external_python)
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    topology = [item for item in diagnostics if "shipped scripts path must not be a symbolic link" in item]
+    assert len(topology) == 2
+    assert topology == sorted(topology)
+    assert any("scripts/linked-tools:1" in item for item in topology)
+    assert any("scripts/linked.py:1" in item for item in topology)
+    assert not any("eval_bypass.py" in item or "external-script.py" in item for item in diagnostics)
+
+
+def test_checked_in_scripts_topology_has_no_symlinks(validator) -> None:
+    assert not any(
+        "shipped scripts path must not be a symbolic link" in item
+        for item in _diagnostics(validator, REPO_ROOT)
+    )
 
 
 def test_production_scope_scans_validator_and_neighboring_path_variants(

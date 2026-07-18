@@ -70,17 +70,6 @@ def _load_toml(path: Path, repo_root: Path, source: str, diagnostics: list[str])
     return metadata
 
 
-def _line_containing(path: Path, value: str, default: int = 1) -> int:
-    try:
-        lines = path.read_text(encoding="utf-8").splitlines()
-    except OSError:
-        return default
-    for number, line in enumerate(lines, 1):
-        if value in line:
-            return number
-    return default
-
-
 def _split_toml_dotted_key(value: str) -> tuple[str, ...]:
     parts: list[str] = []
     current: list[str] = []
@@ -436,14 +425,6 @@ def _valid_workspace_source_alternative(value: Any) -> bool:
     return marker is None or (isinstance(marker, str) and bool(marker.strip()))
 
 
-def _workspace_source_alternatives(value: Any) -> list[tuple[int | None, dict[str, Any]]]:
-    return [
-        (index, alternative)
-        for index, alternative in _source_alternatives(value)
-        if _valid_workspace_source_alternative(alternative)
-    ]
-
-
 def _is_workspace_source(value: Any) -> bool:
     alternatives = _source_alternatives(value)
     return bool(alternatives) and all(_valid_workspace_source_alternative(item) for _, item in alternatives)
@@ -746,6 +727,7 @@ _FORBIDDEN_FROM_IMPORTS = {
     "operator": {"attrgetter", "methodcaller", "*"},
 }
 _FORBIDDEN_CALLS = {"__import__", "exec", "eval"}
+_FORBIDDEN_NAMESPACE_NAMES = {"__builtins__"}
 _BUILTIN_REFLECTION_HELPERS = {"getattr", "hasattr", "setattr", "delattr"}
 _OPERATOR_REFLECTION_HELPERS = {"attrgetter", "methodcaller"}
 _FORBIDDEN_REFLECTION_NAMES = {"import_module", "run_module", "__import__", "exec", "eval"}
@@ -767,7 +749,6 @@ class _StrictPythonPolicy(ast.NodeVisitor):
         self.source_distribution = source_distribution
         self.allowed_targets = allowed_targets
         self.diagnostics = diagnostics
-        self.provider_import_reported = False
 
     def _error(self, line: int, message: str) -> None:
         self.diagnostics.append(
@@ -787,7 +768,6 @@ class _StrictPythonPolicy(ast.NodeVisitor):
             self._check_static_import(alias.name, node.lineno)
             root = alias.name.partition(".")[0]
             if alias.name == "importlib" or root in _FORBIDDEN_PROVIDER_IMPORTS:
-                self.provider_import_reported = True
                 self._error(
                     node.lineno,
                     f"forbidden dynamic-loading primitive import: {alias.name}",
@@ -803,7 +783,6 @@ class _StrictPythonPolicy(ast.NodeVisitor):
             return
         for alias in node.names:
             if alias.name in forbidden:
-                self.provider_import_reported = True
                 primitive = node.module if alias.name == "*" else alias.name
                 self._error(
                     node.lineno,
@@ -827,17 +806,15 @@ class _StrictPythonPolicy(ast.NodeVisitor):
     def visit_Name(self, node: ast.Name) -> None:
         if not isinstance(node.ctx, ast.Load):
             return
-        if node.id in _FORBIDDEN_CALLS:
+        if node.id in _FORBIDDEN_NAMESPACE_NAMES:
+            self._error(node.lineno, f"forbidden builtin namespace access: {node.id}")
+        elif node.id in _FORBIDDEN_CALLS:
             self._error(node.lineno, f"forbidden dynamic execution primitive reference: {node.id}")
         elif node.id in _BUILTIN_REFLECTION_HELPERS:
             self._error(node.lineno, f"forbidden reflection primitive acquisition: {node.id}")
 
     def visit_Attribute(self, node: ast.Attribute) -> None:
-        if (
-            not self.provider_import_reported
-            and isinstance(node.ctx, ast.Load)
-            and node.attr in _FORBIDDEN_ATTRIBUTE_ACQUISITIONS
-        ):
+        if isinstance(node.ctx, ast.Load) and node.attr in _FORBIDDEN_ATTRIBUTE_ACQUISITIONS:
             self._error(node.lineno, f"forbidden dynamic primitive attribute acquisition: {node.attr}")
         self.generic_visit(node)
 
@@ -872,6 +849,21 @@ class _StrictPythonPolicy(ast.NodeVisitor):
         self.generic_visit(node)
 
 
+def validate_scripts_topology(repo_root: Path) -> list[str]:
+    """Reject symlinks anywhere in the shipped scripts tree."""
+    diagnostics = [
+        _diagnostic(
+            repo_root,
+            path,
+            1,
+            "repository-scripts",
+            "shipped scripts path must not be a symbolic link",
+        )
+        for path in _symlinks_at_or_below(repo_root / "scripts")
+    ]
+    return sorted(diagnostics, key=lambda item: item.encode("utf-8"))
+
+
 def _production_python_files(repo_root: Path) -> list[tuple[Path, str, set[str]]]:
     files: list[tuple[Path, str, set[str]]] = []
     for spec in PACKAGE_SPECS:
@@ -884,15 +876,16 @@ def _production_python_files(repo_root: Path) -> list[tuple[Path, str, set[str]]
         )
 
     scripts_root = repo_root / "scripts"
-    if scripts_root.is_dir():
+    if scripts_root.is_dir() and not scripts_root.is_symlink():
         for path in scripts_root.rglob("*.py"):
-            files.append((path, "repository-scripts", set()))
+            if not path.is_symlink():
+                files.append((path, "repository-scripts", set()))
     return sorted(files, key=lambda item: item[0].relative_to(repo_root).as_posix().encode("utf-8"))
 
 
 def validate_python_imports(repo_root: Path) -> list[str]:
-    """Enforce static import edges and the strict production primitive ban."""
-    diagnostics: list[str] = []
+    """Enforce script topology, static import edges, and the strict primitive ban."""
+    diagnostics = validate_scripts_topology(repo_root)
     for path, source_distribution, allowed_targets in _production_python_files(repo_root):
         try:
             source = path.read_text(encoding="utf-8")

@@ -1267,6 +1267,141 @@ exit=1
 
 The safe literal `getattr(container, "safe_name")` produced no diagnostic, and the checked-in repository still emitted the single PASS line from `/tmp`.
 
+## Final finite strict-ban fixes
+
+### RED evidence
+
+Tests were added first for direct `__builtins__` namespace use in package/script production, scripts-tree symlinks, clean scripts topology, and independent diagnostic aggregation after a provider import.
+
+Command:
+
+```sh
+uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py -k 'builtins_namespace or scripts_topology or checked_in_scripts_topology or provider_import_does_not'
+```
+
+Exact RED output:
+
+```text
+FFF.                                                                     [100%]
+3 failed, 1 passed, 63 deselected in 0.19s
+```
+
+The clean-tree guard passed. Namespace use, both scripts symlinks, and the independent post-import attribute violation were missing.
+
+### Implementation
+
+- Any production `Load` of `__builtins__` now fails immediately, covering module/dict forms, `.get(...)`, helper attributes, `.__dict__`, and related lookups without flow inference.
+- Added deterministic scripts topology validation using the existing symlink enumerator. Every symlink at or below `scripts/` fails, including child-directory links that recursive globbing does not descend into and symlinked `.py` files.
+- Symlinked scripts and symlink descendants are excluded from Python content scanning after the topology error, so external bytes cannot create misleading extra diagnostics.
+- Removed visitor-wide provider-import suppression. Provider import, operator/reflection, eval/exec, and attribute-acquisition nodes now aggregate independently and are de-duplicated only by the existing exact diagnostic set.
+- Deleted the unused `_line_containing` and `_workspace_source_alternatives` helpers. No disabled interpreter code or dead replacement remains.
+- Static package/dependency/entry-point/topology/data checks and the non-authoritative research log are unchanged.
+
+Focused GREEN:
+
+```text
+...................................................................      [100%]
+67 passed in 2.36s
+```
+
+### Final verification matrix
+
+```text
+== uv lock --check ==
+Resolved 15 packages in 6ms
+
+== uv sync --all-packages --group dev --locked ==
+Resolved 15 packages in 5ms
+Audited 14 packages in 0.25ms
+
+== uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py ==
+...................................................................      [100%]
+67 passed in 2.36s
+
+== uv run --locked --group dev pytest -q ==
+........................................................................ [ 61%]
+.............................................                            [100%]
+117 passed in 8.35s
+
+== uv run --locked --group dev ruff check . ==
+All checks passed!
+
+== uv run --locked --group dev python scripts/policy/validate_import_boundaries.py ==
+Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
+
+== python3 scripts/policy/validate_repository_governance.py ==
+Repository governance policy: PASS
+```
+
+### Final eight-script matrix
+
+```text
+== shared-checks.sh ==
+Resolved 15 packages in 6ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.01s
+
+== benchmarks-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+...                                                                      [100%]
+3 passed in 0.42s
+
+== contenders-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== compare-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== prism-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== topograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== stratograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== primordia-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+```
+
+### CLI observation
+
+A fixture combining three independent primitive nodes, direct `__builtins__` namespace use, a symlinked scripts directory containing an eval bypass, and a symlinked Python script produced:
+
+```text
+Import boundary policy: FAIL (6 violations)
+ERROR: EvoNN-Prism/src/prism/aggregate.py:1: evonn-prism: forbidden dynamic-loading primitive import: importlib
+ERROR: EvoNN-Prism/src/prism/aggregate.py:2: evonn-prism: forbidden dynamic execution primitive reference: eval
+ERROR: EvoNN-Prism/src/prism/aggregate.py:3: evonn-prism: forbidden dynamic primitive attribute acquisition: import_module
+ERROR: EvoNN-Prism/src/prism/builtins_namespace.py:1: evonn-prism: forbidden builtin namespace access: __builtins__
+ERROR: scripts/linked-tools:1: repository-scripts: shipped scripts path must not be a symbolic link
+ERROR: scripts/linked.py:1: repository-scripts: shipped scripts path must not be a symbolic link
+exit=1
+```
+
+The external symlink targets were not scanned, and the checked-in repository still emitted the single PASS line from `/tmp`.
+
 ## Concerns
 
-None. B0.4 remains honestly closed under the final strict syntactic language subset. No dynamic-import flow interpreter or whole-file exemption exists. Any future exception requires an explicit reviewed node/use-specific policy update and justification. Task 5 remains intentionally unimplemented.
+None. B0.4 remains honestly closed under the finite strict syntactic policy. No dynamic-import interpreter, whole-file exemption, provider-wide suppression, scripts symlink bypass, or dead helper remains. Task 5 remains intentionally unimplemented.
