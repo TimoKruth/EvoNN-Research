@@ -738,675 +738,178 @@ def validate_dependencies(repo_root: Path) -> list[str]:
     return sorted(set(diagnostics), key=lambda item: item.encode("utf-8"))
 
 
-class _BindingValue(NamedTuple):
-    known: frozenset[str]
-    unknown: bool = False
-
-
-def _known_binding(*values: str) -> _BindingValue:
-    return _BindingValue(frozenset(values), False)
-
-
-def _union_bindings(values: list[_BindingValue]) -> _BindingValue:
-    return _BindingValue(
-        frozenset().union(*(value.known for value in values)),
-        any(value.unknown for value in values),
-    )
-
-
-_UNKNOWN_BINDING = _BindingValue(frozenset(), True)
-_MODULE_FUNCTIONS = {
-    "builtins": {"__import__": "builtins.__import__"},
-    "importlib": {"import_module": "importlib.import_module"},
-    "runpy": {"run_module": "runpy.run_module"},
+STRICT_PRIMITIVE_EXEMPT_PATHS = {Path("scripts/policy/validate_import_boundaries.py")}
+_FORBIDDEN_PROVIDER_IMPORTS = {"runpy", "builtins"}
+_FORBIDDEN_FROM_IMPORTS = {
+    "importlib": {"import_module", "*"},
+    "runpy": {"run_module", "*"},
+    "builtins": {"__import__", "exec", "eval", "*"},
 }
+_FORBIDDEN_CALLS = {"__import__", "exec", "eval"}
+_FORBIDDEN_REFLECTION_NAMES = {"import_module", "run_module", "__import__", "exec", "eval"}
+_REFLECTION_CALLS = {"getattr", "hasattr", "setattr", "delattr", "attrgetter", "methodcaller"}
 
 
-class _BindingScope:
-    def __init__(self, kind: str) -> None:
-        self.kind = kind
-        self.bindings: dict[str, _BindingValue] = {}
-        self.global_names: set[str] = set()
-        self.nonlocal_names: set[str] = set()
-
-    def clone(self) -> _BindingScope:
-        cloned = _BindingScope(self.kind)
-        cloned.bindings = self.bindings.copy()
-        cloned.global_names = self.global_names.copy()
-        cloned.nonlocal_names = self.nonlocal_names.copy()
-        return cloned
-
-
-class _LocalBindingCollector(ast.NodeVisitor):
-    def __init__(self) -> None:
-        self.bound: set[str] = set()
-        self.global_names: set[str] = set()
-        self.nonlocal_names: set[str] = set()
-
-    def _target(self, target: ast.expr) -> None:
-        if isinstance(target, ast.Name):
-            self.bound.add(target.id)
-        elif isinstance(target, (ast.Tuple, ast.List)):
-            for item in target.elts:
-                self._target(item)
-
-    def visit_Global(self, node: ast.Global) -> None:
-        self.global_names.update(node.names)
-
-    def visit_Nonlocal(self, node: ast.Nonlocal) -> None:
-        self.nonlocal_names.update(node.names)
-
-    def visit_Import(self, node: ast.Import) -> None:
-        self.bound.update(alias.asname or alias.name.partition(".")[0] for alias in node.names)
-
-    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
-        self.bound.update(alias.asname or alias.name for alias in node.names if alias.name != "*")
-
-    def visit_Assign(self, node: ast.Assign) -> None:
-        for target in node.targets:
-            self._target(target)
-        self.visit(node.value)
-
-    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
-        self._target(node.target)
-        if node.value:
-            self.visit(node.value)
-
-    def visit_AugAssign(self, node: ast.AugAssign) -> None:
-        self._target(node.target)
-        self.visit(node.value)
-
-    def visit_NamedExpr(self, node: ast.NamedExpr) -> None:
-        self._target(node.target)
-        self.visit(node.value)
-
-    def visit_For(self, node: ast.For) -> None:
-        self._target(node.target)
-        self.generic_visit(node)
-
-    visit_AsyncFor = visit_For
-
-    def visit_With(self, node: ast.With) -> None:
-        for item in node.items:
-            if item.optional_vars:
-                self._target(item.optional_vars)
-        self.generic_visit(node)
-
-    visit_AsyncWith = visit_With
-
-    def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
-        if node.name:
-            self.bound.add(node.name)
-        self.generic_visit(node)
-
-    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
-        self.bound.add(node.name)
-
-    visit_AsyncFunctionDef = visit_FunctionDef
-
-    def visit_ClassDef(self, node: ast.ClassDef) -> None:
-        self.bound.add(node.name)
-
-    def visit_Lambda(self, node: ast.Lambda) -> None:
-        return
-
-
-class _LoopExitFinder(ast.NodeVisitor):
-    def __init__(self) -> None:
-        self.found = False
-
-    def visit_Break(self, node: ast.Break) -> None:
-        self.found = True
-
-    def visit_Continue(self, node: ast.Continue) -> None:
-        self.found = True
-
-    def visit_For(self, node: ast.For) -> None:
-        return
-
-    visit_AsyncFor = visit_For
-
-    def visit_While(self, node: ast.While) -> None:
-        return
-
-    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
-        return
-
-    visit_AsyncFunctionDef = visit_FunctionDef
-
-    def visit_ClassDef(self, node: ast.ClassDef) -> None:
-        return
-
-    def visit_Lambda(self, node: ast.Lambda) -> None:
-        return
-
-
-def _contains_current_loop_exit(statement: ast.stmt) -> bool:
-    finder = _LoopExitFinder()
-    if isinstance(statement, (ast.For, ast.AsyncFor, ast.While)):
-        return False
-    finder.visit(statement)
-    return finder.found
-
-
-def _call_argument(call: ast.Call, keyword: str) -> ast.expr | None:
-    if call.args:
-        return call.args[0]
-    return next((item.value for item in call.keywords if item.arg == keyword), None)
-
-
-def _literal_dynamic_root(call: ast.Call, kind: str) -> tuple[str | None, bool]:
-    keyword = "mod_name" if "run_module" in kind else "name"
-    argument = _call_argument(call, keyword)
-    if not isinstance(argument, ast.Constant) or not isinstance(argument.value, str):
-        return None, False
-    module_name = argument.value
-    if module_name.startswith("."):
-        if "import_module" not in kind:
-            return None, False
-        package_argument = call.args[1] if len(call.args) > 1 else next(
-            (item.value for item in call.keywords if item.arg == "package"),
-            None,
-        )
-        if not isinstance(package_argument, ast.Constant) or not isinstance(package_argument.value, str):
-            return None, False
-        try:
-            module_name = importlib.util.resolve_name(module_name, package_argument.value)
-        except (ImportError, ValueError):
-            return None, False
-    return module_name.partition(".")[0], True
-
-
-class _PythonImportAnalyzer(ast.NodeVisitor):
-    def __init__(self, repo_root: Path, path: Path, source_distribution: str, diagnostics: list[str]) -> None:
+class _StrictPythonPolicy(ast.NodeVisitor):
+    def __init__(
+        self,
+        repo_root: Path,
+        path: Path,
+        source_distribution: str,
+        allowed_targets: set[str],
+        diagnostics: list[str],
+        primitive_exempt: bool,
+    ) -> None:
         self.repo_root = repo_root
         self.path = path
         self.source_distribution = source_distribution
-        self.allowed_targets = ALLOWED_INTERNAL_TARGETS[source_distribution]
+        self.allowed_targets = allowed_targets
         self.diagnostics = diagnostics
-        module_scope = _BindingScope("module")
-        module_scope.bindings["__import__"] = _known_binding("call:__import__")
-        self.scopes = [module_scope]
-        self.functions: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
-        self.external_functions: list[str] = []
-        self.active_functions: set[str] = set()
-        self.function_exit_outcomes: list[list[list[_BindingScope]]] = []
+        self.primitive_exempt = primitive_exempt
+        self.provider_import_reported = False
 
-    def visit_Module(self, node: ast.Module) -> None:
-        self._visit_statements(node.body)
-        for token in list(self.external_functions):
-            self._execute_function(token, propagate=False, mask_module_globals=False)
-
-    def _lookup(self, name: str) -> _BindingValue:
-        current = self.scopes[-1]
-        if name in current.global_names:
-            return self.scopes[0].bindings.get(name, _UNKNOWN_BINDING)
-        if name in current.nonlocal_names:
-            for scope in reversed(self.scopes[:-1]):
-                if scope.kind == "function" and name in scope.bindings:
-                    return scope.bindings[name]
-            return _UNKNOWN_BINDING
-        for scope in reversed(self.scopes):
-            if current.kind == "function" and scope.kind == "class":
-                continue
-            if name in scope.bindings:
-                return scope.bindings[name]
-        return _UNKNOWN_BINDING
-
-    def _bind(self, name: str, value: _BindingValue) -> None:
-        current = self.scopes[-1]
-        if name in current.global_names:
-            self.scopes[0].bindings[name] = value
-            return
-        if name in current.nonlocal_names:
-            for scope in reversed(self.scopes[:-1]):
-                if scope.kind == "function":
-                    scope.bindings[name] = value
-                    return
-        current.bindings[name] = value
-
-    def _bind_target(self, target: ast.expr, value: _BindingValue = _UNKNOWN_BINDING) -> None:
-        if isinstance(target, ast.Name):
-            self._bind(target.id, value)
-        elif isinstance(target, (ast.Tuple, ast.List)):
-            for item in target.elts:
-                self._bind_target(item)
-        elif isinstance(target, ast.Starred):
-            self._bind_target(target.value)
-
-    def _expression_binding(self, expression: ast.expr) -> _BindingValue:
-        if isinstance(expression, ast.Name):
-            return self._lookup(expression.id)
-        if isinstance(expression, ast.Attribute) and isinstance(expression.value, ast.Name):
-            module_binding = self._lookup(expression.value.id)
-            known: set[str] = set()
-            unknown = module_binding.unknown
-            for candidate in module_binding.known:
-                if not candidate.startswith("module:"):
-                    unknown = True
-                    continue
-                module = candidate.removeprefix("module:")
-                kind = _MODULE_FUNCTIONS.get(module, {}).get(expression.attr)
-                if kind:
-                    known.add(f"call:{kind}")
-                else:
-                    unknown = True
-            return _BindingValue(frozenset(known), unknown)
-        if isinstance(expression, ast.IfExp):
-            return _union_bindings(
-                [self._expression_binding(expression.body), self._expression_binding(expression.orelse)]
-            )
-        return _UNKNOWN_BINDING
-
-    def _call_bindings(self, call: ast.Call) -> tuple[list[str], list[str], bool]:
-        binding = self._expression_binding(call.func)
-        loaders = sorted(
-            (candidate.removeprefix("call:") for candidate in binding.known if candidate.startswith("call:")),
-            key=lambda item: item.encode("utf-8"),
+    def _error(self, line: int, message: str) -> None:
+        self.diagnostics.append(
+            _diagnostic(self.repo_root, self.path, line, self.source_distribution, message)
         )
-        functions = sorted(
-            (candidate for candidate in binding.known if candidate.startswith("function:")),
-            key=lambda item: item.encode("utf-8"),
-        )
-        return loaders, functions, binding.unknown
 
-    def _report_static_import(self, module_name: str, line: int) -> None:
+    def _check_static_import(self, module_name: str, line: int) -> None:
         target = SPEC_BY_IMPORT_ROOT.get(module_name.partition(".")[0])
         if target and target.distribution != self.source_distribution and target.distribution not in self.allowed_targets:
-            self.diagnostics.append(
-                _diagnostic(
-                    self.repo_root,
-                    self.path,
-                    line,
-                    self.source_distribution,
-                    f"forbidden import edge {self.source_distribution} -> {target.distribution} via {module_name}",
-                )
+            self._error(
+                line,
+                f"forbidden import edge {self.source_distribution} -> {target.distribution} via {module_name}",
             )
-
-    def _report_dynamic_import(self, call: ast.Call, kind: str) -> None:
-        target_root, is_literal = _literal_dynamic_root(call, kind)
-        if not is_literal:
-            self.diagnostics.append(
-                _diagnostic(
-                    self.repo_root,
-                    self.path,
-                    call.lineno,
-                    self.source_distribution,
-                    f"non-literal dynamic import via {kind} is disallowed because its target cannot be validated",
-                )
-            )
-            return
-        target = SPEC_BY_IMPORT_ROOT.get(target_root or "")
-        if target and target.distribution != self.source_distribution and target.distribution not in self.allowed_targets:
-            self.diagnostics.append(
-                _diagnostic(
-                    self.repo_root,
-                    self.path,
-                    call.lineno,
-                    self.source_distribution,
-                    f"forbidden dynamic import edge {self.source_distribution} -> {target.distribution} via {kind}",
-                )
-            )
-
-    def _visit_statements(self, statements: list[ast.stmt]) -> str | None:
-        for statement in statements:
-            channel = self.visit(statement)
-            if channel in {"break", "continue", "return", "raise"}:
-                return channel
-        return None
-
-    def _merge_outcomes(self, original: list[_BindingScope], outcomes: list[list[_BindingScope]]) -> None:
-        self.scopes = original
-        for index, scope in enumerate(self.scopes):
-            names = set().union(*(outcome[index].bindings for outcome in outcomes))
-            merged: dict[str, _BindingValue] = {}
-            for name in names:
-                values = [outcome[index].bindings.get(name, _UNKNOWN_BINDING) for outcome in outcomes]
-                merged[name] = _union_bindings(values)
-            scope.bindings = merged
-
-    def _analyze_branches(self, branches: list[list[ast.stmt]]) -> None:
-        original = self.scopes
-        outcomes: list[list[_BindingScope]] = []
-        for branch in branches:
-            self.scopes = [scope.clone() for scope in original]
-            self._visit_statements(branch)
-            outcomes.append([scope.clone() for scope in self.scopes])
-        self._merge_outcomes(original, outcomes)
 
     def visit_Import(self, node: ast.Import) -> None:
         for alias in node.names:
-            self._report_static_import(alias.name, node.lineno)
+            self._check_static_import(alias.name, node.lineno)
+            if self.primitive_exempt:
+                continue
             root = alias.name.partition(".")[0]
-            bound_name = alias.asname or root
-            if root in _MODULE_FUNCTIONS and (alias.asname is None or alias.name == root):
-                self._bind(bound_name, _known_binding(f"module:{root}"))
-            else:
-                self._bind(bound_name, _UNKNOWN_BINDING)
+            if alias.name == "importlib" or root in _FORBIDDEN_PROVIDER_IMPORTS:
+                self.provider_import_reported = True
+                self._error(
+                    node.lineno,
+                    f"forbidden dynamic-loading primitive import: {alias.name}",
+                )
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         if node.level == 0 and node.module:
-            self._report_static_import(node.module, node.lineno)
-        functions = _MODULE_FUNCTIONS.get(node.module or "", {}) if node.level == 0 else {}
+            self._check_static_import(node.module, node.lineno)
+        if self.primitive_exempt or node.level != 0 or not node.module:
+            return
+        forbidden = _FORBIDDEN_FROM_IMPORTS.get(node.module)
+        if not forbidden:
+            return
         for alias in node.names:
-            if alias.name == "*":
-                self.scopes[-1].bindings = {
-                    name: _UNKNOWN_BINDING for name in self.scopes[-1].bindings
-                }
-                continue
-            kind = functions.get(alias.name)
-            if kind == "importlib.import_module":
-                kind = "import_module"
-            self._bind(
-                alias.asname or alias.name,
-                _known_binding(f"call:{kind}") if kind else _UNKNOWN_BINDING,
-            )
+            if alias.name in forbidden:
+                self.provider_import_reported = True
+                primitive = node.module if alias.name == "*" else alias.name
+                self._error(
+                    node.lineno,
+                    f"forbidden dynamic-loading primitive import: {primitive} from {node.module}",
+                )
 
-    def visit_Assign(self, node: ast.Assign) -> None:
-        self.visit(node.value)
-        binding = self._expression_binding(node.value)
-        for target in node.targets:
-            self._bind_target(target, binding)
+    @staticmethod
+    def _call_name(function: ast.expr) -> str | None:
+        if isinstance(function, ast.Name):
+            return function.id
+        if isinstance(function, ast.Attribute):
+            return function.attr
+        return None
 
-    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
-        self.visit(node.annotation)
-        if node.value:
-            self.visit(node.value)
-            binding = self._expression_binding(node.value)
-        else:
-            binding = _UNKNOWN_BINDING
-        self._bind_target(node.target, binding)
+    @staticmethod
+    def _literal_string(expression: ast.expr | None) -> str | None:
+        if isinstance(expression, ast.Constant) and isinstance(expression.value, str):
+            return expression.value
+        return None
 
-    def visit_AugAssign(self, node: ast.AugAssign) -> None:
-        self.visit(node.value)
-        self._bind_target(node.target)
+    def visit_Name(self, node: ast.Name) -> None:
+        if not self.primitive_exempt and isinstance(node.ctx, ast.Load) and node.id in _FORBIDDEN_CALLS:
+            self._error(node.lineno, f"forbidden dynamic execution primitive reference: {node.id}")
 
-    def visit_NamedExpr(self, node: ast.NamedExpr) -> None:
-        self.visit(node.value)
-        self._bind_target(node.target, self._expression_binding(node.value))
+    def visit_Attribute(self, node: ast.Attribute) -> None:
+        if (
+            not self.primitive_exempt
+            and not self.provider_import_reported
+            and isinstance(node.ctx, ast.Load)
+            and node.attr in _FORBIDDEN_REFLECTION_NAMES
+        ):
+            self._error(node.lineno, f"forbidden dynamic primitive attribute acquisition: {node.attr}")
+        self.generic_visit(node)
 
-    def visit_Delete(self, node: ast.Delete) -> None:
-        for target in node.targets:
-            self._bind_target(target)
-
-    def visit_Break(self, node: ast.Break) -> str:
-        return "break"
-
-    def visit_Continue(self, node: ast.Continue) -> str:
-        return "continue"
-
-    def visit_Return(self, node: ast.Return) -> str:
-        if node.value:
-            self.visit(node.value)
-        if self.function_exit_outcomes:
-            self.function_exit_outcomes[-1].append([scope.clone() for scope in self.scopes])
-        return "return"
-
-    def visit_Raise(self, node: ast.Raise) -> str:
-        if node.exc:
-            self.visit(node.exc)
-        if node.cause:
-            self.visit(node.cause)
-        if self.function_exit_outcomes:
-            self.function_exit_outcomes[-1].append([scope.clone() for scope in self.scopes])
-        return "raise"
+    def visit_Subscript(self, node: ast.Subscript) -> None:
+        if not self.primitive_exempt:
+            reflected = self._literal_string(node.slice)
+            if reflected in _FORBIDDEN_REFLECTION_NAMES:
+                self._error(node.lineno, f"forbidden explicit reflection naming dynamic primitive: {reflected}")
+        self.generic_visit(node)
 
     def visit_Call(self, node: ast.Call) -> None:
-        loaders, functions, binding_unknown = self._call_bindings(node)
+        if not self.primitive_exempt:
+            function_name = self._call_name(node.func)
+            if function_name in _REFLECTION_CALLS:
+                reflected: str | None = None
+                if function_name in {"getattr", "hasattr", "setattr", "delattr"} and len(node.args) > 1:
+                    reflected = self._literal_string(node.args[1])
+                elif function_name in {"attrgetter", "methodcaller"} and node.args:
+                    reflected = self._literal_string(node.args[0])
+                if reflected in _FORBIDDEN_REFLECTION_NAMES:
+                    self._error(
+                        node.lineno,
+                        f"forbidden explicit reflection naming dynamic primitive: {reflected}",
+                    )
         self.generic_visit(node)
-        for kind in loaders:
-            self._report_dynamic_import(node, kind)
-        self._invoke_functions(functions, binding_unknown)
-
-    def _function_scope(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> _BindingScope:
-        function_scope = _BindingScope("function")
-        collector = _LocalBindingCollector()
-        for statement in node.body:
-            collector.visit(statement)
-        function_scope.global_names = collector.global_names
-        function_scope.nonlocal_names = collector.nonlocal_names
-        for name in collector.bound - collector.global_names - collector.nonlocal_names:
-            function_scope.bindings[name] = _UNKNOWN_BINDING
-        arguments = [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]
-        if node.args.vararg:
-            arguments.append(node.args.vararg)
-        if node.args.kwarg:
-            arguments.append(node.args.kwarg)
-        for argument in arguments:
-            function_scope.bindings[argument.arg] = _UNKNOWN_BINDING
-        return function_scope
-
-    def _execute_function(self, token: str, propagate: bool, mask_module_globals: bool = False) -> None:
-        if token in self.active_functions:
-            return
-        node = self.functions.get(token)
-        if node is None:
-            return
-        caller_scopes = self.scopes
-        self.scopes = [scope.clone() for scope in caller_scopes]
-        if mask_module_globals:
-            self.scopes[0].bindings = {
-                name: (_known_binding("call:__import__") if name == "__import__" else _UNKNOWN_BINDING)
-                for name in self.scopes[0].bindings
-            }
-        function_scope = self._function_scope(node)
-        self.scopes.append(function_scope)
-        self.active_functions.add(token)
-        self.function_exit_outcomes.append([])
-        self._visit_statements(node.body)
-        exit_outcomes = self.function_exit_outcomes.pop()
-        self.active_functions.remove(token)
-        if exit_outcomes:
-            function_scopes = self.scopes
-            outcomes = [[scope.clone() for scope in self.scopes], *exit_outcomes]
-            self._merge_outcomes(function_scopes, outcomes)
-        outer_outcome = self.scopes[:-1]
-        self.scopes = caller_scopes
-        if not propagate:
-            return
-        self.scopes[0].bindings = outer_outcome[0].bindings.copy()
-        for index, scope in enumerate(self.scopes[1:], 1):
-            if scope.kind == "function":
-                scope.bindings = outer_outcome[index].bindings.copy()
-
-    def _invoke_functions(self, tokens: list[str], binding_unknown: bool) -> None:
-        if not tokens:
-            return
-        if len(tokens) == 1 and not binding_unknown:
-            self._execute_function(tokens[0], propagate=True)
-            return
-        original = self.scopes
-        outcomes: list[list[_BindingScope]] = []
-        if binding_unknown:
-            outcomes.append([scope.clone() for scope in original])
-        for token in tokens:
-            self.scopes = [scope.clone() for scope in original]
-            self._execute_function(token, propagate=True)
-            outcomes.append([scope.clone() for scope in self.scopes])
-        self._merge_outcomes(original, outcomes)
-
-    def _visit_function(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
-        for expression in [*node.decorator_list, *node.args.defaults, *node.args.kw_defaults]:
-            if expression:
-                self.visit(expression)
-        arguments = [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]
-        if node.args.vararg:
-            arguments.append(node.args.vararg)
-        if node.args.kwarg:
-            arguments.append(node.args.kwarg)
-        for argument in arguments:
-            if argument.annotation:
-                self.visit(argument.annotation)
-        if node.returns:
-            self.visit(node.returns)
-        for type_parameter in getattr(node, "type_params", []):
-            self.visit(type_parameter)
-        token = f"function:{id(node)}"
-        self.functions[token] = node
-        if self.scopes[-1].kind in {"module", "class"}:
-            self.external_functions.append(token)
-        self._execute_function(token, propagate=False, mask_module_globals=True)
-        self._bind(node.name, _known_binding(token))
-
-    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
-        self._visit_function(node)
-
-    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
-        self._visit_function(node)
-
-    def visit_ClassDef(self, node: ast.ClassDef) -> None:
-        for expression in [*node.decorator_list, *node.bases, *(item.value for item in node.keywords)]:
-            self.visit(expression)
-        class_scope = _BindingScope("class")
-        collector = _LocalBindingCollector()
-        for statement in node.body:
-            collector.visit(statement)
-        class_scope.global_names = collector.global_names
-        class_scope.nonlocal_names = collector.nonlocal_names
-        self.scopes.append(class_scope)
-        self._visit_statements(node.body)
-        self.scopes.pop()
-        self._bind(node.name, _UNKNOWN_BINDING)
-
-    def visit_Lambda(self, node: ast.Lambda) -> None:
-        for expression in [*node.args.defaults, *node.args.kw_defaults]:
-            if expression:
-                self.visit(expression)
-        arguments = [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]
-        if node.args.vararg:
-            arguments.append(node.args.vararg)
-        if node.args.kwarg:
-            arguments.append(node.args.kwarg)
-        for argument in arguments:
-            if argument.annotation:
-                self.visit(argument.annotation)
-        outer = self.scopes
-        self.scopes = [scope.clone() for scope in outer]
-        function_scope = _BindingScope("function")
-        for argument in arguments:
-            function_scope.bindings[argument.arg] = _UNKNOWN_BINDING
-        self.scopes.append(function_scope)
-        self.visit(node.body)
-        self.scopes = outer
-
-    def _pattern_binding_names(self, pattern: ast.pattern) -> set[str]:
-        names: set[str] = set()
-        for item in ast.walk(pattern):
-            if isinstance(item, ast.MatchAs) and item.name:
-                names.add(item.name)
-            elif isinstance(item, ast.MatchStar) and item.name:
-                names.add(item.name)
-            elif isinstance(item, ast.MatchMapping) and item.rest:
-                names.add(item.rest)
-        return names
-
-    def visit_Match(self, node: ast.Match) -> None:
-        self.visit(node.subject)
-        original = self.scopes
-        outcomes: list[list[_BindingScope]] = [[scope.clone() for scope in original]]
-        for case in node.cases:
-            self.scopes = [scope.clone() for scope in original]
-            for name in self._pattern_binding_names(case.pattern):
-                self._bind(name, _UNKNOWN_BINDING)
-            if case.guard:
-                self.visit(case.guard)
-            self._visit_statements(case.body)
-            outcomes.append([scope.clone() for scope in self.scopes])
-        self._merge_outcomes(original, outcomes)
-
-    def visit_If(self, node: ast.If) -> None:
-        self.visit(node.test)
-        self._analyze_branches([node.body, node.orelse])
-
-    def _analyze_loop(self, body: list[ast.stmt], orelse: list[ast.stmt], target: ast.expr | None = None) -> None:
-        original = self.scopes
-        outcomes: list[list[_BindingScope]] = []
-
-        self.scopes = [scope.clone() for scope in original]
-        self._visit_statements(orelse)
-        outcomes.append([scope.clone() for scope in self.scopes])
-
-        self.scopes = [scope.clone() for scope in original]
-        if target:
-            self._bind_target(target)
-        channel: str | None = None
-        for statement in body:
-            channel = self.visit(statement)
-            if _contains_current_loop_exit(statement):
-                outcomes.append([scope.clone() for scope in self.scopes])
-            if channel in {"break", "continue", "return", "raise"}:
-                break
-        outcomes.append([scope.clone() for scope in self.scopes])
-        if channel not in {"break", "return", "raise"}:
-            self._visit_statements(orelse)
-            outcomes.append([scope.clone() for scope in self.scopes])
-        self._merge_outcomes(original, outcomes)
-
-    def visit_While(self, node: ast.While) -> None:
-        self.visit(node.test)
-        self._analyze_loop(node.body, node.orelse)
-
-    def visit_For(self, node: ast.For) -> None:
-        self.visit(node.iter)
-        self._analyze_loop(node.body, node.orelse, node.target)
-
-    visit_AsyncFor = visit_For
-
-    def visit_With(self, node: ast.With) -> None:
-        for item in node.items:
-            self.visit(item.context_expr)
-            if item.optional_vars:
-                self._bind_target(item.optional_vars)
-        self._visit_statements(node.body)
-
-    visit_AsyncWith = visit_With
-
-    def visit_Try(self, node: ast.Try) -> None:
-        original = self.scopes
-        outcomes: list[list[_BindingScope]] = []
-
-        self.scopes = [scope.clone() for scope in original]
-        body_channel = self._visit_statements(node.body)
-        if body_channel is None:
-            self._visit_statements(node.orelse)
-        self._visit_statements(node.finalbody)
-        outcomes.append([scope.clone() for scope in self.scopes])
-
-        for handler in node.handlers:
-            for prefix_length in range(len(node.body) + 1):
-                self.scopes = [scope.clone() for scope in original]
-                self._visit_statements(node.body[:prefix_length])
-                if handler.type:
-                    self.visit(handler.type)
-                if handler.name:
-                    self._bind(handler.name, _UNKNOWN_BINDING)
-                self._visit_statements(handler.body)
-                self._visit_statements(node.finalbody)
-                outcomes.append([scope.clone() for scope in self.scopes])
-
-        self._merge_outcomes(original, outcomes)
-
-    visit_TryStar = visit_Try
 
 
-def validate_python_imports(repo_root: Path) -> list[str]:
-    """Parse production source trees and reject forbidden or unresolved dynamic imports."""
-    diagnostics: list[str] = []
+def _production_python_files(repo_root: Path) -> list[tuple[Path, str, set[str], bool]]:
+    files: list[tuple[Path, str, set[str], bool]] = []
     for spec in PACKAGE_SPECS:
         source_root = repo_root / spec.directory / "src"
         if not source_root.is_dir():
             continue
-        for path in sorted(source_root.rglob("*.py"), key=lambda item: item.as_posix().encode("utf-8")):
-            try:
-                source = path.read_text(encoding="utf-8")
-                tree = ast.parse(source, filename=str(path))
-            except (OSError, UnicodeError, SyntaxError) as exc:
-                line = exc.lineno if isinstance(exc, SyntaxError) and exc.lineno else 1
-                diagnostics.append(
-                    _diagnostic(repo_root, path, line, spec.distribution, f"cannot parse production Python: {exc}")
+        files.extend(
+            (path, spec.distribution, ALLOWED_INTERNAL_TARGETS[spec.distribution], False)
+            for path in source_root.rglob("*.py")
+        )
+
+    scripts_root = repo_root / "scripts"
+    if scripts_root.is_dir():
+        for path in scripts_root.rglob("*.py"):
+            relative = path.relative_to(repo_root)
+            files.append(
+                (
+                    path,
+                    "repository-scripts",
+                    set(),
+                    relative in STRICT_PRIMITIVE_EXEMPT_PATHS,
                 )
-                continue
-            _PythonImportAnalyzer(repo_root, path, spec.distribution, diagnostics).visit(tree)
+            )
+    return sorted(files, key=lambda item: item[0].relative_to(repo_root).as_posix().encode("utf-8"))
+
+
+def validate_python_imports(repo_root: Path) -> list[str]:
+    """Enforce static import edges and the strict production primitive ban."""
+    diagnostics: list[str] = []
+    for path, source_distribution, allowed_targets, primitive_exempt in _production_python_files(repo_root):
+        try:
+            source = path.read_text(encoding="utf-8")
+            tree = ast.parse(source, filename=str(path))
+        except (OSError, UnicodeError, SyntaxError) as exc:
+            line = exc.lineno if isinstance(exc, SyntaxError) and exc.lineno else 1
+            diagnostics.append(
+                _diagnostic(repo_root, path, line, source_distribution, f"cannot parse production Python: {exc}")
+            )
+            continue
+        _StrictPythonPolicy(
+            repo_root,
+            path,
+            source_distribution,
+            allowed_targets,
+            diagnostics,
+            primitive_exempt,
+        ).visit(tree)
     return sorted(set(diagnostics), key=lambda item: item.encode("utf-8"))
 
 

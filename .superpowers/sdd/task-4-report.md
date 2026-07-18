@@ -836,6 +836,174 @@ exit=1
 
 The checked-in repository still emitted the single PASS line when launched from `/tmp`.
 
+## Binding architecture decision — strict primitive prohibition
+
+The user made a binding architecture decision after the interpreter reviews: the path-sensitive/interprocedural dynamic-import analyzer was abandoned as unsound in principle and replaced rather than extended. All interpreter-focused sections above are retained as historical TDD/review evidence only; they no longer describe the checked-in implementation.
+
+### Net simplification
+
+- Deleted `_BindingValue`, `_BindingScope`, local binding collectors, provider/loader/function tables, branch lattices, try-prefix/loop/match/function invocation analysis, and annotation/control-flow special cases.
+- Deleted the associated path-sensitive/interprocedural behavioral test sections.
+- Retained the proven static workspace, PEP 508 dependency, uv-source, PEP 621 entry-point, topology/symlink, diagnostic-location, exact static import, and benchmark data-boundary checks.
+- Final code/test diff for the interpreter replacement: 345 lines added and 1,309 deleted across the validator and policy test file, a net deletion of 964 lines.
+
+### Permanent strict policy
+
+Production code now fails immediately when it acquires a general dynamic-loading or dynamic-execution primitive:
+
+- `import importlib` (including aliases), while specific submodules such as `importlib.metadata` remain allowed;
+- `from importlib import import_module` or `*`;
+- `import runpy`, `from runpy import run_module`, or `*`;
+- `import builtins`, `from builtins import __import__`/`exec`/`eval`, or `*`;
+- direct or aliased references to `__import__`, `exec`, or `eval`;
+- explicit reflection through `getattr`, `hasattr`, `setattr`, `delattr`, `attrgetter`, or `methodcaller` naming `import_module`, `run_module`, `__import__`, `exec`, or `eval`.
+
+The policy performs no path-sensitive target inference. Wrapper, container, branch, exception, loop, and function cases are rejected at primitive acquisition. Ordinary external static imports, `importlib.metadata`, `from importlib import metadata`, `runpy.run_path`, non-dangerous builtins imports, and platform-optional `try: import mlx; except ImportError:` remain allowed.
+
+Production scope is exact:
+
+- every `.py` under all seven package `src/**` trees;
+- every shipped `.py` under `scripts/**`;
+- root and package `tests/**` remain outside production scope;
+- only `scripts/policy/validate_import_boundaries.py` receives the exact primitive-detector exemption; similarly named files and neighboring policy scripts are scanned normally;
+- static forbidden internal imports are still checked in the validator and every other shipped script.
+
+The abandoned approach and strict replacement are recorded as non-authoritative negative evidence in `research/logs/2026-07-18-dynamic-import-policy.md`. Its frontmatter declares `document_kind: research_log`, `status: completed`, and `authoritative: false`; governance validation confirms it is not an active plan.
+
+### Strict-policy RED evidence
+
+Command:
+
+```sh
+uv run --locked --group dev pytest -q --tb=no tests/policy/test_import_boundaries.py
+```
+
+Exact initial RED summary:
+
+```text
+.........FFFFFFFFFFFFFFF.FFFFFFF.FFFF.                                   [100%]
+26 failed, 12 passed in 0.89s
+```
+
+The failures covered provider imports/aliases/star imports, `exec`/`eval`, explicit reflection, wrapper acquisition, shipped-script scope, exact allowlisting, test scope, the missing research log, and CLI aggregation.
+
+A follow-up primitive-reference RED proved that assignment aliases must also be rejected at acquisition:
+
+```text
+.F.F.F....                                                               [100%]
+3 failed, 7 passed, 31 deselected in 0.60s
+```
+
+A final safe-submodule/explicit-subscript RED closed two acquisition gaps: `import importlib.metadata` followed by `importlib.import_module` and `container["import_module"]` reflection.
+
+```text
+..........FF                                                             [100%]
+2 failed, 10 passed, 31 deselected in 0.43s
+```
+
+### Strict-policy GREEN evidence
+
+```text
+...........................................                              [100%]
+43 passed in 1.42s
+```
+
+### Final required verification after replacement
+
+```text
+== uv lock --check ==
+Resolved 15 packages in 5ms
+
+== uv sync --all-packages --group dev --locked ==
+Resolved 15 packages in 5ms
+Audited 14 packages in 0.22ms
+
+== uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py ==
+...........................................                              [100%]
+43 passed in 1.42s
+
+== uv run --locked --group dev pytest -q ==
+........................................................................ [ 77%]
+.....................                                                    [100%]
+93 passed in 7.38s
+
+== uv run --locked --group dev ruff check . ==
+All checks passed!
+
+== uv run --locked --group dev python scripts/policy/validate_import_boundaries.py ==
+Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
+
+== python3 scripts/policy/validate_repository_governance.py ==
+Repository governance policy: PASS
+```
+
+### Final eight-script matrix after replacement
+
+```text
+== shared-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== benchmarks-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+...                                                                      [100%]
+3 passed in 0.21s
+
+== contenders-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== compare-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== prism-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== topograph-checks.sh ==
+Resolved 15 packages in 4ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== stratograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== primordia-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+```
+
+### Final strict-policy CLI observation
+
+A synthetic repository containing a wrapped `importlib` provider, explicit `run_module` reflection, a safe submodule followed by forbidden attribute acquisition, and an aliased `eval` in a shipped script produced:
+
+```text
+Import boundary policy: FAIL (4 violations)
+ERROR: EvoNN-Prism/src/prism/provider.py:1: evonn-prism: forbidden dynamic-loading primitive import: importlib
+ERROR: EvoNN-Prism/src/prism/reflection.py:1: evonn-prism: forbidden explicit reflection naming dynamic primitive: run_module
+ERROR: EvoNN-Prism/src/prism/specific_bypass.py:2: evonn-prism: forbidden dynamic primitive attribute acquisition: import_module
+ERROR: scripts/tools/eval_bypass.py:1: repository-scripts: forbidden dynamic execution primitive reference: eval
+exit=1
+```
+
+A standalone safe `importlib.metadata` plus optional MLX import remains allowed, and the checked-in repository launched from `/tmp` emitted the single PASS line.
+
 ## Concerns
 
-None. B0.4 remains honestly closed after the final control-flow re-review and complete verification matrix passed. Task 5 remains intentionally unimplemented.
+None. B0.4 remains honestly closed under the simpler strict primitive prohibition. Any future dynamic-loading exception requires an explicit reviewed policy update, a narrow exact allowlist, and written justification. Task 5 remains intentionally unimplemented.
