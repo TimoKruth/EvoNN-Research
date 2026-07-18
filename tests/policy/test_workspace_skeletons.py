@@ -144,6 +144,9 @@ def test_all_named_check_scripts_execute_real_locked_checks_from_another_directo
 
 
 def test_single_root_lockfile_is_current() -> None:
-    lockfiles = [path for path in REPO_ROOT.rglob("uv.lock") if ".git" not in path.parts]
+    internal_trees = {".git", ".claude", ".superpowers", ".venv", ".pytest_cache"}
+    lockfiles = [
+        path for path in REPO_ROOT.rglob("uv.lock") if not internal_trees.intersection(path.parts)
+    ]
     assert lockfiles == [REPO_ROOT / "uv.lock"]
     subprocess.run(["uv", "lock", "--check"], cwd=REPO_ROOT, check=True, timeout=120)
