@@ -63,6 +63,11 @@ def _append_source(root: Path, member: str, relative: str, source: str) -> Path:
     return path
 
 
+def _line_number(path: Path, text: str, occurrence: int = 1) -> int:
+    matches = [number for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1) if text in line]
+    return matches[occurrence - 1]
+
+
 def test_checked_in_repository_passes_import_boundary_policy(validator) -> None:
     assert _diagnostics(validator, REPO_ROOT) == []
 
@@ -134,7 +139,7 @@ def test_workspace_dependencies_match_allowed_matrix(validator, repository_copy:
     text = prism_manifest.read_text(encoding="utf-8")
     text = text.replace(
         'dependencies = ["evonn-shared"]',
-        'dependencies = [\n    "evonn-shared",\n    "EvoNN.Topograph[fast]>=1 ; python_version >= \'3.13\'",\n    "not-evonn-topograph-helper",\n]',
+        'dependencies = [\n    "evonn-shared",\n    "evonn-topograph[fast]>=1 ; python_version >= \'3.13\'",\n    "not-evonn-topograph-helper",\n]',
     )
     text += '\n[tool.uv.sources.evonn-topograph]\nworkspace = true\n\n[tool.uv.sources.orphan-helper]\nworkspace = true\n'
     prism_manifest.write_text(text, encoding="utf-8")
@@ -142,7 +147,13 @@ def test_workspace_dependencies_match_allowed_matrix(validator, repository_copy:
     diagnostics = _diagnostics(validator, repository_copy)
 
     assert any("forbidden dependency edge evonn-prism -> evonn-topograph" in item for item in diagnostics)
-    assert any("forbidden workspace source edge evonn-prism -> evonn-topograph" in item for item in diagnostics)
+    source_diagnostic = next(
+        item for item in diagnostics if "forbidden workspace source edge evonn-prism -> evonn-topograph" in item
+    )
+    source_line = _line_number(prism_manifest, "[tool.uv.sources.evonn-topograph]")
+    dependency_line = _line_number(prism_manifest, '"evonn-topograph[fast]')
+    assert f"EvoNN-Prism/pyproject.toml:{source_line}:" in source_diagnostic
+    assert f"pyproject.toml:{dependency_line}:" not in source_diagnostic
     assert any("workspace source 'orphan-helper' has no matching project dependency" in item for item in diagnostics)
     assert not any("not-evonn-topograph-helper" in item for item in diagnostics)
 
@@ -225,6 +236,60 @@ def test_dynamic_import_aliases_fail_closed(validator, repository_copy: Path) ->
     )
     assert any("builtins_alias.py:2" in item and "evonn-prism -> evonn-primordia" in item for item in diagnostics)
     assert any("builtin_from_alias.py:2" in item and "evonn-prism -> evonn-topograph" in item for item in diagnostics)
+
+
+def test_dynamic_alias_resolution_is_source_ordered(validator, repository_copy: Path) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/later_rebind.py",
+        '''import importlib as provider
+provider.import_module("topograph.runtime")
+import runpy as provider
+provider.run_module("stratograph.runtime")
+''',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 2
+    assert any("later_rebind.py:2" in item and "evonn-prism -> evonn-topograph" in item for item in diagnostics)
+    assert any("later_rebind.py:4" in item and "evonn-prism -> evonn-stratograph" in item for item in diagnostics)
+
+
+def test_dynamic_alias_resolution_respects_function_and_class_scopes(validator, repository_copy: Path) -> None:
+    _append_source(
+        repository_copy,
+        "EvoNN-Prism",
+        "prism/scope_collision.py",
+        '''import importlib as provider
+
+def parameter_shadow(provider):
+    provider.import_module("topograph.runtime")
+
+class Namespace:
+    provider = object()
+    provider.import_module("topograph.runtime")
+
+def local_rebind():
+    import runpy as provider
+    provider.run_module("stratograph.runtime")
+
+provider.import_module("evonn_primordia.runtime")
+provider = object()
+provider.import_module("topograph.runtime")
+''',
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert len(diagnostics) == 2
+    assert any("scope_collision.py:12" in item and "evonn-prism -> evonn-stratograph" in item for item in diagnostics)
+    assert any("scope_collision.py:14" in item and "evonn-prism -> evonn-primordia" in item for item in diagnostics)
+    assert not any(
+        "scope_collision.py:4" in item or "scope_collision.py:8" in item or "scope_collision.py:16" in item
+        for item in diagnostics
+    )
 
 
 def test_runpy_module_aliases_fail_closed(validator, repository_copy: Path) -> None:
@@ -314,7 +379,9 @@ allowed-shared = "evonn_shared:__version__"
     diagnostics = _diagnostics(validator, repository_copy)
 
     assert len(diagnostics) == 3
-    assert any("project.scripts.forbidden-script" in item and "evonn-prism -> evonn-topograph" in item for item in diagnostics)
+    script_diagnostic = next(item for item in diagnostics if "project.scripts.forbidden-script" in item)
+    assert "evonn-prism -> evonn-topograph" in script_diagnostic
+    assert f"pyproject.toml:{_line_number(manifest, 'forbidden-script =')}:" in script_diagnostic
     assert any("project.gui-scripts.forbidden-gui" in item and "evonn-prism -> evonn-stratograph" in item for item in diagnostics)
     assert any(
         "project.entry-points.evonn.plugins.forbidden-plugin" in item and "evonn-prism -> evonn-primordia" in item
@@ -354,10 +421,42 @@ orphan-helper = [
     diagnostics = _diagnostics(validator, repository_copy)
 
     assert any("evonn-workspace" in item and "dependency edge evonn-workspace -> evonn-compare" in item for item in diagnostics)
-    assert any("optional-dependencies.forbidden" in item and "evonn-prism -> evonn-topograph" in item for item in diagnostics)
-    assert any("dependency-groups.forbidden" in item and "evonn-prism -> evonn-contenders" in item for item in diagnostics)
+    optional_diagnostic = next(item for item in diagnostics if "optional-dependencies.forbidden" in item)
+    assert "evonn-prism -> evonn-topograph" in optional_diagnostic
+    optional_line = _line_number(prism_manifest, 'forbidden = ["EvoNN.Topograph')
+    assert f"pyproject.toml:{optional_line}:" in optional_diagnostic
+    group_diagnostic = next(item for item in diagnostics if "dependency-groups.forbidden" in item)
+    assert "evonn-prism -> evonn-contenders" in group_diagnostic
+    group_line = _line_number(prism_manifest, 'forbidden = ["evonn-contenders')
+    assert f"pyproject.toml:{group_line}:" in group_diagnostic
     assert sum("forbidden workspace source edge evonn-prism -> evonn-topograph" in item for item in diagnostics) == 2
     assert sum("workspace source 'orphan-helper'" in item and "no matching" in item for item in diagnostics) == 2
+
+
+def test_internal_workspace_source_rejects_every_mixed_marker_alternative(
+    validator, repository_copy: Path
+) -> None:
+    manifest = repository_copy / "EvoNN-Prism/pyproject.toml"
+    manifest.write_text(
+        manifest.read_text(encoding="utf-8").replace(
+            'evonn-shared = { workspace = true }',
+            '''evonn-shared = [
+    { workspace = true, marker = "sys_platform == 'darwin'" },
+    { path = "../EvoNN-Shared", marker = "sys_platform == 'linux'" },
+    "malformed-alternative",
+]''',
+        ),
+        encoding="utf-8",
+    )
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    invalid = [item for item in diagnostics if "invalid workspace source alternative for 'evonn-shared'" in item]
+    assert len(invalid) == 2
+    assert "alternative 1" in invalid[0]
+    assert "alternative 2" in invalid[1]
+    assert f"pyproject.toml:{_line_number(manifest, '{ path =')}:" in invalid[0]
+    assert f"pyproject.toml:{_line_number(manifest, 'malformed-alternative')}:" in invalid[1]
 
 
 def test_workspace_exclude_cannot_hide_a_declared_member(validator, repository_copy: Path) -> None:
@@ -392,6 +491,36 @@ def test_workspace_and_production_source_symlinks_fail_closed(
 
     assert any("EvoNN-Prism:1" in item and "workspace member path must not be a symbolic link" in item for item in diagnostics)
     assert any("linked_runtime.py:1" in item and "production source path must not be a symbolic link" in item for item in diagnostics)
+
+
+def test_workspace_manifest_symlink_fails_closed(validator, repository_copy: Path, tmp_path: Path) -> None:
+    manifest = repository_copy / "EvoNN-Prism/pyproject.toml"
+    external_manifest = tmp_path / "external-pyproject.toml"
+    shutil.move(manifest, external_manifest)
+    manifest.symlink_to(external_manifest)
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert any(
+        "EvoNN-Prism/pyproject.toml:1" in item and "workspace manifest must not be a symbolic link" in item
+        for item in diagnostics
+    )
+
+
+def test_src_contains_exactly_one_expected_top_level_import_root(validator, repository_copy: Path) -> None:
+    prism_src = repository_copy / "EvoNN-Prism/src"
+    (prism_src / "topograph").mkdir()
+    (prism_src / "topograph/__init__.py").write_text("", encoding="utf-8")
+    (prism_src / "namespace_only").mkdir()
+    (prism_src / "unexpected_module.py").write_text("VALUE = 1\n", encoding="utf-8")
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    identity_errors = [item for item in diagnostics if "unexpected top-level src entry" in item]
+    assert len(identity_errors) == 3
+    assert any("EvoNN-Prism/src/topograph:1" in item for item in identity_errors)
+    assert any("EvoNN-Prism/src/namespace_only:1" in item for item in identity_errors)
+    assert any("EvoNN-Prism/src/unexpected_module.py:1" in item for item in identity_errors)
 
 
 def test_symlinked_package_root_cannot_hide_forbidden_imports(

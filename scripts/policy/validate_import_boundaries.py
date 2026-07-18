@@ -81,6 +81,155 @@ def _line_containing(path: Path, value: str, default: int = 1) -> int:
     return default
 
 
+def _split_toml_dotted_key(value: str) -> tuple[str, ...]:
+    parts: list[str] = []
+    current: list[str] = []
+    quote: str | None = None
+    escaped = False
+    for character in value.strip():
+        if quote:
+            current.append(character)
+            if quote == '"' and character == "\\" and not escaped:
+                escaped = True
+                continue
+            if character == quote and not escaped:
+                quote = None
+            escaped = False
+        elif character in {'"', "'"}:
+            quote = character
+            current.append(character)
+        elif character == ".":
+            parts.append("".join(current).strip())
+            current = []
+        else:
+            current.append(character)
+    parts.append("".join(current).strip())
+
+    normalized: list[str] = []
+    for part in parts:
+        if len(part) >= 2 and part[0] == part[-1] and part[0] in {'"', "'"}:
+            try:
+                normalized.append(tomllib.loads(f"value = {part}")["value"])
+            except tomllib.TOMLDecodeError:
+                normalized.append(part[1:-1])
+        else:
+            normalized.append(part)
+    return tuple(normalized)
+
+
+def _toml_assignment_key(line: str) -> tuple[str, ...] | None:
+    quote: str | None = None
+    escaped = False
+    for index, character in enumerate(line):
+        if quote:
+            if quote == '"' and character == "\\" and not escaped:
+                escaped = True
+                continue
+            if character == quote and not escaped:
+                quote = None
+            escaped = False
+        elif character in {'"', "'"}:
+            quote = character
+        elif character == "=":
+            return _split_toml_dotted_key(line[:index])
+        elif character == "#":
+            return None
+    return None
+
+
+def _toml_bracket_delta(line: str) -> int:
+    quote: str | None = None
+    escaped = False
+    delta = 0
+    for character in line:
+        if quote:
+            if quote == '"' and character == "\\" and not escaped:
+                escaped = True
+                continue
+            if character == quote and not escaped:
+                quote = None
+            escaped = False
+        elif character in {'"', "'"}:
+            quote = character
+        elif character in "[{":
+            delta += 1
+        elif character in "]}":
+            delta -= 1
+        elif character == "#":
+            break
+    return delta
+
+
+class TomlLocator:
+    """Locate declarations in the small, conventional TOML used by this workspace."""
+
+    def __init__(self, path: Path) -> None:
+        try:
+            self.lines = path.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            self.lines = []
+        self.sections: list[tuple[str, ...]] = []
+        current: tuple[str, ...] = ()
+        for line in self.lines:
+            stripped = line.strip()
+            match = re.match(r"^\[\[?(.*?)\]\]?(?:\s*#.*)?$", stripped)
+            if match:
+                current = _split_toml_dotted_key(match.group(1))
+            self.sections.append(current)
+
+    def section_line(self, section: tuple[str, ...], default: int = 1) -> int:
+        for number, current in enumerate(self.sections, 1):
+            if current == section and self.lines[number - 1].lstrip().startswith("["):
+                return number
+        return default
+
+    def key_line(self, section: tuple[str, ...], key: str, default: int = 1) -> int:
+        for number, (line, current) in enumerate(zip(self.lines, self.sections), 1):
+            if current == section and _toml_assignment_key(line) == (key,):
+                return number
+        return default
+
+    def assignment_span(self, section: tuple[str, ...], key: str) -> tuple[int, int]:
+        start = self.key_line(section, key, 0)
+        if not start:
+            return (0, 0)
+        balance = 0
+        for number in range(start, len(self.lines) + 1):
+            balance += _toml_bracket_delta(self.lines[number - 1])
+            if number == start and balance <= 0:
+                return (start, start)
+            if number > start and balance <= 0:
+                return (start, number)
+        return (start, len(self.lines))
+
+    def value_line(self, section: tuple[str, ...], key: str, value: str, default: int = 1) -> int:
+        start, end = self.assignment_span(section, key)
+        if not start:
+            return default
+        for number in range(start, end + 1):
+            if value in self.lines[number - 1]:
+                return number
+        return start
+
+    def alternative_lines(self, section: tuple[str, ...], key: str, count: int) -> list[int]:
+        start, end = self.assignment_span(section, key)
+        if not start:
+            return [1] * count
+        candidates: list[int] = []
+        for number in range(start, end + 1):
+            stripped = self.lines[number - 1].strip()
+            if number == start:
+                _, _, value = stripped.partition("=")
+                if value.strip().startswith("[") and value.count("{") + value.count('"') > 1 and start == end:
+                    candidates.extend([start] * count)
+                continue
+            if stripped.startswith(("{", '"', "'")):
+                candidates.append(number)
+        if len(candidates) < count:
+            candidates.extend([start] * (count - len(candidates)))
+        return candidates[:count]
+
+
 def _workspace_table(root_metadata: dict[str, Any]) -> dict[str, Any]:
     tool = root_metadata.get("tool")
     uv = tool.get("uv") if isinstance(tool, dict) else None
@@ -104,6 +253,11 @@ def validate_workspace_members(repo_root: Path) -> list[str]:
     """Validate the exact workspace member set and package/import identities."""
     diagnostics: list[str] = []
     root_manifest = repo_root / "pyproject.toml"
+    root_locator = TomlLocator(root_manifest)
+    if root_manifest.is_symlink():
+        diagnostics.append(
+            _diagnostic(repo_root, root_manifest, 1, "evonn-workspace", "root workspace manifest must not be a symbolic link")
+        )
     root_metadata = _load_toml(root_manifest, repo_root, "evonn-workspace", diagnostics)
     if root_metadata is None:
         return sorted(diagnostics)
@@ -115,7 +269,7 @@ def validate_workspace_members(repo_root: Path) -> list[str]:
             _diagnostic(
                 repo_root,
                 root_manifest,
-                _line_containing(root_manifest, "exclude"),
+                root_locator.key_line(("tool", "uv", "workspace"), "exclude"),
                 "evonn-workspace",
                 f"workspace exclude is disallowed because it can hide declared members: {workspace['exclude']!r}",
             )
@@ -142,7 +296,7 @@ def validate_workspace_members(repo_root: Path) -> list[str]:
             _diagnostic(
                 repo_root,
                 root_manifest,
-                _line_containing(root_manifest, f'"{member}"'),
+                root_locator.value_line(("tool", "uv", "workspace"), "members", member),
                 "evonn-workspace",
                 f"duplicate workspace member: {member}",
             )
@@ -158,7 +312,7 @@ def validate_workspace_members(repo_root: Path) -> list[str]:
             _diagnostic(
                 repo_root,
                 root_manifest,
-                _line_containing(root_manifest, f'"{member}"'),
+                root_locator.value_line(("tool", "uv", "workspace"), "members", member),
                 "evonn-workspace",
                 f"extra workspace member: {member}",
             )
@@ -187,7 +341,34 @@ def validate_workspace_members(repo_root: Path) -> list[str]:
                     "production source path must not be a symbolic link",
                 )
             )
+        if not source_root.is_dir():
+            diagnostics.append(
+                _diagnostic(repo_root, source_root, 1, spec.distribution, "required production src directory is missing")
+            )
+        else:
+            for entry in sorted(source_root.iterdir(), key=lambda item: item.name.encode("utf-8")):
+                if entry.name != spec.import_root:
+                    diagnostics.append(
+                        _diagnostic(
+                            repo_root,
+                            entry,
+                            1,
+                            spec.distribution,
+                            f"unexpected top-level src entry; expected only '{spec.import_root}'",
+                        )
+                    )
         manifest = member_root / "pyproject.toml"
+        locator = TomlLocator(manifest)
+        if manifest.is_symlink():
+            diagnostics.append(
+                _diagnostic(
+                    repo_root,
+                    manifest,
+                    1,
+                    spec.distribution,
+                    "workspace manifest must not be a symbolic link",
+                )
+            )
         metadata = _load_toml(manifest, repo_root, spec.distribution, diagnostics)
         if metadata is None:
             continue
@@ -198,7 +379,7 @@ def validate_workspace_members(repo_root: Path) -> list[str]:
                 _diagnostic(
                     repo_root,
                     manifest,
-                    _line_containing(manifest, "name"),
+                    locator.key_line(("project",), "name"),
                     spec.distribution,
                     f"workspace distribution identity must be '{spec.distribution}', found {actual_distribution!r}",
                 )
@@ -215,7 +396,7 @@ def validate_workspace_members(repo_root: Path) -> list[str]:
                 _diagnostic(
                     repo_root,
                     manifest,
-                    _line_containing(manifest, "packages"),
+                    locator.key_line(("tool", "hatch", "build", "targets", "wheel"), "packages"),
                     spec.distribution,
                     f"expected import package path '{expected_package_path}', found {packages!r}",
                 )
@@ -225,7 +406,7 @@ def validate_workspace_members(repo_root: Path) -> list[str]:
                 _diagnostic(
                     repo_root,
                     manifest,
-                    _line_containing(manifest, "packages"),
+                    locator.key_line(("tool", "hatch", "build", "targets", "wheel"), "packages"),
                     spec.distribution,
                     f"expected import root directory is missing: {expected_package_path}",
                 )
@@ -240,25 +421,47 @@ def _source_entries(metadata: dict[str, Any]) -> dict[str, Any]:
     return sources if isinstance(sources, dict) else {}
 
 
-def _workspace_source_alternatives(value: Any) -> list[tuple[int | None, dict[str, Any]]]:
-    if isinstance(value, dict):
-        return [(None, value)] if value.get("workspace") is True else []
+def _source_alternatives(value: Any) -> list[tuple[int | None, Any]]:
     if isinstance(value, list):
-        return [
-            (index, alternative)
-            for index, alternative in enumerate(value)
-            if isinstance(alternative, dict) and alternative.get("workspace") is True
-        ]
-    return []
+        return list(enumerate(value)) if value else [(None, value)]
+    return [(None, value)]
+
+
+def _valid_workspace_source_alternative(value: Any) -> bool:
+    if not isinstance(value, dict) or value.get("workspace") is not True:
+        return False
+    if not set(value) <= {"workspace", "marker"}:
+        return False
+    marker = value.get("marker")
+    return marker is None or (isinstance(marker, str) and bool(marker.strip()))
+
+
+def _workspace_source_alternatives(value: Any) -> list[tuple[int | None, dict[str, Any]]]:
+    return [
+        (index, alternative)
+        for index, alternative in _source_alternatives(value)
+        if _valid_workspace_source_alternative(alternative)
+    ]
 
 
 def _is_workspace_source(value: Any) -> bool:
-    return bool(_workspace_source_alternatives(value))
+    alternatives = _source_alternatives(value)
+    return bool(alternatives) and all(_valid_workspace_source_alternative(item) for _, item in alternatives)
+
+
+def _source_alternative_lines(locator: TomlLocator, raw_name: str, value: Any) -> list[int]:
+    alternatives = _source_alternatives(value)
+    sources_section = ("tool", "uv", "sources")
+    if locator.key_line(sources_section, raw_name, 0):
+        return locator.alternative_lines(sources_section, raw_name, len(alternatives))
+    nested_section = (*sources_section, raw_name)
+    return [locator.section_line(nested_section)] * len(alternatives)
 
 
 def _dependency_surfaces(
     metadata: dict[str, Any],
     manifest: Path,
+    locator: TomlLocator,
     repo_root: Path,
     source: str,
     diagnostics: list[str],
@@ -271,7 +474,7 @@ def _dependency_surfaces(
             _diagnostic(
                 repo_root,
                 manifest,
-                _line_containing(manifest, "dependencies"),
+                locator.key_line(("project",), "dependencies"),
                 source,
                 "project.dependencies must be a list",
             )
@@ -282,7 +485,17 @@ def _dependency_surfaces(
     optional = project.get("optional-dependencies") if isinstance(project, dict) else None
     if optional is not None and not isinstance(optional, dict):
         diagnostics.append(
-            _diagnostic(repo_root, manifest, _line_containing(manifest, "optional-dependencies"), source, "project.optional-dependencies must be a table")
+            _diagnostic(
+                repo_root,
+                manifest,
+                locator.key_line(
+                    ("project",),
+                    "optional-dependencies",
+                    locator.section_line(("project", "optional-dependencies")),
+                ),
+                source,
+                "project.optional-dependencies must be a table",
+            )
         )
     elif isinstance(optional, dict):
         for group, requirements in optional.items():
@@ -291,13 +504,25 @@ def _dependency_surfaces(
                 surfaces.append((surface, requirements))
             else:
                 diagnostics.append(
-                    _diagnostic(repo_root, manifest, _line_containing(manifest, str(group)), source, f"{surface} must be a list")
+                    _diagnostic(
+                        repo_root,
+                        manifest,
+                        locator.key_line(("project", "optional-dependencies"), str(group)),
+                        source,
+                        f"{surface} must be a list",
+                    )
                 )
 
     groups = metadata.get("dependency-groups")
     if groups is not None and not isinstance(groups, dict):
         diagnostics.append(
-            _diagnostic(repo_root, manifest, _line_containing(manifest, "dependency-groups"), source, "dependency-groups must be a table")
+            _diagnostic(
+                repo_root,
+                manifest,
+                locator.key_line((), "dependency-groups", locator.section_line(("dependency-groups",))),
+                source,
+                "dependency-groups must be a table",
+            )
         )
     elif isinstance(groups, dict):
         for group, requirements in groups.items():
@@ -306,22 +531,51 @@ def _dependency_surfaces(
                 surfaces.append((surface, requirements))
             else:
                 diagnostics.append(
-                    _diagnostic(repo_root, manifest, _line_containing(manifest, str(group)), source, f"{surface} must be a list")
+                    _diagnostic(
+                        repo_root,
+                        manifest,
+                        locator.key_line(("dependency-groups",), str(group)),
+                        source,
+                        f"{surface} must be a list",
+                    )
                 )
     return surfaces
 
 
-def _runtime_entry_point_surfaces(project: dict[str, Any]) -> list[tuple[str, Any]]:
-    entries: list[tuple[str, Any]] = []
+def _dependency_location(locator: TomlLocator, surface: str, dependency: str | None = None) -> int:
+    if surface == "project.dependencies":
+        section, key = ("project",), "dependencies"
+    elif surface.startswith("project.optional-dependencies."):
+        section, key = ("project", "optional-dependencies"), surface.removeprefix("project.optional-dependencies.")
+    else:
+        section, key = ("dependency-groups",), surface.removeprefix("dependency-groups.")
+    return locator.value_line(section, key, dependency) if dependency is not None else locator.key_line(section, key)
+
+
+def _runtime_entry_point_surfaces(
+    project: dict[str, Any],
+) -> list[tuple[str, tuple[str, ...], str, Any]]:
+    entries: list[tuple[str, tuple[str, ...], str, Any]] = []
     for table_name in ("scripts", "gui-scripts"):
         table = project.get(table_name)
         if isinstance(table, dict):
-            entries.extend((f"project.{table_name}.{name}", value) for name, value in table.items())
+            entries.extend(
+                (f"project.{table_name}.{name}", ("project", table_name), str(name), value)
+                for name, value in table.items()
+            )
     groups = project.get("entry-points")
     if isinstance(groups, dict):
         for group, table in groups.items():
             if isinstance(table, dict):
-                entries.extend((f"project.entry-points.{group}.{name}", value) for name, value in table.items())
+                entries.extend(
+                    (
+                        f"project.entry-points.{group}.{name}",
+                        ("project", "entry-points", str(group)),
+                        str(name),
+                        value,
+                    )
+                    for name, value in table.items()
+                )
     return entries
 
 
@@ -333,8 +587,10 @@ def _validate_dependency_context(
     diagnostics: list[str],
 ) -> None:
     allowed_targets = ALLOWED_INTERNAL_TARGETS.get(source, set())
+    locator = TomlLocator(manifest)
     dependency_names: set[str] = set()
-    for surface, requirements in _dependency_surfaces(metadata, manifest, repo_root, source, diagnostics):
+    dependency_lines: dict[str, int] = {}
+    for surface, requirements in _dependency_surfaces(metadata, manifest, locator, repo_root, source, diagnostics):
         for dependency in requirements:
             if isinstance(dependency, dict) and set(dependency) == {"include-group"}:
                 continue
@@ -343,7 +599,7 @@ def _validate_dependency_context(
                     _diagnostic(
                         repo_root,
                         manifest,
-                        _line_containing(manifest, surface.rpartition(".")[2]),
+                        _dependency_location(locator, surface),
                         source,
                         f"{surface} dependency must be a PEP 508 string, found {dependency!r}",
                     )
@@ -355,19 +611,20 @@ def _validate_dependency_context(
                     _diagnostic(
                         repo_root,
                         manifest,
-                        _line_containing(manifest, dependency),
+                        _dependency_location(locator, surface, dependency),
                         source,
                         f"cannot parse PEP 508 dependency name from {dependency!r} in {surface}",
                     )
                 )
                 continue
             dependency_names.add(target)
+            dependency_lines.setdefault(target, _dependency_location(locator, surface, dependency))
             if target in SPEC_BY_DISTRIBUTION and target not in allowed_targets:
                 diagnostics.append(
                     _diagnostic(
                         repo_root,
                         manifest,
-                        _line_containing(manifest, dependency),
+                        _dependency_location(locator, surface, dependency),
                         source,
                         f"forbidden dependency edge {source} -> {target} in {surface} from requirement {dependency!r}",
                     )
@@ -378,9 +635,24 @@ def _validate_dependency_context(
         if not isinstance(raw_name, str):
             continue
         target = normalize_distribution_name(raw_name)
-        line = _line_containing(manifest, raw_name)
-        for index, _alternative in _workspace_source_alternatives(source_value):
+        alternatives = _source_alternatives(source_value)
+        lines = _source_alternative_lines(locator, raw_name, source_value)
+        for (index, alternative), line in zip(alternatives, lines):
             suffix = "" if index is None else f" alternative {index}"
+            valid_workspace = _valid_workspace_source_alternative(alternative)
+            if target in SPEC_BY_DISTRIBUTION and not valid_workspace:
+                diagnostics.append(
+                    _diagnostic(
+                        repo_root,
+                        manifest,
+                        line,
+                        source,
+                        f"invalid workspace source alternative for '{raw_name}'{suffix}; expected only workspace = true and an optional non-empty marker",
+                    )
+                )
+                continue
+            if not valid_workspace:
+                continue
             if target not in dependency_names:
                 diagnostics.append(
                     _diagnostic(
@@ -421,7 +693,7 @@ def _validate_dependency_context(
                 _diagnostic(
                     repo_root,
                     manifest,
-                    _line_containing(manifest, target),
+                    dependency_lines.get(target, 1),
                     source,
                     f"internal dependency '{target}' must have a matching workspace = true source",
                 )
@@ -430,10 +702,11 @@ def _validate_dependency_context(
     project = metadata.get("project")
     if not isinstance(project, dict):
         return
-    for surface, target_value in _runtime_entry_point_surfaces(project):
+    for surface, section, key, target_value in _runtime_entry_point_surfaces(project):
+        line = locator.key_line(section, key)
         if not isinstance(target_value, str):
             diagnostics.append(
-                _diagnostic(repo_root, manifest, _line_containing(manifest, surface.rpartition(".")[2]), source, f"{surface} must be a string module target")
+                _diagnostic(repo_root, manifest, line, source, f"{surface} must be a string module target")
             )
             continue
         module_name = target_value.partition(":")[0].strip()
@@ -443,7 +716,7 @@ def _validate_dependency_context(
                 _diagnostic(
                     repo_root,
                     manifest,
-                    _line_containing(manifest, target_value),
+                    line,
                     source,
                     f"forbidden runtime entry point edge {source} -> {target_spec.distribution} at {surface}",
                 )
@@ -465,57 +738,101 @@ def validate_dependencies(repo_root: Path) -> list[str]:
     return sorted(set(diagnostics), key=lambda item: item.encode("utf-8"))
 
 
-class _DynamicImportAliases(ast.NodeVisitor):
-    _MODULE_FUNCTIONS = {
-        "builtins": {"__import__": "builtins.__import__"},
-        "importlib": {"import_module": "importlib.import_module"},
-        "runpy": {"run_module": "runpy.run_module"},
-    }
+_UNKNOWN_BINDING = object()
+_MODULE_FUNCTIONS = {
+    "builtins": {"__import__": "builtins.__import__"},
+    "importlib": {"import_module": "importlib.import_module"},
+    "runpy": {"run_module": "runpy.run_module"},
+}
 
+
+class _BindingScope:
+    def __init__(self, kind: str) -> None:
+        self.kind = kind
+        self.bindings: dict[str, object] = {}
+        self.global_names: set[str] = set()
+        self.nonlocal_names: set[str] = set()
+
+    def clone(self) -> _BindingScope:
+        cloned = _BindingScope(self.kind)
+        cloned.bindings = self.bindings.copy()
+        cloned.global_names = self.global_names.copy()
+        cloned.nonlocal_names = self.nonlocal_names.copy()
+        return cloned
+
+
+class _LocalBindingCollector(ast.NodeVisitor):
     def __init__(self) -> None:
-        self.module_aliases: dict[str, str] = {name: name for name in self._MODULE_FUNCTIONS}
-        self.callable_aliases: dict[str, str] = {"__import__": "__import__"}
+        self.bound: set[str] = set()
+        self.global_names: set[str] = set()
+        self.nonlocal_names: set[str] = set()
 
-    def _expression_kind(self, expression: ast.expr) -> str | None:
-        if isinstance(expression, ast.Name):
-            return self.callable_aliases.get(expression.id)
-        if isinstance(expression, ast.Attribute) and isinstance(expression.value, ast.Name):
-            module = self.module_aliases.get(expression.value.id)
-            if module:
-                return self._MODULE_FUNCTIONS[module].get(expression.attr)
-        return None
+    def _target(self, target: ast.expr) -> None:
+        if isinstance(target, ast.Name):
+            self.bound.add(target.id)
+        elif isinstance(target, (ast.Tuple, ast.List)):
+            for item in target.elts:
+                self._target(item)
+
+    def visit_Global(self, node: ast.Global) -> None:
+        self.global_names.update(node.names)
+
+    def visit_Nonlocal(self, node: ast.Nonlocal) -> None:
+        self.nonlocal_names.update(node.names)
 
     def visit_Import(self, node: ast.Import) -> None:
-        for alias in node.names:
-            module = alias.name.partition(".")[0]
-            if module in self._MODULE_FUNCTIONS:
-                self.module_aliases[alias.asname or module] = module
+        self.bound.update(alias.asname or alias.name.partition(".")[0] for alias in node.names)
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
-        functions = self._MODULE_FUNCTIONS.get(node.module or "", {})
-        for alias in node.names:
-            kind = functions.get(alias.name)
-            if kind:
-                if node.module == "importlib" and alias.name == "import_module":
-                    kind = "import_module"
-                self.callable_aliases[alias.asname or alias.name] = kind
+        self.bound.update(alias.asname or alias.name for alias in node.names if alias.name != "*")
 
     def visit_Assign(self, node: ast.Assign) -> None:
-        kind = self._expression_kind(node.value)
-        if kind:
-            for target in node.targets:
-                if isinstance(target, ast.Name):
-                    self.callable_aliases[target.id] = kind
+        for target in node.targets:
+            self._target(target)
+        self.visit(node.value)
 
     def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
-        if node.value is not None and isinstance(node.target, ast.Name):
-            kind = self._expression_kind(node.value)
-            if kind:
-                self.callable_aliases[node.target.id] = kind
+        self._target(node.target)
+        if node.value:
+            self.visit(node.value)
 
+    def visit_AugAssign(self, node: ast.AugAssign) -> None:
+        self._target(node.target)
+        self.visit(node.value)
 
-def _dynamic_import_kind(call: ast.Call, aliases: _DynamicImportAliases) -> str | None:
-    return aliases._expression_kind(call.func)
+    def visit_NamedExpr(self, node: ast.NamedExpr) -> None:
+        self._target(node.target)
+        self.visit(node.value)
+
+    def visit_For(self, node: ast.For) -> None:
+        self._target(node.target)
+        self.generic_visit(node)
+
+    visit_AsyncFor = visit_For
+
+    def visit_With(self, node: ast.With) -> None:
+        for item in node.items:
+            if item.optional_vars:
+                self._target(item.optional_vars)
+        self.generic_visit(node)
+
+    visit_AsyncWith = visit_With
+
+    def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
+        if node.name:
+            self.bound.add(node.name)
+        self.generic_visit(node)
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self.bound.add(node.name)
+
+    visit_AsyncFunctionDef = visit_FunctionDef
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        self.bound.add(node.name)
+
+    def visit_Lambda(self, node: ast.Lambda) -> None:
+        return
 
 
 def _call_argument(call: ast.Call, keyword: str) -> ast.expr | None:
@@ -546,6 +863,255 @@ def _literal_dynamic_root(call: ast.Call, kind: str) -> tuple[str | None, bool]:
     return module_name.partition(".")[0], True
 
 
+class _PythonImportAnalyzer(ast.NodeVisitor):
+    def __init__(self, repo_root: Path, path: Path, source_distribution: str, diagnostics: list[str]) -> None:
+        self.repo_root = repo_root
+        self.path = path
+        self.source_distribution = source_distribution
+        self.allowed_targets = ALLOWED_INTERNAL_TARGETS[source_distribution]
+        self.diagnostics = diagnostics
+        module_scope = _BindingScope("module")
+        module_scope.bindings["__import__"] = "call:__import__"
+        self.scopes = [module_scope]
+
+    def _lookup(self, name: str) -> object | None:
+        current = self.scopes[-1]
+        if name in current.global_names:
+            value = self.scopes[0].bindings.get(name, _UNKNOWN_BINDING)
+            return None if value is _UNKNOWN_BINDING else value
+        if name in current.nonlocal_names:
+            for scope in reversed(self.scopes[:-1]):
+                if scope.kind == "function" and name in scope.bindings:
+                    value = scope.bindings[name]
+                    return None if value is _UNKNOWN_BINDING else value
+            return None
+        for scope in reversed(self.scopes):
+            if current.kind == "function" and scope.kind == "class":
+                continue
+            if name in scope.bindings:
+                value = scope.bindings[name]
+                return None if value is _UNKNOWN_BINDING else value
+        return None
+
+    def _bind(self, name: str, value: object) -> None:
+        current = self.scopes[-1]
+        if name in current.global_names:
+            self.scopes[0].bindings[name] = value
+            return
+        if name in current.nonlocal_names:
+            for scope in reversed(self.scopes[:-1]):
+                if scope.kind == "function":
+                    scope.bindings[name] = value
+                    return
+        current.bindings[name] = value
+
+    def _bind_target(self, target: ast.expr, value: object = _UNKNOWN_BINDING) -> None:
+        if isinstance(target, ast.Name):
+            self._bind(target.id, value)
+        elif isinstance(target, (ast.Tuple, ast.List)):
+            for item in target.elts:
+                self._bind_target(item)
+        elif isinstance(target, ast.Starred):
+            self._bind_target(target.value)
+
+    def _expression_binding(self, expression: ast.expr) -> object | None:
+        if isinstance(expression, ast.Name):
+            return self._lookup(expression.id)
+        if isinstance(expression, ast.Attribute) and isinstance(expression.value, ast.Name):
+            module_binding = self._lookup(expression.value.id)
+            if isinstance(module_binding, str) and module_binding.startswith("module:"):
+                module = module_binding.removeprefix("module:")
+                kind = _MODULE_FUNCTIONS.get(module, {}).get(expression.attr)
+                return f"call:{kind}" if kind else None
+        return None
+
+    def _call_kind(self, call: ast.Call) -> str | None:
+        binding = self._expression_binding(call.func)
+        if isinstance(binding, str) and binding.startswith("call:"):
+            return binding.removeprefix("call:")
+        return None
+
+    def _report_static_import(self, module_name: str, line: int) -> None:
+        target = SPEC_BY_IMPORT_ROOT.get(module_name.partition(".")[0])
+        if target and target.distribution != self.source_distribution and target.distribution not in self.allowed_targets:
+            self.diagnostics.append(
+                _diagnostic(
+                    self.repo_root,
+                    self.path,
+                    line,
+                    self.source_distribution,
+                    f"forbidden import edge {self.source_distribution} -> {target.distribution} via {module_name}",
+                )
+            )
+
+    def _report_dynamic_import(self, call: ast.Call, kind: str) -> None:
+        target_root, is_literal = _literal_dynamic_root(call, kind)
+        if not is_literal:
+            self.diagnostics.append(
+                _diagnostic(
+                    self.repo_root,
+                    self.path,
+                    call.lineno,
+                    self.source_distribution,
+                    f"non-literal dynamic import via {kind} is disallowed because its target cannot be validated",
+                )
+            )
+            return
+        target = SPEC_BY_IMPORT_ROOT.get(target_root or "")
+        if target and target.distribution != self.source_distribution and target.distribution not in self.allowed_targets:
+            self.diagnostics.append(
+                _diagnostic(
+                    self.repo_root,
+                    self.path,
+                    call.lineno,
+                    self.source_distribution,
+                    f"forbidden dynamic import edge {self.source_distribution} -> {target.distribution} via {kind}",
+                )
+            )
+
+    def _visit_statements(self, statements: list[ast.stmt]) -> None:
+        for statement in statements:
+            self.visit(statement)
+
+    def _analyze_branches(self, branches: list[list[ast.stmt]]) -> None:
+        original = self.scopes
+        outcomes: list[list[_BindingScope]] = []
+        for branch in branches:
+            self.scopes = [scope.clone() for scope in original]
+            self._visit_statements(branch)
+            outcomes.append([scope.clone() for scope in self.scopes])
+        self.scopes = original
+        for index, scope in enumerate(self.scopes):
+            names = set().union(*(outcome[index].bindings for outcome in outcomes))
+            merged: dict[str, object] = {}
+            for name in names:
+                values = [outcome[index].bindings.get(name, _UNKNOWN_BINDING) for outcome in outcomes]
+                first = values[0]
+                merged[name] = first if all(value == first for value in values[1:]) else _UNKNOWN_BINDING
+            scope.bindings = merged
+
+    def visit_Import(self, node: ast.Import) -> None:
+        for alias in node.names:
+            self._report_static_import(alias.name, node.lineno)
+            root = alias.name.partition(".")[0]
+            bound_name = alias.asname or root
+            if root in _MODULE_FUNCTIONS and (alias.asname is None or alias.name == root):
+                self._bind(bound_name, f"module:{root}")
+            else:
+                self._bind(bound_name, _UNKNOWN_BINDING)
+
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+        if node.level == 0 and node.module:
+            self._report_static_import(node.module, node.lineno)
+        functions = _MODULE_FUNCTIONS.get(node.module or "", {}) if node.level == 0 else {}
+        for alias in node.names:
+            if alias.name == "*":
+                self.scopes[-1].bindings = {
+                    name: _UNKNOWN_BINDING for name in self.scopes[-1].bindings
+                }
+                continue
+            kind = functions.get(alias.name)
+            if kind == "importlib.import_module":
+                kind = "import_module"
+            self._bind(alias.asname or alias.name, f"call:{kind}" if kind else _UNKNOWN_BINDING)
+
+    def visit_Assign(self, node: ast.Assign) -> None:
+        self.visit(node.value)
+        binding = self._expression_binding(node.value) or _UNKNOWN_BINDING
+        for target in node.targets:
+            self._bind_target(target, binding)
+
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
+        if node.value:
+            self.visit(node.value)
+            binding = self._expression_binding(node.value) or _UNKNOWN_BINDING
+        else:
+            binding = _UNKNOWN_BINDING
+        self._bind_target(node.target, binding)
+
+    def visit_AugAssign(self, node: ast.AugAssign) -> None:
+        self.visit(node.value)
+        self._bind_target(node.target)
+
+    def visit_NamedExpr(self, node: ast.NamedExpr) -> None:
+        self.visit(node.value)
+        self._bind_target(node.target, self._expression_binding(node.value) or _UNKNOWN_BINDING)
+
+    def visit_Delete(self, node: ast.Delete) -> None:
+        for target in node.targets:
+            self._bind_target(target)
+
+    def visit_Call(self, node: ast.Call) -> None:
+        kind = self._call_kind(node)
+        if kind:
+            self._report_dynamic_import(node, kind)
+        self.generic_visit(node)
+
+    def _visit_function(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
+        for expression in [*node.decorator_list, *node.args.defaults, *node.args.kw_defaults]:
+            if expression:
+                self.visit(expression)
+        outer = self.scopes
+        self.scopes = [scope.clone() for scope in outer]
+        function_scope = _BindingScope("function")
+        collector = _LocalBindingCollector()
+        for statement in node.body:
+            collector.visit(statement)
+        function_scope.global_names = collector.global_names
+        function_scope.nonlocal_names = collector.nonlocal_names
+        for name in collector.bound - collector.global_names - collector.nonlocal_names:
+            function_scope.bindings[name] = _UNKNOWN_BINDING
+        arguments = [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]
+        if node.args.vararg:
+            arguments.append(node.args.vararg)
+        if node.args.kwarg:
+            arguments.append(node.args.kwarg)
+        for argument in arguments:
+            function_scope.bindings[argument.arg] = _UNKNOWN_BINDING
+        self.scopes.append(function_scope)
+        self._visit_statements(node.body)
+        self.scopes = outer
+        self._bind(node.name, _UNKNOWN_BINDING)
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self._visit_function(node)
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+        self._visit_function(node)
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        for expression in [*node.decorator_list, *node.bases, *(item.value for item in node.keywords)]:
+            self.visit(expression)
+        class_scope = _BindingScope("class")
+        collector = _LocalBindingCollector()
+        for statement in node.body:
+            collector.visit(statement)
+        class_scope.global_names = collector.global_names
+        class_scope.nonlocal_names = collector.nonlocal_names
+        self.scopes.append(class_scope)
+        self._visit_statements(node.body)
+        self.scopes.pop()
+        self._bind(node.name, _UNKNOWN_BINDING)
+
+    def visit_Lambda(self, node: ast.Lambda) -> None:
+        outer = self.scopes
+        self.scopes = [scope.clone() for scope in outer]
+        function_scope = _BindingScope("function")
+        for argument in [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]:
+            function_scope.bindings[argument.arg] = _UNKNOWN_BINDING
+        self.scopes.append(function_scope)
+        self.visit(node.body)
+        self.scopes = outer
+
+    def visit_If(self, node: ast.If) -> None:
+        self.visit(node.test)
+        self._analyze_branches([node.body, node.orelse])
+
+    def visit_While(self, node: ast.While) -> None:
+        self.visit(node.test)
+        self._analyze_branches([node.body + node.orelse, node.orelse])
+
+
 def validate_python_imports(repo_root: Path) -> list[str]:
     """Parse production source trees and reject forbidden or unresolved dynamic imports."""
     diagnostics: list[str] = []
@@ -563,69 +1129,7 @@ def validate_python_imports(repo_root: Path) -> list[str]:
                     _diagnostic(repo_root, path, line, spec.distribution, f"cannot parse production Python: {exc}")
                 )
                 continue
-            aliases = _DynamicImportAliases()
-            aliases.visit(tree)
-            for node in ast.walk(tree):
-                target_root: str | None = None
-                import_kind = "import"
-                if isinstance(node, ast.Import):
-                    for alias in node.names:
-                        target_root = alias.name.partition(".")[0]
-                        target_spec = SPEC_BY_IMPORT_ROOT.get(target_root)
-                        if target_spec and target_spec.distribution not in ALLOWED_INTERNAL_TARGETS[spec.distribution] and target_spec.distribution != spec.distribution:
-                            diagnostics.append(
-                                _diagnostic(
-                                    repo_root,
-                                    path,
-                                    node.lineno,
-                                    spec.distribution,
-                                    f"forbidden import edge {spec.distribution} -> {target_spec.distribution} via {alias.name}",
-                                )
-                            )
-                    continue
-                if isinstance(node, ast.ImportFrom):
-                    if node.level == 0 and node.module:
-                        target_root = node.module.partition(".")[0]
-                        target_spec = SPEC_BY_IMPORT_ROOT.get(target_root)
-                        if target_spec and target_spec.distribution not in ALLOWED_INTERNAL_TARGETS[spec.distribution] and target_spec.distribution != spec.distribution:
-                            diagnostics.append(
-                                _diagnostic(
-                                    repo_root,
-                                    path,
-                                    node.lineno,
-                                    spec.distribution,
-                                    f"forbidden import edge {spec.distribution} -> {target_spec.distribution} via {node.module}",
-                                )
-                            )
-                    continue
-                if not isinstance(node, ast.Call):
-                    continue
-                import_kind = _dynamic_import_kind(node, aliases) or ""
-                if not import_kind:
-                    continue
-                target_root, is_literal = _literal_dynamic_root(node, import_kind)
-                if not is_literal:
-                    diagnostics.append(
-                        _diagnostic(
-                            repo_root,
-                            path,
-                            node.lineno,
-                            spec.distribution,
-                            f"non-literal dynamic import via {import_kind} is disallowed because its target cannot be validated",
-                        )
-                    )
-                    continue
-                target_spec = SPEC_BY_IMPORT_ROOT.get(target_root or "")
-                if target_spec and target_spec.distribution not in ALLOWED_INTERNAL_TARGETS[spec.distribution] and target_spec.distribution != spec.distribution:
-                    diagnostics.append(
-                        _diagnostic(
-                            repo_root,
-                            path,
-                            node.lineno,
-                            spec.distribution,
-                            f"forbidden dynamic import edge {spec.distribution} -> {target_spec.distribution} via {import_kind}",
-                        )
-                    )
+            _PythonImportAnalyzer(repo_root, path, spec.distribution, diagnostics).visit(tree)
     return sorted(set(diagnostics), key=lambda item: item.encode("utf-8"))
 
 

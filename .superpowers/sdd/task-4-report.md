@@ -358,6 +358,172 @@ All checks passed!
 - Confirmed B0.4 alone transitioned from open to closed; B0.2/B0.5 and overall B0 remain open, while B0.3 evidence remains intact.
 - Confirmed no CI workflow, `b0-policy-checks.sh`, runtime/backend probe, engine algorithm, CLI behavior, export contract, benchmark catalog, MLX/NumPy/scikit-learn dependency, or Phase 0 implementation was added.
 
+## Coordinator review-fix addendum
+
+### Findings addressed
+
+All Critical and Important coordinator findings were reproduced with focused tests before implementation and fixed without expanding into Task 5:
+
+1. Replaced the file-global dynamic-alias collector with a source-ordered binding analyzer. Imports, assignments, deletes, function-local declarations, parameters, class namespaces, branches, and rebinding update or invalidate bindings at the statement where they occur. Function/class analyses use isolated scope state, so inner aliases do not overwrite outer bindings and later rebinding cannot hide an earlier forbidden call.
+2. Changed uv source validation to inspect every source alternative. Every internal alternative must be a mapping containing only `workspace = true` and an optional non-empty string marker. Path/URL/Git/malformed/extra-key alternatives fail individually with deterministic alternative indexes and declaration lines.
+3. Expanded topology symlink rejection to the root workspace manifest, every member manifest, member roots, `src/`, package roots, all production-source descendants, and the Shared benchmark topology.
+4. Enforced exactly one top-level entry in every member `src/`: the package's expected import root. Extra packages, namespace directories, sibling internal roots, files, and top-level modules fail.
+5. Added a section/key-aware TOML locator for workspace members/exclude, project/optional/group dependencies, uv source alternatives, hatch package declarations, scripts, GUI scripts, and entry-point groups. Diagnostics now point at the actual declaration rather than an earlier substring match.
+
+### Coordinator-fix RED evidence
+
+Command:
+
+```sh
+uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py -k 'source_ordered or scopes or mixed_marker or manifest_symlink or exactly_one_expected_top_level or workspace_dependencies_match_allowed_matrix'
+```
+
+The first selection intentionally missed the separately named top-level identity test and produced:
+
+```text
+FFFFF                                                                    [100%]
+5 failed, 18 deselected in 0.16s
+```
+
+The failures proved:
+
+- a later `runpy` rebind hid the earlier `importlib` call;
+- function/class bindings leaked through the file-global alias map;
+- mixed workspace/path marker alternatives were silently accepted;
+- a symlinked member `pyproject.toml` was followed;
+- a workspace-source diagnostic pointed to dependency line 13 instead of source declaration line 23.
+
+The explicit top-level identity regression was then run:
+
+```sh
+uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py::test_src_contains_exactly_one_expected_top_level_import_root
+```
+
+```text
+F                                                                        [100%]
+1 failed in 0.05s
+```
+
+It showed that sibling `topograph/`, a namespace-only directory, and `unexpected_module.py` under Prism's `src/` were all accepted.
+
+### Coordinator-fix GREEN evidence
+
+Focused coordinator regressions:
+
+```text
+......                                                                   [100%]
+6 passed, 17 deselected in 0.15s
+```
+
+Complete policy suite:
+
+```text
+.......................                                                  [100%]
+23 passed in 0.57s
+```
+
+### Final required verification after coordinator fixes
+
+```text
+== uv lock --check ==
+Resolved 15 packages in 6ms
+
+== uv sync --all-packages --group dev --locked ==
+Resolved 15 packages in 5ms
+Audited 14 packages in 0.30ms
+
+== uv run --locked --group dev pytest -q tests/policy/test_import_boundaries.py ==
+.......................                                                  [100%]
+23 passed in 0.56s
+
+== uv run --locked --group dev pytest -q ==
+........................................................................ [ 98%]
+.                                                                        [100%]
+73 passed in 7.86s
+
+== uv run --locked --group dev ruff check . ==
+All checks passed!
+
+== uv run --locked --group dev python scripts/policy/validate_import_boundaries.py ==
+Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
+
+== python3 scripts/policy/validate_repository_governance.py ==
+Repository governance policy: PASS
+```
+
+### Final eight-script regression matrix
+
+```text
+== shared-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== benchmarks-checks.sh ==
+Resolved 15 packages in 6ms
+All checks passed!
+...                                                                      [100%]
+3 passed in 0.14s
+
+== contenders-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== compare-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== prism-checks.sh ==
+Resolved 15 packages in 6ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== topograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== stratograph-checks.sh ==
+Resolved 15 packages in 5ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.00s
+
+== primordia-checks.sh ==
+Resolved 15 packages in 6ms
+All checks passed!
+.                                                                        [100%]
+1 passed in 0.01s
+```
+
+### Final CLI runtime observation
+
+The hardened CLI was launched from `/tmp` against a synthetic repository containing all coordinator bypass classes. Exact output:
+
+```text
+Import boundary policy: FAIL (6 violations)
+ERROR: EvoNN-Prism/pyproject.toml:11: evonn-prism: internal dependency 'evonn-shared' must have a matching workspace = true source
+ERROR: EvoNN-Prism/pyproject.toml:16: evonn-prism: invalid workspace source alternative for 'evonn-shared' alternative 1; expected only workspace = true and an optional non-empty marker
+ERROR: EvoNN-Prism/src/prism/source_order_bypass.py:2: evonn-prism: forbidden dynamic import edge evonn-prism -> evonn-topograph via importlib.import_module
+ERROR: EvoNN-Prism/src/prism/source_order_bypass.py:4: evonn-prism: forbidden dynamic import edge evonn-prism -> evonn-stratograph via runpy.run_module
+ERROR: EvoNN-Prism/src/topograph:1: evonn-prism: unexpected top-level src entry; expected only 'prism'
+ERROR: EvoNN-Topograph/pyproject.toml:1: evonn-topograph: workspace manifest must not be a symbolic link
+exit=1
+```
+
+The checked-in repository launched from `/tmp` still produced:
+
+```text
+Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
+```
+
 ## Concerns
 
-None. Task 5 still needs to wire this direct validator into dual-host CI/runtime probes; this task intentionally provides only the permanent local policy and behavioral tests required for B0.4.
+None. B0.4 remains honestly closed after all coordinator regressions and the complete verification matrix passed. Task 5 still needs to wire this direct validator into dual-host CI/runtime probes; no Task 5 implementation was added here.
