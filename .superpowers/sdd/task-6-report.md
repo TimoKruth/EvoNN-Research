@@ -466,3 +466,7 @@ Ignored local evidence regenerated but not committed:
    - Required action: run both hosted workflows after remote creation, validate and collect their uploaded runtime artifacts, and only then close B0.5.
 
 Until both close and joint integration passes, Gate B0 remains open and the first Phase 0 lane split is not authorized.
+
+## Merge-time instruction from cross-review
+
+The delivered cross-review records a future `PARALLEL_WORK_GUIDE.md` add/add conflict with main. At merge time, the branch version must win because it is non-authoritative, front-mattered, and references `CONSOLIDATED_PLAN.md`; main's stale version references `LAB_PLAN.md`. Fold in main-only material only if it is genuinely load-bearing. Do not merge or rebase during Task 6; this is an instruction for the later integration owner.

@@ -4,6 +4,8 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
+import shutil
+import subprocess
 
 import yaml
 
@@ -13,6 +15,8 @@ VALIDATOR_PATH = REPO_ROOT / "scripts/policy/validate_repository_governance.py"
 REPORT_PATH = REPO_ROOT / "governance/b0-report.json"
 GUIDE_PATH = REPO_ROOT / "PARALLEL_WORK_GUIDE.md"
 PLAN_PATH = REPO_ROOT / "CONSOLIDATED_PLAN.md"
+CROSS_REVIEW_PATH = REPO_ROOT / "reviews/2026-07-18-b0-cross-review.md"
+TASK_REPORT_PATH = REPO_ROOT / ".superpowers/sdd/task-6-report.md"
 
 EXPECTED_LANE_ROWS = (
     "| 0 | WP-0.2, 0.3, 0.4, 0.5 | WP-0.1, 0.6, 0.7, 0.8, 0.9 | WP-0.10 integrity gate + phase exit |",
@@ -136,6 +140,100 @@ def test_b0_report_fails_closed_for_false_closure_hosted_claims_and_status_drift
     drifted["items"]["B0.3"]["state"] = "open"
     errors = validator.validate_b0_report(drifted, status, REPO_ROOT)
     assert any("B0.3" in error and "b0-status.yaml" in error for error in errors)
+
+
+def test_b0_report_schema_rejects_unknown_fields_at_every_nested_object_level() -> None:
+    validator = _validator()
+    report = _report()
+    mutations: list[tuple[str, dict]] = []
+
+    top = copy.deepcopy(report)
+    top["hosted_evidence"] = {}
+    mutations.append(("top-level", top))
+
+    repository = copy.deepcopy(report)
+    repository["repository"]["hosted_evidence"] = {}
+    mutations.append(("repository", repository))
+
+    item = copy.deepcopy(report)
+    item["items"]["B0.1"]["unexpected"] = True
+    mutations.append(("item", item))
+
+    probe = copy.deepcopy(report)
+    probe["local_runtime_probes"][0]["unexpected"] = True
+    mutations.append(("probe", probe))
+
+    workflow = copy.deepcopy(report)
+    workflow["workflows"][0]["unexpected"] = True
+    mutations.append(("workflow", workflow))
+
+    verification = copy.deepcopy(report)
+    verification["verification"]["unexpected"] = True
+    mutations.append(("verification", verification))
+
+    command = copy.deepcopy(report)
+    command["verification"]["commands"][0]["unexpected"] = True
+    mutations.append(("verification command", command))
+
+    for level, malformed in mutations:
+        errors = validator.validate_b0_report(malformed, _status(), REPO_ROOT)
+        assert any("unknown fields" in error for error in errors), level
+
+
+def test_b0_report_requires_evaluated_commit_to_be_direct_parent_not_head() -> None:
+    validator = _validator()
+    report = _report()
+    head = subprocess.check_output(["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"], text=True).strip()
+    tree = subprocess.check_output(
+        ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD^{tree}"], text=True
+    ).strip()
+    malformed = copy.deepcopy(report)
+    malformed["repository"]["evaluated_commit"] = head
+    malformed["repository"]["evaluated_tree"] = tree
+
+    errors = validator.validate_b0_report(malformed, _status(), REPO_ROOT)
+
+    assert any("direct parent" in error and "must not equal HEAD" in error for error in errors)
+
+
+def test_local_probe_parent_symlink_escape_is_rejected(tmp_path: Path) -> None:
+    validator = _validator()
+    report = _report()
+    repository = tmp_path / "repository"
+    external = tmp_path / "external-artifacts"
+    repository.mkdir()
+    artifact = external / "b0/local/numpy/b0-runtime-probe.json"
+    artifact.parent.mkdir(parents=True)
+    shutil.copy2(REPO_ROOT / report["local_runtime_probes"][0]["artifact_path"], artifact)
+    (repository / ".artifacts").symlink_to(external, target_is_directory=True)
+
+    errors = validator.validate_local_probe_evidence(
+        copy.deepcopy(report["local_runtime_probes"]),
+        repository,
+        report["repository"]["evaluated_commit"],
+    )
+
+    assert any("symbolic link" in error or "escapes repository root" in error for error in errors)
+
+
+def test_cross_review_is_preserved_and_branch_parallel_guide_wins_merge_conflict() -> None:
+    validator = _validator()
+    assert CROSS_REVIEW_PATH.is_file()
+    assert validator.read_frontmatter(CROSS_REVIEW_PATH) == {
+        "document_kind": "review",
+        "status": "delivered",
+        "authoritative": False,
+        "subject": "gate_b0_cross_review",
+        "reviewed_ref": "agent/b0-bootstrap @ 3ed735b",
+        "reviewer": "lane-counterpart (Claude, planning agent)",
+        "verdict": "approve_with_required_follow_up",
+    }
+    review = CROSS_REVIEW_PATH.read_text(encoding="utf-8")
+    assert "Approve, with one required follow-up" in review
+    task_report = TASK_REPORT_PATH.read_text(encoding="utf-8")
+    assert "PARALLEL_WORK_GUIDE.md` add/add conflict" in task_report
+    assert "branch version must win" in task_report
+    assert "Do not merge or rebase during Task 6" in task_report
 
 
 def test_local_probe_evidence_is_optional_but_digest_checked_when_present(tmp_path: Path) -> None:

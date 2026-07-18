@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import ast
 import importlib.util
 from pathlib import Path
 import shutil
@@ -415,75 +414,79 @@ def test_dynamic_loading_provider_imports_are_strictly_banned(
     assert primitive in diagnostics[0]
 
 
-def test_runtime_probe_contains_exactly_one_structurally_approved_mlx_eval(validator) -> None:
-    path = REPO_ROOT / "scripts/ci/runtime_probe.py"
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    functions = [
-        node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "_run_mlx_operation"
-    ]
-    assert len(functions) == 1
-    function = functions[0]
-    imports = [
-        node
-        for node in function.body
-        if isinstance(node, ast.Import)
-        and len(node.names) == 1
-        and node.names[0].name == "mlx.core"
-        and node.names[0].asname == "mx"
-    ]
-    assert len(imports) == 1
-    calls = [
-        node
-        for node in ast.walk(tree)
-        if isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Attribute)
-        and isinstance(node.func.value, ast.Name)
-        and node.func.value.id == "mx"
-        and node.func.attr == "eval"
-    ]
-    assert len(calls) == 1
-    assert len(calls[0].args) == 1
-    assert isinstance(calls[0].args[0], ast.Name) and calls[0].args[0].id == "result"
-    assert calls[0].keywords == []
-    assert _diagnostics(validator, REPO_ROOT) == []
+def test_external_api_call_allowance_is_canonical_and_data_driven(validator) -> None:
+    assert validator.ALLOWED_EXTERNAL_MODULE_ATTRIBUTE_CALLS == frozenset({("mlx.core", "eval")})
 
 
 @pytest.mark.parametrize(
-    "mutation",
+    ("member", "relative", "source"),
     [
-        lambda source: source.replace("mx.eval(result)", "mx.eval(result)\n    mx.eval(result)"),
-        lambda source: source.replace("mx.eval(result)", "mx.eval(other)"),
-        lambda source: source.replace("mx.eval(result)", "mx.eval(result, result)"),
-        lambda source: source.replace("mx.eval(result)", "mx.eval(result=result)"),
-        lambda source: source.replace("import mlx.core as mx", "import mlx.core as backend"),
-        lambda source: source.replace("import mlx.core as mx", "import mlx.core as backend").replace(
-            "mx.eval(result)", "backend.eval(result)"
+        (
+            "EvoNN-Prism",
+            "prism/training_step.py",
+            "import mlx.core as mx\nmx.eval(first)\nmx.eval(second)\n",
         ),
-        lambda source: source.replace("def _run_mlx_operation", "def _renamed_mlx_operation"),
+        (
+            "EvoNN-Topograph",
+            "topograph/training_step.py",
+            "from mlx import core as mx\nmx.eval(result)\n",
+        ),
+        (
+            "EvoNN-Prism",
+            "prism/unaliased_core.py",
+            "from mlx import core\ncore.eval(result)\n",
+        ),
+        (
+            "EvoNN-Topograph",
+            "topograph/unaliased_module.py",
+            "import mlx.core\nmlx.core.eval(result)\n",
+        ),
     ],
 )
-def test_runtime_probe_mlx_eval_exception_fails_closed_on_structural_drift(
-    validator, repository_copy: Path, mutation
+def test_static_mlx_core_eval_calls_are_allowed_in_engine_sources(
+    validator, repository_copy: Path, member: str, relative: str, source: str
 ) -> None:
+    _append_source(repository_copy, member, relative, source)
+
+    diagnostics = _diagnostics(validator, repository_copy)
+
+    assert not any(relative in diagnostic for diagnostic in diagnostics)
+
+
+def test_runtime_probe_allows_multiple_legitimate_mlx_eval_calls(validator, repository_copy: Path) -> None:
     path = repository_copy / "scripts/ci/runtime_probe.py"
-    path.write_text(mutation(path.read_text(encoding="utf-8")), encoding="utf-8")
+    source = path.read_text(encoding="utf-8").replace("mx.eval(result)", "mx.eval(result)\n    mx.eval(result)")
+    path.write_text(source, encoding="utf-8")
 
     diagnostics = _diagnostics(validator, repository_copy)
 
-    assert any("runtime_probe.py" in diagnostic and "eval" in diagnostic for diagnostic in diagnostics)
+    assert not any("runtime_probe.py" in diagnostic and "eval" in diagnostic for diagnostic in diagnostics)
 
 
-def test_runtime_probe_mlx_eval_exception_rejects_neighbor_and_python_eval(
-    validator, repository_copy: Path
+@pytest.mark.parametrize(
+    "source",
+    [
+        "mx.eval(result)\n",
+        "import fake_mlx.core as mx\nmx.eval(result)\n",
+        "import mlx.nn as mx\nmx.eval(result)\n",
+        "import numpy as mx\nmx.eval(result)\n",
+        "import mlx.core as mx\nmx = object()\nmx.eval(result)\n",
+        "import mlx.core as mx\ndef step(mx):\n    mx.eval(result)\n",
+        "def setup():\n    import mlx.core as mx\ndef step():\n    mx.eval(result)\n",
+        "import mlx.core as mx\nflush = mx.eval\n",
+        "import mlx.core as mx\nbackend = mx\nbackend.eval(result)\n",
+        "from mlx.core import eval\neval(result)\n",
+        "eval('1 + 1')\n",
+    ],
+)
+def test_mlx_eval_allowance_rejects_unproved_receivers_rebinding_and_acquisition(
+    validator, repository_copy: Path, source: str
 ) -> None:
-    _append_script(repository_copy, "ci/mlx_neighbor.py", "import mlx.core as mx\nmx.eval(result)\n")
-    runtime = repository_copy / "scripts/ci/runtime_probe.py"
-    runtime.write_text(runtime.read_text(encoding="utf-8") + "\neval('1 + 1')\n", encoding="utf-8")
+    _append_source(repository_copy, "EvoNN-Prism", "prism/invalid_mlx_eval.py", source)
 
     diagnostics = _diagnostics(validator, repository_copy)
 
-    assert any("mlx_neighbor.py" in diagnostic and "eval" in diagnostic for diagnostic in diagnostics)
-    assert any("runtime_probe.py" in diagnostic and "primitive reference: eval" in diagnostic for diagnostic in diagnostics)
+    assert any("invalid_mlx_eval.py" in diagnostic and "eval" in diagnostic for diagnostic in diagnostics)
 
 
 def test_builtin_namespace_dunder_import_is_banned_before_computed_key_use(
@@ -1284,6 +1287,21 @@ def test_research_log_records_abandoned_interpreter_as_non_authoritative() -> No
     assert "status: completed" in text
     assert "authoritative: false" in text
     assert "strict primitive prohibition" in text
+    for required in (
+        "Reserved names and attributes",
+        "globals`, `locals`, and `vars",
+        "`__builtins__`, `__dict__`, `__class__`, and `__getattribute__`",
+        "`__loader__`, `__spec__`, `exec_module`, and `load_module`",
+        "`attrgetter`, `itemgetter`, `methodcaller`, and `getitem`",
+        "importlib.metadata",
+        "entry_points",
+        "literal safe string",
+        "spelling-based",
+        "ALLOWED_EXTERNAL_MODULE_ATTRIBUTE_CALLS",
+        "alias rebinding or shadowing anywhere in the file disables the allowance",
+        "reviewed policy change",
+    ):
+        assert required in text
     assert "document_kind: execution_plan" not in text
 
 

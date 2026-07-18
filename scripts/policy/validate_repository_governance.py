@@ -190,6 +190,51 @@ FORBIDDEN_HOSTED_REPORT_KEYS: Set[str] = {
     "hosted_artifacts",
     "artifact_url",
 }
+B0_REPORT_TOP_LEVEL_FIELDS = frozenset(
+    {
+        "schema_version",
+        "report_kind",
+        "evaluated_at",
+        "repository",
+        "overall_state",
+        "items",
+        "blockers",
+        "local_runtime_probes",
+        "workflows",
+        "checked_in_evidence",
+        "verification",
+        "parallel_handoff_ready",
+        "parallel_handoff_blockers",
+        "next_transition",
+    }
+)
+B0_REPORT_REPOSITORY_FIELDS = frozenset({"branch", "evaluated_commit", "evaluated_tree", "relationship"})
+B0_REPORT_ITEM_FIELDS = frozenset({"state", "reason", "evidence_paths"})
+B0_REPORT_PROBE_FIELDS = frozenset(
+    {
+        "backend",
+        "backend_version",
+        "system",
+        "manifest_path",
+        "artifact_path",
+        "sha256",
+        "host_os",
+        "host_architecture",
+        "execution_scope",
+        "evidence_scope",
+        "qualification",
+        "optional_local_evidence",
+    }
+)
+B0_REPORT_WORKFLOW_FIELDS = frozenset(
+    {"path", "name", "runner", "python_version", "uv_version", "actions"}
+)
+B0_REPORT_VERIFICATION_FIELDS = frozenset({"overall", "summary", "commands"})
+B0_REPORT_VERIFICATION_SUMMARY_FIELDS = frozenset({"passed", "failed"})
+B0_REPORT_VERIFICATION_COMMAND_FIELDS = frozenset({"command", "result"})
+B0_EVIDENCE_ONLY_PATHS = frozenset(
+    {"governance/b0-report.json", "governance/b0-status.yaml", ".superpowers/sdd/task-6-report.md"}
+)
 
 
 def read_frontmatter(path: Path) -> Dict[str, Any]:
@@ -580,6 +625,27 @@ def validate_b0_status(status: Mapping[str, Any], manifest: Mapping[str, Any], r
     return errors
 
 
+def _closed_report_mapping(
+    value: Any,
+    required_fields: frozenset[str],
+    label: str,
+    errors: List[str],
+) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        errors.append(f"{label} must be a mapping")
+        return {}
+    actual_fields = set(value)
+    unknown = actual_fields - required_fields
+    missing = required_fields - actual_fields
+    if unknown:
+        errors.append(f"{label} has unknown fields: {sorted(str(field) for field in unknown)}")
+    if missing:
+        errors.append(f"{label} is missing required fields: {sorted(missing)}")
+    if any(not isinstance(field, str) for field in actual_fields):
+        errors.append(f"{label} field names must be strings")
+    return value
+
+
 def _find_forbidden_hosted_report_keys(value: Any, prefix: str = "report") -> List[str]:
     findings: List[str] = []
     if isinstance(value, Mapping):
@@ -615,6 +681,29 @@ def _checked_in_report_path(repo_root: Path, relative: Any) -> Path | None:
     return candidate
 
 
+def _optional_local_artifact_path(repo_root: Path, relative: str) -> tuple[Path | None, str | None]:
+    relative_path = Path(relative)
+    if relative_path.is_absolute() or ".." in relative_path.parts or relative_path.as_posix() != relative:
+        return None, "local probe artifact path must be a normalized repository-relative path"
+    if repo_root.is_symlink() or not repo_root.is_dir():
+        return None, "local probe repository root must be a regular non-symlink directory"
+    root_resolved = repo_root.resolve()
+    current = repo_root
+    for part in relative_path.parts:
+        current = current / part
+        if current.is_symlink():
+            return None, f"local probe artifact path component is a symbolic link: {current.relative_to(repo_root)}"
+        if not current.exists():
+            return None, None
+        try:
+            current.resolve().relative_to(root_resolved)
+        except ValueError:
+            return None, "local probe artifact path escapes repository root"
+    if not current.is_file():
+        return None, "local probe artifact path must identify a regular file when present"
+    return current, None
+
+
 def validate_local_probe_evidence(
     entries: Any,
     repo_root: Path,
@@ -626,8 +715,13 @@ def validate_local_probe_evidence(
     if [entry.get("backend") if isinstance(entry, Mapping) else None for entry in entries] != ["numpy", "mlx"]:
         errors.append("B0 report local_runtime_probes must contain numpy then mlx")
     for index, entry in enumerate(entries):
-        if not isinstance(entry, Mapping):
-            errors.append(f"B0 report local runtime probe {index} must be a mapping")
+        entry = _closed_report_mapping(
+            entry,
+            B0_REPORT_PROBE_FIELDS,
+            f"B0 report local_runtime_probes[{index}]",
+            errors,
+        )
+        if not entry:
             continue
         backend = entry.get("backend")
         expected = B0_REPORT_LOCAL_PROBES[backend] if backend in B0_REPORT_LOCAL_PROBES else None
@@ -653,11 +747,11 @@ def validate_local_probe_evidence(
             if not isinstance(value, str) or not value:
                 errors.append(f"B0 report {backend} local probe must record {field}")
 
-        artifact_path = repo_root / str(expected["artifact_path"])
-        if not artifact_path.exists():
+        artifact_path, path_error = _optional_local_artifact_path(repo_root, str(expected["artifact_path"]))
+        if path_error:
+            errors.append(f"B0 report {backend} {path_error}")
             continue
-        if artifact_path.is_symlink() or not artifact_path.is_file():
-            errors.append(f"B0 report {backend} local probe artifact must be a regular non-symlink file")
+        if artifact_path is None:
             continue
         content = artifact_path.read_bytes()
         if _sha256(content) != entry.get("sha256"):
@@ -708,6 +802,7 @@ def validate_local_probe_evidence(
 
 def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], repo_root: Path) -> List[str]:
     errors: List[str] = []
+    report = _closed_report_mapping(report, B0_REPORT_TOP_LEVEL_FIELDS, "B0 report", errors)
     if report.get("schema_version") != B0_REPORT_SCHEMA_VERSION:
         errors.append(f"B0 report schema_version must be {B0_REPORT_SCHEMA_VERSION}")
     if report.get("report_kind") != B0_REPORT_KIND:
@@ -718,10 +813,16 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
     for path in _find_forbidden_hosted_report_keys(report):
         errors.append(f"B0 report contains forbidden hosted evidence field: {path}")
 
-    repository = report.get("repository")
-    if not isinstance(repository, Mapping):
-        errors.append("B0 report repository must be a mapping")
-        repository = {}
+    repository = _closed_report_mapping(
+        report.get("repository"),
+        B0_REPORT_REPOSITORY_FIELDS,
+        "B0 report repository",
+        errors,
+    )
+    if repository and any(
+        field not in repository or not isinstance(repository[field], str) for field in B0_REPORT_REPOSITORY_FIELDS
+    ):
+        errors.append("B0 report repository fields must all be strings")
     evaluated_commit = repository.get("evaluated_commit")
     evaluated_tree = repository.get("evaluated_tree")
     if not isinstance(evaluated_commit, str) or re.fullmatch(r"[0-9a-f]{40}", evaluated_commit) is None:
@@ -736,27 +837,39 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
             if actual_tree != evaluated_tree:
                 errors.append("B0 report evaluated_tree does not match evaluated_commit")
             head = _git(repo_root, "rev-parse", "HEAD").decode().strip()
-            if head != evaluated_commit:
+            if head == evaluated_commit:
+                errors.append(
+                    "B0 report evaluated_commit must be the direct parent of the evidence-only HEAD and must not equal HEAD"
+                )
+            else:
                 parent = _git(repo_root, "rev-parse", "HEAD^").decode().strip()
                 if parent != evaluated_commit:
-                    errors.append("B0 report evaluated_commit must be HEAD or the direct parent of the evidence-only report commit")
+                    errors.append("B0 report evaluated_commit must be the direct parent of the evidence-only HEAD")
                 else:
-                    changed = {
+                    changed = frozenset(
                         line
                         for line in _git(repo_root, "diff", "--name-only", f"{evaluated_commit}..{head}")
                         .decode("utf-8")
                         .splitlines()
                         if line
-                    }
-                    allowed = {"governance/b0-report.json", ".superpowers/sdd/task-6-report.md"}
-                    if not changed or not changed <= allowed:
-                        errors.append("B0 report commit must be an evidence-only child of the evaluated implementation commit")
+                    )
+                    if changed != B0_EVIDENCE_ONLY_PATHS:
+                        errors.append(
+                            "B0 report evidence-only commit diff must contain exactly "
+                            f"{sorted(B0_EVIDENCE_ONLY_PATHS)}; found {sorted(changed)}"
+                        )
         except subprocess.CalledProcessError as exc:
             errors.append(f"B0 report cannot verify evaluated Git identity: {exc}")
 
     if report.get("overall_state") != "open" or status.get("status") != "open":
         errors.append("B0 report overall_state and governance/b0-status.yaml must both remain open")
-    if report.get("blockers") != dict(B0_REPORT_BLOCKERS):
+    blockers = _closed_report_mapping(
+        report.get("blockers"),
+        frozenset(B0_REPORT_BLOCKERS),
+        "B0 report blockers",
+        errors,
+    )
+    if blockers != dict(B0_REPORT_BLOCKERS):
         errors.append("B0 report blockers must be the exact B0.2 and B0.5 blocker codes")
     if report.get("parallel_handoff_ready") is not False:
         errors.append("B0 report parallel_handoff_ready must remain false")
@@ -776,9 +889,14 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
     referenced_paths: Set[str] = set()
     local_artifact_paths = {entry["artifact_path"] for entry in B0_REPORT_LOCAL_PROBES.values()}
     for item_id in REQUIRED_B0_ITEM_IDS:
-        report_item = report_items[item_id] if item_id in report_items else None
+        report_item = _closed_report_mapping(
+            report_items[item_id] if item_id in report_items else None,
+            B0_REPORT_ITEM_FIELDS,
+            f"B0 report items.{item_id}",
+            errors,
+        )
         status_item = status_items[item_id] if item_id in status_items else None
-        if not isinstance(report_item, Mapping) or not isinstance(status_item, Mapping):
+        if not report_item or not isinstance(status_item, Mapping):
             errors.append(f"B0 report/status item {item_id} must be a mapping")
             continue
         if report_item.get("state") != status_item.get("status"):
@@ -793,6 +911,19 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
             referenced_paths.update(path for path in evidence_paths if path not in local_artifact_paths)
 
     workflows = report.get("workflows")
+    if not isinstance(workflows, list):
+        errors.append("B0 report workflows must be a list")
+    else:
+        for index, workflow in enumerate(workflows):
+            workflow = _closed_report_mapping(
+                workflow,
+                B0_REPORT_WORKFLOW_FIELDS,
+                f"B0 report workflows[{index}]",
+                errors,
+            )
+            actions = workflow.get("actions")
+            if not isinstance(actions, list) or any(not isinstance(action, str) for action in actions):
+                errors.append(f"B0 report workflows[{index}].actions must be a string list")
     if workflows != list(B0_REPORT_WORKFLOWS):
         errors.append("B0 report workflows do not match the immutable workflow/action/runner contracts")
     else:
@@ -821,16 +952,37 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
         if _sha256(path.read_bytes()) != expected_digest:
             errors.append(f"B0 report checked-in evidence SHA-256 does not match: {relative}")
 
-    verification = report.get("verification")
+    verification = _closed_report_mapping(
+        report.get("verification"),
+        B0_REPORT_VERIFICATION_FIELDS,
+        "B0 report verification",
+        errors,
+    )
     expected_commands = [{"command": command, "result": "pass"} for command in B0_REPORT_VERIFICATION_COMMANDS]
-    if not isinstance(verification, Mapping):
-        errors.append("B0 report verification must be a mapping")
-    else:
+    if verification:
+        summary = _closed_report_mapping(
+            verification.get("summary"),
+            B0_REPORT_VERIFICATION_SUMMARY_FIELDS,
+            "B0 report verification.summary",
+            errors,
+        )
+        commands = verification.get("commands")
+        if not isinstance(commands, list):
+            errors.append("B0 report verification.commands must be a list")
+        else:
+            for index, command in enumerate(commands):
+                _closed_report_mapping(
+                    command,
+                    B0_REPORT_VERIFICATION_COMMAND_FIELDS,
+                    f"B0 report verification.commands[{index}]",
+                    errors,
+                )
         if verification.get("overall") != "pass":
             errors.append("B0 report verification overall result must be pass")
-        if verification.get("commands") != expected_commands:
+        if commands != expected_commands:
             errors.append("B0 report verification commands/results do not match the full required local command set")
-        if verification.get("summary") != {"passed": len(B0_REPORT_VERIFICATION_COMMANDS), "failed": 0}:
+        expected_summary = {"passed": len(B0_REPORT_VERIFICATION_COMMANDS), "failed": 0}
+        if summary != expected_summary or any(type(summary[field]) is not int for field in summary):
             errors.append("B0 report verification summary must count every required command as passed")
     return errors
 

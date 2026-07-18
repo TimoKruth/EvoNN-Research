@@ -841,56 +841,174 @@ _ALLOWED_IMPORTLIB_METADATA_NAMES = {"version", "PackageNotFoundError"}
 _MAPPING_LOOKUP_METHODS = {"get", "__getitem__", "setdefault", "pop"}
 _MAPPING_POSITIONAL_COUNTS = {"get": {1, 2}, "__getitem__": {1}, "setdefault": {1, 2}, "pop": {1, 2}}
 _UNBOUND_LOOKUP_APIS = {"dict": {"get", "__getitem__"}, "object": {"__getattribute__"}}
+ALLOWED_EXTERNAL_MODULE_ATTRIBUTE_CALLS = frozenset({("mlx.core", "eval")})
+_ALLOWED_EXTERNAL_MODULES = frozenset(module for module, _ in ALLOWED_EXTERNAL_MODULE_ATTRIBUTE_CALLS)
 
 
-def _approved_runtime_mlx_eval_attribute(repo_root: Path, path: Path, tree: ast.Module) -> ast.Attribute | None:
-    try:
-        relative = path.relative_to(repo_root).as_posix()
-    except ValueError:
+def _external_import_binding(node: ast.Import | ast.ImportFrom, alias: ast.alias) -> tuple[str, str, tuple[str, ...]] | None:
+    if isinstance(node, ast.Import) and alias.name in _ALLOWED_EXTERNAL_MODULES:
+        if alias.asname:
+            return alias.asname, alias.name, (alias.asname,)
+        root = alias.name.partition(".")[0]
+        return root, alias.name, tuple(alias.name.split("."))
+    if isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+        for module in _ALLOWED_EXTERNAL_MODULES:
+            parent, _, leaf = module.rpartition(".")
+            if node.module == parent and alias.name == leaf:
+                local_name = alias.asname or alias.name
+                return local_name, module, (local_name,)
+    return None
+
+
+def _import_bound_name(node: ast.Import | ast.ImportFrom, alias: ast.alias) -> str | None:
+    if alias.name == "*":
         return None
-    if relative != "scripts/ci/runtime_probe.py":
-        return None
-    functions = [
-        node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "_run_mlx_operation"
-    ]
-    if len(functions) != 1:
-        return None
-    function = functions[0]
-    exact_imports = [
-        statement
-        for statement in function.body
-        if isinstance(statement, ast.Import)
-        and len(statement.names) == 1
-        and statement.names[0].name == "mlx.core"
-        and statement.names[0].asname == "mx"
-    ]
-    if len(exact_imports) != 1:
-        return None
-    calls = [
-        node
-        for node in ast.walk(tree)
-        if isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Attribute)
-        and node.func.attr == "eval"
-        and isinstance(node.func.value, ast.Name)
-        and node.func.value.id == "mx"
-    ]
-    if len(calls) != 1:
-        return None
-    call = calls[0]
-    direct_statements = [
-        statement for statement in function.body if isinstance(statement, ast.Expr) and statement.value is call
-    ]
-    if len(direct_statements) != 1:
-        return None
-    if (
-        len(call.args) != 1
-        or not isinstance(call.args[0], ast.Name)
-        or call.args[0].id != "result"
-        or call.keywords
-    ):
-        return None
-    return call.func
+    if alias.asname:
+        return alias.asname
+    return alias.name.partition(".")[0] if isinstance(node, ast.Import) else alias.name
+
+
+def _match_bound_names(pattern: ast.pattern) -> set[str]:
+    names: set[str] = set()
+    for node in ast.walk(pattern):
+        if isinstance(node, ast.MatchAs) and node.name:
+            names.add(node.name)
+        elif isinstance(node, ast.MatchStar) and node.name:
+            names.add(node.name)
+        elif isinstance(node, ast.MatchMapping) and node.rest:
+            names.add(node.rest)
+    return names
+
+
+class _LexicalScopeMap(ast.NodeVisitor):
+    def __init__(self) -> None:
+        self.scopes: dict[ast.AST, ast.AST] = {}
+        self.current_scope: ast.AST | None = None
+
+    def visit_Module(self, node: ast.Module) -> None:
+        previous = self.current_scope
+        self.current_scope = node
+        self.scopes[node] = node
+        for statement in node.body:
+            self.visit(statement)
+        self.current_scope = previous
+
+    def _visit_function_scope(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
+        self.scopes[node] = self.current_scope if self.current_scope is not None else node
+        for decorator in node.decorator_list:
+            self.visit(decorator)
+        for default in (*node.args.defaults, *node.args.kw_defaults):
+            if default is not None:
+                self.visit(default)
+        if node.returns:
+            self.visit(node.returns)
+        previous = self.current_scope
+        self.current_scope = node
+        for statement in node.body:
+            self.visit(statement)
+        self.current_scope = previous
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self._visit_function_scope(node)
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+        self._visit_function_scope(node)
+
+    def visit_Lambda(self, node: ast.Lambda) -> None:
+        self.scopes[node] = self.current_scope if self.current_scope is not None else node
+        for default in (*node.args.defaults, *node.args.kw_defaults):
+            if default is not None:
+                self.visit(default)
+        previous = self.current_scope
+        self.current_scope = node
+        self.visit(node.body)
+        self.current_scope = previous
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        self.scopes[node] = self.current_scope if self.current_scope is not None else node
+        for expression in (*node.decorator_list, *node.bases, *(keyword.value for keyword in node.keywords)):
+            self.visit(expression)
+        previous = self.current_scope
+        self.current_scope = node
+        for statement in node.body:
+            self.visit(statement)
+        self.current_scope = previous
+
+    def generic_visit(self, node: ast.AST) -> None:
+        if self.current_scope is not None:
+            self.scopes[node] = self.current_scope
+        super().generic_visit(node)
+
+
+def _external_alias_rebindings(tree: ast.Module, aliases: set[str]) -> set[str]:
+    rebound: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)) and node.id in aliases:
+            rebound.add(node.id)
+        elif isinstance(node, ast.arg) and node.arg in aliases:
+            rebound.add(node.arg)
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name in aliases:
+            rebound.add(node.name)
+        elif isinstance(node, ast.ExceptHandler) and node.name in aliases:
+            rebound.add(node.name)
+        elif isinstance(node, ast.pattern):
+            rebound.update(_match_bound_names(node) & aliases)
+    return rebound
+
+
+def _allowed_external_call_attributes(tree: ast.Module) -> set[ast.Attribute]:
+    scope_map = _LexicalScopeMap()
+    scope_map.visit(tree)
+    bindings: dict[str, set[tuple[str, tuple[str, ...], ast.AST]]] = {}
+    imported_names: dict[str, set[tuple[str, tuple[str, ...], ast.AST] | None]] = {}
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Import, ast.ImportFrom)):
+            continue
+        for alias in node.names:
+            bound_name = _import_bound_name(node, alias)
+            if bound_name is None:
+                continue
+            descriptor = _external_import_binding(node, alias)
+            normalized = (descriptor[1], descriptor[2], scope_map.scopes[node]) if descriptor else None
+            if bound_name not in imported_names:
+                imported_names[bound_name] = set()
+            imported_names[bound_name].add(normalized)
+            if descriptor:
+                if bound_name not in bindings:
+                    bindings[bound_name] = set()
+                bindings[bound_name].add(normalized)
+
+    candidate_aliases = set(bindings)
+    rebound = _external_alias_rebindings(tree, candidate_aliases)
+    valid_bindings: set[tuple[str, tuple[str, ...], ast.AST]] = set()
+    for alias_name, descriptors in bindings.items():
+        if alias_name in rebound or len(descriptors) != 1 or imported_names[alias_name] != descriptors:
+            continue
+        valid_bindings.update(descriptors)
+
+    allowed: set[ast.Attribute] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+            continue
+        receiver_parts: list[str] = []
+        receiver: ast.expr = node.func.value
+        while isinstance(receiver, ast.Attribute):
+            receiver_parts.append(receiver.attr)
+            receiver = receiver.value
+        if not isinstance(receiver, ast.Name):
+            continue
+        receiver_parts.append(receiver.id)
+        receiver_path = tuple(reversed(receiver_parts))
+        call_scope = scope_map.scopes[node] if node in scope_map.scopes else None
+        for module, imported_receiver, import_scope in valid_bindings:
+            scope_matches = import_scope is tree or import_scope is call_scope
+            if (
+                scope_matches
+                and receiver_path == imported_receiver
+                and (module, node.func.attr) in ALLOWED_EXTERNAL_MODULE_ATTRIBUTE_CALLS
+            ):
+                allowed.add(node.func)
+    return allowed
 
 
 class _StrictPythonPolicy(ast.NodeVisitor):
@@ -902,7 +1020,7 @@ class _StrictPythonPolicy(ast.NodeVisitor):
         source_distribution: str,
         allowed_targets: set[str],
         diagnostics: list[str],
-        approved_mlx_eval_attribute: ast.Attribute | None,
+        allowed_external_call_attributes: set[ast.Attribute],
     ) -> None:
         self.repo_root = repo_root
         self.path = path
@@ -910,7 +1028,7 @@ class _StrictPythonPolicy(ast.NodeVisitor):
         self.source_distribution = source_distribution
         self.allowed_targets = allowed_targets
         self.diagnostics = diagnostics
-        self.approved_mlx_eval_attribute = approved_mlx_eval_attribute
+        self.allowed_external_call_attributes = allowed_external_call_attributes
 
     def _character_column(self, line: int, byte_offset: int) -> int:
         if not 1 <= line <= len(self.source_lines):
@@ -1025,7 +1143,7 @@ class _StrictPythonPolicy(ast.NodeVisitor):
             isinstance(node.value, ast.Attribute) and self._is_importlib_metadata_prefix(node.value)
         )
         if isinstance(node.ctx, ast.Load):
-            if node.attr in _RESERVED_PRIMITIVE_NAMES and node is not self.approved_mlx_eval_attribute:
+            if node.attr in _RESERVED_PRIMITIVE_NAMES and node not in self.allowed_external_call_attributes:
                 self._error(node, f"forbidden reserved primitive attribute acquisition: {node.attr}")
             elif (
                 isinstance(node.value, ast.Name)
@@ -1169,7 +1287,7 @@ def validate_python_imports(repo_root: Path) -> list[str]:
             source_distribution,
             allowed_targets,
             diagnostics,
-            _approved_runtime_mlx_eval_attribute(repo_root, path, tree),
+            _allowed_external_call_attributes(tree),
         ).visit(tree)
     return sorted(set(diagnostics), key=lambda item: item.encode("utf-8"))
 

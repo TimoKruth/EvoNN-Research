@@ -214,8 +214,8 @@ def test_local_only_authority_keeps_b02_open_and_requires_null_url(
         "status": "closed",
         "open_reason": None,
         "evidence": (
-            "governance/b0-report.json records passing permanent import, workspace dependency, and data-only "
-            "benchmark policy validation"
+            "governance/b0-report.json records passing permanent import, workspace dependency, data-only benchmark, "
+            "and reviewed static external-API allowance validation"
         ),
     }
     assert b0_status["items"]["B0.5"]["status"] == "open"
