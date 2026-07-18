@@ -1,7 +1,7 @@
 document_kind: gate_status
 gate: B0
 status: open
-checked_in_at: "2026-07-18T18:07:19Z"
+checked_in_at: "2026-07-18T18:46:02Z"
 items:
   B0.1:
     status: locally_satisfied
@@ -17,14 +17,14 @@ items:
   B0.4:
     status: closed
     open_reason: null
-    evidence: governance/b0-report.json records passing permanent import, workspace dependency, and data-only benchmark policy validation
+    evidence: governance/b0-report.json records passing permanent import, workspace dependency, data-only benchmark, and reviewed static external-API allowance validation
   B0.5:
     status: open
     open_reason: hosted_ci_not_executed
-    evidence: governance/b0-report.json records validated workflow contracts and fresh local NumPy/MLX bootstrap probes; hosted runs and uploaded artifacts do not exist
+    evidence: governance/b0-report.json records validated workflow contracts and freshly regenerated local NumPy/MLX bootstrap probes at the reviewed implementation commit; hosted runs and uploaded artifacts do not exist
   B0.6:
     status: locally_satisfied
-    evidence: governance/b0-report.json records passing fail-closed single-active-plan policy validation
+    evidence: governance/b0-report.json records passing fail-closed single-active-plan/report-schema validation and durable cross-review evidence
 notes:
   - B0.2 remains formally open solely because no real authoritative remote URL exists.
   - B0.5 remains formally open until both hosted workflows execute and their uploaded runtime artifacts are collected.

@@ -470,3 +470,182 @@ Until both close and joint integration passes, Gate B0 remains open and the firs
 ## Merge-time instruction from cross-review
 
 The delivered cross-review records a future `PARALLEL_WORK_GUIDE.md` add/add conflict with main. At merge time, the branch version must win because it is non-authoritative, front-mattered, and references `CONSOLIDATED_PLAN.md`; main's stale version references `LAB_PLAN.md`. Fold in main-only material only if it is genuinely load-bearing. Do not merge or rebase during Task 6; this is an instruction for the later integration owner.
+
+## Cross-review follow-up
+
+The delivered review is preserved byte-for-byte at `reviews/2026-07-18-b0-cross-review.md` (SHA-256 `39afa085164b24e186fcbfd5ec6eaf80c6f44c968a11984f7280917377ecb258`). Its R1–R3 findings and the coordinator's report-hardening findings were addressed without changing Gate B0 closure state.
+
+### Follow-up two-commit relationship
+
+1. Follow-up implementation/docs/review commit: `68fd1cf9cec7949e799e5da42a2c4c3b87b742ab`.
+2. Evidence-only direct child: the commit containing the regenerated `governance/b0-report.json`, refreshed `governance/b0-status.yaml`, and this appended report section.
+
+The regenerated report evaluates implementation tree `6be06429ba8baeebbc797451b993e67a9cbc4a09`. The validator now requires the evaluated implementation commit to be exactly `HEAD^`, rejects equality with `HEAD`, and requires the evidence-only diff to be exactly the three paths above.
+
+### R1 — principled static external API allowance
+
+The one-file/one-node `_run_mlx_operation` exception was deleted. `scripts/policy/validate_import_boundaries.py` now exposes the canonical data-driven set:
+
+```text
+ALLOWED_EXTERNAL_MODULE_ATTRIBUTE_CALLS = frozenset({("mlx.core", "eval")})
+```
+
+For each production file, the policy resolves exact static imports of the configured external module, records the imported receiver and lexical scope, and permits the reserved attribute only when it is the direct function of a call on that receiver. Module imports may serve nested scopes; function-local imports serve only that lexical scope. Any alias rebinding or shadowing anywhere in the file disables the allowance. Attribute acquisition as a value remains banned.
+
+Coverage proves multiple legitimate calls and these import forms:
+
+- `import mlx.core as mx`; `mx.eval(...)`;
+- `from mlx import core as mx`; `mx.eval(...)`;
+- `from mlx import core`; `core.eval(...)`;
+- `import mlx.core`; `mlx.core.eval(...)`.
+
+Adversarial coverage rejects no import, fake/neighbor modules, NumPy aliases, indirect aliases, assignment/parameter shadowing, cross-scope use of a function-local import, attribute acquisition, `from mlx.core import eval`, and Python `eval`.
+
+### R2 — strict-subset documentation
+
+`research/logs/2026-07-18-dynamic-import-policy.md` now documents the implemented syntax-only subset in full: reserved provider/execution/reflection/namespace/loader/plugin spellings; `globals`/`locals`/`vars`; dunder namespace and loader paths; operator helpers; narrowed `importlib.metadata`; literal-safe reflection and mapping forms; spelling-based strictness; the canonical external-call allowance; alias shadowing; and the required reviewed-exception process.
+
+### R3 — merge instruction
+
+The branch `PARALLEL_WORK_GUIDE.md` must win the expected future add/add conflict with main. It is the valid non-authoritative guide and references `CONSOLIDATED_PLAN.md`; main's stale file references `LAB_PLAN.md`. No merge or rebase was performed.
+
+### Report validator hardening
+
+- The B0 report schema is recursively closed at the top level and for repository, blocker, B0 item, local probe, workflow, verification summary, and verification-command objects. Unknown fields such as `hosted_evidence` fail at any nested level.
+- Optional local artifacts remain optional when absent. Before reading a present artifact, every existing path component is checked for symlinks and resolved containment under the repository root; parent-symlink escapes fail closed.
+- Hosted-key semantic checks remain in addition to the closed schema.
+- The implementation/evidence relationship is strictly a direct-parent relationship with an exact three-file evidence-only diff.
+
+### Follow-up TDD RED evidence
+
+External API and documentation RED command:
+
+```sh
+uv run --locked --group dev pytest -q --tb=short tests/policy/test_import_boundaries.py \
+  -k 'external_api_call_allowance or static_mlx_core_eval or runtime_probe_allows_multiple_legitimate or mlx_eval_allowance_rejects or research_log_records'
+```
+
+```text
+FFFFFF..........F                                                        [100%]
+7 failed, 10 passed, 138 deselected in 0.96s
+```
+
+Failures were the missing canonical set, all four legitimate engine import/call forms, multiple runtime-probe calls, and incomplete research-log documentation.
+
+Report/review hardening RED command:
+
+```sh
+uv run --locked --group dev pytest -q --tb=short tests/policy/test_b0_integration_report.py \
+  -k 'schema_rejects_unknown or direct_parent_not_head or parent_symlink_escape or cross_review'
+```
+
+```text
+FFFF                                                                     [100%]
+4 failed, 6 deselected in 1.28s
+```
+
+Failures proved unknown fields were not schema-rejected, `evaluated_commit == HEAD` was accepted, parent-symlink escape was followed, and the delivered review was not yet preserved.
+
+A further cross-scope regression was added after the initial implementation:
+
+```text
+......F....                                                              [100%]
+1 failed, 10 passed in 1.14s
+```
+
+It proved a function-local `mlx.core` import incorrectly authorized a same-spelled receiver in a different function.
+
+### Follow-up GREEN evidence
+
+```text
+external API focused: 17 passed, 139 deselected in 2.74s
+strict policy documentation: 1 passed in 0.01s
+report schema/direct-parent/symlink: 3 passed, 7 deselected in 0.54s
+durable review/merge instruction: 1 passed in 0.02s
+complete import-boundary suite: 156 passed in 17.32s
+complete runtime-probe suite: 19 passed in 0.13s
+pre-evidence report follow-ups: 9 passed, 1 deselected in 0.84s
+ruff: All checks passed
+```
+
+The pre-evidence direct governance run then failed only for the deliberately stale report relationship/digests, proving regeneration was required before the evidence-only child.
+
+### Regenerated local probes
+
+Both probes were regenerated at follow-up implementation commit `68fd1cf9cec7949e799e5da42a2c4c3b87b742ab`:
+
+- NumPy 2.5.1, Darwin arm64: `4bdf295dccb51e41f1be1151064655df12bb90e6ef589f1d3f31c47b2db40d71`
+- MLX 0.32.0, Darwin arm64: `f0a8fb25a135a43ffb586d10b81d19d8a73d433ed706a41772b788b71dd2ed27`
+
+Both remain `bootstrap_probe_only` local contract evidence. No hosted evidence was created.
+
+### Follow-up final verification
+
+Final post-commit verification output is appended below after creating the evidence-only child. Gate B0 remains open on B0.2/B0.5, `parallel_handoff_ready` remains false, and Phase 0 remains unstarted.
+
+#### Final lock and sync
+
+```text
+uv lock --check
+Resolved 18 packages in 5ms
+
+uv sync --all-packages --group dev --locked
+Resolved 18 packages in 6ms
+Audited 17 packages in 0.28ms
+```
+
+#### Final full suite and policies
+
+```text
+uv run --locked --group dev pytest -q
+249 passed in 60.78s
+
+uv run --locked --group dev ruff check .
+All checks passed!
+
+uv run --locked --group dev python scripts/policy/validate_import_boundaries.py
+Import boundary policy: PASS (7 packages, shared-benchmarks data-only)
+
+python3 scripts/policy/validate_repository_governance.py
+Repository governance policy: PASS
+
+uv run --locked --group dev python scripts/policy/validate_backend_capabilities.py
+Backend capability policy: PASS (8 manifests, 4 dual-backend engine declarations)
+
+scripts/ci/b0-policy-checks.sh
+235 passed, 2 deselected in 24.09s
+```
+
+#### Final focused report/workflow contracts
+
+```text
+uv run --locked --group dev pytest -q \
+  tests/policy/test_b0_integration_report.py \
+  tests/policy/test_b0_ci_bootstrap.py
+16 passed in 26.80s
+```
+
+#### Final eight-script matrix from `/tmp`
+
+```text
+shared-checks.sh: 1 passed
+benchmarks-checks.sh: 5 passed
+compare-checks.sh: 1 passed
+contenders-checks.sh: 1 passed
+prism-checks.sh: 1 passed
+topograph-checks.sh: 1 passed
+stratograph-checks.sh: 1 passed
+primordia-checks.sh: 1 passed
+```
+
+Every script also reported `All checks passed!` and resolved the same 18-package lock.
+
+#### Final evidence relationship and state
+
+- Evidence child: the commit containing this appended section, direct parent `68fd1cf9cec7949e799e5da42a2c4c3b87b742ab`.
+- Exact evidence-only diff: `.superpowers/sdd/task-6-report.md`, `governance/b0-report.json`, `governance/b0-status.yaml`.
+- `git diff --check`: no output, exit 0.
+- Working tree: clean on `agent/b0-bootstrap` before this report-only amend.
+- No remote configured and no push performed.
+- Exact blockers remain B0.2 `authoritative_remote_url_absent` and B0.5 `hosted_ci_not_executed`.
+- Gate B0 remains open, parallel handoff remains false, and Phase 0 remains unstarted.
