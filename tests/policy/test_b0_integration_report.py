@@ -4,7 +4,6 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
-import shutil
 import subprocess
 
 import yaml
@@ -180,7 +179,7 @@ def test_b0_report_schema_rejects_unknown_fields_at_every_nested_object_level() 
         assert any("unknown fields" in error for error in errors), level
 
 
-def test_b0_report_requires_evaluated_commit_to_be_direct_parent_not_head() -> None:
+def test_b0_report_requires_evaluated_commit_to_be_direct_parent_of_evidence_commit() -> None:
     validator = _validator()
     report = _report()
     head = subprocess.check_output(["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"], text=True).strip()
@@ -193,7 +192,32 @@ def test_b0_report_requires_evaluated_commit_to_be_direct_parent_not_head() -> N
 
     errors = validator.validate_b0_report(malformed, _status(), REPO_ROOT)
 
-    assert any("direct parent" in error and "must not equal HEAD" in error for error in errors)
+    assert any("direct parent" in error for error in errors)
+
+
+def test_b0_report_remains_valid_on_descendants_of_the_evidence_commit(tmp_path: Path) -> None:
+    validator = _validator()
+    clone = tmp_path / "clone"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-local", str(REPO_ROOT), str(clone)],
+        check=True,
+        capture_output=True,
+    )
+    head = subprocess.check_output(["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"], text=True).strip()
+    subprocess.run(["git", "-C", str(clone), "checkout", "--quiet", head], check=True, capture_output=True)
+    env_commit = ["git", "-C", str(clone), "-c", "user.name=policy-test", "-c", "user.email=policy@test"]
+    (clone / "phase0-placeholder.txt").write_text("later development\n", encoding="utf-8")
+    subprocess.run([*env_commit, "add", "phase0-placeholder.txt"], check=True, capture_output=True)
+    subprocess.run(
+        [*env_commit, "commit", "--quiet", "-m", "later development commit"],
+        check=True,
+        capture_output=True,
+    )
+
+    report = json.loads((clone / "governance/b0-report.json").read_text(encoding="utf-8"))
+    status = yaml.safe_load((clone / "governance/b0-status.yaml").read_text(encoding="utf-8"))
+
+    assert validator.validate_b0_report(report, status, clone) == []
 
 
 def test_local_probe_parent_symlink_escape_is_rejected(tmp_path: Path) -> None:
@@ -204,7 +228,7 @@ def test_local_probe_parent_symlink_escape_is_rejected(tmp_path: Path) -> None:
     repository.mkdir()
     artifact = external / "b0/local/numpy/b0-runtime-probe.json"
     artifact.parent.mkdir(parents=True)
-    shutil.copy2(REPO_ROOT / report["local_runtime_probes"][0]["artifact_path"], artifact)
+    artifact.write_text("{}\n", encoding="utf-8")
     (repository / ".artifacts").symlink_to(external, target_is_directory=True)
 
     errors = validator.validate_local_probe_evidence(

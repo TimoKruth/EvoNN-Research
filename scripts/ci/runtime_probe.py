@@ -439,6 +439,25 @@ def validate_runtime_probe(
         if repository_commit is None
         else repository_commit.lower()
     )
+    accepted_commits = {expected_commit}
+    if repository_commit is None and execution_mode == "local":
+        # The two-commit evidence discipline generates local probes at the
+        # implementation commit and validates them from its evidence-only
+        # child, so local validation also accepts HEAD's first parent.
+        try:
+            parent = (
+                subprocess.check_output(
+                    ["git", "-C", str(repo_root.resolve()), "rev-parse", "HEAD^"],
+                    text=True,
+                    stderr=subprocess.DEVNULL,
+                )
+                .strip()
+                .lower()
+            )
+        except subprocess.CalledProcessError:
+            parent = ""
+        if HEX_COMMIT.fullmatch(parent):
+            accepted_commits.add(parent)
     if document["schema_version"] != SCHEMA_VERSION:
         diagnostics.append("schema version is incorrect")
     if document["probe_kind"] != PROBE_KIND:
@@ -450,7 +469,7 @@ def validate_runtime_probe(
     commit = document["repository_commit"]
     if not isinstance(commit, str) or not HEX_COMMIT.fullmatch(commit):
         diagnostics.append("repository commit must be a full lowercase Git object ID")
-    elif commit != expected_commit:
+    elif commit not in accepted_commits:
         diagnostics.append(f"repository commit does not match the executing checkout: expected {expected_commit}")
 
     host = document["host"]

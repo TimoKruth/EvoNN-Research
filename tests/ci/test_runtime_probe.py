@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -215,6 +216,21 @@ def test_hosted_validation_binds_commit_and_workflow_to_current_environment(tmp_
 
     assert any("repository commit" in diagnostic for diagnostic in diagnostics)
     assert any("workflow metadata" in diagnostic for diagnostic in diagnostics)
+
+
+def test_local_validation_accepts_probe_from_evidence_commit_parent(tmp_path: Path) -> None:
+    head = subprocess.check_output(
+        ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"], text=True
+    ).strip().lower()
+    parent = subprocess.check_output(
+        ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD^"], text=True
+    ).strip().lower()
+
+    for commit, accepted in ((head, True), (parent, True), ("d" * 40, False)):
+        path = _write_probe(tmp_path, repository_commit=commit)
+        diagnostics = _validate(path, repository_commit=None)
+        commit_diagnostics = [d for d in diagnostics if "repository commit" in d]
+        assert commit_diagnostics == [] if accepted else commit_diagnostics != [], commit
 
 
 def test_validator_rejects_host_runtime_and_backend_platform_mismatch(tmp_path: Path) -> None:

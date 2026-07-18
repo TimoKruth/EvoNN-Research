@@ -665,20 +665,11 @@ def _valid_sha256(value: Any) -> bool:
     return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
 
 
-def _checked_in_report_path(repo_root: Path, relative: Any) -> Path | None:
+def _safe_checked_in_relative_path(relative: Any) -> bool:
     if not isinstance(relative, str) or not relative or Path(relative).is_absolute():
-        return None
+        return False
     relative_path = Path(relative)
-    if ".." in relative_path.parts or relative_path.as_posix() != relative:
-        return None
-    candidate = repo_root / relative_path
-    if candidate.is_symlink() or not candidate.is_file():
-        return None
-    try:
-        candidate.resolve().relative_to(repo_root.resolve())
-    except ValueError:
-        return None
-    return candidate
+    return ".." not in relative_path.parts and relative_path.as_posix() == relative
 
 
 def _optional_local_artifact_path(repo_root: Path, relative: str) -> tuple[Path | None, str | None]:
@@ -831,24 +822,38 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
         errors.append("B0 report evaluated_tree must be a full Git tree ID")
     if repository.get("relationship") != "implementation commit immediately before the evidence-only report commit":
         errors.append("B0 report must document the implementation/evidence-only commit relationship")
+    evidence_commit: str | None = None
     if isinstance(evaluated_commit, str) and re.fullmatch(r"[0-9a-f]{40}", evaluated_commit):
         try:
             actual_tree = _git(repo_root, "rev-parse", f"{evaluated_commit}^{{tree}}").decode().strip()
             if actual_tree != evaluated_tree:
                 errors.append("B0 report evaluated_tree does not match evaluated_commit")
-            head = _git(repo_root, "rev-parse", "HEAD").decode().strip()
-            if head == evaluated_commit:
+            # Anchor all historical claims to the committed evidence-only
+            # revision, not to the moving HEAD/working tree: the report must
+            # stay verifiable on merge commits and on every later commit.
+            recorded = (
+                _git(repo_root, "log", "-1", "--format=%H", "HEAD", "--", "governance/b0-report.json")
+                .decode()
+                .strip()
+            )
+            if not recorded:
+                errors.append("B0 report has no committed evidence-only revision reachable from HEAD")
+            elif recorded == evaluated_commit:
                 errors.append(
-                    "B0 report evaluated_commit must be the direct parent of the evidence-only HEAD and must not equal HEAD"
+                    "B0 report evaluated_commit must be the direct parent of the evidence-only commit and must not equal it"
                 )
             else:
-                parent = _git(repo_root, "rev-parse", "HEAD^").decode().strip()
+                committed_report = _git(repo_root, "show", f"{recorded}:governance/b0-report.json")
+                if committed_report != (repo_root / "governance/b0-report.json").read_bytes():
+                    errors.append("B0 report working-tree content must match its committed evidence-only revision")
+                parent = _git(repo_root, "rev-parse", f"{recorded}^").decode().strip()
                 if parent != evaluated_commit:
-                    errors.append("B0 report evaluated_commit must be the direct parent of the evidence-only HEAD")
+                    errors.append("B0 report evaluated_commit must be the direct parent of the evidence-only commit")
                 else:
+                    evidence_commit = recorded
                     changed = frozenset(
                         line
-                        for line in _git(repo_root, "diff", "--name-only", f"{evaluated_commit}..{head}")
+                        for line in _git(repo_root, "diff", "--name-only", f"{evaluated_commit}..{recorded}")
                         .decode("utf-8")
                         .splitlines()
                         if line
@@ -945,11 +950,23 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
         if not _valid_sha256(expected_digest):
             errors.append(f"B0 report checked-in evidence {relative} must record a SHA-256 digest")
             continue
-        path = _checked_in_report_path(repo_root, relative)
-        if path is None:
+        if not _safe_checked_in_relative_path(relative):
             errors.append(f"B0 report checked-in evidence path is missing, unsafe, or not a regular file: {relative}")
             continue
-        if _sha256(path.read_bytes()) != expected_digest:
+        if evidence_commit is None:
+            errors.append(f"B0 report checked-in evidence cannot be verified without a valid evidence-only commit: {relative}")
+            continue
+        # Digests describe the evidence files as frozen at the evidence-only
+        # commit; later development may legitimately change the working tree.
+        try:
+            object_type = _git(repo_root, "cat-file", "-t", f"{evidence_commit}:{relative}").decode().strip()
+        except subprocess.CalledProcessError:
+            object_type = ""
+        if object_type != "blob":
+            errors.append(f"B0 report checked-in evidence path is missing, unsafe, or not a regular file: {relative}")
+            continue
+        content = _git(repo_root, "cat-file", "blob", f"{evidence_commit}:{relative}")
+        if _sha256(content) != expected_digest:
             errors.append(f"B0 report checked-in evidence SHA-256 does not match: {relative}")
 
     verification = _closed_report_mapping(
