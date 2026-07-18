@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "system": "compare",
+  "runtime_role": "orchestration_non_execution",
+  "capabilities": [],
+  "evidence": {
+    "scientific": false,
+    "portability": false,
+    "producer_conformance": false
+  }
+}

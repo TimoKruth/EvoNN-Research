@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "system": "shared-benchmarks",
+  "runtime_role": "data_only",
+  "capabilities": [],
+  "evidence": {
+    "scientific": false,
+    "portability": false,
+    "producer_conformance": false
+  }
+}

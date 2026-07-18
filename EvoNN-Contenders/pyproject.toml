@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "evonn-contenders"
+version = "0.0.0"
+description = "B0 contender baseline skeleton for EvoNN"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = ["evonn-shared"]
+
+[tool.uv.sources]
+evonn-shared = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/evonn_contenders"]

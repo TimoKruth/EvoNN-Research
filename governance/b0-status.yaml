@@ -1,7 +1,7 @@
 document_kind: gate_status
 gate: B0
 status: open
-checked_in_at: "2026-07-17T14:49:43Z"
+checked_in_at: "2026-07-18T04:03:57Z"
 items:
   B0.1:
     status: locally_satisfied
@@ -11,9 +11,9 @@ items:
     open_reason: authoritative_remote_url_absent
     evidence: governance/authority-provenance.yaml is local-only/provisional with null upstream URLs
   B0.3:
-    status: open
-    open_reason: unimplemented
-    evidence: package and data-only skeleton creation is assigned to the next Gate B0 slice
+    status: closed
+    open_reason: null
+    evidence: seven Python package skeletons, the data-only benchmark skeleton, and eight local checks pass
   B0.4:
     status: open
     open_reason: unimplemented

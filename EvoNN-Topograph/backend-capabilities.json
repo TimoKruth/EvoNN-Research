@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "system": "topograph",
+  "runtime_role": "engine_skeleton",
+  "capabilities": [
+    {
+      "id": "mlx_native",
+      "platforms": ["darwin-arm64"],
+      "implemented": false,
+      "dependency": "mlx (not declared until Task 5)",
+      "condition": "Platform dependency and runtime proof are deferred to Task 5."
+    },
+    {
+      "id": "numpy_fallback",
+      "platforms": ["darwin", "linux"],
+      "implemented": false,
+      "dependency": "numpy (not declared until runtime implementation)",
+      "condition": "No portable execution path is implemented or qualified at B0."
+    }
+  ],
+  "evidence": {
+    "scientific": false,
+    "portability": false,
+    "producer_conformance": false
+  }
+}
