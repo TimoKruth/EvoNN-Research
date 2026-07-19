@@ -39,6 +39,12 @@ def test_repository_governance_policy_passes(validator) -> None:
     assert validator.validate_repository(REPO_ROOT) == []
 
 
+def test_empty_report_cannot_skip_report_validation(validator, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(validator, "_load_json", lambda _path: {})
+    errors = validator.validate_repository(REPO_ROOT)
+    assert any("B0 report schema_version" in error for error in errors)
+
+
 def test_only_consolidated_plan_is_active_and_root_plan_names_are_allowlisted(validator) -> None:
     assert validator.find_active_execution_plans(REPO_ROOT) == [Path("CONSOLIDATED_PLAN.md")]
     assert not (REPO_ROOT / "LAB_PLAN.md").exists()
@@ -154,9 +160,18 @@ def test_versioned_and_completed_archive_plan_names_require_metadata_without_fal
     assert validator.validate_archived_plans(tmp_path) == []
 
 
-def test_provenance_manifest_matches_independent_trust_anchor(validator, manifest: dict) -> None:
-    assert validator.validate_provenance(manifest, REPO_ROOT) == []
-    assert len(manifest["sources"]) == len(validator.EXPECTED_SOURCES)
+def test_checked_in_provenance_is_remote_pinned_without_source_pin_changes(
+    validator,
+    manifest: dict,
+) -> None:
+    assert manifest["status"] == "active"
+    assert manifest["authority_state"] == "remote-pinned"
+    assert all(entry["origin_state"] == "authoritative-remote" for entry in manifest["sources"])
+    assert all(
+        entry["upstream_url"] == "https://github.com/TimoKruth/EvoNN-Research.git"
+        for entry in manifest["sources"]
+    )
+
     for entry, (source_id, expected) in zip(manifest["sources"], validator.EXPECTED_SOURCES.items()):
         assert entry["id"] == source_id
         for field in (
@@ -176,52 +191,32 @@ def test_provenance_rejects_non_mapping_duplicate_and_incomplete_entries(validat
     malformed = copy.deepcopy(manifest)
     malformed["sources"].append("not-a-mapping")
     malformed["sources"].append({"id": "claude-spec"})
+    malformed["b0_2_status"] = "closed"
     errors = validator.validate_provenance(malformed, REPO_ROOT)
     assert any("source entry" in error and "mapping" in error for error in errors)
     assert any("duplicate provenance source id: claude-spec" in error for error in errors)
     assert any("claude-spec" in error and "missing fields" in error for error in errors)
+    assert any("gate status" in error for error in errors)
 
 
-def test_local_only_authority_keeps_b02_open_and_requires_null_url(
-    validator, manifest: dict, b0_status: dict
+def test_synthetic_local_only_authority_keeps_b02_open(
+    validator,
+    manifest: dict,
+    b0_status: dict,
 ) -> None:
-    assert manifest["authority_state"] == "local-only/provisional"
-    assert "b0_2_status" not in manifest and "b0_2_open_reason" not in manifest
-    duplicated_status = copy.deepcopy(manifest)
-    duplicated_status["b0_2_status"] = "closed"
-    duplicated_status["b0_2_open_reason"] = None
-    assert any("gate status" in error for error in validator.validate_provenance(duplicated_status, REPO_ROOT))
-    assert all(entry["origin_state"] == "local-only/provisional" for entry in manifest["sources"])
-    assert all(entry["upstream_url"] is None for entry in manifest["sources"])
-    assert set(b0_status["items"]) == {"B0.1", "B0.2", "B0.3", "B0.4", "B0.5", "B0.6"}
-    assert b0_status["items"]["B0.2"] == {
-        "status": "open",
-        "open_reason": "authoritative_remote_url_absent",
-        "evidence": (
-            "governance/authority-provenance.yaml remains local-only/provisional with null upstream URLs; "
-            "governance/b0-report.json records the blocker"
-        ),
-    }
-    assert b0_status["items"]["B0.3"] == {
-        "status": "closed",
-        "open_reason": None,
-        "evidence": (
-            "governance/b0-report.json records seven Python package skeletons, the data-only benchmark skeleton, "
-            "and eight passing local checks"
-        ),
-    }
-    assert b0_status["items"]["B0.4"] == {
-        "status": "closed",
-        "open_reason": None,
-        "evidence": (
-            "governance/b0-report.json records passing permanent import, workspace dependency, data-only benchmark, "
-            "and reviewed static external-API allowance validation"
-        ),
-    }
-    assert b0_status["items"]["B0.5"]["status"] == "open"
-    assert b0_status["items"]["B0.5"]["open_reason"] == "hosted_ci_not_executed"
-    assert b0_status["status"] == "open"
-    assert validator.validate_b0_status(b0_status, manifest, REPO_ROOT) == []
+    local = copy.deepcopy(manifest)
+    local["status"] = "provisional"
+    local["authority_state"] = "local-only/provisional"
+    for entry in local["sources"]:
+        entry["origin_state"] = "local-only/provisional"
+        entry["upstream_url"] = None
+
+    status = copy.deepcopy(b0_status)
+    status["status"] = "open"
+    status["items"]["B0.2"]["status"] = "open"
+    status["items"]["B0.2"]["open_reason"] = "authoritative_remote_url_absent"
+
+    assert validator.validate_b0_status(status, local, REPO_ROOT) == []
 
 
 def test_b0_status_identity_and_required_item_shape_fail_closed(validator, manifest: dict, b0_status: dict) -> None:
@@ -273,6 +268,7 @@ def _configure_remote(repo: Path, url: str) -> None:
 
 def _remote_pinned_manifest(manifest: dict, url: str) -> dict:
     upgraded = copy.deepcopy(manifest)
+    upgraded["status"] = "active"
     upgraded["authority_state"] = "remote-pinned"
     for entry in upgraded["sources"]:
         entry["origin_state"] = "authoritative-remote"
@@ -280,22 +276,75 @@ def _remote_pinned_manifest(manifest: dict, url: str) -> dict:
     return upgraded
 
 
-def test_configured_real_remote_can_close_b02_without_changing_source_pin_or_digest(
-    validator, manifest: dict, tmp_path: Path
+def test_canonical_https_authority_matches_configured_ssh_origin(
+    validator,
+    manifest: dict,
+    tmp_path: Path,
 ) -> None:
-    remote_url = "https://code.example.org/authority/evonn.git"
-    _configure_remote(tmp_path, remote_url)
-    upgraded = _remote_pinned_manifest(manifest, remote_url)
-    before = [(e["source_commit"], e["git_object_id"], e["content_digest"]) for e in manifest["sources"]]
-    after = [(e["source_commit"], e["git_object_id"], e["content_digest"]) for e in upgraded["sources"]]
-    assert before == after
+    _configure_remote(
+        tmp_path,
+        "git@github.com:TimoKruth/EvoNN-Research.git",
+    )
     status = _b02_closed_b0_status()
-    assert status["status"] == "open"
-    assert validator.validate_b0_status(status, upgraded, tmp_path) == []
+    assert validator.validate_b0_status(status, manifest, tmp_path) == []
+
+
+def test_b0_closure_rejects_a_noncanonical_real_remote(
+    validator,
+    manifest: dict,
+    tmp_path: Path,
+) -> None:
+    url = "https://code.example.org/authority/evonn.git"
+    _configure_remote(tmp_path, url)
+    changed = _remote_pinned_manifest(manifest, url)
+    errors = validator.validate_b0_status(
+        _b02_closed_b0_status(),
+        changed,
+        tmp_path,
+    )
+    assert any("B0 authority URL" in error for error in errors)
+
+
+def test_remote_pinned_provenance_requires_active_status_and_canonical_urls(
+    validator,
+    manifest: dict,
+) -> None:
+    canonical = _remote_pinned_manifest(manifest, validator.B0_CLOSURE_AUTHORITY_URL)
+    assert validator.validate_provenance(canonical, REPO_ROOT) == []
+
+    provisional = copy.deepcopy(canonical)
+    provisional["status"] = "provisional"
+    assert any("status" in error for error in validator.validate_provenance(provisional, REPO_ROOT))
+
+    noncanonical = _remote_pinned_manifest(manifest, "https://code.example.org/authority/evonn.git")
+    assert any("B0 authority URL" in error for error in validator.validate_provenance(noncanonical, REPO_ROOT))
+
+
+def test_commit_a_allows_only_the_historical_b02_open_state_when_closure_pending(
+    validator,
+    manifest: dict,
+    b0_status: dict,
+) -> None:
+    assert validator.validate_b0_status(
+        b0_status,
+        manifest,
+        REPO_ROOT,
+        closure_pending=True,
+    ) == []
+    assert validator.validate_b0_status(b0_status, manifest, REPO_ROOT)
+
+    changed = copy.deepcopy(b0_status)
+    changed["items"]["B0.2"]["evidence"] = "not the historical closure-transition evidence"
+    assert validator.validate_b0_status(
+        changed,
+        manifest,
+        REPO_ROOT,
+        closure_pending=True,
+    )
 
 
 def test_overall_b0_closes_only_when_all_six_items_are_closed(validator, manifest: dict, tmp_path: Path) -> None:
-    remote_url = "https://code.example.org/authority/evonn.git"
+    remote_url = "https://github.com/TimoKruth/EvoNN-Research.git"
     _configure_remote(tmp_path, remote_url)
     upgraded = _remote_pinned_manifest(manifest, remote_url)
 
@@ -332,7 +381,7 @@ def test_local_or_file_git_remotes_cannot_close_b02(validator, manifest: dict, t
 def test_unknown_inconsistent_or_unconfigured_remote_authority_fails_closed(
     validator, manifest: dict, tmp_path: Path
 ) -> None:
-    configured_url = "https://code.example.org/authority/evonn.git"
+    configured_url = "https://github.com/TimoKruth/EvoNN-Research.git"
     _configure_remote(tmp_path, configured_url)
     unknown = copy.deepcopy(manifest)
     unknown["authority_state"] = "remote-ish"
@@ -351,6 +400,10 @@ def test_unknown_inconsistent_or_unconfigured_remote_authority_fails_closed(
         entry["origin_state"] = "authoritative-remote"
         entry["upstream_url"] = "https://fake.example.invalid/not-configured.git"
     errors = validator.validate_b0_status(_b02_closed_b0_status(), fake, tmp_path)
+    assert any("B0 authority URL" in error for error in errors)
+
+    subprocess.run(["git", "-C", str(tmp_path), "remote", "remove", "origin"], check=True)
+    errors = validator.validate_b0_status(_b02_closed_b0_status(), manifest, tmp_path)
     assert any("configured Git remote" in error for error in errors)
 
 

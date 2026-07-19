@@ -118,6 +118,14 @@ B0_REPORT_LOCAL_PROBES: Mapping[str, Mapping[str, str]] = {
 # runtime, workflow, branch, or future-gate policy.
 B0_CLOSURE_HOSTED_COMMIT = "f68856f0c2fdf0ebc73671264b5a3ab0cff3b224"
 B0_CLOSURE_AUTHORITY_URL = "https://github.com/TimoKruth/EvoNN-Research.git"
+B0_CLOSURE_PENDING_B02 = {
+    "status": "open",
+    "open_reason": "authoritative_remote_url_absent",
+    "evidence": (
+        "governance/authority-provenance.yaml remains local-only/provisional with null upstream URLs; "
+        "governance/b0-report.json records the blocker"
+    ),
+}
 
 B0_REPORT_HOSTED_PROBE_FIELDS = frozenset(
     {
@@ -572,6 +580,15 @@ def validate_provenance(manifest: Mapping[str, Any], repo_root: Path) -> List[st
     if not isinstance(sources, list):
         errors.append("provenance sources must be a list")
         return errors
+    if manifest.get("authority_state") == "remote-pinned":
+        if manifest.get("status") != "active":
+            errors.append("remote-pinned provenance status must be active")
+        for index, entry in enumerate(sources):
+            if isinstance(entry, Mapping) and entry.get("upstream_url") != B0_CLOSURE_AUTHORITY_URL:
+                source_id = entry.get("id", f"source entry {index}")
+                errors.append(
+                    f"{source_id}: remote-pinned B0 authority URL must be {B0_CLOSURE_AUTHORITY_URL}"
+                )
     entries: Dict[str, Mapping[str, Any]] = {}
     for index, entry in enumerate(sources):
         if not isinstance(entry, Mapping):
@@ -696,7 +713,13 @@ def _configured_remote_identities(repo_root: Path) -> Set[str]:
     return identities
 
 
-def validate_b0_status(status: Mapping[str, Any], manifest: Mapping[str, Any], repo_root: Path) -> List[str]:
+def validate_b0_status(
+    status: Mapping[str, Any],
+    manifest: Mapping[str, Any],
+    repo_root: Path,
+    *,
+    closure_pending: bool = False,
+) -> List[str]:
     errors: List[str] = []
     if status.get("document_kind") != "gate_status":
         errors.append("B0 status document_kind must be gate_status")
@@ -765,12 +788,18 @@ def validate_b0_status(status: Mapping[str, Any], manifest: Mapping[str, Any], r
         if any(entry.get("origin_state") != "authoritative-remote" for entry in sources):
             errors.append("remote-pinned authority requires authoritative-remote source entries")
         configured_remotes = _configured_remote_identities(repo_root)
-        upstream_identities = [_normalize_remote_identity(entry.get("upstream_url")) for entry in sources]
+        upstream_urls = [entry.get("upstream_url") for entry in sources]
+        upstream_identities = [_normalize_remote_identity(url) for url in upstream_urls]
         if not upstream_identities or any(identity is None for identity in upstream_identities):
             errors.append("closing B0.2 requires an authoritative HTTPS or SSH URL for every authority entry")
-        elif any(identity not in configured_remotes for identity in upstream_identities):
-            errors.append("every authority URL must match a configured Git remote before B0.2 can close")
-        if b02.get("status") != "closed" or b02.get("open_reason") is not None:
+        elif any(url != B0_CLOSURE_AUTHORITY_URL for url in upstream_urls):
+            errors.append(f"every B0 authority URL must be exactly {B0_CLOSURE_AUTHORITY_URL}")
+        canonical_identity = _normalize_remote_identity(B0_CLOSURE_AUTHORITY_URL)
+        if canonical_identity not in configured_remotes:
+            errors.append("the canonical B0 authority URL must match a configured Git remote before B0.2 can close")
+        b02_closed = b02.get("status") == "closed" and b02.get("open_reason") is None
+        historical_open_state = closure_pending and dict(b02) == B0_CLOSURE_PENDING_B02
+        if not b02_closed and not historical_open_state:
             errors.append("remote-pinned authority must close B0.2 and clear its open reason")
     return errors
 
@@ -1538,16 +1567,21 @@ def validate_repository(repo_root: Path) -> List[str]:
         manifest = {}
     try:
         status = _load_yaml(status_path)
-        errors.extend(validate_b0_status(status, manifest, repo_root))
     except (OSError, ValueError, yaml.YAMLError) as exc:
         errors.append(f"cannot load B0 status: {exc}")
         status = {}
     report_path = repo_root / "governance/b0-report.json"
     try:
         report = _load_json(report_path)
-        errors.extend(validate_b0_report(report, status, repo_root))
+        report_loaded = True
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         errors.append(f"cannot load B0 integration report: {exc}")
+        report = {}
+        report_loaded = False
+    closure_pending = report.get("schema_version") == "1.0.0" and report.get("overall_state") == "open"
+    errors.extend(validate_b0_status(status, manifest, repo_root, closure_pending=closure_pending))
+    if report_loaded:
+        errors.extend(validate_b0_report(report, status, repo_root))
     for required_doc in ("SPEC_UPGRADE_PROCESS.md", "SPEC_TRACEABILITY.md"):
         if not (repo_root / "governance" / required_doc).is_file():
             errors.append(f"governance/{required_doc} is missing")
