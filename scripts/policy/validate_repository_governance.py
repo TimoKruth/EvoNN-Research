@@ -395,6 +395,18 @@ B0_REPORT_SCHEMA_2_REQUIRED_ITEM_EVIDENCE: Mapping[str, frozenset[str]] = {
             *(probe["artifact_path"] for probe in B0_REPORT_HOSTED_PROBES),
         }
     ),
+    "B0.6": frozenset(
+        {
+            "scripts/policy/validate_repository_governance.py",
+            "tests/policy/test_repository_governance.py",
+            "tests/policy/test_b0_integration_report.py",
+            "tests/policy/test_b0_ci_bootstrap.py",
+            "PARALLEL_WORK_GUIDE.md",
+            "reviews/2026-07-18-b0-cross-review-addendum.md",
+            "reviews/2026-07-19-b0-closure-review.md",
+            "governance/b0-report.json",
+        }
+    ),
 }
 B0_REPORT_REPOSITORY_FIELDS = frozenset({"branch", "evaluated_commit", "evaluated_tree", "relationship"})
 B0_REPORT_ITEM_FIELDS = frozenset({"state", "reason", "evidence_paths"})
@@ -1472,7 +1484,7 @@ def validate_b0_schema_2_state(
             evidence_path_set = set(evidence_paths)
             if (
                 "governance/b0-report.json" in evidence_path_set
-                and item_id not in {"B0.2", "B0.5"}
+                and item_id not in {"B0.2", "B0.5", "B0.6"}
             ):
                 errors.append(
                     f"B0 report {item_id} must not use governance/b0-report.json as self-reference evidence"

@@ -46,6 +46,18 @@ SCHEMA_2_B05_REQUIRED_EVIDENCE = frozenset(
         "governance/evidence/b0/hosted/macos-runtime-probe.json",
     }
 )
+SCHEMA_2_B06_REQUIRED_EVIDENCE = frozenset(
+    {
+        "scripts/policy/validate_repository_governance.py",
+        "tests/policy/test_repository_governance.py",
+        "tests/policy/test_b0_integration_report.py",
+        "tests/policy/test_b0_ci_bootstrap.py",
+        "PARALLEL_WORK_GUIDE.md",
+        "reviews/2026-07-18-b0-cross-review-addendum.md",
+        "reviews/2026-07-19-b0-closure-review.md",
+        "governance/b0-report.json",
+    }
+)
 
 HOSTED_ARTIFACTS = (
     (
@@ -141,6 +153,9 @@ def _schema_2_state_documents(validator) -> tuple[dict, dict]:
     )
     report["items"]["B0.5"]["evidence_paths"] = sorted(
         {*report["items"]["B0.5"]["evidence_paths"], *SCHEMA_2_B05_REQUIRED_EVIDENCE}
+    )
+    report["items"]["B0.6"]["evidence_paths"] = sorted(
+        {*report["items"]["B0.6"]["evidence_paths"], *SCHEMA_2_B06_REQUIRED_EVIDENCE}
     )
 
     status["status"] = "closed"
@@ -809,9 +824,15 @@ def _install_schema_2_evidence_revision(clone: Path, validator) -> tuple[dict, d
     report_path = clone / "governance/b0-report.json"
     status_path = clone / "governance/b0-status.yaml"
     task_report_path = clone / ".superpowers/sdd/task-6-report.md"
+    closure_review_path = clone / "reviews/2026-07-19-b0-closure-review.md"
     report = json.loads(report_path.read_text(encoding="utf-8"))
     status = yaml.safe_load(status_path.read_text(encoding="utf-8"))
     task_report_content = task_report_path.read_bytes()
+    if not closure_review_path.exists():
+        closure_review_path.write_text(
+            "# Gate B0 Closure Review\n\nFixture closure review evidence.\n",
+            encoding="utf-8",
+        )
     parent, parent_tree, original_task_report = _install_three_file_implementation_parent(
         clone,
         report,
@@ -839,6 +860,9 @@ def _install_schema_2_evidence_revision(clone: Path, validator) -> tuple[dict, d
     )
     report["items"]["B0.5"]["evidence_paths"] = sorted(
         {*report["items"]["B0.5"]["evidence_paths"], *SCHEMA_2_B05_REQUIRED_EVIDENCE}
+    )
+    report["items"]["B0.6"]["evidence_paths"] = sorted(
+        {*report["items"]["B0.6"]["evidence_paths"], *SCHEMA_2_B06_REQUIRED_EVIDENCE}
     )
 
     status["status"] = "closed"
@@ -1045,16 +1069,28 @@ def test_schema_2_requires_the_closure_branch() -> None:
     assert any("repository.branch" in error and "b0/close-gate" in error for error in errors)
 
 
-def test_schema_2_restricts_report_self_reference_to_permitted_items() -> None:
+@pytest.mark.parametrize("item_id", ["B0.1", "B0.3", "B0.4"])
+def test_schema_2_restricts_report_self_reference_to_permitted_items(
+    item_id: str,
+) -> None:
     validator = _validator()
     report, status = _schema_2_state_documents(validator)
-    report["items"]["B0.1"]["evidence_paths"].append(
+    report["items"][item_id]["evidence_paths"].append(
         "governance/b0-report.json"
     )
 
     errors = validator.validate_b0_schema_2_state(report, status)
 
-    assert any("B0.1" in error and "self-reference" in error for error in errors)
+    assert any(item_id in error and "self-reference" in error for error in errors)
+
+
+def test_schema_2_permits_b06_report_attribution_with_canonical_evidence() -> None:
+    validator = _validator()
+    report, status = _schema_2_state_documents(validator)
+
+    errors = validator.validate_b0_schema_2_state(report, status)
+
+    assert not any("B0.6" in error for error in errors)
 
 
 def test_schema_1_rejects_report_self_reference(tmp_path: Path) -> None:
@@ -1104,6 +1140,7 @@ def test_schema_1_dispatch_skips_hosted_probe_validation(
     [
         *[("B0.2", path) for path in sorted(SCHEMA_2_B02_REQUIRED_EVIDENCE)],
         *[("B0.5", path) for path in sorted(SCHEMA_2_B05_REQUIRED_EVIDENCE)],
+        *[("B0.6", path) for path in sorted(SCHEMA_2_B06_REQUIRED_EVIDENCE)],
     ],
 )
 def test_schema_2_names_each_missing_required_item_evidence_path(
@@ -1122,7 +1159,7 @@ def test_schema_2_names_each_missing_required_item_evidence_path(
     )
 
 
-@pytest.mark.parametrize("item_id", ["B0.2", "B0.5"])
+@pytest.mark.parametrize("item_id", ["B0.2", "B0.5", "B0.6"])
 def test_schema_2_report_self_reference_cannot_replace_canonical_item_evidence(
     item_id: str,
 ) -> None:
