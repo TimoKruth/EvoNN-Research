@@ -18,10 +18,10 @@ Both post-merge workflows succeeded. Their uploaded runtime probes were download
 
 Authoritative hosted evidence:
 
-| Lane | Artifact name | Artifact SHA-256 |
-| --- | --- | --- |
-| Linux / NumPy | `b0-linux-runtime-probe` | `f17ca8a8f35538d72c6a7585ef013a7e1f5d50484fcc08d85ac672745d371c00` |
-| macOS / MLX | `b0-macos-runtime-probe` | `147e5c54a75bb9090eb3e94e06fe9c9f656ca751df12fdb5fc8950bf4398e157` |
+| Lane | Run URL | Artifact name | Artifact SHA-256 |
+| --- | --- | --- | --- |
+| Linux / NumPy | `https://github.com/TimoKruth/EvoNN-Research/actions/runs/29658842317` | `b0-linux-runtime-probe` | `f17ca8a8f35538d72c6a7585ef013a7e1f5d50484fcc08d85ac672745d371c00` |
+| macOS / MLX | `https://github.com/TimoKruth/EvoNN-Research/actions/runs/29658842318` | `b0-macos-runtime-probe` | `147e5c54a75bb9090eb3e94e06fe9c9f656ca751df12fdb5fc8950bf4398e157` |
 
 GitHub Actions artifacts are retention-bound. Gate evidence must remain verifiable in a clean clone after those downloads expire.
 
@@ -50,7 +50,9 @@ A separate hosted-evidence manifest is not introduced because it would add anoth
 
 ## Commit Discipline
 
-### Commit A: closure implementation
+### Commit A: evaluated closure implementation
+
+The branch may contain preparatory design and implementation commits. Commit A means the final pre-evidence revision after independent review, required fixes, and the checked-in review record. Commit B must be its direct child.
 
 Commit A contains all closure inputs and policy changes:
 
@@ -203,11 +205,11 @@ The next transition states that the team must jointly freeze Phase 0 interfaces 
 
 `governance/SPEC_UPGRADE_PROCESS.md` will retain the general B0.2 rule and add a concise closure record identifying the reviewed remote-pinning transition without treating it as a source-byte upgrade.
 
-`PARALLEL_WORK_GUIDE.md` and any status text that still claim B0.2/B0.5 are open will be updated consistently if they are part of the active evidence surface.
+`PARALLEL_WORK_GUIDE.md` and every active status text that still claims B0.2/B0.5 are open will be updated consistently. The guide remains non-authoritative but is part of the checked-in B0.6 evidence surface.
 
 ## Independent Review
 
-Before Commit B is generated, Commit A receives an independent code and governance review. Because repository publication uses one GitHub identity, the review is also preserved as a checked-in record under `reviews/`, following the existing cross-review pattern.
+Before Commit B is generated, the functional closure diff receives an independent code and governance review. Required fixes are applied, and the final checked-in review record becomes part of Commit A. Final verification runs against Commit A's complete tree, including that record. Because repository publication uses one GitHub identity, the review is preserved under `reviews/`, following the existing cross-review pattern.
 
 The review covers:
 
@@ -249,17 +251,19 @@ Tests that currently require B0.2/B0.5 to remain open or forbid all hosted field
 
 ## Verification and Delivery Sequence
 
-1. Create Commit A with implementation, committed probes, tests, and documentation changes.
+1. Implement the validator, committed probes, tests, provenance, plan, and process changes in one or more preparatory commits.
 2. Run focused red/green tests while implementing each validator behavior.
-3. Run the full pinned local verification set.
-4. Perform independent review and apply required fixes.
-5. Regenerate fresh local NumPy and MLX probes against final Commit A.
-6. Generate Commit B with final status, report, and task report only.
-7. Rerun the complete verification set at Commit B.
-8. Push the branch and open a reviewed pull request.
-9. Require both Linux and macOS PR workflows to pass.
-10. Review and merge through GitHub without pushing directly to `main`.
-11. Confirm post-merge policy checks remain valid on the merge commit.
-12. Begin Phase 0 only with the joint interface-freeze step defined by the consolidated plan.
+3. Run the full pinned local verification set over the functional diff.
+4. Perform independent review and apply every required fix.
+5. Add the final checked-in review record and finalize Commit A as the exact evaluated implementation revision.
+6. Run the full pinned verification set against Commit A.
+7. Regenerate fresh local NumPy and MLX probes against exact Commit A.
+8. Generate Commit B with final status, report, and task report only.
+9. Rerun the complete verification set at Commit B.
+10. Push the branch and open a reviewed pull request.
+11. Require both Linux and macOS PR workflows to pass.
+12. Review and merge through GitHub without pushing directly to `main`.
+13. Confirm post-merge policy checks remain valid on the merge commit.
+14. Begin Phase 0 only with the joint interface-freeze step defined by the consolidated plan.
 
 Any failed invariant keeps Gate B0 open. There is no fallback to metadata-only evidence, mutable external artifacts, or live-network validation.
