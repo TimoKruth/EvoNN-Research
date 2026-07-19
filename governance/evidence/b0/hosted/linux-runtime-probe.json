@@ -1,0 +1,108 @@
+{
+  "backend": {
+    "class": "numpy_fallback",
+    "distribution": "numpy",
+    "version": "2.5.1"
+  },
+  "device_class": "cpu",
+  "evidence": {
+    "class": "contract",
+    "statement": "Bootstrap portability/runtime contract evidence only; not scientific or backend qualification."
+  },
+  "host": {
+    "architecture": "x86_64",
+    "kernel": "6.17.0-1020-azure",
+    "logical_cpu_count": 4,
+    "os_name": "Linux",
+    "os_version": "Linux-6.17.0-1020-azure-x86_64-with-glibc2.39"
+  },
+  "host_fingerprint": {
+    "algorithm": "sha256",
+    "digest": "e07417f07cda10471f6234a91a820e897c4268f107ed55259a35580e498e1c19"
+  },
+  "manifest": {
+    "path": "EvoNN-Stratograph/backend-capabilities.json",
+    "sha256": "14513f116dd53bfd2fd9fa4345593185589b3aee297b57bac32f37dac45c6aa9"
+  },
+  "operation": {
+    "actual": 14.0,
+    "expected": 14.0,
+    "input": [
+      1.0,
+      2.0,
+      3.0
+    ],
+    "operation": "sum_of_squares",
+    "validated": true
+  },
+  "package_under_test": "evonn-stratograph",
+  "packages_validated": [
+    {
+      "distribution": "evonn-shared",
+      "module": "evonn_shared",
+      "system": "shared",
+      "version": "0.0.0"
+    },
+    {
+      "distribution": "evonn-compare",
+      "module": "evonn_compare",
+      "system": "compare",
+      "version": "0.0.0"
+    },
+    {
+      "distribution": "evonn-contenders",
+      "module": "evonn_contenders",
+      "system": "contenders",
+      "version": "0.0.0"
+    },
+    {
+      "distribution": "evonn-prism",
+      "module": "prism",
+      "system": "prism",
+      "version": "0.0.0"
+    },
+    {
+      "distribution": "evonn-topograph",
+      "module": "topograph",
+      "system": "topograph",
+      "version": "0.0.0"
+    },
+    {
+      "distribution": "evonn-stratograph",
+      "module": "stratograph",
+      "system": "stratograph",
+      "version": "0.0.0"
+    },
+    {
+      "distribution": "evonn-primordia",
+      "module": "evonn_primordia",
+      "system": "primordia",
+      "version": "0.0.0"
+    }
+  ],
+  "precision_mode": "float64",
+  "probe_kind": "b0_runtime_backend_bootstrap",
+  "python": {
+    "implementation": "CPython",
+    "version": "3.13.1"
+  },
+  "qualification": "bootstrap_probe_only",
+  "repository_commit": "f68856f0c2fdf0ebc73671264b5a3ab0cff3b224",
+  "schema_version": "1.0.0",
+  "status": "passed",
+  "system_under_test": "stratograph",
+  "timestamps": {
+    "ended_at_utc": "2026-07-18T20:00:15Z",
+    "started_at_utc": "2026-07-18T20:00:15Z"
+  },
+  "uv_version": "0.5.13",
+  "workers": {
+    "count": 1,
+    "topology": "single_process"
+  },
+  "workflow": {
+    "attempt": "1",
+    "name": "B0 Linux trust lane",
+    "run_id": "29658842317"
+  }
+}

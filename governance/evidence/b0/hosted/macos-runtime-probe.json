@@ -1,0 +1,108 @@
+{
+  "backend": {
+    "class": "mlx_native",
+    "distribution": "mlx",
+    "version": "0.32.0"
+  },
+  "device_class": "apple_silicon_mlx_default",
+  "evidence": {
+    "class": "contract",
+    "statement": "Bootstrap portability/runtime contract evidence only; not scientific or backend qualification."
+  },
+  "host": {
+    "architecture": "arm64",
+    "kernel": "24.6.0",
+    "logical_cpu_count": 3,
+    "os_name": "Darwin",
+    "os_version": "15.7.7"
+  },
+  "host_fingerprint": {
+    "algorithm": "sha256",
+    "digest": "8d204abeb3c3f940d544ff429ae08bac918c08d768391646ac5de57cdde85994"
+  },
+  "manifest": {
+    "path": "EvoNN-Prism/backend-capabilities.json",
+    "sha256": "5719a3843c8106193c126084cad2837dc3111cb9a795bb08a2cf129b52e7113c"
+  },
+  "operation": {
+    "actual": 14.0,
+    "expected": 14.0,
+    "input": [
+      1.0,
+      2.0,
+      3.0
+    ],
+    "operation": "sum_of_squares",
+    "validated": true
+  },
+  "package_under_test": "evonn-prism",
+  "packages_validated": [
+    {
+      "distribution": "evonn-shared",
+      "module": "evonn_shared",
+      "system": "shared",
+      "version": "0.0.0"
+    },
+    {
+      "distribution": "evonn-compare",
+      "module": "evonn_compare",
+      "system": "compare",
+      "version": "0.0.0"
+    },
+    {
+      "distribution": "evonn-contenders",
+      "module": "evonn_contenders",
+      "system": "contenders",
+      "version": "0.0.0"
+    },
+    {
+      "distribution": "evonn-prism",
+      "module": "prism",
+      "system": "prism",
+      "version": "0.0.0"
+    },
+    {
+      "distribution": "evonn-topograph",
+      "module": "topograph",
+      "system": "topograph",
+      "version": "0.0.0"
+    },
+    {
+      "distribution": "evonn-stratograph",
+      "module": "stratograph",
+      "system": "stratograph",
+      "version": "0.0.0"
+    },
+    {
+      "distribution": "evonn-primordia",
+      "module": "evonn_primordia",
+      "system": "primordia",
+      "version": "0.0.0"
+    }
+  ],
+  "precision_mode": "float32",
+  "probe_kind": "b0_runtime_backend_bootstrap",
+  "python": {
+    "implementation": "CPython",
+    "version": "3.13.1"
+  },
+  "qualification": "bootstrap_probe_only",
+  "repository_commit": "f68856f0c2fdf0ebc73671264b5a3ab0cff3b224",
+  "schema_version": "1.0.0",
+  "status": "passed",
+  "system_under_test": "prism",
+  "timestamps": {
+    "ended_at_utc": "2026-07-18T20:00:17Z",
+    "started_at_utc": "2026-07-18T20:00:16Z"
+  },
+  "uv_version": "0.5.13",
+  "workers": {
+    "count": 1,
+    "topology": "single_process"
+  },
+  "workflow": {
+    "attempt": "1",
+    "name": "B0 macOS engine lane",
+    "run_id": "29658842318"
+  }
+}

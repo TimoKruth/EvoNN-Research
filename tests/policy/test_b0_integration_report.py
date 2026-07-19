@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -16,6 +17,35 @@ GUIDE_PATH = REPO_ROOT / "PARALLEL_WORK_GUIDE.md"
 PLAN_PATH = REPO_ROOT / "CONSOLIDATED_PLAN.md"
 CROSS_REVIEW_PATH = REPO_ROOT / "reviews/2026-07-18-b0-cross-review.md"
 TASK_REPORT_PATH = REPO_ROOT / ".superpowers/sdd/task-6-report.md"
+HOSTED_LINUX_PATH = (
+    REPO_ROOT / "governance/evidence/b0/hosted/linux-runtime-probe.json"
+)
+HOSTED_MACOS_PATH = (
+    REPO_ROOT / "governance/evidence/b0/hosted/macos-runtime-probe.json"
+)
+
+HOSTED_ARTIFACTS = (
+    (
+        HOSTED_LINUX_PATH,
+        "f17ca8a8f35538d72c6a7585ef013a7e1f5d50484fcc08d85ac672745d371c00",
+        "numpy",
+        "stratograph",
+        "B0 Linux trust lane",
+        "29658842317",
+        "Linux",
+        "x86_64",
+    ),
+    (
+        HOSTED_MACOS_PATH,
+        "147e5c54a75bb9090eb3e94e06fe9c9f656ca751df12fdb5fc8950bf4398e157",
+        "mlx",
+        "prism",
+        "B0 macOS engine lane",
+        "29658842318",
+        "Darwin",
+        "arm64",
+    ),
+)
 
 EXPECTED_LANE_ROWS = (
     "| 0 | WP-0.2, 0.3, 0.4, 0.5 | WP-0.1, 0.6, 0.7, 0.8, 0.9 | WP-0.10 integrity gate + phase exit |",
@@ -44,6 +74,30 @@ def _status() -> dict:
 def _report() -> dict:
     assert REPORT_PATH.is_file(), "machine-readable Gate B0 report is not installed"
     return json.loads(REPORT_PATH.read_text(encoding="utf-8"))
+
+
+def test_checked_in_hosted_runtime_probe_bytes_and_identities_are_exact() -> None:
+    for path, digest, backend, system, workflow, run_id, host_os, architecture in HOSTED_ARTIFACTS:
+        content = path.read_bytes()
+        assert hashlib.sha256(content).hexdigest() == digest
+        probe = json.loads(content)
+        assert probe["schema_version"] == "1.0.0"
+        assert probe["probe_kind"] == "b0_runtime_backend_bootstrap"
+        assert probe["status"] == "passed"
+        assert probe["qualification"] == "bootstrap_probe_only"
+        assert probe["backend"]["distribution"] == backend
+        assert probe["system_under_test"] == system
+        assert probe["workflow"] == {
+            "name": workflow,
+            "run_id": run_id,
+            "attempt": "1",
+        }
+        assert probe["host"]["os_name"] == host_os
+        assert probe["host"]["architecture"] == architecture
+        assert (
+            probe["repository_commit"]
+            == "f68856f0c2fdf0ebc73671264b5a3ab0cff3b224"
+        )
 
 
 def test_parallel_work_guide_is_non_authoritative_and_records_exact_lane_model() -> None:
