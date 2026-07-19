@@ -4,9 +4,12 @@ import copy
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
+import shutil
 import subprocess
 
+import pytest
 import yaml
 
 
@@ -336,3 +339,712 @@ def test_every_checked_in_evidence_digest_is_recomputed() -> None:
     tampered["checked_in_evidence"][first_path] = "0" * 64
     errors = validator.validate_b0_report(tampered, _status(), REPO_ROOT)
     assert any(first_path in error and "SHA-256" in error for error in errors)
+
+
+def _hosted_entries(validator) -> list[dict]:
+    return copy.deepcopy(list(validator.B0_REPORT_HOSTED_PROBES))
+
+
+def _head() -> str:
+    return subprocess.check_output(
+        ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"],
+        text=True,
+    ).strip()
+
+
+def _committed_clone(tmp_path: Path) -> Path:
+    clone = tmp_path / "clone"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-local", str(REPO_ROOT), str(clone)],
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(clone), "checkout", "--quiet", _head()],
+        check=True,
+        capture_output=True,
+    )
+    return clone
+
+
+def _commit_clone(clone: Path, message: str) -> str:
+    git = [
+        "git",
+        "-C",
+        str(clone),
+        "-c",
+        "user.name=policy-test",
+        "-c",
+        "user.email=policy@test",
+    ]
+    subprocess.run([*git, "add", "-A"], check=True, capture_output=True)
+    return _commit_staged_clone(clone, message)
+
+
+def _commit_staged_clone(clone: Path, message: str) -> str:
+    git = [
+        "git",
+        "-C",
+        str(clone),
+        "-c",
+        "user.name=policy-test",
+        "-c",
+        "user.email=policy@test",
+    ]
+    subprocess.run(
+        [*git, "commit", "--quiet", "-m", message],
+        check=True,
+        capture_output=True,
+    )
+    return subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", "HEAD"],
+        text=True,
+    ).strip()
+
+
+def _root_commit_for_tree(repository: Path, treeish: str) -> str:
+    tree = subprocess.check_output(
+        ["git", "-C", str(repository), "rev-parse", f"{treeish}^{{tree}}"],
+        text=True,
+    ).strip()
+    return subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(repository),
+            "-c",
+            "user.name=policy-test",
+            "-c",
+            "user.email=policy@test",
+            "commit-tree",
+            tree,
+            "-m",
+            "unrelated evidence root",
+        ],
+        text=True,
+    ).strip()
+
+
+def _write_probe(path: Path, probe: dict) -> str:
+    content = (json.dumps(probe, indent=2, sort_keys=True) + "\n").encode()
+    path.write_bytes(content)
+    return hashlib.sha256(content).hexdigest()
+
+
+def _patch_canonical_entry(monkeypatch, validator, index: int, **updates: str) -> None:
+    canonical = copy.deepcopy(list(validator.B0_REPORT_HOSTED_PROBES))
+    canonical[index].update(updates)
+    monkeypatch.setattr(validator, "B0_REPORT_HOSTED_PROBES", tuple(canonical))
+
+
+def _set_probe_value(probe: dict, path: tuple[str | int, ...], value) -> None:
+    target = probe
+    for component in path[:-1]:
+        target = target[component]
+    target[path[-1]] = value
+
+
+def test_hosted_probe_entries_are_exactly_linux_then_macos(validator=None) -> None:
+    validator = _validator()
+    entries = _hosted_entries(validator)
+    assert validator.validate_hosted_probe_evidence(entries, REPO_ROOT, _head()) == []
+
+    for malformed in (
+        entries[:1],
+        [*entries, copy.deepcopy(entries[0])],
+        [copy.deepcopy(entries[1]), copy.deepcopy(entries[0])],
+        [copy.deepcopy(entries[0]), copy.deepcopy(entries[0])],
+    ):
+        assert validator.validate_hosted_probe_evidence(
+            malformed, REPO_ROOT, _head()
+        )
+
+
+def test_hosted_probe_entry_schema_is_closed() -> None:
+    validator = _validator()
+    entries = _hosted_entries(validator)
+
+    missing = copy.deepcopy(entries)
+    del missing[0]["run_attempt"]
+    assert any(
+        "missing required fields" in error
+        for error in validator.validate_hosted_probe_evidence(
+            missing, REPO_ROOT, _head()
+        )
+    )
+
+    unknown = copy.deepcopy(entries)
+    unknown[0]["unexpected"] = True
+    assert any(
+        "unknown fields" in error
+        for error in validator.validate_hosted_probe_evidence(
+            unknown, REPO_ROOT, _head()
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    ("index", "field", "value", "needle"),
+    [
+        (0, "workflow_name", "wrong workflow", "workflow"),
+        (0, "run_id", "29658842318", "run_id"),
+        (0, "run_attempt", "2", "run_attempt"),
+        (
+            0,
+            "run_url",
+            "https://github.com/TimoKruth/EvoNN-Research/actions/runs/1",
+            "run_url",
+        ),
+        (0, "event", "pull_request", "event"),
+        (0, "branch", "feature", "branch"),
+        (0, "conclusion", "failure", "conclusion"),
+        (0, "backend", "mlx", "backend"),
+        (0, "system", "prism", "system"),
+        (0, "host_os", "Darwin", "host_os"),
+        (0, "host_architecture", "arm64", "host_architecture"),
+        (0, "repository_commit", "0" * 40, "repository_commit"),
+        (0, "execution_scope", "local", "execution_scope"),
+        (0, "evidence_scope", "scientific", "evidence_scope"),
+        (0, "qualification", "backend_qualified", "qualification"),
+    ],
+)
+def test_hosted_probe_report_claim_drift_fails_closed(
+    index: int,
+    field: str,
+    value: str,
+    needle: str,
+) -> None:
+    validator = _validator()
+    entries = _hosted_entries(validator)
+    entries[index][field] = value
+    errors = validator.validate_hosted_probe_evidence(
+        entries, REPO_ROOT, _head()
+    )
+    assert any(needle in error for error in errors)
+
+
+def test_hosted_probe_linux_macos_artifacts_cannot_be_swapped() -> None:
+    validator = _validator()
+    entries = _hosted_entries(validator)
+    for field in ("artifact_path", "sha256"):
+        entries[0][field], entries[1][field] = entries[1][field], entries[0][field]
+
+    errors = validator.validate_hosted_probe_evidence(entries, REPO_ROOT, _head())
+
+    assert any("numpy" in error and "artifact_path" in error for error in errors)
+    assert any("mlx" in error and "artifact_path" in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    "unsafe_path",
+    [
+        "/tmp/probe.json",
+        "../probe.json",
+        "governance//evidence/b0/hosted/linux-runtime-probe.json",
+    ],
+)
+def test_hosted_probe_rejects_absolute_parent_and_non_normalized_paths(
+    unsafe_path: str,
+) -> None:
+    validator = _validator()
+    entries = _hosted_entries(validator)
+    entries[0]["artifact_path"] = unsafe_path
+
+    errors = validator.validate_hosted_probe_evidence(entries, REPO_ROOT, _head())
+
+    assert any("normalized repository-relative path" in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    "unsafe_path",
+    ["governance/evidence/b0/hosted/probe\0.json", "governance/\ud800/probe.json"],
+)
+def test_committed_regular_file_rejects_nul_and_unencodable_paths(
+    unsafe_path: str,
+) -> None:
+    validator = _validator()
+
+    content, error = validator._committed_regular_file(
+        REPO_ROOT, _head(), unsafe_path, "hosted artifact"
+    )
+
+    assert content is None
+    assert error and "path" in error
+
+
+def test_committed_regular_file_converts_subprocess_argument_errors(
+    monkeypatch,
+) -> None:
+    validator = _validator()
+
+    def fail_git(*args):
+        raise ValueError("invalid subprocess argument")
+
+    monkeypatch.setattr(validator, "_git", fail_git)
+
+    content, error = validator._committed_regular_file(
+        REPO_ROOT, _head(), "governance/b0-report.json", "hosted artifact"
+    )
+
+    assert content is None
+    assert error and "cannot be resolved" in error
+
+
+@pytest.mark.parametrize(
+    "raw_tree",
+    [b"100644 blob deadbeef\t\xff\0", b"malformed\tgovernance\0"],
+)
+def test_committed_regular_file_converts_tree_record_errors(
+    monkeypatch,
+    raw_tree: bytes,
+) -> None:
+    validator = _validator()
+    monkeypatch.setattr(validator, "_git", lambda *args: raw_tree)
+
+    content, error = validator._committed_regular_file(
+        REPO_ROOT, _head(), "governance/b0-report.json", "hosted artifact"
+    )
+
+    assert content is None
+    assert error and "Git tree entry" in error
+
+
+def test_committed_regular_file_rejects_a_missing_entry(tmp_path: Path) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    relative = validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    (clone / relative).unlink()
+    evidence_commit = _commit_clone(clone, "remove hosted artifact")
+
+    content, error = validator._committed_regular_file(
+        clone, evidence_commit, relative, "hosted artifact"
+    )
+
+    assert content is None
+    assert error and "missing or ambiguous" in error
+
+
+def test_committed_regular_file_rejects_a_submodule_entry(tmp_path: Path) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    relative = validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    (clone / relative).unlink()
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "update-index",
+            "--add",
+            "--cacheinfo",
+            f"160000,{validator.B0_CLOSURE_HOSTED_COMMIT},{relative}",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    evidence_commit = _commit_staged_clone(clone, "replace hosted artifact with gitlink")
+
+    content, error = validator._committed_regular_file(
+        clone, evidence_commit, relative, "hosted artifact"
+    )
+
+    assert content is None
+    assert error and "committed regular file" in error
+
+
+def test_committed_regular_file_rejects_a_directory_final_entry(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    relative = validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    artifact = clone / relative
+    artifact.unlink()
+    artifact.mkdir()
+    (artifact / "nested.json").write_text("{}\n", encoding="utf-8")
+    evidence_commit = _commit_clone(clone, "replace hosted artifact with directory")
+
+    content, error = validator._committed_regular_file(
+        clone, evidence_commit, relative, "hosted artifact"
+    )
+
+    assert content is None
+    assert error and "committed regular file" in error
+
+
+@pytest.mark.parametrize("install_replacement", [False, True])
+def test_hosted_probe_requires_closure_commit_ancestry(
+    tmp_path: Path,
+    install_replacement: bool,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    unrelated_evidence = _root_commit_for_tree(clone, "HEAD")
+    if install_replacement:
+        subprocess.run(
+            ["git", "-C", str(clone), "replace", unrelated_evidence, _head()],
+            check=True,
+            capture_output=True,
+        )
+
+    errors = validator.validate_hosted_probe_evidence(
+        _hosted_entries(validator), clone, unrelated_evidence
+    )
+
+    assert any("ancestor" in error for error in errors)
+
+
+def test_committed_regular_file_ignores_git_replacement_objects(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    relative = validator.B0_REPORT_HOSTED_PROBES[0]["manifest_path"]
+    (clone / relative).write_text("forged manifest\n", encoding="utf-8")
+    replacement = _commit_clone(clone, "forge replacement manifest")
+    subprocess.run(
+        ["git", "-C", str(clone), "replace", validator.B0_CLOSURE_HOSTED_COMMIT, replacement],
+        check=True,
+        capture_output=True,
+    )
+    expected = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "cat-file",
+            "blob",
+            f"{validator.B0_CLOSURE_HOSTED_COMMIT}:{relative}",
+        ],
+        env={**os.environ, "GIT_NO_REPLACE_OBJECTS": "1"},
+    )
+
+    content, error = validator._committed_regular_file(
+        clone,
+        validator.B0_CLOSURE_HOSTED_COMMIT,
+        relative,
+        "hosted manifest",
+    )
+
+    assert error is None
+    assert content == expected
+
+
+@pytest.mark.parametrize("replace_parent", [False, True])
+def test_hosted_probe_rejects_a_committed_symlink_component(
+    tmp_path: Path,
+    replace_parent: bool,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    hosted = clone / "governance/evidence/b0/hosted"
+    if replace_parent:
+        shutil.rmtree(hosted)
+        hosted.symlink_to("../../..")
+    else:
+        artifact = hosted / "linux-runtime-probe.json"
+        artifact.unlink()
+        artifact.symlink_to("macos-runtime-probe.json")
+    evidence_commit = _commit_clone(clone, "replace hosted evidence with symlink")
+
+    errors = validator.validate_hosted_probe_evidence(
+        _hosted_entries(validator), clone, evidence_commit
+    )
+
+    assert any(
+        "symbolic-link" in error or "committed regular file" in error
+        for error in errors
+    )
+
+
+def test_hosted_probe_rejects_tampered_bytes_with_original_digest(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    artifact_path = clone / validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    probe = json.loads(artifact_path.read_text(encoding="utf-8"))
+    probe["status"] = "failed"
+    _write_probe(artifact_path, probe)
+    evidence_commit = _commit_clone(clone, "tamper hosted evidence bytes")
+
+    errors = validator.validate_hosted_probe_evidence(
+        _hosted_entries(validator), clone, evidence_commit
+    )
+
+    assert any("SHA-256" in error for error in errors)
+
+
+def test_hosted_probe_rejects_tampered_bytes_even_when_digest_is_updated(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    artifact_path = clone / validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    probe = json.loads(artifact_path.read_text(encoding="utf-8"))
+    probe["system_under_test"] = "prism"
+    digest = _write_probe(artifact_path, probe)
+    evidence_commit = _commit_clone(clone, "tamper hosted evidence identity")
+    _patch_canonical_entry(monkeypatch, validator, 0, sha256=digest)
+
+    errors = validator.validate_hosted_probe_evidence(
+        _hosted_entries(validator), clone, evidence_commit
+    )
+
+    assert any("system" in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "needle"),
+    [
+        (("status",), "failed", "status"),
+        (("qualification",), "backend_qualified", "qualification"),
+        (("operation", "validated"), False, "validated"),
+        (("operation", "actual"), 13.0, "actual"),
+        (("manifest", "sha256"), "0" * 64, "manifest.sha256"),
+    ],
+)
+def test_hosted_probe_internal_claim_mutations_fail_closed(
+    tmp_path: Path,
+    monkeypatch,
+    path: tuple[str, ...],
+    value,
+    needle: str,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    artifact_path = clone / validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    probe = json.loads(artifact_path.read_text(encoding="utf-8"))
+    target = probe
+    for component in path[:-1]:
+        target = target[component]
+    target[path[-1]] = value
+    digest = _write_probe(artifact_path, probe)
+    evidence_commit = _commit_clone(clone, f"mutate hosted claim {'.'.join(path)}")
+    _patch_canonical_entry(monkeypatch, validator, 0, sha256=digest)
+
+    errors = validator.validate_hosted_probe_evidence(
+        _hosted_entries(validator), clone, evidence_commit
+    )
+
+    assert any(needle in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    ("path", "value"),
+    [
+        (("operation", "validated"), 1),
+        (("operation", "actual"), 14),
+        (("operation", "input"), [1, 2, 3]),
+        (("operation", "unexpected"), "drift"),
+    ],
+)
+def test_hosted_probe_operation_is_an_exact_closed_typed_mapping(
+    tmp_path: Path,
+    monkeypatch,
+    path: tuple[str | int, ...],
+    value,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    artifact_path = clone / validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    probe = json.loads(artifact_path.read_text(encoding="utf-8"))
+    _set_probe_value(probe, path, value)
+    digest = _write_probe(artifact_path, probe)
+    evidence_commit = _commit_clone(clone, "mutate exact hosted operation")
+    _patch_canonical_entry(monkeypatch, validator, 0, sha256=digest)
+
+    errors = validator.validate_hosted_probe_evidence(
+        _hosted_entries(validator), clone, evidence_commit
+    )
+
+    assert any("operation" in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "needle"),
+    [
+        (("backend", "class"), "forged", "backend.class"),
+        (("device_class",), "forged", "device_class"),
+        (("evidence", "class"), "scientific", "evidence.class"),
+        (("evidence", "statement"), "qualified", "evidence.statement"),
+        (("package_under_test",), "forged-package", "package_under_test"),
+        (("packages_validated", 0, "module"), "forged_module", "packages_validated"),
+        (("precision_mode",), "float16", "precision_mode"),
+        (("workers", "count"), 2, "workers"),
+        (("host", "kernel"), "forged-kernel", "host"),
+        (("workflow", "unexpected"), True, "semantic"),
+        (("manifest", "unexpected"), True, "semantic"),
+        (("unexpected",), True, "semantic"),
+    ],
+)
+def test_hosted_probe_semantic_claim_drift_survives_outer_digest_repin(
+    tmp_path: Path,
+    monkeypatch,
+    path: tuple[str | int, ...],
+    value,
+    needle: str,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    artifact_path = clone / validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    probe = json.loads(artifact_path.read_text(encoding="utf-8"))
+    _set_probe_value(probe, path, value)
+    digest = _write_probe(artifact_path, probe)
+    evidence_commit = _commit_clone(clone, "mutate hosted semantic claim")
+    _patch_canonical_entry(monkeypatch, validator, 0, sha256=digest)
+
+    errors = validator.validate_hosted_probe_evidence(
+        _hosted_entries(validator), clone, evidence_commit
+    )
+
+    assert any(needle in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    ("original", "replacement", "duplicate_key"),
+    [
+        (
+            b'  "status": "passed",',
+            b'  "status": "failed",\n  "status": "passed",',
+            "status",
+        ),
+        (
+            b'  "operation": {\n    "actual": 14.0,',
+            b'  "operation": {\n    "actual": 13.0,\n    "actual": 14.0,',
+            "actual",
+        ),
+    ],
+)
+def test_hosted_probe_raw_duplicate_json_keys_fail_closed(
+    tmp_path: Path,
+    monkeypatch,
+    original: bytes,
+    replacement: bytes,
+    duplicate_key: str,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    artifact_path = clone / validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    content = artifact_path.read_bytes()
+    assert content.count(original) == 1
+    content = content.replace(original, replacement)
+    artifact_path.write_bytes(content)
+    digest = hashlib.sha256(content).hexdigest()
+    evidence_commit = _commit_clone(clone, "install duplicate hosted JSON key")
+    _patch_canonical_entry(monkeypatch, validator, 0, sha256=digest)
+
+    errors = validator.validate_hosted_probe_evidence(
+        _hosted_entries(validator), clone, evidence_commit
+    )
+
+    assert any(
+        "duplicate JSON key" in error and duplicate_key in error
+        for error in errors
+    )
+
+
+@pytest.mark.parametrize("constant", [b"NaN", b"Infinity", b"-Infinity"])
+def test_hosted_probe_non_standard_json_constants_fail_closed(
+    tmp_path: Path,
+    monkeypatch,
+    constant: bytes,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    artifact_path = clone / validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    content = artifact_path.read_bytes()
+    original = b'    "actual": 14.0,'
+    assert content.count(original) == 1
+    content = content.replace(original, b'    "actual": ' + constant + b',')
+    artifact_path.write_bytes(content)
+    digest = hashlib.sha256(content).hexdigest()
+    evidence_commit = _commit_clone(clone, "install non-standard hosted JSON constant")
+    _patch_canonical_entry(monkeypatch, validator, 0, sha256=digest)
+
+    errors = validator.validate_hosted_probe_evidence(
+        _hosted_entries(validator), clone, evidence_commit
+    )
+
+    assert any("non-standard JSON constant" in error for error in errors)
+
+
+def test_hosted_probe_pathological_json_nesting_fails_closed(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    artifact_path = clone / validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    content = ("[" * 10000 + "0" + "]" * 10000).encode()
+    artifact_path.write_bytes(content)
+    digest = hashlib.sha256(content).hexdigest()
+    evidence_commit = _commit_clone(clone, "install pathologically nested hosted JSON")
+    _patch_canonical_entry(monkeypatch, validator, 0, sha256=digest)
+
+    errors = validator.validate_hosted_probe_evidence(
+        _hosted_entries(validator), clone, evidence_commit
+    )
+
+    assert any("nesting" in error or "valid JSON" in error for error in errors)
+
+
+def test_hosted_probe_oversized_json_integer_fails_closed(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    artifact_path = clone / validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    content = artifact_path.read_bytes()
+    original = b'    "actual": 14.0,'
+    assert content.count(original) == 1
+    content = content.replace(original, b'    "actual": ' + b"1" * 5000 + b",")
+    artifact_path.write_bytes(content)
+    digest = hashlib.sha256(content).hexdigest()
+    evidence_commit = _commit_clone(clone, "install oversized hosted JSON integer")
+    _patch_canonical_entry(monkeypatch, validator, 0, sha256=digest)
+
+    errors = validator.validate_hosted_probe_evidence(
+        _hosted_entries(validator), clone, evidence_commit
+    )
+
+    assert any("strict JSON" in error or "valid JSON" in error for error in errors)
+
+
+def test_hosted_probe_malformed_repository_commit_type_fails_closed() -> None:
+    validator = _validator()
+    entries = _hosted_entries(validator)
+    entries[0]["repository_commit"] = []
+
+    errors = validator.validate_hosted_probe_evidence(entries, REPO_ROOT, _head())
+
+    assert any("repository_commit" in error for error in errors)
+
+
+def test_hosted_probes_must_target_one_shared_closure_commit(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    different_commit = _head()
+    artifact_path = clone / validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    probe = json.loads(artifact_path.read_text(encoding="utf-8"))
+    probe["repository_commit"] = different_commit
+    digest = _write_probe(artifact_path, probe)
+    evidence_commit = _commit_clone(clone, "retarget hosted evidence commit")
+    _patch_canonical_entry(
+        monkeypatch,
+        validator,
+        0,
+        repository_commit=different_commit,
+        sha256=digest,
+    )
+
+    errors = validator.validate_hosted_probe_evidence(
+        _hosted_entries(validator), clone, evidence_commit
+    )
+
+    assert any("shared B0 closure commit" in error for error in errors)

@@ -114,6 +114,156 @@ B0_REPORT_LOCAL_PROBES: Mapping[str, Mapping[str, str]] = {
         "manifest_path": "EvoNN-Prism/backend-capabilities.json",
     },
 }
+# This is a B0-closure-specific hosted-evidence pin. It is not a general
+# runtime, workflow, branch, or future-gate policy.
+B0_CLOSURE_HOSTED_COMMIT = "f68856f0c2fdf0ebc73671264b5a3ab0cff3b224"
+B0_CLOSURE_AUTHORITY_URL = "https://github.com/TimoKruth/EvoNN-Research.git"
+
+B0_REPORT_HOSTED_PROBE_FIELDS = frozenset(
+    {
+        "backend",
+        "backend_version",
+        "system",
+        "manifest_path",
+        "artifact_name",
+        "artifact_path",
+        "sha256",
+        "repository_commit",
+        "workflow_name",
+        "run_id",
+        "run_attempt",
+        "run_url",
+        "event",
+        "branch",
+        "host_os",
+        "host_architecture",
+        "execution_scope",
+        "evidence_scope",
+        "qualification",
+        "conclusion",
+    }
+)
+
+B0_REPORT_HOSTED_PROBES: Tuple[Mapping[str, str], ...] = (
+    {
+        "backend": "numpy",
+        "backend_version": "2.5.1",
+        "system": "stratograph",
+        "manifest_path": "EvoNN-Stratograph/backend-capabilities.json",
+        "artifact_name": "b0-linux-runtime-probe",
+        "artifact_path": "governance/evidence/b0/hosted/linux-runtime-probe.json",
+        "sha256": "f17ca8a8f35538d72c6a7585ef013a7e1f5d50484fcc08d85ac672745d371c00",
+        "repository_commit": B0_CLOSURE_HOSTED_COMMIT,
+        "workflow_name": "B0 Linux trust lane",
+        "run_id": "29658842317",
+        "run_attempt": "1",
+        "run_url": (
+            "https://github.com/TimoKruth/EvoNN-Research/actions/runs/"
+            "29658842317"
+        ),
+        "event": "push",
+        "branch": "main",
+        "host_os": "Linux",
+        "host_architecture": "x86_64",
+        "execution_scope": "hosted",
+        "evidence_scope": "hosted_bootstrap",
+        "qualification": "bootstrap_probe_only",
+        "conclusion": "success",
+    },
+    {
+        "backend": "mlx",
+        "backend_version": "0.32.0",
+        "system": "prism",
+        "manifest_path": "EvoNN-Prism/backend-capabilities.json",
+        "artifact_name": "b0-macos-runtime-probe",
+        "artifact_path": "governance/evidence/b0/hosted/macos-runtime-probe.json",
+        "sha256": "147e5c54a75bb9090eb3e94e06fe9c9f656ca751df12fdb5fc8950bf4398e157",
+        "repository_commit": B0_CLOSURE_HOSTED_COMMIT,
+        "workflow_name": "B0 macOS engine lane",
+        "run_id": "29658842318",
+        "run_attempt": "1",
+        "run_url": (
+            "https://github.com/TimoKruth/EvoNN-Research/actions/runs/"
+            "29658842318"
+        ),
+        "event": "push",
+        "branch": "main",
+        "host_os": "Darwin",
+        "host_architecture": "arm64",
+        "execution_scope": "hosted",
+        "evidence_scope": "hosted_bootstrap",
+        "qualification": "bootstrap_probe_only",
+        "conclusion": "success",
+    },
+)
+B0_HOSTED_PROBE_SEMANTIC_SHA256: Mapping[str, str] = {
+    "numpy": "124f120ca1f5e0f7ff41b286df32b86525d066a9d42882edb96e82a22bd7a5aa",
+    "mlx": "ba6161c85502e9a68f72531d224af221dd99e2c4a3999a70c2ee588d05f309b1",
+}
+B0_HOSTED_PROBE_PACKAGES: Tuple[Mapping[str, str], ...] = (
+    {"distribution": "evonn-shared", "module": "evonn_shared", "system": "shared", "version": "0.0.0"},
+    {"distribution": "evonn-compare", "module": "evonn_compare", "system": "compare", "version": "0.0.0"},
+    {
+        "distribution": "evonn-contenders",
+        "module": "evonn_contenders",
+        "system": "contenders",
+        "version": "0.0.0",
+    },
+    {"distribution": "evonn-prism", "module": "prism", "system": "prism", "version": "0.0.0"},
+    {"distribution": "evonn-topograph", "module": "topograph", "system": "topograph", "version": "0.0.0"},
+    {
+        "distribution": "evonn-stratograph",
+        "module": "stratograph",
+        "system": "stratograph",
+        "version": "0.0.0",
+    },
+    {
+        "distribution": "evonn-primordia",
+        "module": "evonn_primordia",
+        "system": "primordia",
+        "version": "0.0.0",
+    },
+)
+B0_HOSTED_PROBE_CLOSURE_CLAIMS: Mapping[str, Mapping[str, Any]] = {
+    "numpy": {
+        "backend_class": "numpy_fallback",
+        "device_class": "cpu",
+        "package_under_test": "evonn-stratograph",
+        "precision_mode": "float64",
+        "host": {
+            "architecture": "x86_64",
+            "kernel": "6.17.0-1020-azure",
+            "logical_cpu_count": 4,
+            "os_name": "Linux",
+            "os_version": "Linux-6.17.0-1020-azure-x86_64-with-glibc2.39",
+        },
+    },
+    "mlx": {
+        "backend_class": "mlx_native",
+        "device_class": "apple_silicon_mlx_default",
+        "package_under_test": "evonn-prism",
+        "precision_mode": "float32",
+        "host": {
+            "architecture": "arm64",
+            "kernel": "24.6.0",
+            "logical_cpu_count": 3,
+            "os_name": "Darwin",
+            "os_version": "15.7.7",
+        },
+    },
+}
+B0_HOSTED_PROBE_EVIDENCE = {
+    "class": "contract",
+    "statement": "Bootstrap portability/runtime contract evidence only; not scientific or backend qualification.",
+}
+B0_HOSTED_PROBE_WORKERS = {"count": 1, "topology": "single_process"}
+B0_HOSTED_PROBE_OPERATION = {
+    "operation": "sum_of_squares",
+    "input": [1.0, 2.0, 3.0],
+    "expected": 14.0,
+    "actual": 14.0,
+    "validated": True,
+}
 B0_REPORT_WORKFLOWS: Tuple[Mapping[str, Any], ...] = (
     {
         "path": ".github/workflows/linux-trust.yml",
@@ -665,11 +815,122 @@ def _valid_sha256(value: Any) -> bool:
     return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
 
 
+class _StrictJsonError(ValueError):
+    """A deliberate rejection of JSON outside the hosted evidence contract."""
+
+
+def _strict_json_object(pairs: List[tuple[str, Any]]) -> Dict[str, Any]:
+    result: Dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise _StrictJsonError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def _reject_json_constant(value: str) -> Any:
+    raise _StrictJsonError(f"non-standard JSON constant: {value}")
+
+
+def _strict_json_loads(content: bytes) -> Any:
+    return json.loads(
+        content,
+        object_pairs_hook=_strict_json_object,
+        parse_constant=_reject_json_constant,
+    )
+
+
+def _canonical_json_sha256(value: Any) -> str:
+    content = json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return _sha256(content)
+
+
+def _exact_json_value(actual: Any, expected: Any) -> bool:
+    if type(actual) is not type(expected):
+        return False
+    if isinstance(expected, dict):
+        return set(actual) == set(expected) and all(
+            _exact_json_value(actual[key], expected_value)
+            for key, expected_value in expected.items()
+        )
+    if isinstance(expected, list):
+        return len(actual) == len(expected) and all(
+            _exact_json_value(actual_value, expected_value)
+            for actual_value, expected_value in zip(actual, expected)
+        )
+    return actual == expected
+
+
 def _safe_checked_in_relative_path(relative: Any) -> bool:
-    if not isinstance(relative, str) or not relative or Path(relative).is_absolute():
+    if not isinstance(relative, str) or not relative or "\0" in relative:
+        return False
+    try:
+        relative.encode("utf-8")
+    except UnicodeEncodeError:
+        return False
+    if Path(relative).is_absolute():
         return False
     relative_path = Path(relative)
     return ".." not in relative_path.parts and relative_path.as_posix() == relative
+
+
+def _committed_regular_file(
+    repo_root: Path,
+    commit: str,
+    relative: Any,
+    label: str,
+) -> tuple[bytes | None, str | None]:
+    if not _safe_checked_in_relative_path(relative):
+        return None, f"{label} must be a normalized repository-relative path"
+
+    parts = Path(relative).parts
+    for index in range(len(parts)):
+        prefix = Path(*parts[: index + 1]).as_posix()
+        try:
+            raw = _git(
+                repo_root,
+                "--no-replace-objects",
+                "ls-tree",
+                "-z",
+                commit,
+                "--",
+                prefix,
+            )
+        except (subprocess.CalledProcessError, OSError, TypeError, ValueError, UnicodeError) as exc:
+            return None, f"{label} cannot be resolved at {commit}: {exc}"
+
+        records = [record for record in raw.split(b"\0") if record]
+        if len(records) != 1:
+            return None, f"{label} is missing or ambiguous at {commit}: {prefix}"
+
+        metadata, separator, raw_path = records[0].partition(b"\t")
+        try:
+            decoded_path = raw_path.decode("utf-8")
+            mode, object_type, _ = metadata.decode("ascii").split()
+        except (UnicodeError, ValueError):
+            return None, f"{label} has an invalid Git tree entry: {prefix}"
+        if not separator or decoded_path != prefix:
+            return None, f"{label} has an invalid Git tree entry: {prefix}"
+
+        final = index == len(parts) - 1
+        if not final and (mode != "040000" or object_type != "tree"):
+            return None, f"{label} contains a symbolic-link or non-directory component: {prefix}"
+        if final and (mode not in {"100644", "100755"} or object_type != "blob"):
+            return None, f"{label} must identify a committed regular file"
+
+    try:
+        return (
+            _git(
+                repo_root,
+                "--no-replace-objects",
+                "cat-file",
+                "blob",
+                f"{commit}:{relative}",
+            ),
+            None,
+        )
+    except (subprocess.CalledProcessError, OSError, TypeError, ValueError, UnicodeError) as exc:
+        return None, f"{label} cannot be read at {commit}: {exc}"
 
 
 def _optional_local_artifact_path(repo_root: Path, relative: str) -> tuple[Path | None, str | None]:
@@ -788,6 +1049,227 @@ def validate_local_probe_evidence(
         )
         if not local_workflow:
             errors.append(f"B0 report {backend} local probe does not contain local workflow placeholders")
+    return errors
+
+
+def validate_hosted_probe_evidence(
+    entries: Any,
+    repo_root: Path,
+    evidence_commit: str | None,
+) -> List[str]:
+    errors: List[str] = []
+    # Hosted evidence is absent from the pre-closure report schema. Once the
+    # field is present, it is closed and must contain both canonical entries.
+    if entries is None:
+        return errors
+    if not isinstance(entries, list):
+        return ["B0 report hosted_runtime_probes must be a list"]
+    if len(entries) != len(B0_REPORT_HOSTED_PROBES):
+        errors.append("B0 report hosted_runtime_probes must contain exactly two entries")
+    actual_order = [
+        entry.get("backend") if isinstance(entry, Mapping) else None
+        for entry in entries
+    ]
+    if actual_order != ["numpy", "mlx"]:
+        errors.append("B0 report hosted_runtime_probes must contain Linux numpy then macOS mlx")
+
+    if evidence_commit is not None:
+        if not isinstance(evidence_commit, str) or re.fullmatch(r"[0-9a-f]{40}", evidence_commit) is None:
+            errors.append("B0 report hosted probe evidence commit must be a full Git commit ID")
+        else:
+            try:
+                _git(
+                    repo_root,
+                    "--no-replace-objects",
+                    "merge-base",
+                    "--is-ancestor",
+                    B0_CLOSURE_HOSTED_COMMIT,
+                    evidence_commit,
+                )
+            except subprocess.CalledProcessError as exc:
+                if exc.returncode == 1:
+                    errors.append(
+                        "B0 closure hosted commit must be an ancestor of the evidence revision"
+                    )
+                else:
+                    errors.append(
+                        f"B0 report cannot verify hosted commit ancestry: {exc}"
+                    )
+            except (OSError, TypeError, ValueError, UnicodeError) as exc:
+                errors.append(f"B0 report cannot verify hosted commit ancestry: {exc}")
+
+    target_commits: List[Any] = []
+    for index, expected in enumerate(B0_REPORT_HOSTED_PROBES):
+        raw_entry = entries[index] if index < len(entries) else None
+        entry = _closed_report_mapping(
+            raw_entry,
+            B0_REPORT_HOSTED_PROBE_FIELDS,
+            f"B0 report hosted_runtime_probes[{index}]",
+            errors,
+        )
+        backend = expected["backend"]
+        if not entry:
+            continue
+        target_commits.append(entry.get("repository_commit"))
+        for field, expected_value in expected.items():
+            if entry.get(field) != expected_value:
+                errors.append(
+                    f"B0 report {backend} hosted probe {field} must be {expected_value}"
+                )
+
+        if evidence_commit is None:
+            errors.append(
+                f"B0 report {backend} hosted probe cannot be verified without an evidence commit"
+            )
+            continue
+        label = f"B0 report {backend} hosted probe artifact_path"
+        content, read_error = _committed_regular_file(
+            repo_root,
+            evidence_commit,
+            entry.get("artifact_path"),
+            label,
+        )
+        if read_error:
+            errors.append(read_error)
+            continue
+        assert content is not None
+        if _sha256(content) != entry.get("sha256"):
+            errors.append(f"B0 report {backend} hosted probe SHA-256 does not match committed artifact bytes")
+        try:
+            artifact = _strict_json_loads(content)
+        except _StrictJsonError as exc:
+            errors.append(f"B0 report {backend} hosted probe artifact is not strict JSON: {exc}")
+            continue
+        except (UnicodeDecodeError, json.JSONDecodeError, RecursionError) as exc:
+            errors.append(f"B0 report {backend} hosted probe artifact is not valid JSON: {exc}")
+            continue
+        except ValueError as exc:
+            errors.append(f"B0 report {backend} hosted probe artifact is not valid JSON: {exc}")
+            continue
+        if not isinstance(artifact, Mapping):
+            errors.append(f"B0 report {backend} hosted probe artifact must contain a JSON object")
+            continue
+
+        try:
+            semantic_sha256 = _canonical_json_sha256(artifact)
+        except (RecursionError, TypeError, ValueError, UnicodeError) as exc:
+            errors.append(
+                f"B0 report {backend} hosted probe artifact has invalid JSON semantics: {exc}"
+            )
+            continue
+        if semantic_sha256 != B0_HOSTED_PROBE_SEMANTIC_SHA256[backend]:
+            errors.append(
+                f"B0 report {backend} hosted probe semantic SHA-256 does not match the canonical artifact"
+            )
+        closure_claims = B0_HOSTED_PROBE_CLOSURE_CLAIMS[backend]
+        if artifact.get("schema_version") != "1.0.0":
+            errors.append(f"B0 report {backend} hosted probe schema_version is invalid")
+        if artifact.get("probe_kind") != "b0_runtime_backend_bootstrap":
+            errors.append(f"B0 report {backend} hosted probe probe_kind is invalid")
+        if artifact.get("status") != "passed":
+            errors.append(f"B0 report {backend} hosted probe status must be passed")
+        if artifact.get("qualification") != "bootstrap_probe_only":
+            errors.append(
+                f"B0 report {backend} hosted probe qualification must be bootstrap_probe_only"
+            )
+        if artifact.get("system_under_test") != entry.get("system"):
+            errors.append(f"B0 report {backend} hosted probe system identity is inconsistent")
+        if artifact.get("repository_commit") != entry.get("repository_commit"):
+            errors.append(
+                f"B0 report {backend} hosted probe repository_commit is inconsistent"
+            )
+
+        artifact_backend = artifact.get("backend")
+        expected_backend = {
+            "class": closure_claims["backend_class"],
+            "distribution": entry.get("backend"),
+            "version": entry.get("backend_version"),
+        }
+        if not _exact_json_value(artifact_backend, expected_backend):
+            errors.append(f"B0 report {backend} hosted probe backend.class/distribution/version is inconsistent")
+        if artifact.get("device_class") != closure_claims["device_class"]:
+            errors.append(f"B0 report {backend} hosted probe device_class is inconsistent")
+        if not _exact_json_value(artifact.get("evidence"), B0_HOSTED_PROBE_EVIDENCE):
+            errors.append(
+                f"B0 report {backend} hosted probe evidence.class/evidence.statement is inconsistent"
+            )
+        if artifact.get("package_under_test") != closure_claims["package_under_test"]:
+            errors.append(f"B0 report {backend} hosted probe package_under_test is inconsistent")
+        if not _exact_json_value(
+            artifact.get("packages_validated"),
+            list(B0_HOSTED_PROBE_PACKAGES),
+        ):
+            errors.append(f"B0 report {backend} hosted probe packages_validated is inconsistent")
+        if artifact.get("precision_mode") != closure_claims["precision_mode"]:
+            errors.append(f"B0 report {backend} hosted probe precision_mode is inconsistent")
+        if not _exact_json_value(artifact.get("workers"), B0_HOSTED_PROBE_WORKERS):
+            errors.append(f"B0 report {backend} hosted probe workers is inconsistent")
+        if not _exact_json_value(artifact.get("host"), closure_claims["host"]):
+            errors.append(f"B0 report {backend} hosted probe host is inconsistent")
+
+        expected_workflow = {
+            "name": entry.get("workflow_name"),
+            "run_id": entry.get("run_id"),
+            "attempt": entry.get("run_attempt"),
+        }
+        if not _exact_json_value(artifact.get("workflow"), expected_workflow):
+            errors.append(f"B0 report {backend} hosted probe workflow is inconsistent")
+
+        operation = artifact.get("operation")
+        if not isinstance(operation, Mapping):
+            errors.append(
+                f"B0 report {backend} hosted probe operation must be the exact closed typed mapping"
+            )
+        else:
+            operation_fields = set(operation)
+            expected_operation_fields = set(B0_HOSTED_PROBE_OPERATION)
+            if operation_fields != expected_operation_fields:
+                errors.append(
+                    f"B0 report {backend} hosted probe operation fields must be exactly "
+                    f"{sorted(expected_operation_fields)}"
+                )
+            for field, expected_value in B0_HOSTED_PROBE_OPERATION.items():
+                if field not in operation or not _exact_json_value(
+                    operation[field], expected_value
+                ):
+                    errors.append(
+                        f"B0 report {backend} hosted probe operation.{field} must be the exact JSON value "
+                        f"{expected_value!r}"
+                    )
+
+        artifact_manifest = artifact.get("manifest")
+        if not isinstance(artifact_manifest, Mapping):
+            errors.append(f"B0 report {backend} hosted probe manifest must be a mapping")
+            continue
+        if set(artifact_manifest) != {"path", "sha256"}:
+            errors.append(f"B0 report {backend} hosted probe manifest has schema drift")
+        if artifact_manifest.get("path") != entry.get("manifest_path"):
+            errors.append(f"B0 report {backend} hosted probe manifest.path is inconsistent")
+        tested_commit = entry.get("repository_commit")
+        if not isinstance(tested_commit, str) or re.fullmatch(r"[0-9a-f]{40}", tested_commit) is None:
+            errors.append(
+                f"B0 report {backend} hosted probe repository_commit must be a full Git commit ID"
+            )
+            continue
+        manifest_content, manifest_error = _committed_regular_file(
+            repo_root,
+            tested_commit,
+            entry.get("manifest_path"),
+            f"B0 report {backend} hosted probe manifest_path",
+        )
+        if manifest_error:
+            errors.append(manifest_error)
+        elif manifest_content is not None and _sha256(manifest_content) != artifact_manifest.get("sha256"):
+            errors.append(
+                f"B0 report {backend} hosted probe manifest.sha256 does not match the historical manifest"
+            )
+
+    if len(target_commits) != len(B0_REPORT_HOSTED_PROBES) or any(
+        commit != B0_CLOSURE_HOSTED_COMMIT for commit in target_commits
+    ):
+        errors.append(
+            f"B0 report hosted probes must target one shared B0 closure commit {B0_CLOSURE_HOSTED_COMMIT}"
+        )
     return errors
 
 
@@ -936,6 +1418,13 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
 
     probes = report.get("local_runtime_probes")
     errors.extend(validate_local_probe_evidence(probes, repo_root, evaluated_commit))
+    errors.extend(
+        validate_hosted_probe_evidence(
+            report.get("hosted_runtime_probes"),
+            repo_root,
+            evidence_commit,
+        )
+    )
 
     checked_in = report.get("checked_in_evidence")
     if not isinstance(checked_in, Mapping):
