@@ -343,6 +343,15 @@ def test_commit_a_allows_only_the_historical_b02_open_state_when_closure_pending
     )
 
 
+def test_b0_report_schema_versions_distinguish_legacy_transition_from_closure(validator) -> None:
+    assert validator.B0_REPORT_LEGACY_SCHEMA_VERSION == "1.0.0"
+    assert validator.B0_REPORT_SCHEMA_VERSION == "2.0.0"
+    assert validator.B0_REPORT_CLOSED_NEXT_TRANSITION == (
+        "The team must jointly freeze the Phase 0 interfaces before creating "
+        "Lane A and Lane B implementation branches."
+    )
+
+
 def test_overall_b0_closes_only_when_all_six_items_are_closed(validator, manifest: dict, tmp_path: Path) -> None:
     remote_url = "https://github.com/TimoKruth/EvoNN-Research.git"
     _configure_remote(tmp_path, remote_url)

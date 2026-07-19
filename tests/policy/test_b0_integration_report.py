@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 
 import pytest
 import yaml
@@ -25,6 +26,24 @@ HOSTED_LINUX_PATH = (
 )
 HOSTED_MACOS_PATH = (
     REPO_ROOT / "governance/evidence/b0/hosted/macos-runtime-probe.json"
+)
+LEGACY_REPORT_REVISION = "cc067143fd3143eaba490c4dcc9f3765db1d70f2"
+SCHEMA_2_B02_REQUIRED_EVIDENCE = frozenset(
+    {
+        "governance/authority-provenance.yaml",
+        "governance/SPEC_UPGRADE_PROCESS.md",
+        "governance/SPEC_TRACEABILITY.md",
+    }
+)
+SCHEMA_2_B05_REQUIRED_EVIDENCE = frozenset(
+    {
+        ".github/workflows/linux-trust.yml",
+        ".github/workflows/macos-engines.yml",
+        "scripts/ci/runtime_probe.py",
+        "governance/b0-report.json",
+        "governance/evidence/b0/hosted/linux-runtime-probe.json",
+        "governance/evidence/b0/hosted/macos-runtime-probe.json",
+    }
 )
 
 HOSTED_ARTIFACTS = (
@@ -77,6 +96,120 @@ def _status() -> dict:
 def _report() -> dict:
     assert REPORT_PATH.is_file(), "machine-readable Gate B0 report is not installed"
     return json.loads(REPORT_PATH.read_text(encoding="utf-8"))
+
+
+def _closed_state_documents(validator) -> tuple[dict, dict]:
+    report = {
+        "schema_version": "2.0.0",
+        "overall_state": "closed",
+        "blockers": {},
+        "parallel_handoff_ready": True,
+        "parallel_handoff_blockers": [],
+        "next_transition": validator.B0_REPORT_CLOSED_NEXT_TRANSITION,
+        "items": {
+            item_id: {"state": "closed", "reason": None, "evidence_paths": ["x"]}
+            for item_id in validator.REQUIRED_B0_ITEM_IDS
+        },
+    }
+    status = {
+        "status": "closed",
+        "items": {
+            item_id: {"status": "closed", "open_reason": None}
+            for item_id in validator.REQUIRED_B0_ITEM_IDS
+        },
+    }
+    return report, status
+
+
+def test_schema_2_closed_state_requires_all_six_items_closed() -> None:
+    validator = _validator()
+    report, status = _closed_state_documents(validator)
+    assert validator.validate_b0_closure_state(report, status) == []
+
+    report["items"]["B0.5"]["state"] = "open"
+    errors = validator.validate_b0_closure_state(report, status)
+    assert any("B0.5" in error for error in errors)
+
+
+def test_b0_closure_state_rejects_nonclosed_item() -> None:
+    validator = _validator()
+    report, status = _closed_state_documents(validator)
+    report["items"]["B0.3"]["state"] = "locally_satisfied"
+
+    errors = validator.validate_b0_closure_state(report, status)
+
+    assert any("B0.3" in error and "closed" in error for error in errors)
+
+
+def test_b0_closure_state_rejects_reason_on_closed_item() -> None:
+    validator = _validator()
+    report, status = _closed_state_documents(validator)
+    report["items"]["B0.4"]["reason"] = "stale reason"
+
+    errors = validator.validate_b0_closure_state(report, status)
+
+    assert any("B0.4" in error and "reason" in error for error in errors)
+
+
+def test_b0_closure_state_rejects_report_status_mismatch() -> None:
+    validator = _validator()
+    report, status = _closed_state_documents(validator)
+    status["items"]["B0.1"]["status"] = "open"
+
+    errors = validator.validate_b0_closure_state(report, status)
+
+    assert any("B0.1" in error and "b0-status.yaml" in error for error in errors)
+
+
+def test_b0_closure_state_rejects_nonempty_blockers() -> None:
+    validator = _validator()
+    report, status = _closed_state_documents(validator)
+    report["blockers"] = {"B0.5": "stale"}
+
+    errors = validator.validate_b0_closure_state(report, status)
+
+    assert any("blockers" in error for error in errors)
+
+
+def test_b0_closure_state_requires_parallel_handoff_ready() -> None:
+    validator = _validator()
+    report, status = _closed_state_documents(validator)
+    report["parallel_handoff_ready"] = False
+
+    errors = validator.validate_b0_closure_state(report, status)
+
+    assert any("parallel_handoff_ready" in error for error in errors)
+
+
+def test_b0_closure_state_rejects_handoff_blockers() -> None:
+    validator = _validator()
+    report, status = _closed_state_documents(validator)
+    report["parallel_handoff_blockers"] = ["B0.5"]
+
+    errors = validator.validate_b0_closure_state(report, status)
+
+    assert any("parallel_handoff_blockers" in error for error in errors)
+
+
+@pytest.mark.parametrize("schema_version", [[], {}])
+def test_b0_report_rejects_non_string_schema_versions_without_raising(
+    schema_version,
+) -> None:
+    validator = _validator()
+    report = _report()
+    report["schema_version"] = schema_version
+
+    errors = validator.validate_b0_report(report, _status(), REPO_ROOT)
+
+    assert any("schema_version" in error for error in errors)
+
+
+def test_hosted_probe_helper_rejects_explicit_absence() -> None:
+    validator = _validator()
+
+    errors = validator.validate_hosted_probe_evidence(None, REPO_ROOT, _head())
+
+    assert any("exactly two entries" in error for error in errors)
 
 
 def test_checked_in_hosted_runtime_probe_bytes_and_identities_are_exact() -> None:
@@ -158,20 +291,27 @@ def test_consolidated_plan_records_truthful_open_b0_and_exact_next_actions() -> 
 def test_checked_in_b0_report_is_complete_and_valid() -> None:
     validator = _validator()
     report = _report()
-    assert validator.validate_b0_report(report, _status(), REPO_ROOT) == []
-    assert report["schema_version"] == "1.0.0"
-    assert report["report_kind"] == "gate_b0_integration"
-    assert report["overall_state"] == "open"
-    assert report["parallel_handoff_ready"] is False
-    assert report["parallel_handoff_blockers"] == ["B0.2", "B0.5"]
-    assert report["blockers"] == {
-        "B0.2": "authoritative_remote_url_absent",
-        "B0.5": "hosted_ci_not_executed",
-    }
-    assert set(report["items"]) == {"B0.1", "B0.2", "B0.3", "B0.4", "B0.5", "B0.6"}
-    assert [probe["backend"] for probe in report["local_runtime_probes"]] == ["numpy", "mlx"]
-    assert all(probe["evidence_scope"] == "local_bootstrap_only" for probe in report["local_runtime_probes"])
-    assert all(probe["optional_local_evidence"] is True for probe in report["local_runtime_probes"])
+    status = _status()
+
+    assert validator.validate_b0_report(report, status, REPO_ROOT) == []
+
+    if report["schema_version"] == "1.0.0":
+        assert report["overall_state"] == "open"
+        assert report["parallel_handoff_ready"] is False
+        assert report["parallel_handoff_blockers"] == ["B0.2", "B0.5"]
+    else:
+        assert report["schema_version"] == "2.0.0"
+        assert report["overall_state"] == "closed"
+        assert report["blockers"] == {}
+        assert report["parallel_handoff_ready"] is True
+        assert report["parallel_handoff_blockers"] == []
+        assert all(
+            item["state"] == "closed"
+            for item in report["items"].values()
+        )
+        assert report["hosted_runtime_probes"] == list(
+            validator.B0_REPORT_HOSTED_PROBES
+        )
 
 
 def test_b0_report_fails_closed_for_false_closure_hosted_claims_and_status_drift() -> None:
@@ -179,18 +319,24 @@ def test_b0_report_fails_closed_for_false_closure_hosted_claims_and_status_drift
     report = _report()
     status = _status()
 
-    falsely_closed = copy.deepcopy(report)
-    falsely_closed["overall_state"] = "closed"
-    falsely_closed["parallel_handoff_ready"] = True
-    falsely_closed["parallel_handoff_blockers"] = []
-    errors = validator.validate_b0_report(falsely_closed, status, REPO_ROOT)
+    wrong_gate_state = copy.deepcopy(report)
+    if report["schema_version"] == "1.0.0":
+        wrong_gate_state["overall_state"] = "closed"
+        wrong_gate_state["parallel_handoff_ready"] = True
+        wrong_gate_state["parallel_handoff_blockers"] = []
+    else:
+        wrong_gate_state["overall_state"] = "open"
+        wrong_gate_state["parallel_handoff_ready"] = False
+        wrong_gate_state["parallel_handoff_blockers"] = ["B0.5"]
+    errors = validator.validate_b0_report(wrong_gate_state, status, REPO_ROOT)
     assert any("overall_state" in error for error in errors)
     assert any("parallel_handoff_ready" in error for error in errors)
 
     fabricated_hosted = copy.deepcopy(report)
     fabricated_hosted["hosted_run_id"] = "12345"
     errors = validator.validate_b0_report(fabricated_hosted, status, REPO_ROOT)
-    assert any("hosted evidence field" in error for error in errors)
+    expected = "hosted evidence field" if report["schema_version"] == "1.0.0" else "unknown fields"
+    assert any(expected in error for error in errors)
 
     drifted = copy.deepcopy(report)
     drifted["items"]["B0.3"]["state"] = "open"
@@ -381,6 +527,33 @@ def _commit_clone(clone: Path, message: str) -> str:
     return _commit_staged_clone(clone, message)
 
 
+@pytest.mark.parametrize(
+    ("content", "needle"),
+    [
+        (b'{"schema_version": "1.0.0", "schema_version": "2.0.0"}\n', "duplicate JSON key"),
+        (b'{"schema_version": "1.0.0", "value": NaN}\n', "non-standard JSON constant"),
+    ],
+)
+def test_governance_cli_rejects_non_strict_report_json(
+    tmp_path: Path,
+    content: bytes,
+    needle: str,
+) -> None:
+    clone = _committed_clone(tmp_path)
+    shutil.copy2(VALIDATOR_PATH, clone / "scripts/policy/validate_repository_governance.py")
+    (clone / "governance/b0-report.json").write_bytes(content)
+
+    result = subprocess.run(
+        [sys.executable, str(clone / "scripts/policy/validate_repository_governance.py")],
+        cwd=clone,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 1
+    assert needle in result.stdout
+
+
 def _commit_staged_clone(clone: Path, message: str) -> str:
     git = [
         "git",
@@ -400,6 +573,581 @@ def _commit_staged_clone(clone: Path, message: str) -> str:
         ["git", "-C", str(clone), "rev-parse", "HEAD"],
         text=True,
     ).strip()
+
+
+def _git_show_bytes(repository: Path, revision: str, relative: str) -> bytes:
+    return subprocess.check_output(
+        ["git", "-C", str(repository), "show", f"{revision}:{relative}"]
+    )
+
+
+def _write_report(path: Path, report: dict) -> bytes:
+    content = (json.dumps(report, indent=2, sort_keys=True) + "\n").encode()
+    path.write_bytes(content)
+    return content
+
+
+def _install_three_file_implementation_parent(
+    clone: Path,
+    report: dict,
+    status: dict,
+    task_report_content: bytes,
+) -> tuple[str, str, bytes]:
+    report_path = clone / "governance/b0-report.json"
+    status_path = clone / "governance/b0-status.yaml"
+    task_report_path = clone / ".superpowers/sdd/task-6-report.md"
+
+    interim_report = copy.deepcopy(report)
+    interim_report["evaluated_at"] = "1970-01-01T00:00:00Z"
+    _write_report(report_path, interim_report)
+    interim_status = copy.deepcopy(status)
+    interim_status["checked_in_at"] = "1970-01-01T00:00:00Z"
+    status_path.write_text(yaml.safe_dump(interim_status, sort_keys=False), encoding="utf-8")
+    task_report_path.write_bytes(task_report_content + b"\nSchema transition implementation parent.\n")
+    parent = _commit_clone(clone, "prepare schema transition implementation parent")
+    parent_tree = subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", f"{parent}^{{tree}}"],
+        text=True,
+    ).strip()
+    return parent, parent_tree, task_report_content
+
+
+def _checked_in_evidence_digests(
+    clone: Path,
+    validator,
+    report: dict,
+    parent: str,
+    child_bytes: dict[str, bytes],
+) -> dict[str, str]:
+    local_artifact_paths = {
+        probe["artifact_path"] for probe in validator.B0_REPORT_LOCAL_PROBES.values()
+    }
+    referenced_paths = {
+        path
+        for item in report["items"].values()
+        for path in item["evidence_paths"]
+        if path not in {"governance/b0-report.json", *local_artifact_paths}
+    }
+    referenced_paths.update(workflow["path"] for workflow in report["workflows"])
+    referenced_paths.update(
+        {"CONSOLIDATED_PLAN.md", "PARALLEL_WORK_GUIDE.md", "governance/b0-status.yaml"}
+    )
+    return {
+        relative: hashlib.sha256(
+            child_bytes[relative]
+            if relative in child_bytes
+            else _git_show_bytes(clone, parent, relative)
+        ).hexdigest()
+        for relative in sorted(referenced_paths)
+    }
+
+
+def _install_schema_2_evidence_revision(clone: Path, validator) -> tuple[dict, dict, str]:
+    report_path = clone / "governance/b0-report.json"
+    status_path = clone / "governance/b0-status.yaml"
+    task_report_path = clone / ".superpowers/sdd/task-6-report.md"
+    report = json.loads(
+        _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-report.json")
+    )
+    status = yaml.safe_load(status_path.read_text(encoding="utf-8"))
+    task_report_content = task_report_path.read_bytes()
+    parent, parent_tree, original_task_report = _install_three_file_implementation_parent(
+        clone,
+        report,
+        status,
+        task_report_content,
+    )
+
+    report["schema_version"] = "2.0.0"
+    report["repository"]["evaluated_commit"] = parent
+    report["repository"]["evaluated_tree"] = parent_tree
+    report["overall_state"] = "closed"
+    report["blockers"] = {}
+    report["parallel_handoff_ready"] = True
+    report["parallel_handoff_blockers"] = []
+    report["next_transition"] = validator.B0_REPORT_CLOSED_NEXT_TRANSITION
+    report["hosted_runtime_probes"] = copy.deepcopy(
+        list(validator.B0_REPORT_HOSTED_PROBES)
+    )
+    for item in report["items"].values():
+        item["state"] = "closed"
+        item["reason"] = None
+    report["items"]["B0.2"]["evidence_paths"] = sorted(
+        {*report["items"]["B0.2"]["evidence_paths"], "governance/b0-report.json"}
+    )
+    report["items"]["B0.5"]["evidence_paths"] = sorted(
+        {*report["items"]["B0.5"]["evidence_paths"], *SCHEMA_2_B05_REQUIRED_EVIDENCE}
+    )
+
+    status["status"] = "closed"
+    for item in status["items"].values():
+        item["status"] = "closed"
+        item["open_reason"] = None
+    status_content = yaml.safe_dump(status, sort_keys=False).encode()
+    final_task_report = original_task_report + b"\nSchema 2 closure evidence.\n"
+    report["checked_in_evidence"] = _checked_in_evidence_digests(
+        clone,
+        validator,
+        report,
+        parent,
+        {
+            "governance/b0-status.yaml": status_content,
+            ".superpowers/sdd/task-6-report.md": final_task_report,
+        },
+    )
+    _write_report(report_path, report)
+    status_path.write_bytes(status_content)
+    task_report_path.write_bytes(final_task_report)
+    evidence_commit = _commit_clone(clone, "install schema 2 closure evidence")
+    changed = subprocess.check_output(
+        ["git", "-C", str(clone), "diff", "--name-only", f"{parent}..{evidence_commit}"],
+        text=True,
+    ).splitlines()
+    assert set(changed) == set(validator.B0_EVIDENCE_ONLY_PATHS)
+    return report, status, evidence_commit
+
+
+def _install_fresh_schema_1_evidence_revision(clone: Path, validator) -> tuple[dict, dict, str]:
+    report_path = clone / "governance/b0-report.json"
+    status_path = clone / "governance/b0-status.yaml"
+    task_report_path = clone / ".superpowers/sdd/task-6-report.md"
+    report = json.loads(
+        _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-report.json")
+    )
+    status = yaml.safe_load(
+        _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-status.yaml")
+    )
+    task_report_content = _git_show_bytes(
+        clone, LEGACY_REPORT_REVISION, ".superpowers/sdd/task-6-report.md"
+    )
+    parent, parent_tree, original_task_report = _install_three_file_implementation_parent(
+        clone,
+        report,
+        status,
+        task_report_content,
+    )
+    report["repository"]["evaluated_commit"] = parent
+    report["repository"]["evaluated_tree"] = parent_tree
+    status_content = yaml.safe_dump(status, sort_keys=False).encode()
+    final_task_report = original_task_report + b"\nFresh schema 1 transition evidence.\n"
+    report["checked_in_evidence"] = _checked_in_evidence_digests(
+        clone,
+        validator,
+        report,
+        parent,
+        {
+            "governance/b0-status.yaml": status_content,
+            ".superpowers/sdd/task-6-report.md": final_task_report,
+        },
+    )
+    _write_report(report_path, report)
+    status_path.write_bytes(status_content)
+    task_report_path.write_bytes(final_task_report)
+    evidence_commit = _commit_clone(clone, "regenerate schema 1 transition evidence")
+    return report, status, evidence_commit
+
+
+def test_schema_2_public_validation_uses_frozen_evidence_commit(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, evidence_commit = _install_schema_2_evidence_revision(clone, validator)
+    original = validator.validate_hosted_probe_evidence
+    calls = []
+
+    def record_call(entries, repo_root, frozen_commit):
+        calls.append((entries, repo_root, frozen_commit))
+        return original(entries, repo_root, frozen_commit)
+
+    monkeypatch.setattr(validator, "validate_hosted_probe_evidence", record_call)
+
+    assert validator.validate_b0_report(report, status, clone) == []
+    assert calls == [(report["hosted_runtime_probes"], clone, evidence_commit)]
+
+
+def test_schema_2_fixture_builds_an_exact_three_file_child_from_closed_base(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    _install_schema_2_evidence_revision(clone, validator)
+
+    report, status, evidence_commit = _install_schema_2_evidence_revision(
+        clone, validator
+    )
+    parent = subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", f"{evidence_commit}^"], text=True
+    ).strip()
+    changed = subprocess.check_output(
+        ["git", "-C", str(clone), "diff", "--name-only", f"{parent}..{evidence_commit}"],
+        text=True,
+    ).splitlines()
+
+    assert set(changed) == set(validator.B0_EVIDENCE_ONLY_PATHS)
+    assert validator.validate_b0_report(report, status, clone) == []
+
+
+def test_schema_2_rejects_missing_or_extra_top_level_fields(tmp_path: Path) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, _ = _install_schema_2_evidence_revision(clone, validator)
+
+    missing = copy.deepcopy(report)
+    del missing["hosted_runtime_probes"]
+    missing_errors = validator.validate_b0_report(missing, status, clone)
+    assert any("missing required fields" in error for error in missing_errors)
+
+    unknown = copy.deepcopy(report)
+    unknown["unexpected"] = True
+    unknown_errors = validator.validate_b0_report(unknown, status, clone)
+    assert any("unknown fields" in error for error in unknown_errors)
+
+
+def test_schema_2_rejects_explicit_null_hosted_runtime_probes(tmp_path: Path) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, _ = _install_schema_2_evidence_revision(clone, validator)
+    report["hosted_runtime_probes"] = None
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any("hosted_runtime_probes" in error for error in errors)
+
+
+def test_schema_2_rejects_missing_or_extra_hosted_entry_fields(tmp_path: Path) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, _ = _install_schema_2_evidence_revision(clone, validator)
+
+    missing = copy.deepcopy(report)
+    del missing["hosted_runtime_probes"][0]["run_attempt"]
+    missing_errors = validator.validate_b0_report(missing, status, clone)
+    assert any("missing required fields" in error for error in missing_errors)
+
+    unknown = copy.deepcopy(report)
+    unknown["hosted_runtime_probes"][0]["unexpected"] = True
+    unknown_errors = validator.validate_b0_report(unknown, status, clone)
+    assert any("unknown fields" in error for error in unknown_errors)
+
+
+def test_schema_2_public_validation_rejects_status_identity_drift(tmp_path: Path) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, _ = _install_schema_2_evidence_revision(clone, validator)
+    malformed = copy.deepcopy(status)
+    malformed["document_kind"] = "report"
+    malformed["gate"] = "B1"
+
+    errors = validator.validate_b0_report(report, malformed, clone)
+
+    assert any("document_kind" in error for error in errors)
+    assert any("gate" in error for error in errors)
+
+
+def test_schema_2_public_validation_rejects_non_mapping_status(tmp_path: Path) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, _, _ = _install_schema_2_evidence_revision(clone, validator)
+
+    errors = validator.validate_b0_report(report, [], clone)
+
+    assert any("status" in error and "mapping" in error for error in errors)
+
+
+def test_schema_2_restricts_report_self_reference_to_b02_and_b05(tmp_path: Path) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, _ = _install_schema_2_evidence_revision(clone, validator)
+    report["items"]["B0.1"]["evidence_paths"].append(
+        "governance/b0-report.json"
+    )
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any("B0.1" in error and "self-reference" in error for error in errors)
+
+
+def test_schema_1_rejects_report_self_reference(tmp_path: Path) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report = json.loads(
+        _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-report.json")
+    )
+    status = yaml.safe_load(
+        _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-status.yaml")
+    )
+    report["items"]["B0.2"]["evidence_paths"].append(
+        "governance/b0-report.json"
+    )
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any("schema 1.0.0" in error and "self-reference" in error for error in errors)
+
+
+def test_schema_1_dispatch_skips_hosted_probe_validation(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report = json.loads(
+        _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-report.json")
+    )
+    status = yaml.safe_load(
+        _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-status.yaml")
+    )
+    calls = []
+    monkeypatch.setattr(
+        validator,
+        "validate_hosted_probe_evidence",
+        lambda *args: calls.append(args) or ["must not be called"],
+    )
+
+    validator.validate_b0_report(report, status, clone)
+
+    assert calls == []
+
+
+@pytest.mark.parametrize(
+    ("item_id", "required_paths"),
+    [
+        ("B0.2", SCHEMA_2_B02_REQUIRED_EVIDENCE),
+        ("B0.5", SCHEMA_2_B05_REQUIRED_EVIDENCE),
+    ],
+)
+def test_schema_2_report_self_reference_cannot_replace_canonical_item_evidence(
+    tmp_path: Path,
+    item_id: str,
+    required_paths: frozenset[str],
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, _ = _install_schema_2_evidence_revision(clone, validator)
+    report["items"][item_id]["evidence_paths"] = ["governance/b0-report.json"]
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any(item_id in error and "required evidence" in error for error in errors)
+    assert required_paths - {"governance/b0-report.json"}
+
+
+def test_schema_2_requires_hosted_artifacts_to_be_attributed_to_b05(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, _ = _install_schema_2_evidence_revision(clone, validator)
+    hosted_path = validator.B0_REPORT_HOSTED_PROBES[0]["artifact_path"]
+    report["items"]["B0.5"]["evidence_paths"].remove(hosted_path)
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any("B0.5" in error and hosted_path in error for error in errors)
+
+
+def test_schema_1_mapping_must_match_the_frozen_transition_record() -> None:
+    validator = _validator()
+    report = json.loads(
+        _git_show_bytes(REPO_ROOT, LEGACY_REPORT_REVISION, "governance/b0-report.json")
+    )
+    status = yaml.safe_load(
+        _git_show_bytes(REPO_ROOT, LEGACY_REPORT_REVISION, "governance/b0-status.yaml")
+    )
+    report["evaluated_at"] = "1970-01-01T00:00:00Z"
+
+    errors = validator.validate_b0_report(report, status, REPO_ROOT)
+
+    assert any("exact frozen transition record" in error for error in errors)
+
+
+def test_schema_1_is_limited_to_the_frozen_transition_revision(tmp_path: Path) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, _ = _install_fresh_schema_1_evidence_revision(clone, validator)
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any(LEGACY_REPORT_REVISION in error for error in errors)
+    assert not any(
+        needle in error
+        for error in errors
+        for needle in (
+            "must be the direct parent",
+            "evidence-only commit diff",
+            "working-tree content",
+            "checked-in evidence SHA-256",
+        )
+    )
+
+
+def test_schema_2_cannot_downgrade_to_legacy_after_a_closed_evidence_revision(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    _install_schema_2_evidence_revision(clone, validator)
+    legacy_content = _git_show_bytes(
+        clone, LEGACY_REPORT_REVISION, "governance/b0-report.json"
+    )
+    (clone / "governance/b0-report.json").write_bytes(legacy_content)
+    _commit_clone(clone, "attempt schema downgrade")
+    report = json.loads(legacy_content)
+    status = yaml.safe_load(
+        _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-status.yaml")
+    )
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any("schema downgrade" in error for error in errors)
+
+
+def test_schema_2_downgrade_latch_uses_the_version_marker_alone(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report_path = clone / "governance/b0-report.json"
+    legacy_content = _git_show_bytes(
+        clone, LEGACY_REPORT_REVISION, "governance/b0-report.json"
+    )
+    report_path.write_text('{"schema_version": "2.0.0"}\n', encoding="utf-8")
+    _commit_clone(clone, "record minimal schema 2 marker")
+    report_path.write_bytes(legacy_content)
+    _commit_clone(clone, "attempt downgrade after schema 2 marker")
+    report = json.loads(legacy_content)
+    status = yaml.safe_load(
+        _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-status.yaml")
+    )
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any("schema downgrade" in error for error in errors)
+
+
+def test_schema_2_downgrade_latch_scans_merged_side_parent_history(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    base = subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", "HEAD"], text=True
+    ).strip()
+    subprocess.run(
+        ["git", "-C", str(clone), "checkout", "--quiet", "-b", "schema-marker"],
+        check=True,
+    )
+    report_path = clone / "governance/b0-report.json"
+    report_path.write_text('{"schema_version": "2.0.0"}\n', encoding="utf-8")
+    _commit_clone(clone, "record side-parent schema 2 marker")
+    subprocess.run(
+        ["git", "-C", str(clone), "checkout", "--quiet", "--detach", base],
+        check=True,
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "-c",
+            "user.name=policy-test",
+            "-c",
+            "user.email=policy@test",
+            "merge",
+            "--quiet",
+            "--no-ff",
+            "-s",
+            "ours",
+            "schema-marker",
+            "-m",
+            "merge hidden schema marker",
+        ],
+        check=True,
+    )
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    status = yaml.safe_load((clone / "governance/b0-status.yaml").read_text(encoding="utf-8"))
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any("schema downgrade" in error for error in errors)
+
+
+def test_schema_1_validation_requires_complete_history_in_a_shallow_clone(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    shallow = tmp_path / "shallow"
+    subprocess.run(
+        [
+            "git",
+            "clone",
+            "--quiet",
+            "--depth",
+            "1",
+            f"file://{REPO_ROOT}",
+            str(shallow),
+        ],
+        check=True,
+        capture_output=True,
+    )
+    report = json.loads(
+        _git_show_bytes(shallow, LEGACY_REPORT_REVISION, "governance/b0-report.json")
+        if subprocess.run(
+            ["git", "-C", str(shallow), "cat-file", "-e", LEGACY_REPORT_REVISION],
+            capture_output=True,
+        ).returncode
+        == 0
+        else REPORT_PATH.read_bytes()
+    )
+    report["schema_version"] = "1.0.0"
+
+    errors = validator.validate_b0_report(report, _status(), shallow)
+
+    assert any("full history" in error or "shallow" in error for error in errors)
+
+
+def test_schema_2_history_scan_skips_deleted_and_malformed_snapshots(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report_path = clone / "governance/b0-report.json"
+    report_path.write_text('{"schema_version": "2.0.0"}\n', encoding="utf-8")
+    _commit_clone(clone, "record schema 2 marker")
+    report_path.unlink()
+    _commit_clone(clone, "delete report snapshot")
+    report_path.write_text('{"schema_version":', encoding="utf-8")
+    _commit_clone(clone, "record malformed report snapshot")
+    legacy_content = _git_show_bytes(
+        clone, LEGACY_REPORT_REVISION, "governance/b0-report.json"
+    )
+    report_path.write_bytes(legacy_content)
+    _commit_clone(clone, "attempt downgrade after malformed history")
+    report = json.loads(legacy_content)
+    status = yaml.safe_load(
+        _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-status.yaml")
+    )
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any("schema downgrade" in error for error in errors)
+
+
+def test_checked_in_evidence_rejects_a_committed_symlink(tmp_path: Path) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    relative = "research/logs/2026-07-18-dynamic-import-policy.md"
+    evidence_path = clone / relative
+    evidence_path.unlink()
+    evidence_path.symlink_to("forged-policy.md")
+    _commit_clone(clone, "replace checked-in evidence with symlink")
+    report, status, _ = _install_schema_2_evidence_revision(clone, validator)
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any(relative in error and "regular file" in error for error in errors)
 
 
 def _root_commit_for_tree(repository: Path, treeish: str) -> str:

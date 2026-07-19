@@ -92,7 +92,11 @@ EXPECTED_B0_REPOSITORY_MODEL: Mapping[str, Any] = {
     "python_import_validation": "required",
     "data_skeleton_validation": "layout_and_loader",
 }
-B0_REPORT_SCHEMA_VERSION = "1.0.0"
+B0_REPORT_LEGACY_SCHEMA_VERSION = "1.0.0"
+B0_REPORT_SCHEMA_VERSION = "2.0.0"
+# This is the exact pre-closure evidence revision. Schema 1 is a historical
+# transition record, not a reusable report format.
+B0_REPORT_LEGACY_REVISION = "cc067143fd3143eaba490c4dcc9f3765db1d70f2"
 B0_REPORT_KIND = "gate_b0_integration"
 B0_REPORT_BLOCKERS: Mapping[str, str] = {
     "B0.2": "authoritative_remote_url_absent",
@@ -101,6 +105,10 @@ B0_REPORT_BLOCKERS: Mapping[str, str] = {
 B0_REPORT_NEXT_TRANSITION = (
     "After B0.2 and B0.5 both close, rerun joint Gate B0 integration, then jointly freeze the Phase 0 "
     "interfaces before Lane A and Lane B branches begin."
+)
+B0_REPORT_CLOSED_NEXT_TRANSITION = (
+    "The team must jointly freeze the Phase 0 interfaces before creating "
+    "Lane A and Lane B implementation branches."
 )
 B0_REPORT_LOCAL_PROBES: Mapping[str, Mapping[str, str]] = {
     "numpy": {
@@ -348,7 +356,7 @@ FORBIDDEN_HOSTED_REPORT_KEYS: Set[str] = {
     "hosted_artifacts",
     "artifact_url",
 }
-B0_REPORT_TOP_LEVEL_FIELDS = frozenset(
+B0_REPORT_LEGACY_TOP_LEVEL_FIELDS = frozenset(
     {
         "schema_version",
         "report_kind",
@@ -366,6 +374,27 @@ B0_REPORT_TOP_LEVEL_FIELDS = frozenset(
         "next_transition",
     }
 )
+B0_REPORT_TOP_LEVEL_FIELDS = frozenset(
+    {*B0_REPORT_LEGACY_TOP_LEVEL_FIELDS, "hosted_runtime_probes"}
+)
+B0_REPORT_SCHEMA_2_REQUIRED_ITEM_EVIDENCE: Mapping[str, frozenset[str]] = {
+    "B0.2": frozenset(
+        {
+            "governance/authority-provenance.yaml",
+            "governance/SPEC_UPGRADE_PROCESS.md",
+            "governance/SPEC_TRACEABILITY.md",
+        }
+    ),
+    "B0.5": frozenset(
+        {
+            ".github/workflows/linux-trust.yml",
+            ".github/workflows/macos-engines.yml",
+            "scripts/ci/runtime_probe.py",
+            "governance/b0-report.json",
+            *(probe["artifact_path"] for probe in B0_REPORT_HOSTED_PROBES),
+        }
+    ),
+}
 B0_REPORT_REPOSITORY_FIELDS = frozenset({"branch", "evaluated_commit", "evaluated_tree", "relationship"})
 B0_REPORT_ITEM_FIELDS = frozenset({"state", "reason", "evidence_paths"})
 B0_REPORT_PROBE_FIELDS = frozenset(
@@ -1087,10 +1116,8 @@ def validate_hosted_probe_evidence(
     evidence_commit: str | None,
 ) -> List[str]:
     errors: List[str] = []
-    # Hosted evidence is absent from the pre-closure report schema. Once the
-    # field is present, it is closed and must contain both canonical entries.
     if entries is None:
-        return errors
+        return ["B0 report hosted_runtime_probes must contain exactly two entries"]
     if not isinstance(entries, list):
         return ["B0 report hosted_runtime_probes must be a list"]
     if len(entries) != len(B0_REPORT_HOSTED_PROBES):
@@ -1099,7 +1126,8 @@ def validate_hosted_probe_evidence(
         entry.get("backend") if isinstance(entry, Mapping) else None
         for entry in entries
     ]
-    if actual_order != ["numpy", "mlx"]:
+    expected_order = [probe["backend"] for probe in B0_REPORT_HOSTED_PROBES]
+    if actual_order != expected_order:
         errors.append("B0 report hosted_runtime_probes must contain Linux numpy then macOS mlx")
 
     if evidence_commit is not None:
@@ -1141,7 +1169,8 @@ def validate_hosted_probe_evidence(
             continue
         target_commits.append(entry.get("repository_commit"))
         for field, expected_value in expected.items():
-            if entry.get(field) != expected_value:
+            actual_value = entry[field] if field in entry else None
+            if actual_value != expected_value:
                 errors.append(
                     f"B0 report {backend} hosted probe {field} must be {expected_value}"
                 )
@@ -1302,18 +1331,214 @@ def validate_hosted_probe_evidence(
     return errors
 
 
+def validate_b0_closure_state(
+    report: Mapping[str, Any],
+    status: Mapping[str, Any],
+) -> List[str]:
+    errors: List[str] = []
+    if report.get("overall_state") != "closed":
+        errors.append("B0 report overall_state must be closed for schema 2.0.0")
+    if status.get("status") != "closed":
+        errors.append("governance/b0-status.yaml top-level status must be closed for schema 2.0.0")
+    blockers = report.get("blockers")
+    if not isinstance(blockers, Mapping) or blockers:
+        errors.append("B0 report blockers must be an empty mapping for schema 2.0.0")
+    if report.get("parallel_handoff_ready") is not True:
+        errors.append("B0 report parallel_handoff_ready must be true for schema 2.0.0")
+    if report.get("parallel_handoff_blockers") != []:
+        errors.append("B0 report parallel_handoff_blockers must be empty for schema 2.0.0")
+    if report.get("next_transition") != B0_REPORT_CLOSED_NEXT_TRANSITION:
+        errors.append("B0 report next_transition must be the Phase 0 interface-freeze transition")
+
+    report_items = report.get("items")
+    status_items = status.get("items")
+    if not isinstance(report_items, Mapping) or set(report_items) != set(REQUIRED_B0_ITEM_IDS):
+        errors.append(f"B0 report item IDs must be exactly {list(REQUIRED_B0_ITEM_IDS)}")
+        report_items = {}
+    if not isinstance(status_items, Mapping) or set(status_items) != set(REQUIRED_B0_ITEM_IDS):
+        errors.append(f"B0 status item IDs must be exactly {list(REQUIRED_B0_ITEM_IDS)}")
+        status_items = {}
+
+    for item_id in REQUIRED_B0_ITEM_IDS:
+        report_item = report_items[item_id] if item_id in report_items else None
+        status_item = status_items[item_id] if item_id in status_items else None
+        if not isinstance(report_item, Mapping) or not isinstance(status_item, Mapping):
+            errors.append(f"B0 report/status item {item_id} must be a mapping")
+            continue
+        report_state = report_item.get("state")
+        status_state = status_item.get("status")
+        if report_state != "closed":
+            errors.append(f"B0 report {item_id} state must be closed for schema 2.0.0")
+        if report_item.get("reason") is not None:
+            errors.append(f"B0 report {item_id} closed reason must be null")
+        if status_state != "closed":
+            errors.append(f"governance/b0-status.yaml {item_id} status must be closed for schema 2.0.0")
+        if status_item.get("open_reason") is not None:
+            errors.append(f"governance/b0-status.yaml {item_id} closed open_reason must be null")
+        if report_state != status_state:
+            errors.append(f"B0 report {item_id} state does not match governance/b0-status.yaml")
+    return errors
+
+
+def _validate_b0_legacy_state(
+    report: Mapping[str, Any],
+    status: Mapping[str, Any],
+) -> List[str]:
+    errors: List[str] = []
+    if report.get("overall_state") != "open" or status.get("status") != "open":
+        errors.append("B0 report overall_state and governance/b0-status.yaml must both remain open")
+    blockers = _closed_report_mapping(
+        report.get("blockers"),
+        frozenset(B0_REPORT_BLOCKERS),
+        "B0 report blockers",
+        errors,
+    )
+    if blockers != dict(B0_REPORT_BLOCKERS):
+        errors.append("B0 report blockers must be the exact B0.2 and B0.5 blocker codes")
+    if report.get("parallel_handoff_ready") is not False:
+        errors.append("B0 report parallel_handoff_ready must remain false")
+    if report.get("parallel_handoff_blockers") != ["B0.2", "B0.5"]:
+        errors.append("B0 report parallel_handoff_blockers must be exactly [B0.2, B0.5]")
+    if report.get("next_transition") != B0_REPORT_NEXT_TRANSITION:
+        errors.append("B0 report next_transition does not match the required joint Phase 0 handoff")
+    return errors
+
+
+def _validate_b0_legacy_revision(
+    report: Mapping[str, Any],
+    repo_root: Path,
+) -> List[str]:
+    errors: List[str] = []
+    try:
+        revision = (
+            _git(
+                repo_root,
+                "--no-replace-objects",
+                "log",
+                "-1",
+                "--format=%H",
+                "HEAD",
+                "--",
+                "governance/b0-report.json",
+            )
+            .decode("ascii")
+            .strip()
+        )
+    except (subprocess.CalledProcessError, OSError, TypeError, ValueError, UnicodeError) as exc:
+        return [f"B0 legacy report cannot resolve its frozen evidence revision: {exc}"]
+    if revision != B0_REPORT_LEGACY_REVISION:
+        errors.append(
+            "B0 report schema 1.0.0 is permitted only at frozen transition revision "
+            f"{B0_REPORT_LEGACY_REVISION}; found {revision or '<none>'}"
+        )
+
+    content, read_error = _committed_regular_file(
+        repo_root,
+        B0_REPORT_LEGACY_REVISION,
+        "governance/b0-report.json",
+        "frozen B0 legacy report",
+    )
+    if read_error or content is None:
+        errors.append(read_error or "frozen B0 legacy report is unavailable")
+        return errors
+    try:
+        frozen_report = _strict_json_loads(content)
+    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError, ValueError) as exc:
+        errors.append(f"frozen B0 legacy report is not strict JSON: {exc}")
+        return errors
+    if not _exact_json_value(report, frozen_report):
+        errors.append("B0 report schema 1.0.0 must be the exact frozen transition record")
+    return errors
+
+
+def _validate_no_b0_schema_downgrade(repo_root: Path) -> List[str]:
+    try:
+        shallow = (
+            _git(
+                repo_root,
+                "--no-replace-objects",
+                "rev-parse",
+                "--is-shallow-repository",
+            )
+            .decode("ascii")
+            .strip()
+        )
+        if shallow != "false":
+            return [
+                "B0 report schema 1.0.0 validation requires full Git history; "
+                "a shallow repository cannot prove that schema 2.0.0 was never reachable"
+            ]
+        revisions = (
+            _git(
+                repo_root,
+                "--no-replace-objects",
+                "log",
+                "--full-history",
+                "--format=%H",
+                "HEAD",
+                "--",
+                "governance/b0-report.json",
+            )
+            .decode("ascii")
+            .splitlines()
+        )
+    except (subprocess.CalledProcessError, OSError, TypeError, ValueError, UnicodeError) as exc:
+        return [f"B0 report cannot inspect complete committed schema history: {exc}"]
+
+    for revision in revisions:
+        content, read_error = _committed_regular_file(
+            repo_root,
+            revision,
+            "governance/b0-report.json",
+            "historical B0 report",
+        )
+        if read_error or content is None:
+            continue
+        try:
+            historical = _strict_json_loads(content)
+        except (UnicodeDecodeError, json.JSONDecodeError, RecursionError, ValueError):
+            continue
+        # This latch is permanently the closure transition marker, not an
+        # alias for whichever schema version may become current later.
+        if isinstance(historical, Mapping) and historical.get("schema_version") == "2.0.0":
+            return ["B0 report schema downgrade from a reachable schema 2.0.0 revision is forbidden"]
+    return []
+
+
 def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], repo_root: Path) -> List[str]:
     errors: List[str] = []
-    report = _closed_report_mapping(report, B0_REPORT_TOP_LEVEL_FIELDS, "B0 report", errors)
-    if report.get("schema_version") != B0_REPORT_SCHEMA_VERSION:
-        errors.append(f"B0 report schema_version must be {B0_REPORT_SCHEMA_VERSION}")
+    schema_version = report.get("schema_version") if isinstance(report, Mapping) else None
+    if schema_version == B0_REPORT_LEGACY_SCHEMA_VERSION:
+        top_level_fields = B0_REPORT_LEGACY_TOP_LEVEL_FIELDS
+    else:
+        top_level_fields = B0_REPORT_TOP_LEVEL_FIELDS
+    report = _closed_report_mapping(report, top_level_fields, "B0 report", errors)
+    if not isinstance(schema_version, str) or schema_version not in (
+        B0_REPORT_LEGACY_SCHEMA_VERSION,
+        B0_REPORT_SCHEMA_VERSION,
+    ):
+        errors.append(
+            "B0 report schema_version must be a string equal to one of "
+            f"{B0_REPORT_LEGACY_SCHEMA_VERSION} or {B0_REPORT_SCHEMA_VERSION}"
+        )
+    if not isinstance(status, Mapping):
+        errors.append("governance/b0-status.yaml must be a mapping")
+        status = {}
+    elif schema_version == B0_REPORT_SCHEMA_VERSION:
+        if status.get("document_kind") != "gate_status":
+            errors.append("governance/b0-status.yaml document_kind must be gate_status")
+        if status.get("gate") != "B0":
+            errors.append("governance/b0-status.yaml gate must be B0")
     if report.get("report_kind") != B0_REPORT_KIND:
         errors.append(f"B0 report report_kind must be {B0_REPORT_KIND}")
     evaluated_at = report.get("evaluated_at")
     if not isinstance(evaluated_at, str) or not UTC_TIMESTAMP.match(evaluated_at):
         errors.append("B0 report evaluated_at must be a UTC ISO-8601 timestamp")
-    for path in _find_forbidden_hosted_report_keys(report):
-        errors.append(f"B0 report contains forbidden hosted evidence field: {path}")
+    if schema_version == B0_REPORT_LEGACY_SCHEMA_VERSION:
+        for path in _find_forbidden_hosted_report_keys(report):
+            errors.append(f"B0 report contains forbidden hosted evidence field: {path}")
+        errors.extend(_validate_b0_legacy_revision(report, repo_root))
+        errors.extend(_validate_no_b0_schema_downgrade(repo_root))
 
     repository = _closed_report_mapping(
         report.get("repository"),
@@ -1377,22 +1602,10 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
         except subprocess.CalledProcessError as exc:
             errors.append(f"B0 report cannot verify evaluated Git identity: {exc}")
 
-    if report.get("overall_state") != "open" or status.get("status") != "open":
-        errors.append("B0 report overall_state and governance/b0-status.yaml must both remain open")
-    blockers = _closed_report_mapping(
-        report.get("blockers"),
-        frozenset(B0_REPORT_BLOCKERS),
-        "B0 report blockers",
-        errors,
-    )
-    if blockers != dict(B0_REPORT_BLOCKERS):
-        errors.append("B0 report blockers must be the exact B0.2 and B0.5 blocker codes")
-    if report.get("parallel_handoff_ready") is not False:
-        errors.append("B0 report parallel_handoff_ready must remain false")
-    if report.get("parallel_handoff_blockers") != ["B0.2", "B0.5"]:
-        errors.append("B0 report parallel_handoff_blockers must be exactly [B0.2, B0.5]")
-    if report.get("next_transition") != B0_REPORT_NEXT_TRANSITION:
-        errors.append("B0 report next_transition does not match the required joint Phase 0 handoff")
+    if schema_version == B0_REPORT_LEGACY_SCHEMA_VERSION:
+        errors.extend(_validate_b0_legacy_state(report, status))
+    elif schema_version == B0_REPORT_SCHEMA_VERSION:
+        errors.extend(validate_b0_closure_state(report, status))
 
     status_items = status.get("items")
     report_items = report.get("items")
@@ -1404,6 +1617,9 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
         errors.append(f"B0 report item IDs must be exactly {list(REQUIRED_B0_ITEM_IDS)}")
     referenced_paths: Set[str] = set()
     local_artifact_paths = {entry["artifact_path"] for entry in B0_REPORT_LOCAL_PROBES.values()}
+    non_digest_evidence_paths = set(local_artifact_paths)
+    if schema_version == B0_REPORT_SCHEMA_VERSION:
+        non_digest_evidence_paths.add("governance/b0-report.json")
     for item_id in REQUIRED_B0_ITEM_IDS:
         report_item = _closed_report_mapping(
             report_items[item_id] if item_id in report_items else None,
@@ -1412,19 +1628,39 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
             errors,
         )
         status_item = status_items[item_id] if item_id in status_items else None
-        if not report_item or not isinstance(status_item, Mapping):
-            errors.append(f"B0 report/status item {item_id} must be a mapping")
+        if not report_item:
             continue
-        if report_item.get("state") != status_item.get("status"):
-            errors.append(f"B0 report {item_id} state does not match governance/b0-status.yaml")
-        expected_reason = status_item.get("open_reason") if status_item.get("status") == "open" else None
-        if report_item.get("reason") != expected_reason:
-            errors.append(f"B0 report {item_id} reason does not match governance/b0-status.yaml")
+        if schema_version == B0_REPORT_LEGACY_SCHEMA_VERSION:
+            if not isinstance(status_item, Mapping):
+                errors.append(f"B0 report/status item {item_id} must be a mapping")
+                continue
+            if report_item.get("state") != status_item.get("status"):
+                errors.append(f"B0 report {item_id} state does not match governance/b0-status.yaml")
+            expected_reason = status_item.get("open_reason") if status_item.get("status") == "open" else None
+            if report_item.get("reason") != expected_reason:
+                errors.append(f"B0 report {item_id} reason does not match governance/b0-status.yaml")
         evidence_paths = report_item.get("evidence_paths")
         if not isinstance(evidence_paths, list) or not evidence_paths or any(not isinstance(path, str) for path in evidence_paths):
             errors.append(f"B0 report {item_id} evidence_paths must be a non-empty string list")
-        else:
-            referenced_paths.update(path for path in evidence_paths if path not in local_artifact_paths)
+            continue
+        evidence_path_set = set(evidence_paths)
+        if "governance/b0-report.json" in evidence_path_set:
+            if schema_version == B0_REPORT_LEGACY_SCHEMA_VERSION:
+                errors.append("B0 report schema 1.0.0 evidence must not self-reference governance/b0-report.json")
+            elif item_id not in {"B0.2", "B0.5"}:
+                errors.append(
+                    f"B0 report {item_id} must not use governance/b0-report.json as self-reference evidence"
+                )
+        if schema_version == B0_REPORT_SCHEMA_VERSION and item_id in B0_REPORT_SCHEMA_2_REQUIRED_ITEM_EVIDENCE:
+            required_paths = B0_REPORT_SCHEMA_2_REQUIRED_ITEM_EVIDENCE[item_id]
+            missing_paths = required_paths - evidence_path_set
+            if missing_paths:
+                errors.append(
+                    f"B0 report {item_id} required evidence paths are missing: {sorted(missing_paths)}"
+                )
+        referenced_paths.update(
+            path for path in evidence_paths if path not in non_digest_evidence_paths
+        )
 
     workflows = report.get("workflows")
     if not isinstance(workflows, list):
@@ -1447,13 +1683,14 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
 
     probes = report.get("local_runtime_probes")
     errors.extend(validate_local_probe_evidence(probes, repo_root, evaluated_commit))
-    errors.extend(
-        validate_hosted_probe_evidence(
-            report.get("hosted_runtime_probes"),
-            repo_root,
-            evidence_commit,
+    if schema_version == B0_REPORT_SCHEMA_VERSION:
+        errors.extend(
+            validate_hosted_probe_evidence(
+                report.get("hosted_runtime_probes"),
+                repo_root,
+                evidence_commit,
+            )
         )
-    )
 
     checked_in = report.get("checked_in_evidence")
     if not isinstance(checked_in, Mapping):
@@ -1474,16 +1711,18 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
         if evidence_commit is None:
             errors.append(f"B0 report checked-in evidence cannot be verified without a valid evidence-only commit: {relative}")
             continue
-        # Digests describe the evidence files as frozen at the evidence-only
+        # Digests describe regular evidence files as frozen at the evidence-only
         # commit; later development may legitimately change the working tree.
-        try:
-            object_type = _git(repo_root, "cat-file", "-t", f"{evidence_commit}:{relative}").decode().strip()
-        except subprocess.CalledProcessError:
-            object_type = ""
-        if object_type != "blob":
-            errors.append(f"B0 report checked-in evidence path is missing, unsafe, or not a regular file: {relative}")
+        content, read_error = _committed_regular_file(
+            repo_root,
+            evidence_commit,
+            relative,
+            f"B0 report checked-in evidence path {relative}",
+        )
+        if read_error:
+            errors.append(read_error)
             continue
-        content = _git(repo_root, "cat-file", "blob", f"{evidence_commit}:{relative}")
+        assert content is not None
         if _sha256(content) != expected_digest:
             errors.append(f"B0 report checked-in evidence SHA-256 does not match: {relative}")
 
@@ -1530,7 +1769,7 @@ def _load_yaml(path: Path) -> Dict[str, Any]:
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = _strict_json_loads(path.read_bytes())
     if not isinstance(data, dict):
         raise ValueError(f"{path} must contain a JSON object")
     return data
@@ -1578,7 +1817,10 @@ def validate_repository(repo_root: Path) -> List[str]:
         errors.append(f"cannot load B0 integration report: {exc}")
         report = {}
         report_loaded = False
-    closure_pending = report.get("schema_version") == "1.0.0" and report.get("overall_state") == "open"
+    closure_pending = (
+        report.get("schema_version") == B0_REPORT_LEGACY_SCHEMA_VERSION
+        and report.get("overall_state") == "open"
+    )
     errors.extend(validate_b0_status(status, manifest, repo_root, closure_pending=closure_pending))
     if report_loaded:
         errors.extend(validate_b0_report(report, status, repo_root))
