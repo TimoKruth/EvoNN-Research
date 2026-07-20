@@ -43,32 +43,41 @@ EXPECTED_SOURCES: Mapping[str, Mapping[str, Any]] = {
     "claude-spec": {
         "scope": "directory",
         "path": "claude-spec/",
+        "normative_role": "Lab normative specification; wins over the execution plan on disagreement",
         "source_commit": PINNED_SOURCE_COMMIT,
         "declared_version": "0.1.0-draft.1",
+        "imported_at": "2026-07-17T14:49:43Z",
         "git_object_type": "tree",
         "git_object_id": "0f43ade62e57d743b94410ebadbb193ac5284618",
         "digest": "89298a056b9f37d94a3cfa4e404c9f04f33b558929a9fbb60070f14eb51478a9",
         "consumer_acceptance_authority": False,
+        "supersedes": None,
     },
     "program-charter": {
         "scope": "file",
         "path": "PROGRAM_CHARTER.md",
+        "normative_role": "Program boundaries, workstreams, and interop gating relationships",
         "source_commit": PINNED_SOURCE_COMMIT,
         "declared_version": "rev.2",
+        "imported_at": "2026-07-17T14:49:43Z",
         "git_object_type": "blob",
         "git_object_id": "c0b000d449352308ef7387a25519dc9258b85659",
         "digest": "cdbc578234d31076649f5b2c013f82fb5887b03be653c99b729dd57fa8598330",
         "consumer_acceptance_authority": False,
+        "supersedes": None,
     },
     "product-research-interop": {
         "scope": "file",
         "path": "claudex-spec/19-research-interop.md",
+        "normative_role": "Product consumer acceptance and Product-owned I2 authority",
         "source_commit": PINNED_SOURCE_COMMIT,
         "declared_version": "1.0.0-draft",
+        "imported_at": "2026-07-17T14:49:43Z",
         "git_object_type": "blob",
         "git_object_id": "a53716b253cb870efb4916883c3348c4dd5dbe07",
         "digest": "55979195c29aec4bb0bd34ab893f4b1797d99e2227e1f6ee07907622b6af8833",
         "consumer_acceptance_authority": True,
+        "supersedes": None,
     },
 }
 ACTIVE_PLAN_PATTERNS: Sequence[re.Pattern[str]] = (
@@ -573,10 +582,26 @@ def canonical_tree_digest(entries: Iterable[Tuple[str, bytes]]) -> str:
 
 def canonical_tree_digest_from_git(repo_root: Path, commit: str, directory: str) -> str:
     directory = directory.rstrip("/")
-    raw_paths = _git(repo_root, "ls-tree", "-r", "-z", "--name-only", commit, "--", directory)
+    raw_paths = _git(
+        repo_root,
+        "--no-replace-objects",
+        "ls-tree",
+        "-r",
+        "-z",
+        "--name-only",
+        commit,
+        "--",
+        directory,
+    )
     paths = [item.decode("utf-8") for item in raw_paths.split(b"\0") if item]
     prefix = directory + "/"
-    entries = ((path[len(prefix) :], _git(repo_root, "show", f"{commit}:{path}")) for path in paths)
+    entries = (
+        (
+            path[len(prefix) :],
+            _git(repo_root, "--no-replace-objects", "show", f"{commit}:{path}"),
+        )
+        for path in paths
+    )
     return canonical_tree_digest(entries)
 
 
@@ -662,9 +687,21 @@ def validate_provenance(
         if missing:
             errors.append(f"{source_id}: missing fields {sorted(missing)}")
             continue
-        if not entry.get("normative_role"):
+        normative_role = entry.get("normative_role")
+        if not isinstance(normative_role, str) or not normative_role:
             errors.append(f"{source_id}: normative_role must be non-empty")
-        for field in ("scope", "path", "source_commit", "declared_version", "git_object_type", "git_object_id", "consumer_acceptance_authority"):
+        for field in (
+            "scope",
+            "path",
+            "normative_role",
+            "source_commit",
+            "declared_version",
+            "imported_at",
+            "git_object_type",
+            "git_object_id",
+            "consumer_acceptance_authority",
+            "supersedes",
+        ):
             if entry[field] != expected[field]:
                 errors.append(f"{source_id}: {field} does not match the required pin")
         if entry.get("supersedes") is not None:
@@ -677,8 +714,19 @@ def validate_provenance(
             errors.append(f"{source_id}: checked-in SHA-256 digest does not match the required pin")
         try:
             git_path = str(entry["path"]).rstrip("/")
-            actual_object_id = _git(repo_root, "rev-parse", f"{entry['source_commit']}:{git_path}").decode().strip()
-            actual_object_type = _git(repo_root, "cat-file", "-t", actual_object_id).decode().strip()
+            actual_object_id = _git(
+                repo_root,
+                "--no-replace-objects",
+                "rev-parse",
+                f"{entry['source_commit']}:{git_path}",
+            ).decode().strip()
+            actual_object_type = _git(
+                repo_root,
+                "--no-replace-objects",
+                "cat-file",
+                "-t",
+                actual_object_id,
+            ).decode().strip()
             if actual_object_id != entry["git_object_id"]:
                 errors.append(f"{source_id}: git object ID does not match pinned source")
             if actual_object_type != entry["git_object_type"]:
@@ -686,7 +734,14 @@ def validate_provenance(
             if entry["scope"] == "directory":
                 pinned_digest = canonical_tree_digest_from_git(repo_root, entry["source_commit"], git_path)
             else:
-                pinned_digest = _sha256(_git(repo_root, "show", f"{entry['source_commit']}:{git_path}"))
+                pinned_digest = _sha256(
+                    _git(
+                        repo_root,
+                        "--no-replace-objects",
+                        "show",
+                        f"{entry['source_commit']}:{git_path}",
+                    )
+                )
             if pinned_digest != digest.get("value"):
                 errors.append(f"{source_id}: content digest does not match pinned commit bytes")
         except (KeyError, subprocess.CalledProcessError) as exc:

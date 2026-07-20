@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import importlib.util
 from pathlib import Path
+import shutil
 import subprocess
 
 import pytest
@@ -177,14 +178,110 @@ def test_checked_in_provenance_is_remote_pinned_without_source_pin_changes(
         for field in (
             "scope",
             "path",
+            "normative_role",
             "source_commit",
             "declared_version",
+            "imported_at",
             "git_object_type",
             "git_object_id",
             "consumer_acceptance_authority",
+            "supersedes",
         ):
             assert entry[field] == expected[field]
         assert entry["content_digest"]["value"] == expected["digest"]
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("normative_role", "Forged but non-empty normative role"),
+        ("imported_at", "2026-07-18T14:49:43Z"),
+        ("supersedes", "forged-predecessor"),
+    ],
+)
+def test_provenance_rejects_immutable_source_metadata_drift(
+    validator,
+    manifest: dict,
+    field: str,
+    value: str,
+) -> None:
+    drifted = copy.deepcopy(manifest)
+    drifted["sources"][0][field] = value
+
+    errors = validator.validate_provenance(drifted, REPO_ROOT)
+
+    assert any("claude-spec" in error and field in error for error in errors)
+
+
+def test_provenance_pinned_source_reads_ignore_replacement_objects(
+    validator,
+    manifest: dict,
+    tmp_path: Path,
+) -> None:
+    repository = tmp_path / "replacement-only-authority"
+    repository.mkdir()
+    subprocess.run(["git", "init", "-q", str(repository)], check=True)
+    shutil.copytree(REPO_ROOT / "claude-spec", repository / "claude-spec")
+    shutil.copy2(REPO_ROOT / "PROGRAM_CHARTER.md", repository / "PROGRAM_CHARTER.md")
+    interop = repository / "claudex-spec/19-research-interop.md"
+    interop.parent.mkdir()
+    shutil.copy2(REPO_ROOT / "claudex-spec/19-research-interop.md", interop)
+    git = [
+        "git",
+        "-C",
+        str(repository),
+        "-c",
+        "user.name=policy-test",
+        "-c",
+        "user.email=policy@test",
+    ]
+    subprocess.run([*git, "add", "-A"], check=True, capture_output=True)
+    subprocess.run(
+        [*git, "commit", "--quiet", "-m", "synthetic source commit"],
+        check=True,
+        capture_output=True,
+    )
+    replacement = subprocess.check_output(
+        ["git", "-C", str(repository), "rev-parse", "HEAD"],
+        text=True,
+    ).strip()
+    pinned = validator.PINNED_SOURCE_COMMIT
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(repository),
+            "update-ref",
+            f"refs/replace/{pinned}",
+            replacement,
+        ],
+        check=True,
+        capture_output=True,
+    )
+
+    assert subprocess.check_output(
+        ["git", "-C", str(repository), "rev-parse", f"{pinned}:claude-spec"],
+        text=True,
+    ).strip() == validator.EXPECTED_SOURCES["claude-spec"]["git_object_id"]
+    assert subprocess.run(
+        [
+            "git",
+            "-C",
+            str(repository),
+            "--no-replace-objects",
+            "rev-parse",
+            f"{pinned}:claude-spec",
+        ],
+        capture_output=True,
+    ).returncode != 0
+
+    errors = validator.validate_provenance(manifest, repository)
+
+    for source_id in validator.EXPECTED_SOURCES:
+        assert any(
+            source_id in error and "cannot verify pinned Git bytes" in error
+            for error in errors
+        )
 
 
 def test_provenance_rejects_non_mapping_duplicate_and_incomplete_entries(validator, manifest: dict) -> None:

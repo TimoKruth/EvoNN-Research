@@ -986,6 +986,7 @@ def _install_schema_2_evidence_revision(
     validator,
     *,
     frozen_status_content: bytes | None = None,
+    frozen_provenance_content: bytes | None = None,
     extra_evidence_path: str | None = None,
 ) -> tuple[dict, dict, str]:
     report_path = clone / "governance/b0-report.json"
@@ -995,6 +996,10 @@ def _install_schema_2_evidence_revision(
     report = json.loads(report_path.read_text(encoding="utf-8"))
     status = yaml.safe_load(status_path.read_text(encoding="utf-8"))
     task_report_content = task_report_path.read_bytes()
+    if frozen_provenance_content is not None:
+        (clone / "governance/authority-provenance.yaml").write_bytes(
+            frozen_provenance_content
+        )
     if not closure_review_path.exists():
         closure_review_path.write_text(
             "# Gate B0 Closure Review\n\nFixture closure review evidence.\n",
@@ -1250,6 +1255,34 @@ def test_schema_2_closure_uses_frozen_authority_not_a_pinned_descendant(
     errors = validator.validate_b0_report(report, status, clone)
 
     assert any("frozen B0 authority" in error or "local-only authority" in error for error in errors)
+
+
+def test_schema_2_closure_rejects_frozen_authority_immutable_metadata_drift(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    provenance_path = clone / "governance/authority-provenance.yaml"
+    provenance = yaml.safe_load(provenance_path.read_bytes())
+    source = provenance["sources"][0]
+    source["normative_role"] = "Forged but non-empty normative role"
+    source["imported_at"] = "2026-07-18T14:49:43Z"
+    frozen_provenance_content = yaml.safe_dump(
+        provenance, sort_keys=False
+    ).encode()
+    report, status, evidence_commit = _install_schema_2_evidence_revision(
+        clone,
+        validator,
+        frozen_provenance_content=frozen_provenance_content,
+    )
+
+    assert _git_show_bytes(
+        clone, evidence_commit, "governance/authority-provenance.yaml"
+    ) == frozen_provenance_content
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any("claude-spec" in error and "normative_role" in error for error in errors)
+    assert any("claude-spec" in error and "imported_at" in error for error in errors)
 
 
 def test_schema_2_closure_rejects_duplicate_keys_in_frozen_status_yaml(
