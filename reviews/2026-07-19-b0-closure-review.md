@@ -105,8 +105,8 @@ process documentation, the consolidated plan, and the parallel-work guide.
    `14513f116dd53bfd2fd9fa4345593185589b3aee297b57bac32f37dac45c6aa9`
    and `5719a3843c8106193c126084cad2837dc3111cb9a795bb08a2cf129b52e7113c`,
    exactly matching the hosted artifacts.
-7. **Hard-coded hosted revision scope:** approved. Code, design, plan, and
-   process text explicitly identify
+7. **Hard-coded hosted revision scope:** approved. Code, design, and plan
+   explicitly identify
    `f68856f0c2fdf0ebc73671264b5a3ab0cff3b224` as a B0-closure-specific
    hosted-evidence pin, not reusable runtime, workflow, branch, or future-gate
    policy.
