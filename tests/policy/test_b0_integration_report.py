@@ -135,6 +135,48 @@ def _closed_state_documents(validator) -> tuple[dict, dict]:
     return report, status
 
 
+def _schema_2_mapping_errors(validator, report: dict, status: dict) -> list[str]:
+    errors = validator.validate_b0_schema_2_state(report, status)
+    repository = report.get("repository")
+    evaluated_commit = (
+        repository.get("evaluated_commit")
+        if isinstance(repository, dict)
+        else None
+    )
+    errors.extend(
+        validator.validate_local_probe_evidence(
+            report.get("local_runtime_probes"),
+            REPO_ROOT,
+            evaluated_commit,
+        )
+    )
+    workflows = report.get("workflows")
+    if isinstance(workflows, list):
+        for index, workflow in enumerate(workflows):
+            validator._closed_report_mapping(
+                workflow,
+                validator.B0_REPORT_WORKFLOW_FIELDS,
+                f"B0 report workflows[{index}]",
+                errors,
+            )
+    verification = validator._closed_report_mapping(
+        report.get("verification"),
+        validator.B0_REPORT_VERIFICATION_FIELDS,
+        "B0 report verification",
+        errors,
+    )
+    commands = verification.get("commands")
+    if isinstance(commands, list):
+        for index, command in enumerate(commands):
+            validator._closed_report_mapping(
+                command,
+                validator.B0_REPORT_VERIFICATION_COMMAND_FIELDS,
+                f"B0 report verification.commands[{index}]",
+                errors,
+            )
+    return errors
+
+
 def _schema_2_state_documents(validator) -> tuple[dict, dict]:
     report = copy.deepcopy(_report())
     status = copy.deepcopy(_status())
@@ -392,19 +434,23 @@ def test_b0_report_fails_closed_for_false_closure_hosted_claims_and_status_drift
         wrong_gate_state["overall_state"] = "open"
         wrong_gate_state["parallel_handoff_ready"] = False
         wrong_gate_state["parallel_handoff_blockers"] = ["B0.5"]
-    errors = validator.validate_b0_report(wrong_gate_state, status, REPO_ROOT)
+    def validate_state(candidate: dict) -> list[str]:
+        if report["schema_version"] == "1.0.0":
+            return validator.validate_b0_report(candidate, status, REPO_ROOT)
+        return validator.validate_b0_schema_2_state(candidate, status)
+    errors = validate_state(wrong_gate_state)
     assert any("overall_state" in error for error in errors)
     assert any("parallel_handoff_ready" in error for error in errors)
 
     fabricated_hosted = copy.deepcopy(report)
     fabricated_hosted["hosted_run_id"] = "12345"
-    errors = validator.validate_b0_report(fabricated_hosted, status, REPO_ROOT)
+    errors = validate_state(fabricated_hosted)
     expected = "hosted evidence field" if report["schema_version"] == "1.0.0" else "unknown fields"
     assert any(expected in error for error in errors)
 
     drifted = copy.deepcopy(report)
     drifted["items"]["B0.3"]["state"] = "open"
-    errors = validator.validate_b0_report(drifted, status, REPO_ROOT)
+    errors = validate_state(drifted)
     assert any("B0.3" in error and "b0-status.yaml" in error for error in errors)
 
 
@@ -441,8 +487,13 @@ def test_b0_report_schema_rejects_unknown_fields_at_every_nested_object_level() 
     command["verification"]["commands"][0]["unexpected"] = True
     mutations.append(("verification command", command))
 
+    status = _status()
     for level, malformed in mutations:
-        errors = validator.validate_b0_report(malformed, _status(), REPO_ROOT)
+        errors = (
+            validator.validate_b0_report(malformed, status, REPO_ROOT)
+            if report["schema_version"] == "1.0.0"
+            else _schema_2_mapping_errors(validator, malformed, status)
+        )
         assert any("unknown fields" in error for error in errors), level
 
 
@@ -848,13 +899,22 @@ def test_local_probe_evidence_is_optional_but_digest_checked_when_present(tmp_pa
     assert any("SHA-256" in error for error in errors)
 
 
-def test_every_checked_in_evidence_digest_is_recomputed() -> None:
+def test_every_checked_in_evidence_digest_is_recomputed(tmp_path: Path) -> None:
     validator = _validator()
     report = _report()
-    tampered = copy.deepcopy(report)
-    first_path = next(iter(tampered["checked_in_evidence"]))
-    tampered["checked_in_evidence"][first_path] = "0" * 64
-    errors = validator.validate_b0_report(tampered, _status(), REPO_ROOT)
+    first_path = next(iter(report["checked_in_evidence"]))
+    if report["schema_version"] == "1.0.0":
+        tampered = copy.deepcopy(report)
+        tampered["checked_in_evidence"][first_path] = "0" * 64
+        errors = validator.validate_b0_report(tampered, _status(), REPO_ROOT)
+    else:
+        clone = _committed_clone(tmp_path)
+        tampered, status, _ = _install_schema_2_evidence_revision(
+            clone,
+            validator,
+            checked_in_evidence_overrides={first_path: "0" * 64},
+        )
+        errors = validator.validate_b0_report(tampered, status, clone)
     assert any(first_path in error and "SHA-256" in error for error in errors)
 
 
@@ -1106,6 +1166,7 @@ def _install_schema_2_evidence_revision(
     frozen_status_content: bytes | None = None,
     frozen_provenance_content: bytes | None = None,
     extra_evidence_path: str | None = None,
+    checked_in_evidence_overrides: dict[str, str] | None = None,
 ) -> tuple[dict, dict, str]:
     report_path = clone / "governance/b0-report.json"
     status_path = clone / "governance/b0-status.yaml"
@@ -1171,6 +1232,8 @@ def _install_schema_2_evidence_revision(
             ".superpowers/sdd/task-6-report.md": final_task_report,
         },
     )
+    if checked_in_evidence_overrides is not None:
+        report["checked_in_evidence"].update(checked_in_evidence_overrides)
     _write_report(report_path, report)
     status_path.write_bytes(status_content)
     task_report_path.write_bytes(final_task_report)
@@ -1513,11 +1576,16 @@ def test_schema_2_closure_uses_frozen_status_not_a_closed_descendant(
 ) -> None:
     validator = _validator()
     clone = _committed_clone(tmp_path)
-    frozen_open_status = yaml.safe_dump(_status(), sort_keys=False).encode()
+    frozen_open_status = copy.deepcopy(_status())
+    frozen_open_status["status"] = "open"
+    frozen_open_status_content = yaml.safe_dump(
+        frozen_open_status,
+        sort_keys=False,
+    ).encode()
     report, closed_status, evidence_commit = _install_schema_2_evidence_revision(
         clone,
         validator,
-        frozen_status_content=frozen_open_status,
+        frozen_status_content=frozen_open_status_content,
     )
     live_status_content = yaml.safe_dump(closed_status, sort_keys=False).encode()
     (clone / "governance/b0-status.yaml").write_bytes(live_status_content)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import json
 from pathlib import Path
 import subprocess
 
@@ -513,15 +514,35 @@ def test_commit_a_allows_only_the_historical_b02_open_state_when_closure_pending
     manifest: dict,
     b0_status: dict,
 ) -> None:
+    historical_status = copy.deepcopy(b0_status)
+    if historical_status["status"] == "closed":
+        report = json.loads(
+            (REPO_ROOT / "governance/b0-report.json").read_text(encoding="utf-8")
+        )
+        evaluated_commit = report["repository"]["evaluated_commit"]
+        historical_status = yaml.safe_load(
+            subprocess.check_output(
+                [
+                    "git",
+                    "-C",
+                    str(REPO_ROOT),
+                    "--no-replace-objects",
+                    "show",
+                    f"{evaluated_commit}:governance/b0-status.yaml",
+                ]
+            )
+        )
+
+    assert historical_status["status"] == "open"
     assert validator.validate_b0_status(
-        b0_status,
+        historical_status,
         manifest,
         REPO_ROOT,
         closure_pending=True,
     ) == []
-    assert validator.validate_b0_status(b0_status, manifest, REPO_ROOT)
+    assert validator.validate_b0_status(historical_status, manifest, REPO_ROOT)
 
-    changed = copy.deepcopy(b0_status)
+    changed = copy.deepcopy(historical_status)
     changed["items"]["B0.2"]["evidence"] = "not the historical closure-transition evidence"
     assert validator.validate_b0_status(
         changed,
