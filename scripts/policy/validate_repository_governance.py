@@ -106,6 +106,9 @@ B0_REPORT_SCHEMA_VERSION = "2.0.0"
 # This is the exact pre-closure evidence revision. Schema 1 is a historical
 # transition record, not a reusable report format.
 B0_REPORT_LEGACY_REVISION = "cc067143fd3143eaba490c4dcc9f3765db1d70f2"
+# This exact historical merge imported the frozen legacy revision onto the
+# repository mainline. Its exemption is commit-identity-bound and not reusable.
+B0_REPORT_LEGACY_TRANSITION_MERGE = "e6117bc2f7c25d52b1bf0ea30361e25b2f2ddfe8"
 B0_REPORT_KIND = "gate_b0_integration"
 B0_REPORT_BLOCKERS: Mapping[str, str] = {
     "B0.2": "authoritative_remote_url_absent",
@@ -1788,7 +1791,6 @@ def _validate_b0_schema_history(
         return [f"B0 report cannot inspect complete committed schema history: {exc}"]
 
     declarations: List[tuple[str, str]] = []
-    legacy_transition_merges: set[str] = set()
     for revision_line in revisions:
         revision, *parents = revision_line.split()
         content, read_error = _committed_regular_file(
@@ -1808,15 +1810,6 @@ def _validate_b0_schema_history(
             )
             if content == first_parent_content:
                 continue
-            if B0_REPORT_LEGACY_REVISION in parents[1:]:
-                legacy_content, _ = _committed_regular_file(
-                    repo_root,
-                    B0_REPORT_LEGACY_REVISION,
-                    "governance/b0-report.json",
-                    "frozen B0 legacy report parent",
-                )
-                if content == legacy_content:
-                    legacy_transition_merges.add(revision)
         try:
             historical = _strict_json_loads(content)
         except (UnicodeDecodeError, json.JSONDecodeError, RecursionError, ValueError):
@@ -1887,7 +1880,7 @@ def _validate_b0_schema_history(
             return [f"B0 report cannot verify frozen schema 1.0.0 history: {exc}"]
         else:
             continue
-        if legacy_revision in legacy_transition_merges:
+        if legacy_revision == B0_REPORT_LEGACY_TRANSITION_MERGE:
             continue
         return [
             "B0 report schema 1.0.0 is permitted only at frozen transition revision "

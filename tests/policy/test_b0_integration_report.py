@@ -28,6 +28,7 @@ HOSTED_MACOS_PATH = (
     REPO_ROOT / "governance/evidence/b0/hosted/macos-runtime-probe.json"
 )
 LEGACY_REPORT_REVISION = "cc067143fd3143eaba490c4dcc9f3765db1d70f2"
+LEGACY_TRANSITION_MERGE = "e6117bc2f7c25d52b1bf0ea30361e25b2f2ddfe8"
 SCHEMA_2_B02_REQUIRED_EVIDENCE = frozenset(
     {
         "governance/authority-provenance.yaml",
@@ -1297,6 +1298,84 @@ def _merge_ours(clone: Path, revision: str, message: str) -> str:
     ).strip()
 
 
+def _copy_historical_legacy_transition_merge(clone: Path) -> str:
+    revision = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "--no-replace-objects",
+            "rev-list",
+            "--parents",
+            "-n",
+            "1",
+            LEGACY_TRANSITION_MERGE,
+        ],
+        text=True,
+    ).split()
+    tree = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "--no-replace-objects",
+            "rev-parse",
+            f"{LEGACY_TRANSITION_MERGE}^{{tree}}",
+        ],
+        text=True,
+    ).strip()
+    message = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "--no-replace-objects",
+            "show",
+            "-s",
+            "--format=%B",
+            LEGACY_TRANSITION_MERGE,
+        ],
+        text=True,
+    )
+    copied = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "-c",
+            "user.name=policy-test",
+            "-c",
+            "user.email=policy@test",
+            "commit-tree",
+            tree,
+            "-p",
+            revision[1],
+            "-p",
+            revision[2],
+            "-F",
+            "-",
+        ],
+        input=message,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    assert copied != LEGACY_TRANSITION_MERGE
+    assert subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", f"{copied}^{{tree}}"],
+        text=True,
+    ).strip() == tree
+    assert subprocess.check_output(
+        ["git", "-C", str(clone), "rev-list", "--parents", "-n", "1", copied],
+        text=True,
+    ).split()[1:] == revision[1:]
+    assert subprocess.check_output(
+        ["git", "-C", str(clone), "show", "-s", "--format=%B", copied],
+        text=True,
+    ).rstrip("\n") == message.rstrip("\n")
+    return copied
+
+
 def _commit_report_merge(
     clone: Path,
     *,
@@ -1915,6 +1994,82 @@ def test_schema_2_history_rejects_a_restored_schema_2_tip_after_downgrade(
     errors = validator.validate_b0_report(report, status, clone)
 
     assert any("schema downgrade" in error for error in errors)
+
+
+def test_schema_history_accepts_the_exact_historical_legacy_transition_merge() -> None:
+    validator = _validator()
+    assert validator.B0_REPORT_LEGACY_TRANSITION_MERGE == LEGACY_TRANSITION_MERGE
+    parents = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(REPO_ROOT),
+            "--no-replace-objects",
+            "rev-list",
+            "--parents",
+            "-n",
+            "1",
+            LEGACY_TRANSITION_MERGE,
+        ],
+        text=True,
+    ).split()
+
+    assert parents[1:] == [
+        "f084f3ccb830d8049a7275d8ed66b1f7e7673b53",
+        LEGACY_REPORT_REVISION,
+    ]
+    assert subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(REPO_ROOT),
+            "--no-replace-objects",
+            "rev-parse",
+            f"{LEGACY_TRANSITION_MERGE}^{{tree}}",
+        ],
+        text=True,
+    ).strip() == subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(REPO_ROOT),
+            "--no-replace-objects",
+            "rev-parse",
+            f"{LEGACY_REPORT_REVISION}^{{tree}}",
+        ],
+        text=True,
+    ).strip()
+    assert validator._validate_b0_schema_history(
+        REPO_ROOT,
+        validator.B0_REPORT_SCHEMA_VERSION,
+    ) == []
+
+
+def test_schema_history_rejects_a_fresh_copy_of_the_legacy_transition_merge(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    copied_transition = _copy_historical_legacy_transition_merge(clone)
+    subprocess.run(
+        ["git", "-C", str(clone), "checkout", "--quiet", "--detach", _head()],
+        check=True,
+        capture_output=True,
+    )
+    report, status, _ = _install_schema_2_evidence_revision(clone, validator)
+    _merge_ours(clone, copied_transition, "merge copied legacy transition history")
+
+    report_errors = validator.validate_b0_report(report, status, clone)
+    repository_errors = validator.validate_repository(clone)
+
+    assert any(
+        "schema 1.0.0 is permitted only" in error and copied_transition in error
+        for error in report_errors
+    ), report_errors
+    assert any(
+        "schema 1.0.0 is permitted only" in error and copied_transition in error
+        for error in repository_errors
+    ), repository_errors
 
 
 def test_schema_history_rejects_merge_downgrade_from_nonfirst_parent_report(
