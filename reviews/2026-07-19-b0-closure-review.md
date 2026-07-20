@@ -191,3 +191,45 @@ numerical-equivalence evidence, performance evidence, or general portability
 evidence. There are no unresolved required findings. Commit B may be created
 only as Commit A's direct child and must carry the final schema `2.0.0`
 evidence transition without changing the reviewed preparatory implementation.
+
+## Evidence-only attempt and transition-test repair
+
+The first evidence-only closure attempt,
+`dffce38d598c1636f9be2c289ff6baa233d19d04`, was blocked by five full-suite
+failures in transition-sensitive policy tests. It did not establish a completed
+Commit B. The approved test-only repair lineage was
+`6a4d78d8dd94ed0b7d1835020ec2caa334b7f1d0`,
+`d4a8d2800483f8810d392b4c3d1fdc467081e2bb`, and
+`ee3979a341aec1ff5568237cecc00787eb2e5757`, transplanted before the evidence
+transition as `60cb04d153d77e0bced397ac0ac3beb12e1ef355`,
+`dce856b598cbe606d1ab6b893677c0ad7f6c8cb4`, and
+`85d17e61b46e1fe5960a8794381f1235c53bc445`.
+
+Review reproduced and permanently repaired four additional test gaps:
+
+1. A frozen-status regression could false-pass by falling back to the moving
+   checkout status; it now commits an explicitly open frozen status and proves
+   the frozen and live bytes differ.
+2. The schema mutation helper did not traverse `verification.summary`; it now
+   validates that nested closed mapping directly.
+3. The checked-in-evidence digest regression did not prove every digest was
+   checked; it now corrupts every recorded digest and requires a path-specific
+   SHA-256 error for every entry.
+4. The historical `closure_pending` fixture derived identity from the moving
+   current `evaluated_commit`; it now loads and asserts the frozen historical
+   status at `B0_REPORT_LEGACY_REVISION`.
+
+The added regressions produced meaningful RED failures against their respective
+pre-fix revisions for the intended missing checks. GREEN verification covered
+the schema-2 closed state, the frozen schema-1 open transition, first-parent
+merge carrying, and later schema-2 reattestation. It included 249 changed-module
+tests and the B0 policy suite with 451 passed and 2 deselected, plus Ruff, diff,
+and clean-status checks. Task 31's formal verdict was **Spec compliance: PASS**
+and **Task quality: APPROVED**.
+
+The repair changed only
+`tests/policy/test_b0_integration_report.py` and
+`tests/policy/test_repository_governance.py`. It did not weaken or modify any
+production validator, governance content, or evidence content. All reciprocal
+review conclusions and the B0-only hosted-revision pin conclusion above remain
+unchanged. Commit B has not been recreated or completed by this repair.
