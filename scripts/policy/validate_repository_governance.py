@@ -742,7 +742,7 @@ def validate_provenance(
                         f"{entry['source_commit']}:{git_path}",
                     )
                 )
-            if pinned_digest != digest.get("value"):
+            if isinstance(digest, dict) and pinned_digest != digest.get("value"):
                 errors.append(f"{source_id}: content digest does not match pinned commit bytes")
         except (KeyError, subprocess.CalledProcessError) as exc:
             errors.append(f"{source_id}: cannot verify pinned Git bytes: {exc}")

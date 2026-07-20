@@ -1285,6 +1285,33 @@ def test_schema_2_closure_rejects_frozen_authority_immutable_metadata_drift(
     assert any("claude-spec" in error and "imported_at" in error for error in errors)
 
 
+def test_schema_2_closure_rejects_malformed_frozen_authority_content_digest(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    provenance_path = clone / "governance/authority-provenance.yaml"
+    provenance = yaml.safe_load(provenance_path.read_bytes())
+    provenance["sources"][0]["content_digest"] = None
+    frozen_provenance_content = yaml.safe_dump(
+        provenance, sort_keys=False
+    ).encode()
+    report, status, evidence_commit = _install_schema_2_evidence_revision(
+        clone,
+        validator,
+        frozen_provenance_content=frozen_provenance_content,
+    )
+
+    assert _git_show_bytes(
+        clone, evidence_commit, "governance/authority-provenance.yaml"
+    ) == frozen_provenance_content
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any(
+        "claude-spec" in error and "SHA-256 digest" in error for error in errors
+    )
+
+
 def test_schema_2_closure_rejects_duplicate_keys_in_frozen_status_yaml(
     tmp_path: Path,
 ) -> None:

@@ -3,7 +3,6 @@ from __future__ import annotations
 import copy
 import importlib.util
 from pathlib import Path
-import shutil
 import subprocess
 
 import pytest
@@ -213,19 +212,35 @@ def test_provenance_rejects_immutable_source_metadata_drift(
     assert any("claude-spec" in error and field in error for error in errors)
 
 
+@pytest.mark.parametrize("content_digest", [None, [], "sha256:forged"])
+def test_provenance_rejects_malformed_content_digest_without_crashing(
+    validator,
+    manifest: dict,
+    content_digest,
+) -> None:
+    malformed = copy.deepcopy(manifest)
+    malformed["sources"][0]["content_digest"] = content_digest
+
+    errors = validator.validate_provenance(malformed, REPO_ROOT)
+
+    assert any(
+        "claude-spec" in error and "SHA-256 digest" in error for error in errors
+    )
+
+
 def test_provenance_pinned_source_reads_ignore_replacement_objects(
     validator,
     manifest: dict,
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    repository = tmp_path / "replacement-only-authority"
-    repository.mkdir()
-    subprocess.run(["git", "init", "-q", str(repository)], check=True)
-    shutil.copytree(REPO_ROOT / "claude-spec", repository / "claude-spec")
-    shutil.copy2(REPO_ROOT / "PROGRAM_CHARTER.md", repository / "PROGRAM_CHARTER.md")
-    interop = repository / "claudex-spec/19-research-interop.md"
-    interop.parent.mkdir()
-    shutil.copy2(REPO_ROOT / "claudex-spec/19-research-interop.md", interop)
+    repository = tmp_path / "replaced-authority"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-local", str(REPO_ROOT), str(repository)],
+        check=True,
+        capture_output=True,
+    )
+    pinned = validator.PINNED_SOURCE_COMMIT
     git = [
         "git",
         "-C",
@@ -235,35 +250,73 @@ def test_provenance_pinned_source_reads_ignore_replacement_objects(
         "-c",
         "user.email=policy@test",
     ]
-    subprocess.run([*git, "add", "-A"], check=True, capture_output=True)
     subprocess.run(
-        [*git, "commit", "--quiet", "-m", "synthetic source commit"],
+        [*git, "checkout", "--quiet", "--detach", pinned],
         check=True,
         capture_output=True,
     )
-    replacement = subprocess.check_output(
+    (repository / "claude-spec/00-scope-and-goals.md").write_text(
+        "forged specification bytes\n",
+        encoding="utf-8",
+    )
+    (repository / "claude-spec/forged-only.md").write_text(
+        "replacement-only path\n",
+        encoding="utf-8",
+    )
+    (repository / "PROGRAM_CHARTER.md").write_text(
+        "forged charter bytes\n",
+        encoding="utf-8",
+    )
+    (repository / "claudex-spec/19-research-interop.md").write_text(
+        "forged interop bytes\n",
+        encoding="utf-8",
+    )
+    subprocess.run([*git, "add", "-A"], check=True, capture_output=True)
+    subprocess.run(
+        [*git, "commit", "--quiet", "-m", "forged source commit"],
+        check=True,
+        capture_output=True,
+    )
+    replacement_commit = subprocess.check_output(
         ["git", "-C", str(repository), "rev-parse", "HEAD"],
         text=True,
     ).strip()
-    pinned = validator.PINNED_SOURCE_COMMIT
-    subprocess.run(
-        [
-            "git",
-            "-C",
-            str(repository),
-            "update-ref",
-            f"refs/replace/{pinned}",
-            replacement,
-        ],
+    replacement_tree = subprocess.check_output(
+        ["git", "-C", str(repository), "rev-parse", "HEAD:claude-spec"],
+        text=True,
+    ).strip()
+    replacement_blob = subprocess.run(
+        ["git", "-C", str(repository), "hash-object", "-w", "--stdin"],
+        input=b"forged replacement blob\n",
         check=True,
         capture_output=True,
-    )
+    ).stdout.decode().strip()
+    replacements = {
+        pinned: replacement_commit,
+        validator.EXPECTED_SOURCES["claude-spec"]["git_object_id"]: replacement_blob,
+        validator.EXPECTED_SOURCES["program-charter"]["git_object_id"]: replacement_tree,
+        validator.EXPECTED_SOURCES["product-research-interop"]["git_object_id"]: replacement_tree,
+    }
+    for original, replacement in replacements.items():
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(repository),
+                "update-ref",
+                f"refs/replace/{original}",
+                replacement,
+            ],
+            check=True,
+            capture_output=True,
+        )
 
+    expected_tree = validator.EXPECTED_SOURCES["claude-spec"]["git_object_id"]
     assert subprocess.check_output(
         ["git", "-C", str(repository), "rev-parse", f"{pinned}:claude-spec"],
         text=True,
-    ).strip() == validator.EXPECTED_SOURCES["claude-spec"]["git_object_id"]
-    assert subprocess.run(
+    ).strip() != expected_tree
+    assert subprocess.check_output(
         [
             "git",
             "-C",
@@ -272,16 +325,30 @@ def test_provenance_pinned_source_reads_ignore_replacement_objects(
             "rev-parse",
             f"{pinned}:claude-spec",
         ],
-        capture_output=True,
-    ).returncode != 0
+        text=True,
+    ).strip() == expected_tree
+    assert validator.validate_provenance(
+        manifest,
+        repository,
+        check_worktree=False,
+    ) == []
 
-    errors = validator.validate_provenance(manifest, repository)
+    protected_git = validator._git
+    for vulnerable_subcommand in ("rev-parse", "cat-file", "ls-tree", "show"):
+        def selectively_unprotected_git(repo_root: Path, *args: str) -> bytes:
+            if args[:2] == ("--no-replace-objects", vulnerable_subcommand):
+                args = args[1:]
+            return protected_git(repo_root, *args)
 
-    for source_id in validator.EXPECTED_SOURCES:
-        assert any(
-            source_id in error and "cannot verify pinned Git bytes" in error
-            for error in errors
+        monkeypatch.setattr(validator, "_git", selectively_unprotected_git)
+        errors = validator.validate_provenance(
+            manifest,
+            repository,
+            check_worktree=False,
         )
+        monkeypatch.setattr(validator, "_git", protected_git)
+
+        assert errors, f"{vulnerable_subcommand} accepted replacement objects"
 
 
 def test_provenance_rejects_non_mapping_duplicate_and_incomplete_entries(validator, manifest: dict) -> None:
