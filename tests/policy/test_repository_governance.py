@@ -186,7 +186,9 @@ def test_checked_in_provenance_is_remote_pinned_without_source_pin_changes(
             "consumer_acceptance_authority",
             "supersedes",
         ):
+            assert type(entry[field]) is type(expected[field])
             assert entry[field] == expected[field]
+        assert type(entry["content_digest"]["value"]) is type(expected["digest"])
         assert entry["content_digest"]["value"] == expected["digest"]
 
 
@@ -210,6 +212,28 @@ def test_provenance_rejects_immutable_source_metadata_drift(
     errors = validator.validate_provenance(drifted, REPO_ROOT)
 
     assert any("claude-spec" in error and field in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    ("source_id", "integer_alias"),
+    [("claude-spec", 0), ("product-research-interop", 1)],
+)
+def test_provenance_rejects_boolean_integer_aliases_in_immutable_metadata(
+    validator,
+    manifest: dict,
+    source_id: str,
+    integer_alias: int,
+) -> None:
+    drifted = copy.deepcopy(manifest)
+    source = next(entry for entry in drifted["sources"] if entry["id"] == source_id)
+    source["consumer_acceptance_authority"] = integer_alias
+
+    errors = validator.validate_provenance(drifted, REPO_ROOT)
+
+    assert any(
+        source_id in error and "consumer_acceptance_authority" in error
+        for error in errors
+    )
 
 
 @pytest.mark.parametrize("content_digest", [None, [], "sha256:forged"])

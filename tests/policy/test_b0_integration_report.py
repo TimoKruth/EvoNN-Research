@@ -728,6 +728,68 @@ def test_b0_report_r5_identity_ignores_git_replacement_objects(
     assert any("working-tree content" in error for error in errors)
 
 
+@pytest.mark.parametrize("graft_content", [b"# comment-only graft metadata\n", b"invalid graft metadata\n"])
+def test_git_graft_guard_rejects_nonempty_metadata_in_linked_worktrees(
+    tmp_path: Path,
+    graft_content: bytes,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    linked = tmp_path / "linked-worktree"
+    subprocess.run(
+        ["git", "-C", str(clone), "worktree", "add", "--quiet", "--detach", str(linked), "HEAD"],
+        check=True,
+        capture_output=True,
+    )
+    grafts_path = _git_path(linked, "info/grafts")
+    grafts_path.parent.mkdir(parents=True, exist_ok=True)
+    grafts_path.write_bytes(graft_content)
+
+    errors = validator._validate_no_git_grafts(linked)
+
+    assert any("active Git graft metadata is forbidden" in error for error in errors)
+
+    grafts_path.write_bytes(b"")
+    assert validator._validate_no_git_grafts(linked) == []
+
+
+def test_repository_validation_rejects_graft_that_masks_schema_and_r5_failures(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, _, evidence_commit = _install_schema_2_evidence_revision(clone, validator)
+    schema_2_content = _git_show_bytes(
+        clone, evidence_commit, "governance/b0-report.json"
+    )
+    legacy_content = _git_show_bytes(
+        clone, LEGACY_REPORT_REVISION, "governance/b0-report.json"
+    )
+    report_path = clone / "governance/b0-report.json"
+    report_path.write_bytes(legacy_content)
+    _commit_clone(clone, "attempt schema downgrade")
+    report_path.write_bytes(schema_2_content)
+    restored = _commit_clone(clone, "restore schema 2 report")
+
+    unmasked_errors = validator.validate_repository(clone)
+    assert any("schema downgrade" in error for error in unmasked_errors)
+    assert any("direct parent" in error for error in unmasked_errors)
+
+    grafts_path = _git_path(clone, "info/grafts")
+    grafts_path.parent.mkdir(parents=True, exist_ok=True)
+    grafts_path.write_text(
+        f"{restored} {report['repository']['evaluated_commit']}\n",
+        encoding="ascii",
+    )
+
+    masked_errors = validator.validate_repository(clone)
+
+    assert any(
+        "active Git graft metadata is forbidden" in error
+        for error in masked_errors
+    ), masked_errors
+
+
 def test_local_probe_parent_symlink_escape_is_rejected(tmp_path: Path) -> None:
     validator = _validator()
     report = _report()
@@ -893,6 +955,47 @@ def test_governance_cli_reports_pathological_report_nesting_without_traceback(
     assert "Traceback" not in result.stderr
 
 
+def test_governance_cli_rejects_parser_accepted_deep_frozen_report_without_traceback(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, _, _ = _install_schema_2_evidence_revision(clone, validator)
+    nested_digest: object = "not-a-digest"
+    for _ in range(900):
+        nested_digest = [nested_digest]
+    first_path = next(iter(report["checked_in_evidence"]))
+    report["checked_in_evidence"][first_path] = nested_digest
+    _write_report(clone / "governance/b0-report.json", report)
+    _commit_clone(clone, "install deeply nested frozen report value")
+    shutil.copy2(
+        VALIDATOR_PATH,
+        clone / "scripts/policy/validate_repository_governance.py",
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(clone / "scripts/policy/validate_repository_governance.py")],
+        cwd=clone,
+        text=True,
+        capture_output=True,
+    )
+
+    assert result.returncode == 1
+    assert "must record a SHA-256 digest" in result.stdout
+    assert "Traceback" not in result.stderr
+
+
+def test_exact_json_comparison_handles_cyclic_caller_containers() -> None:
+    validator = _validator()
+    actual: list[object] = []
+    expected: list[object] = []
+    actual.append(actual)
+    expected.append(expected)
+
+    assert validator._exact_json_value(actual, expected)
+    assert not validator._exact_json_value(actual, [[]])
+
+
 def _commit_staged_clone(clone: Path, message: str) -> str:
     git = [
         "git",
@@ -920,6 +1023,15 @@ def _git_show_bytes(repository: Path, revision: str, relative: str) -> bytes:
     )
 
 
+def _git_path(repository: Path, relative: str) -> Path:
+    raw_path = subprocess.check_output(
+        ["git", "-C", str(repository), "rev-parse", "--git-path", relative],
+        text=True,
+    ).strip()
+    path = Path(raw_path)
+    return path if path.is_absolute() else repository / path
+
+
 def _write_report(path: Path, report: dict) -> bytes:
     content = (json.dumps(report, indent=2, sort_keys=True) + "\n").encode()
     path.write_bytes(content)
@@ -928,21 +1040,23 @@ def _write_report(path: Path, report: dict) -> bytes:
 
 def _install_three_file_implementation_parent(
     clone: Path,
-    report: dict,
-    status: dict,
     task_report_content: bytes,
 ) -> tuple[str, str, bytes]:
-    report_path = clone / "governance/b0-report.json"
+    current_head = subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", "HEAD"],
+        text=True,
+    ).strip()
+    (clone / "implementation-marker.txt").write_text(
+        f"schema transition implementation parent for {current_head}\n",
+        encoding="utf-8",
+    )
     status_path = clone / "governance/b0-status.yaml"
-    task_report_path = clone / ".superpowers/sdd/task-6-report.md"
-
-    interim_report = copy.deepcopy(report)
-    interim_report["evaluated_at"] = "1970-01-01T00:00:00Z"
-    _write_report(report_path, interim_report)
-    interim_status = copy.deepcopy(status)
+    interim_status = yaml.safe_load(status_path.read_bytes())
     interim_status["checked_in_at"] = "1970-01-01T00:00:00Z"
-    status_path.write_text(yaml.safe_dump(interim_status, sort_keys=False), encoding="utf-8")
-    task_report_path.write_bytes(task_report_content + b"\nSchema transition implementation parent.\n")
+    status_path.write_text(
+        yaml.safe_dump(interim_status, sort_keys=False),
+        encoding="utf-8",
+    )
     parent = _commit_clone(clone, "prepare schema transition implementation parent")
     parent_tree = subprocess.check_output(
         ["git", "-C", str(clone), "rev-parse", f"{parent}^{{tree}}"],
@@ -1007,8 +1121,6 @@ def _install_schema_2_evidence_revision(
         )
     parent, parent_tree, original_task_report = _install_three_file_implementation_parent(
         clone,
-        report,
-        status,
         task_report_content,
     )
 
@@ -1135,6 +1247,56 @@ def _replace_evidence_report_with_symlink_mode(
     return replacement
 
 
+def _install_fresh_schema_1_side_parent(clone: Path) -> str:
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "checkout",
+            "--quiet",
+            "-b",
+            "fresh-schema-1-side",
+            LEGACY_REPORT_REVISION,
+        ],
+        check=True,
+        capture_output=True,
+    )
+    report_path = clone / "governance/b0-report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report["evaluated_at"] = "1970-01-01T00:00:00Z"
+    _write_report(report_path, report)
+    return _commit_clone(clone, "record fresh schema 1 side-parent revision")
+
+
+def _merge_ours(clone: Path, revision: str, message: str) -> str:
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "-c",
+            "user.name=policy-test",
+            "-c",
+            "user.email=policy@test",
+            "merge",
+            "--quiet",
+            "--no-ff",
+            "-s",
+            "ours",
+            revision,
+            "-m",
+            message,
+        ],
+        check=True,
+        capture_output=True,
+    )
+    return subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", "HEAD"],
+        text=True,
+    ).strip()
+
+
 def _install_fresh_schema_1_evidence_revision(clone: Path, validator) -> tuple[dict, dict, str]:
     report_path = clone / "governance/b0-report.json"
     status_path = clone / "governance/b0-status.yaml"
@@ -1150,8 +1312,6 @@ def _install_fresh_schema_1_evidence_revision(clone: Path, validator) -> tuple[d
     )
     parent, parent_tree, original_task_report = _install_three_file_implementation_parent(
         clone,
-        report,
-        status,
         task_report_content,
     )
     report["repository"]["evaluated_commit"] = parent
@@ -1283,6 +1443,38 @@ def test_schema_2_closure_rejects_frozen_authority_immutable_metadata_drift(
 
     assert any("claude-spec" in error and "normative_role" in error for error in errors)
     assert any("claude-spec" in error and "imported_at" in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    ("source_id", "integer_alias"),
+    [("claude-spec", 0), ("product-research-interop", 1)],
+)
+def test_schema_2_closure_rejects_frozen_authority_boolean_integer_aliases(
+    tmp_path: Path,
+    source_id: str,
+    integer_alias: int,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    provenance_path = clone / "governance/authority-provenance.yaml"
+    provenance = yaml.safe_load(provenance_path.read_bytes())
+    source = next(entry for entry in provenance["sources"] if entry["id"] == source_id)
+    source["consumer_acceptance_authority"] = integer_alias
+    frozen_provenance_content = yaml.safe_dump(
+        provenance, sort_keys=False
+    ).encode()
+    report, status, _ = _install_schema_2_evidence_revision(
+        clone,
+        validator,
+        frozen_provenance_content=frozen_provenance_content,
+    )
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any(
+        source_id in error and "consumer_acceptance_authority" in error
+        for error in errors
+    )
 
 
 @pytest.mark.parametrize("content_digest", [None, [], "sha256:forged"])
@@ -1736,6 +1928,102 @@ def test_schema_2_downgrade_latch_scans_merged_side_parent_history(
     errors = validator.validate_b0_report(report, status, clone)
 
     assert any("schema downgrade" in error for error in errors)
+
+
+@pytest.mark.parametrize("after_schema_2_closure", [False, True])
+def test_schema_history_rejects_fresh_schema_1_revision_hidden_by_ours_merge(
+    tmp_path: Path,
+    after_schema_2_closure: bool,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    fresh_schema_1 = _install_fresh_schema_1_side_parent(clone)
+
+    if after_schema_2_closure:
+        subprocess.run(
+            ["git", "-C", str(clone), "checkout", "--quiet", "--detach", _head()],
+            check=True,
+            capture_output=True,
+        )
+        report, status, _ = _install_schema_2_evidence_revision(clone, validator)
+    else:
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(clone),
+                "checkout",
+                "--quiet",
+                "--detach",
+                LEGACY_REPORT_REVISION,
+            ],
+            check=True,
+            capture_output=True,
+        )
+        report = json.loads(
+            _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-report.json")
+        )
+        status = yaml.safe_load(
+            _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-status.yaml")
+        )
+
+    _merge_ours(clone, fresh_schema_1, "merge hidden fresh schema 1 report")
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any(
+        "schema 1.0.0" in error
+        and LEGACY_REPORT_REVISION in error
+        and fresh_schema_1 in error
+        for error in errors
+    ), errors
+
+
+def test_schema_history_allows_side_descendant_that_carries_historical_report(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "checkout",
+            "--quiet",
+            "-b",
+            "unchanged-report-side",
+            LEGACY_REPORT_REVISION,
+        ],
+        check=True,
+        capture_output=True,
+    )
+    (clone / "unrelated-side.txt").write_text("unrelated side change\n", encoding="utf-8")
+    side = _commit_clone(clone, "carry historical report unchanged")
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "checkout",
+            "--quiet",
+            "--detach",
+            LEGACY_REPORT_REVISION,
+        ],
+        check=True,
+        capture_output=True,
+    )
+    _merge_ours(clone, side, "merge unchanged historical report descendant")
+    report = json.loads(
+        _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-report.json")
+    )
+    status = yaml.safe_load(
+        _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-status.yaml")
+    )
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert not any("schema 1.0.0 is permitted only" in error for error in errors)
 
 
 def test_schema_1_validation_requires_complete_history_in_a_shallow_clone(

@@ -570,6 +570,37 @@ def _git(repo_root: Path, *args: str) -> bytes:
     return subprocess.check_output(["git", "-C", str(repo_root), *args], stderr=subprocess.STDOUT)
 
 
+def _validate_no_git_grafts(repo_root: Path) -> List[str]:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "--git-path", "info/grafts"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        raw_path = result.stdout.decode("utf-8").strip()
+        grafts_path = Path(raw_path)
+        if not grafts_path.is_absolute():
+            grafts_path = repo_root / grafts_path
+        if not grafts_path.exists():
+            return []
+        grafts_content = grafts_path.read_bytes()
+    except (
+        OSError,
+        subprocess.CalledProcessError,
+        TypeError,
+        ValueError,
+        UnicodeError,
+    ) as exc:
+        return [f"cannot verify absence of active Git graft metadata: {exc}"]
+    if grafts_content:
+        return [
+            "active Git graft metadata is forbidden: info/grafts must be absent or empty; "
+            "comment-only files are also rejected"
+        ]
+    return []
+
+
 def _sha256(content: bytes) -> str:
     return hashlib.sha256(content).hexdigest()
 
@@ -702,7 +733,10 @@ def validate_provenance(
             "consumer_acceptance_authority",
             "supersedes",
         ):
-            if entry[field] != expected[field]:
+            if (
+                type(entry[field]) is not type(expected[field])
+                or entry[field] != expected[field]
+            ):
                 errors.append(f"{source_id}: {field} does not match the required pin")
         if entry.get("supersedes") is not None:
             errors.append(f"{source_id}: initial pin must set supersedes to null")
@@ -1023,19 +1057,34 @@ def _canonical_json_sha256(value: Any) -> str:
 
 
 def _exact_json_value(actual: Any, expected: Any) -> bool:
-    if type(actual) is not type(expected):
-        return False
-    if isinstance(expected, dict):
-        return set(actual) == set(expected) and all(
-            _exact_json_value(actual[key], expected_value)
-            for key, expected_value in expected.items()
-        )
-    if isinstance(expected, list):
-        return len(actual) == len(expected) and all(
-            _exact_json_value(actual_value, expected_value)
-            for actual_value, expected_value in zip(actual, expected)
-        )
-    return actual == expected
+    pending = [(actual, expected)]
+    compared_containers: Set[tuple[int, int]] = set()
+    while pending:
+        actual_value, expected_value = pending.pop()
+        if type(actual_value) is not type(expected_value):
+            return False
+        if isinstance(expected_value, dict):
+            identity = (id(actual_value), id(expected_value))
+            if identity in compared_containers:
+                continue
+            compared_containers.add(identity)
+            if set(actual_value) != set(expected_value):
+                return False
+            pending.extend(
+                (actual_value[key], nested_expected)
+                for key, nested_expected in expected_value.items()
+            )
+        elif isinstance(expected_value, list):
+            identity = (id(actual_value), id(expected_value))
+            if identity in compared_containers:
+                continue
+            compared_containers.add(identity)
+            if len(actual_value) != len(expected_value):
+                return False
+            pending.extend(zip(actual_value, expected_value))
+        elif actual_value != expected_value:
+            return False
+    return True
 
 
 def _safe_checked_in_relative_path(relative: Any) -> bool:
@@ -1727,7 +1776,7 @@ def _validate_b0_schema_history(
                 "--no-replace-objects",
                 "log",
                 "--full-history",
-                "--format=%H",
+                "--format=%H %P",
                 "HEAD",
                 "--",
                 "governance/b0-report.json",
@@ -1739,7 +1788,8 @@ def _validate_b0_schema_history(
         return [f"B0 report cannot inspect complete committed schema history: {exc}"]
 
     declarations: List[tuple[str, str]] = []
-    for revision in revisions:
+    for revision_line in revisions:
+        revision, *parents = revision_line.split()
         content, read_error = _committed_regular_file(
             repo_root,
             revision,
@@ -1748,6 +1798,18 @@ def _validate_b0_schema_history(
         )
         if read_error or content is None:
             continue
+        if len(parents) > 1:
+            parent_contents = [
+                _committed_regular_file(
+                    repo_root,
+                    parent,
+                    "governance/b0-report.json",
+                    "historical B0 report parent",
+                )[0]
+                for parent in parents
+            ]
+            if content in parent_contents:
+                continue
         try:
             historical = _strict_json_loads(content)
         except (UnicodeDecodeError, json.JSONDecodeError, RecursionError, ValueError):
@@ -1799,6 +1861,30 @@ def _validate_b0_schema_history(
             return [
                 "B0 report schema downgrade from a reachable schema 2.0.0 revision is forbidden"
             ]
+    for legacy_revision in legacy_revisions:
+        try:
+            _git(
+                repo_root,
+                "--no-replace-objects",
+                "merge-base",
+                "--is-ancestor",
+                legacy_revision,
+                B0_REPORT_LEGACY_REVISION,
+            )
+        except subprocess.CalledProcessError as exc:
+            if exc.returncode != 1:
+                return [
+                    f"B0 report cannot verify frozen schema 1.0.0 history: {exc}"
+                ]
+        except (OSError, TypeError, ValueError, UnicodeError) as exc:
+            return [f"B0 report cannot verify frozen schema 1.0.0 history: {exc}"]
+        else:
+            continue
+        return [
+            "B0 report schema 1.0.0 is permitted only at frozen transition revision "
+            f"{B0_REPORT_LEGACY_REVISION}; found reachable report revision "
+            f"{legacy_revision}"
+        ]
     return []
 
 
@@ -1815,6 +1901,9 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
             f"{B0_REPORT_LEGACY_SCHEMA_VERSION} or {B0_REPORT_SCHEMA_VERSION}"
         )
         return errors
+    graft_errors = _validate_no_git_grafts(repo_root)
+    if graft_errors:
+        return graft_errors
     if schema_version == B0_REPORT_LEGACY_SCHEMA_VERSION:
         report = _closed_report_mapping(
             report,
@@ -2184,7 +2273,9 @@ def _load_json(path: Path) -> Dict[str, Any]:
 
 
 def validate_repository(repo_root: Path) -> List[str]:
-    errors: List[str] = []
+    errors = _validate_no_git_grafts(repo_root)
+    if errors:
+        return errors
     active = find_active_execution_plans(repo_root)
     if active != [Path("CONSOLIDATED_PLAN.md")]:
         errors.append(f"active execution plans must be exactly CONSOLIDATED_PLAN.md; found {[str(path) for path in active]}")
