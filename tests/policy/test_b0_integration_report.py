@@ -1285,14 +1285,16 @@ def test_schema_2_closure_rejects_frozen_authority_immutable_metadata_drift(
     assert any("claude-spec" in error and "imported_at" in error for error in errors)
 
 
+@pytest.mark.parametrize("content_digest", [None, [], "sha256:forged"])
 def test_schema_2_closure_rejects_malformed_frozen_authority_content_digest(
     tmp_path: Path,
+    content_digest,
 ) -> None:
     validator = _validator()
     clone = _committed_clone(tmp_path)
     provenance_path = clone / "governance/authority-provenance.yaml"
     provenance = yaml.safe_load(provenance_path.read_bytes())
-    provenance["sources"][0]["content_digest"] = None
+    provenance["sources"][0]["content_digest"] = content_digest
     frozen_provenance_content = yaml.safe_dump(
         provenance, sort_keys=False
     ).encode()
