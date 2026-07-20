@@ -662,3 +662,93 @@ regenerated at the new evaluated commit, and all checked-in evidence
 digests were recomputed. Gate B0 state is unchanged: open on B0.2 and
 B0.5. These joint fixes require reciprocal review by the implementing
 agent.
+
+## Gate B0 Closure — Final Commit A / Commit B Record
+
+### Frozen commit relationship
+
+- **Commit A (evaluated implementation):** `d5efd4aeb9dbe88ae1a8d1dfb4a2e77ddbd2ce3b`
+- **Commit A tree:** `b262e791494c4082e6ff8c4b08687d0cb400be57`
+- This file belongs to Commit A's single-parent, direct-child, evidence-only Commit B.
+- Commit B changes exactly `.superpowers/sdd/task-6-report.md`, `governance/b0-report.json`, and `governance/b0-status.yaml`.
+- Commit B's own identity is deliberately not embedded in tracked content, avoiding self-reference.
+
+The closure report evaluates replacement Commit A and its tree. The hosted runtime probes separately
+identify `f68856f0c2fdf0ebc73671264b5a3ab0cff3b224`, the B0-closure-only revision actually tested by
+GitHub Actions. The hosted tested commit and the evaluated closure commit are intentionally distinct
+identities.
+
+### Exact hosted bootstrap evidence
+
+- **Linux / NumPy:** workflow `B0 Linux trust lane`; run ID `29658842317`; attempt `1`;
+  URL `https://github.com/TimoKruth/EvoNN-Research/actions/runs/29658842317`; artifact
+  `b0-linux-runtime-probe`; committed path
+  `governance/evidence/b0/hosted/linux-runtime-probe.json`; SHA-256
+  `f17ca8a8f35538d72c6a7585ef013a7e1f5d50484fcc08d85ac672745d371c00`.
+- **macOS / MLX:** workflow `B0 macOS engine lane`; run ID `29658842318`; attempt `1`;
+  URL `https://github.com/TimoKruth/EvoNN-Research/actions/runs/29658842318`; artifact
+  `b0-macos-runtime-probe`; committed path
+  `governance/evidence/b0/hosted/macos-runtime-probe.json`; SHA-256
+  `147e5c54a75bb9090eb3e94e06fe9c9f656ca751df12fdb5fc8950bf4398e157`.
+- Both probes were produced by successful `push` runs on `main` at tested commit
+  `f68856f0c2fdf0ebc73671264b5a3ab0cff3b224`.
+- These artifacts are bootstrap runtime/portability contract evidence only. They are not scientific
+  evidence, backend qualification, numerical-equivalence evidence, performance evidence, or general
+  portability evidence.
+
+### Review, repair, and preservation record
+
+Reciprocal review covers exact commits `ca424270ffc9cd9c2eecf3382c63840cc44b381a`,
+`cc067143fd3143eaba490c4dcc9f3765db1d70f2`, and
+`25b44ab1ff1e9cd268a5144cef1727cc98b1defb`. The independent closure review is
+`reviews/2026-07-19-b0-closure-review.md`, with verdict `approve` and no required findings.
+
+The first blocked evidence-only attempt exposed transition-sensitive policy-test gaps. The approved
+repair lineage was transplanted before replacement Commit A as
+`60cb04d153d77e0bced397ac0ac3beb12e1ef355`,
+`dce856b598cbe606d1ab6b893677c0ad7f6c8cb4`, and
+`85d17e61b46e1fe5960a8794381f1235c53bc445`, with the durable review record finalized in
+`d5efd4aeb9dbe88ae1a8d1dfb4a2e77ddbd2ce3b`. The repair changed only transition-test fixtures and
+coverage plus the durable review record; it did not weaken production governance, alter provenance,
+or change hosted artifact bytes.
+
+R5 remains preserved: report validation anchors claims to the reachable committed evidence-only
+revision, verifies its single-parent direct-child relationship and exact evidence-only diff, and reads
+and hashes evidence bytes from that frozen Git tree so descendants and merge tips remain valid.
+R6 remains preserved: local runtime-probe validation accepts only the executing `HEAD` or `HEAD^`,
+while hosted validation remains strictly bound to `GITHUB_SHA`; the local-parent allowance does not
+weaken hosted binding.
+
+### Replacement Commit A verification
+
+Replacement Commit A completed the full verification contract: `uv lock --check`; locked all-package
+synchronization; the complete pytest suite; complete Ruff; import-boundary, repository-governance,
+and backend-capability validators; `scripts/ci/b0-policy-checks.sh`; all eight package/data scripts
+executed from `/tmp` (`shared`, `benchmarks`, `compare`, `contenders`, `prism`, `topograph`,
+`stratograph`, and `primordia`); the focused repository-governance/report/bootstrap suite;
+`git diff --check`; and clean tracked-worktree confirmation. The repaired transition coverage includes
+schema-2 closed-state mutation checks, frozen schema-1 open-state handling, descendant and merge-tip
+behavior, and checked-in digest verification.
+
+### Fresh optional local bootstrap probes at replacement Commit A
+
+- **NumPy / Stratograph:** backend `numpy` 2.5.1; Darwin `26.5.1` / `arm64`; kernel
+  `25.5.0`; CPython `3.13.1`; started and ended `2026-07-20T16:39:08Z`; path
+  `.artifacts/b0/local/numpy/b0-runtime-probe.json`; SHA-256
+  `7532bb5df9b50045dcbeea4ec475abd66f6c2b0db85badf7c4ce78f049ae32a8`; embedded commit
+  `d5efd4aeb9dbe88ae1a8d1dfb4a2e77ddbd2ce3b`.
+- **MLX / Prism:** backend `mlx` 0.32.0; Darwin `26.5.1` / `arm64`; kernel
+  `25.5.0`; CPython `3.13.1`; started and ended `2026-07-20T16:39:08Z`; path
+  `.artifacts/b0/local/mlx/b0-runtime-probe.json`; SHA-256
+  `6b13c7e030cb4751b772f585d3f59ee5f00fd65fc69806529e6e1f02fa6d0741`; embedded commit
+  `d5efd4aeb9dbe88ae1a8d1dfb4a2e77ddbd2ce3b`.
+
+Both local probes validate successfully and remain optional `bootstrap_probe_only` local evidence.
+They are ignored, unstaged, and not committed. The preserved superseded `d361589b...` probes remain
+untouched under `.artifacts/b0/local/superseded/`.
+
+### Final gate state and next transition
+
+B0.1, B0.2, B0.3, B0.4, B0.5, and B0.6 are all closed. There are no Gate B0 blockers and
+`parallel_handoff_ready` is true. The next action is joint: the team must freeze the Phase 0
+interfaces before creating Lane A and Lane B implementation branches.

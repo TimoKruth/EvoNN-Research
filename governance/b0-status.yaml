@@ -1,32 +1,34 @@
 document_kind: gate_status
 gate: B0
-status: open
-checked_in_at: "2026-07-18T19:15:03Z"
+status: closed
+checked_in_at: "2026-07-20T16:39:08Z"
 items:
   B0.1:
-    status: locally_satisfied
-    evidence: governance/b0-report.json records implementation work on agent/b0-bootstrap, not main
+    status: closed
+    open_reason: null
+    evidence: governance/b0-report.json records Gate B0 closure after final integration and independent review
   B0.2:
-    status: open
-    open_reason: authoritative_remote_url_absent
-    evidence: governance/authority-provenance.yaml remains local-only/provisional with null upstream URLs; governance/b0-report.json records the blocker
+    status: closed
+    open_reason: null
+    evidence: canonical remote-pinned governance/authority-provenance.yaml closes provenance without changing any pinned source bytes, commits, object identities, versions, or digests
   B0.3:
     status: closed
     open_reason: null
-    evidence: governance/b0-report.json records seven Python package skeletons, the data-only benchmark skeleton, and eight passing local checks
+    evidence: governance/b0-report.json records the complete repository skeleton and passing package/data validation
   B0.4:
     status: closed
     open_reason: null
-    evidence: governance/b0-report.json records passing permanent import, workspace dependency, data-only benchmark, and reviewed static external-API allowance validation
+    evidence: governance/b0-report.json records passing permanent import-boundary and reviewed static external-API policy validation
   B0.5:
-    status: open
-    open_reason: hosted_ci_not_executed
-    evidence: governance/b0-report.json records validated workflow contracts and freshly regenerated local NumPy/MLX bootstrap probes at the reviewed implementation commit; hosted runs and uploaded artifacts do not exist
+    status: closed
+    open_reason: null
+    evidence: governance/b0-report.json binds the two exact committed hosted probes to their successful Linux and macOS run metadata; hosted evidence is bootstrap-only
   B0.6:
-    status: locally_satisfied
-    evidence: governance/b0-report.json records passing fail-closed single-active-plan/report-schema validation and durable cross-review evidence
+    status: closed
+    open_reason: null
+    evidence: governance/b0-report.json records final integration, reciprocal review, transition-test repair, full replacement Commit A verification, and the independent closure review at reviews/2026-07-19-b0-closure-review.md
 notes:
-  - B0.2 remains formally open solely because no real authoritative remote URL exists.
-  - B0.5 remains formally open until both hosted workflows execute and their uploaded runtime artifacts are collected.
-  - Local runtime probes are bootstrap contract evidence only; they are not hosted, scientific, or backend qualification evidence.
+  - Hosted runtime evidence is bootstrap contract/portability evidence only; it is not scientific, backend-qualification, numerical-equivalence, performance, or general portability evidence.
+  - Local NumPy and MLX probes remain optional local bootstrap evidence regenerated at the evaluated Commit A.
+  - Gate B0 closure authorizes only the next joint transition; the team must jointly freeze the Phase 0 interfaces before creating Lane A and Lane B implementation branches.
   - This artifact records contract/bootstrap evidence only; it is not Phase 0 export evidence.

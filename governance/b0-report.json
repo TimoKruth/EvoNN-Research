@@ -1,20 +1,21 @@
 {
-  "blockers": {
-    "B0.2": "authoritative_remote_url_absent",
-    "B0.5": "hosted_ci_not_executed"
-  },
+  "blockers": {},
   "checked_in_evidence": {
-    ".github/workflows/linux-trust.yml": "715fee538f5751902ad4b2e0ffc262c73e5a4066a5b50f3bab1fa2def1bc00ee",
-    ".github/workflows/macos-engines.yml": "d06c402a85d35fc0773d435fd987f67a83fc24720b56af974032aff8d331c1f8",
-    "CONSOLIDATED_PLAN.md": "fdd039f99d86c20d5116fc965bb8b9ea1811a0bcc9dff6b35da36345f3586b52",
-    "PARALLEL_WORK_GUIDE.md": "642db3b5a3df5fc67a1d749a679b9b4cfb26edfaac1815894ffdcef39d3183c2",
+    ".github/workflows/linux-trust.yml": "2b87b898916fe93aaea339b3027394b84c511640d221fe1dbcf292307bfd87a3",
+    ".github/workflows/macos-engines.yml": "94cf0709e11aa55e1e47c972d7eb99030ed36c606a7f9f606596d476760a51d4",
+    "CONSOLIDATED_PLAN.md": "47b4007f3f4ca22b6fd1b9cf227c5b57428a26158b664d7a471a10dba14b4f9d",
+    "PARALLEL_WORK_GUIDE.md": "d7c7599392f555067c947cf9ffd6e5affe6343533214980c7d2fc4180709f230",
     "governance/SPEC_TRACEABILITY.md": "99a22c482e823a7971faa95a45cd800e6ad56f301e27e37f6b2958512f4e0b91",
-    "governance/SPEC_UPGRADE_PROCESS.md": "acc48a7857fb325399b734b3580b0fdd20b0c8b10c811be0ecce67cb7e890d22",
-    "governance/authority-provenance.yaml": "4269ba59aa4ca7b3acc2aaef8f26be3d1df6dc0560d4ef4fe8478ceee60dc4bf",
-    "governance/b0-status.yaml": "5dcb5d2c814ee953adcf04e7acc1c0cc4386c392795a59d2b573ece3fc30a839",
+    "governance/SPEC_UPGRADE_PROCESS.md": "2260ebf3f381720b4cb69215bcfc3cfee99397ffbc3b7c9f543a5f5a7e611cc4",
+    "governance/authority-provenance.yaml": "68b57f202cf72f51f96a5248a6431eefa096abae1133f5cecba60394df541bfb",
+    "governance/b0-status.yaml": "aaec03d3212e79ca76b7d0de1af0c858d3252f02779a73da781b9afc3944c9d3",
+    "governance/evidence/b0/hosted/linux-runtime-probe.json": "f17ca8a8f35538d72c6a7585ef013a7e1f5d50484fcc08d85ac672745d371c00",
+    "governance/evidence/b0/hosted/macos-runtime-probe.json": "147e5c54a75bb9090eb3e94e06fe9c9f656ca751df12fdb5fc8950bf4398e157",
     "pyproject.toml": "c2c6853f5b85fb8af4b7a3fad3c256c2c4833d759a8993a114754f151426063e",
     "research/logs/2026-07-18-dynamic-import-policy.md": "f3b3a7e18e7a1384b6bfaae04bb4802cb62a36e3043e0da278abc57412b04ead",
+    "reviews/2026-07-18-b0-cross-review-addendum.md": "055aa1c135c692124ee4c8e4e9fb63ceb1fb88d886b72f7275d9aa5041d06ca9",
     "reviews/2026-07-18-b0-cross-review.md": "39afa085164b24e186fcbfd5ec6eaf80c6f44c968a11984f7280917377ecb258",
+    "reviews/2026-07-19-b0-closure-review.md": "5cb5d7ad37eb14142fb092cf8d1eb323b94d93c9ccb01f05ffa5decc68a0f58f",
     "scripts/ci/benchmarks-checks.sh": "d47d9bf909cc7d63e26c48f66e99ab330d1ce247a44c7a64a7abee15a2c968c5",
     "scripts/ci/compare-checks.sh": "c6e33621a773d90e9f1b3b70f7dfaf1525230f3d90772af5a2280a96ec686300",
     "scripts/ci/contenders-checks.sh": "53416d07a32a395ebb1cc28ffc396a59c20b9137c3fdcdcd64eb2af6b9907078",
@@ -26,17 +27,63 @@
     "scripts/ci/topograph-checks.sh": "3a30a37af9131d250667f8ffe874b0c85455a3bc191f0758da0a4da608c9fe10",
     "scripts/policy/validate_backend_capabilities.py": "c50676a5ec5146a1341f527c67d7f5974c979868b55fded4fdc3ef408322a268",
     "scripts/policy/validate_import_boundaries.py": "569b9ca84cba51ab55a929683a33ff5f5acc8e2a895f27ccff5bf1e96f3a8a84",
-    "scripts/policy/validate_repository_governance.py": "25380b35e312c08832e6df51af92b188b11cb72ba266b7ebe6f1fc096301de92",
+    "scripts/policy/validate_repository_governance.py": "3e351a8bbbb26bb4692ec732923cfda5b289f277f906f0181621dd091b81b819",
     "tests/ci/test_runtime_probe.py": "ca1e002ce021bf66ae1f0f3c36f1ea3bd25b06507aa62af329aed069926dbc86",
-    "tests/policy/test_b0_ci_bootstrap.py": "fe59153056c25277fd77904cb8eac11c169125c63814b6e55ed774e161eeafc8",
-    "tests/policy/test_b0_integration_report.py": "13dc9e1ef99af8b946f73d932dada06a9e4a2a01931c25d9eec1cd8bb139c27a",
+    "tests/policy/test_b0_ci_bootstrap.py": "0f2e0b9aba7d3de90d1b22c40e98d9e8dda86942756051ac42ae5ddf366bc9c2",
+    "tests/policy/test_b0_integration_report.py": "c4642d56317a7eb2dc6775c8a39cbc68114c7b79359fd15439c9dfff4b7b42be",
     "tests/policy/test_backend_capabilities.py": "11b846dbafe23d3c024caf44d21dee676cd93af3890e6f1985086b0b1a0eacb9",
     "tests/policy/test_import_boundaries.py": "49092f5740c0e90a691ac898a073b890f393f942ac4de08b25a5190f4e846a5b",
-    "tests/policy/test_repository_governance.py": "ab7abb107f53a50746d8cc0e07e629374371f457c427054a29d15d55b7c612c0",
-    "tests/policy/test_workspace_skeletons.py": "e5abc19aa4ca75b3ba779591df9eddb4419347d87914d3576d5b319d563b50cf",
+    "tests/policy/test_repository_governance.py": "cac4dab9111f91ae1d0055a3c9b3a7247e7fda737927e7afd1adc4cb0c364c1a",
+    "tests/policy/test_workspace_skeletons.py": "71fa76a6a7ce162ae09bbb180f4bad99e5210fc727c6d7dd87bf66e858ca2646",
     "uv.lock": "efabedff03ddb0b0fbbff8a70ae87886e379fc244d7b102ffee9ee5b6a2f45c5"
   },
-  "evaluated_at": "2026-07-18T19:15:03Z",
+  "evaluated_at": "2026-07-20T16:39:08Z",
+  "hosted_runtime_probes": [
+    {
+      "artifact_name": "b0-linux-runtime-probe",
+      "artifact_path": "governance/evidence/b0/hosted/linux-runtime-probe.json",
+      "backend": "numpy",
+      "backend_version": "2.5.1",
+      "branch": "main",
+      "conclusion": "success",
+      "event": "push",
+      "evidence_scope": "hosted_bootstrap",
+      "execution_scope": "hosted",
+      "host_architecture": "x86_64",
+      "host_os": "Linux",
+      "manifest_path": "EvoNN-Stratograph/backend-capabilities.json",
+      "qualification": "bootstrap_probe_only",
+      "repository_commit": "f68856f0c2fdf0ebc73671264b5a3ab0cff3b224",
+      "run_attempt": "1",
+      "run_id": "29658842317",
+      "run_url": "https://github.com/TimoKruth/EvoNN-Research/actions/runs/29658842317",
+      "sha256": "f17ca8a8f35538d72c6a7585ef013a7e1f5d50484fcc08d85ac672745d371c00",
+      "system": "stratograph",
+      "workflow_name": "B0 Linux trust lane"
+    },
+    {
+      "artifact_name": "b0-macos-runtime-probe",
+      "artifact_path": "governance/evidence/b0/hosted/macos-runtime-probe.json",
+      "backend": "mlx",
+      "backend_version": "0.32.0",
+      "branch": "main",
+      "conclusion": "success",
+      "event": "push",
+      "evidence_scope": "hosted_bootstrap",
+      "execution_scope": "hosted",
+      "host_architecture": "arm64",
+      "host_os": "Darwin",
+      "manifest_path": "EvoNN-Prism/backend-capabilities.json",
+      "qualification": "bootstrap_probe_only",
+      "repository_commit": "f68856f0c2fdf0ebc73671264b5a3ab0cff3b224",
+      "run_attempt": "1",
+      "run_id": "29658842318",
+      "run_url": "https://github.com/TimoKruth/EvoNN-Research/actions/runs/29658842318",
+      "sha256": "147e5c54a75bb9090eb3e94e06fe9c9f656ca751df12fdb5fc8950bf4398e157",
+      "system": "prism",
+      "workflow_name": "B0 macOS engine lane"
+    }
+  ],
   "items": {
     "B0.1": {
       "evidence_paths": [
@@ -44,16 +91,17 @@
         "governance/b0-status.yaml"
       ],
       "reason": null,
-      "state": "locally_satisfied"
+      "state": "closed"
     },
     "B0.2": {
       "evidence_paths": [
         "governance/authority-provenance.yaml",
         "governance/SPEC_UPGRADE_PROCESS.md",
-        "governance/SPEC_TRACEABILITY.md"
+        "governance/SPEC_TRACEABILITY.md",
+        "governance/b0-report.json"
       ],
-      "reason": "authoritative_remote_url_absent",
-      "state": "open"
+      "reason": null,
+      "state": "closed"
     },
     "B0.3": {
       "evidence_paths": [
@@ -91,10 +139,13 @@
         "tests/policy/test_backend_capabilities.py",
         "tests/ci/test_runtime_probe.py",
         ".artifacts/b0/local/numpy/b0-runtime-probe.json",
-        ".artifacts/b0/local/mlx/b0-runtime-probe.json"
+        ".artifacts/b0/local/mlx/b0-runtime-probe.json",
+        "governance/b0-report.json",
+        "governance/evidence/b0/hosted/linux-runtime-probe.json",
+        "governance/evidence/b0/hosted/macos-runtime-probe.json"
       ],
-      "reason": "hosted_ci_not_executed",
-      "state": "open"
+      "reason": null,
+      "state": "closed"
     },
     "B0.6": {
       "evidence_paths": [
@@ -102,10 +153,14 @@
         "tests/policy/test_repository_governance.py",
         "tests/policy/test_b0_integration_report.py",
         "PARALLEL_WORK_GUIDE.md",
-        "reviews/2026-07-18-b0-cross-review.md"
+        "reviews/2026-07-18-b0-cross-review.md",
+        "governance/b0-report.json",
+        "tests/policy/test_b0_ci_bootstrap.py",
+        "reviews/2026-07-18-b0-cross-review-addendum.md",
+        "reviews/2026-07-19-b0-closure-review.md"
       ],
       "reason": null,
-      "state": "locally_satisfied"
+      "state": "closed"
     }
   },
   "local_runtime_probes": [
@@ -120,7 +175,7 @@
       "manifest_path": "EvoNN-Stratograph/backend-capabilities.json",
       "optional_local_evidence": true,
       "qualification": "bootstrap_probe_only",
-      "sha256": "5f9dbe0bc738829d1f66950ecd674760ea0b0dccb18db1c61992104100b111f6",
+      "sha256": "7532bb5df9b50045dcbeea4ec475abd66f6c2b0db85badf7c4ce78f049ae32a8",
       "system": "stratograph"
     },
     {
@@ -134,25 +189,22 @@
       "manifest_path": "EvoNN-Prism/backend-capabilities.json",
       "optional_local_evidence": true,
       "qualification": "bootstrap_probe_only",
-      "sha256": "48dd72bc28be24d6a1803974d36eef955fe20f93632424191f7ec2d25a83433b",
+      "sha256": "6b13c7e030cb4751b772f585d3f59ee5f00fd65fc69806529e6e1f02fa6d0741",
       "system": "prism"
     }
   ],
-  "next_transition": "After B0.2 and B0.5 both close, rerun joint Gate B0 integration, then jointly freeze the Phase 0 interfaces before Lane A and Lane B branches begin.",
-  "overall_state": "open",
-  "parallel_handoff_blockers": [
-    "B0.2",
-    "B0.5"
-  ],
-  "parallel_handoff_ready": false,
+  "next_transition": "The team must jointly freeze the Phase 0 interfaces before creating Lane A and Lane B implementation branches.",
+  "overall_state": "closed",
+  "parallel_handoff_blockers": [],
+  "parallel_handoff_ready": true,
   "report_kind": "gate_b0_integration",
   "repository": {
-    "branch": "agent/b0-bootstrap",
-    "evaluated_commit": "ca424270ffc9cd9c2eecf3382c63840cc44b381a",
-    "evaluated_tree": "9dfdc567456a5788d5524169c1f7522ad88d52f1",
+    "branch": "b0/close-gate",
+    "evaluated_commit": "d5efd4aeb9dbe88ae1a8d1dfb4a2e77ddbd2ce3b",
+    "evaluated_tree": "b262e791494c4082e6ff8c4b08687d0cb400be57",
     "relationship": "implementation commit immediately before the evidence-only report commit"
   },
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "verification": {
     "commands": [
       {
