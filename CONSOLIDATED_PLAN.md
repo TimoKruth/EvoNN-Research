@@ -169,17 +169,16 @@ from all reporting surfaces (Phases 1/3 → WP-7.3).
 
 ## Gate B0 — Reproducible Authority And Repository Bootstrap
 
-- [x] **B0.1** Lab repository created; work starts on an implementation
-  branch, never `main`. Local evidence: work is on `agent/b0-bootstrap`.
-- [ ] **B0.2** Governing sources pinned with a checked-in provenance
-  manifest (upstream URL, exact commit, declared spec version, import
-  date, tree digest) — commit-pinned submodule or subtree preferred:
-  `claude-spec/` (full), `PROGRAM_CHARTER.md`, and
-  `claudex-spec/19-research-interop.md` (consumer acceptance is governed
-  by the Product chapter, not by Lab documents). A recorded procedure
-  defines how spec upgrades are reviewed and reflected in traceability.
-  **Open blocker:** `authoritative_remote_url_absent`; the current pin is
-  truthful local-only/provisional authority with null upstream URLs.
+- [x] **B0.1** Lab repository created; work proceeds on the dedicated
+  `b0/close-gate` implementation branch, never `main`.
+- [x] **B0.2** Governing sources are pinned by the checked-in provenance
+  manifest to the canonical authority remote
+  `https://github.com/TimoKruth/EvoNN-Research.git`, with exact commits,
+  declared versions, import dates, Git object identities, and content
+  digests. The pin covers `claude-spec/` (full), `PROGRAM_CHARTER.md`, and
+  `claudex-spec/19-research-interop.md`; Product consumer acceptance remains
+  governed by the Product chapter. The recorded upgrade process and
+  traceability procedure govern future source changes.
 - [x] **B0.3** seven importable Python package skeletons (Shared,
   Contenders, Compare, Prism, Topograph, Stratograph, Primordia), each with
   an importable module, empty test, and per-package check script; plus
@@ -191,21 +190,28 @@ from all reporting surfaces (Phases 1/3 → WP-7.3).
   skeletons (engine↛engine, shared↛engines). The data-only
   `shared-benchmarks/` skeleton is layout- and catalog-loader-validated, not
   import-validated. The permanent policy validator passes locally.
-- [ ] **B0.5** Both CI hosts execute real (non-stub) no-op workflows:
-  Linux trust lane and macOS engine lane; Linux install proves MLX is
-  platform-conditional; CI fixture artifacts carry exact host/runtime
-  metadata; skeletons declare backend-capability manifests.
-  **Open blocker:** `hosted_ci_not_executed`; workflow contracts and local
-  bootstrap probes pass, but no hosted runs or uploaded artifacts exist.
-- [x] **B0.6** Single-active-plan policy test green; the consolidated plan
-  remains the sole active execution plan.
+- [x] **B0.5** Both hosted CI workflows executed real (non-stub) bootstrap
+  probes against commit `f68856f0c2fdf0ebc73671264b5a3ab0cff3b224`:
+  Linux/NumPy run `29658842317` and macOS/MLX run `29658842318`. Their exact
+  uploaded artifacts are preserved at
+  `governance/evidence/b0/hosted/linux-runtime-probe.json` and
+  `governance/evidence/b0/hosted/macos-runtime-probe.json`. Both remain
+  `bootstrap_probe_only`: they prove bootstrap/runtime availability and are
+  not scientific evidence. These hosted workflows exercised the named tested
+  commit, not this Commit A closure implementation.
+- [x] **B0.6** Single-active-plan policy is preserved; the consolidated plan
+  remains the sole active execution plan, with the closure transition covered
+  by transition-aware policy tests.
 
-**Lane split & sync:** B0 is executed **jointly** (it is small and creates
+**Lane split & sync:** B0 was executed **jointly** (it is small and creates
 the shared ground both lanes stand on).
 
-**Exit (contract evidence):** Gate B0 exit remains open; Phase 0 cannot begin.
-B0.2 and B0.5 must both close, then joint integration must pass on the hosted
-Linux and macOS evidence before the Phase 0 interfaces are frozen.
+**Exit (contract evidence):** Gate B0 is closed in this Commit A. Commit A is
+the closure implementation that the later direct-child evidence-only Commit B
+will evaluate; the anchored machine-readable report and status remain the
+legacy open record until Commit B records that evaluation. Closure does not
+authorize immediate lane work. The next permitted action is to jointly freeze
+and record the Phase 0 interfaces before creating either lane branch.
 
 ---
 
@@ -743,11 +749,11 @@ provenance-envelope schema (A→B, co-signed before fixture work starts).
 
 ## Immediate Next Actions
 
-1. Create the authoritative repository remote.
-2. Update provenance and close B0.2 only after every pinned authority URL
-   matches that configured remote.
-3. Run both hosted workflows, collect their uploaded artifacts, and close B0.5
-   only after the Linux and macOS evidence validates.
-4. Rerun joint Gate B0 integration and keep the gate open on any failed item.
-5. After all six items close, freeze the Phase 0 interfaces and split Lane A/Lane B
-   exactly as defined in the Phase 0 lane block.
+1. Jointly freeze the Phase 0 interfaces named in the Phase 0 lane block:
+   canonical-encoding/digest API, export model shapes, and catalog-loader
+   signatures.
+2. Record the co-signed interface freeze before changing any frozen boundary.
+3. Create the Phase 0 Lane A and Lane B implementation branches only after the
+   freeze is recorded.
+4. Begin the assigned Phase 0 work packages while keeping WP-0.10 and the phase
+   exit joint.

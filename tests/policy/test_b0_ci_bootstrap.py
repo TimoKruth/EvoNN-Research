@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -176,12 +177,18 @@ def test_b0_policy_script_runs_from_another_directory(tmp_path: Path) -> None:
     assert "Backend capability policy: PASS" in result.stdout
 
 
-def test_b05_truthfully_remains_open_for_hosted_execution() -> None:
-    status = yaml.safe_load((REPO_ROOT / "governance/b0-status.yaml").read_text(encoding="utf-8"))
-    assert status["status"] == "open"
-    assert status["items"]["B0.2"]["status"] == "open"
-    assert status["items"]["B0.5"]["status"] == "open"
-    assert status["items"]["B0.5"]["open_reason"] == "hosted_ci_not_executed"
-    evidence = status["items"]["B0.5"]["evidence"]
-    assert "local" in evidence.lower()
-    assert "hosted" in evidence.lower()
+def test_workflow_policy_preserves_full_history_and_final_b0_closure() -> None:
+    report = json.loads(
+        (REPO_ROOT / "governance/b0-report.json").read_text(encoding="utf-8")
+    )
+    status = yaml.safe_load(
+        (REPO_ROOT / "governance/b0-status.yaml").read_text(encoding="utf-8")
+    )
+
+    if report["schema_version"] == "1.0.0":
+        assert status["status"] == "open"
+    else:
+        assert report["schema_version"] == "2.0.0"
+        assert status["status"] == "closed"
+        assert status["items"]["B0.2"]["status"] == "closed"
+        assert status["items"]["B0.5"]["status"] == "closed"

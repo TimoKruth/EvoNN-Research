@@ -317,36 +317,39 @@ def test_parallel_work_guide_is_non_authoritative_and_records_exact_lane_model()
         "Level 2 — Lab phase lanes",
         "freeze interfaces → parallel lanes → cross-review → joint integration → joint gate",
         "B0, Foundation Integrity Gate, phase exits, transfer proof, L-SCI, portfolio status, and release governance",
-        "first lane split is not authorized",
-        "first safe parallel point is Phase 0",
     ):
         assert required in text
+    assert "Gate B0 is closed" in text
+    assert "no Phase 0 lane branch may begin before" in text
     for row in EXPECTED_LANE_ROWS:
         assert row in text
 
 
-def test_consolidated_plan_records_truthful_open_b0_and_exact_next_actions() -> None:
+def test_consolidated_plan_records_closed_b0_and_exact_next_actions() -> None:
     text = PLAN_PATH.read_text(encoding="utf-8")
     b0_section = text.split("## Gate B0", 1)[1].split("## Phase 0", 1)[0]
-    for item in ("B0.1", "B0.3", "B0.4", "B0.6"):
+
+    for item in ("B0.1", "B0.2", "B0.3", "B0.4", "B0.5", "B0.6"):
         assert f"- [x] **{item}**" in b0_section
-    for item in ("B0.2", "B0.5"):
-        assert f"- [ ] **{item}**" in b0_section
-    assert "authoritative_remote_url_absent" in b0_section
-    assert "hosted_ci_not_executed" in b0_section
-    assert "Gate B0 exit remains open; Phase 0 cannot begin" in b0_section
+
+    assert "authoritative_remote_url_absent" not in b0_section
+    assert "hosted_ci_not_executed" not in b0_section
+    assert "Gate B0 is closed" in b0_section
+    assert "bootstrap_probe_only" in b0_section
+    assert "not scientific" in b0_section
+    assert "f68856f0c2fdf0ebc73671264b5a3ab0cff3b224" in b0_section
+    assert "29658842317" in b0_section
+    assert "29658842318" in b0_section
 
     next_actions = text.split("## Immediate Next Actions", 1)[1]
     expected_actions = (
-        "Create the authoritative repository remote.",
-        "Update provenance and close B0.2",
-        "Run both hosted workflows, collect their uploaded artifacts, and close B0.5",
-        "Rerun joint Gate B0 integration",
-        "freeze the Phase 0 interfaces and split Lane A/Lane B",
+        "Jointly freeze the Phase 0 interfaces",
+        "Record the co-signed interface freeze",
+        "Create the Phase 0 Lane A and Lane B implementation branches",
+        "Begin the assigned Phase 0 work packages",
     )
     positions = [next_actions.index(action) for action in expected_actions]
     assert positions == sorted(positions)
-    assert "Expand **WP-0.1**" not in next_actions
 
 
 def test_checked_in_b0_report_is_complete_and_valid() -> None:
