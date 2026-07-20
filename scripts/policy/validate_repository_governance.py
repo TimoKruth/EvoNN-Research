@@ -1063,7 +1063,8 @@ def _exact_json_value(actual: Any, expected: Any) -> bool:
     pending = [(actual, expected)]
     compared_containers: Set[tuple[int, int]] = set()
     while pending:
-        actual_value, expected_value = pending.pop()
+        actual_value, expected_value = pending[-1]
+        del pending[-1]
         if type(actual_value) is not type(expected_value):
             return False
         if isinstance(expected_value, dict):
@@ -1668,7 +1669,11 @@ def validate_b0_schema_2_state(
                 errors.append(
                     f"B0 report {item_id} must not use governance/b0-report.json as self-reference evidence"
                 )
-            required_paths = B0_REPORT_SCHEMA_2_REQUIRED_ITEM_EVIDENCE.get(item_id)
+            required_paths = (
+                B0_REPORT_SCHEMA_2_REQUIRED_ITEM_EVIDENCE[item_id]
+                if item_id in B0_REPORT_SCHEMA_2_REQUIRED_ITEM_EVIDENCE
+                else None
+            )
             if required_paths:
                 missing_paths = required_paths - evidence_path_set
                 if missing_paths:
