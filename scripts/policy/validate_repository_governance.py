@@ -611,7 +611,12 @@ def validate_working_tree_digests(manifest: Mapping[str, Any], repo_root: Path) 
     return errors
 
 
-def validate_provenance(manifest: Mapping[str, Any], repo_root: Path) -> List[str]:
+def validate_provenance(
+    manifest: Mapping[str, Any],
+    repo_root: Path,
+    *,
+    check_worktree: bool = True,
+) -> List[str]:
     errors: List[str] = []
     duplicate_status_fields = {"b0_2_status", "b0_2_open_reason"} & set(manifest)
     if duplicate_status_fields:
@@ -693,7 +698,8 @@ def validate_provenance(manifest: Mapping[str, Any], repo_root: Path) -> List[st
     ]
     if authoritative != ["product-research-interop"]:
         errors.append("only product-research-interop may have consumer acceptance authority")
-    errors.extend(validate_working_tree_digests(manifest, repo_root))
+    if check_worktree:
+        errors.extend(validate_working_tree_digests(manifest, repo_root))
     return errors
 
 
@@ -892,6 +898,45 @@ class _StrictJsonError(ValueError):
     """A deliberate rejection of JSON outside the hosted evidence contract."""
 
 
+class _StrictYamlLoader(yaml.SafeLoader):
+    """A safe YAML loader that rejects ambiguous duplicate mapping keys."""
+
+
+def _strict_yaml_mapping(
+    loader: _StrictYamlLoader,
+    node: yaml.MappingNode,
+    deep: bool = False,
+) -> Dict[Any, Any]:
+    loader.flatten_mapping(node)
+    mapping: Dict[Any, Any] = {}
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        try:
+            duplicate = key in mapping
+        except TypeError as exc:
+            raise yaml.constructor.ConstructorError(
+                None,
+                None,
+                f"unhashable YAML mapping key: {key!r}",
+                key_node.start_mark,
+            ) from exc
+        if duplicate:
+            raise yaml.constructor.ConstructorError(
+                None,
+                None,
+                f"duplicate YAML key: {key!r}",
+                key_node.start_mark,
+            )
+        mapping[key] = loader.construct_object(value_node, deep=deep)
+    return mapping
+
+
+_StrictYamlLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+    _strict_yaml_mapping,
+)
+
+
 def _strict_json_object(pairs: List[tuple[str, Any]]) -> Dict[str, Any]:
     result: Dict[str, Any] = {}
     for key, value in pairs:
@@ -911,6 +956,10 @@ def _strict_json_loads(content: bytes) -> Any:
         object_pairs_hook=_strict_json_object,
         parse_constant=_reject_json_constant,
     )
+
+
+def _strict_yaml_loads(content: bytes) -> Any:
+    return yaml.load(content.decode("utf-8"), Loader=_StrictYamlLoader)
 
 
 def _canonical_json_sha256(value: Any) -> str:
@@ -1004,6 +1053,29 @@ def _committed_regular_file(
         )
     except (subprocess.CalledProcessError, OSError, TypeError, ValueError, UnicodeError) as exc:
         return None, f"{label} cannot be read at {commit}: {exc}"
+
+
+def _committed_yaml_mapping(
+    repo_root: Path,
+    commit: str,
+    relative: str,
+    label: str,
+) -> tuple[Mapping[str, Any] | None, str | None]:
+    content, read_error = _committed_regular_file(
+        repo_root,
+        commit,
+        relative,
+        label,
+    )
+    if read_error or content is None:
+        return None, read_error or f"{label} is unavailable at {commit}"
+    try:
+        value = _strict_yaml_loads(content)
+    except (UnicodeDecodeError, yaml.YAMLError, RecursionError, ValueError) as exc:
+        return None, f"{label} is not strict YAML: {exc}"
+    if not isinstance(value, Mapping):
+        return None, f"{label} must contain a YAML mapping"
+    return value, None
 
 
 def _optional_local_artifact_path(repo_root: Path, relative: str) -> tuple[Path | None, str | None]:
@@ -1628,7 +1700,7 @@ def _validate_b0_schema_history(
         if not isinstance(historical, Mapping):
             continue
         historical_schema = historical.get("schema_version")
-        if historical_schema in {
+        if isinstance(historical_schema, str) and historical_schema in {
             B0_REPORT_LEGACY_SCHEMA_VERSION,
             "2.0.0",
         }:
@@ -1695,8 +1767,6 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
             "B0 report",
             errors,
         )
-    else:
-        errors.extend(validate_b0_schema_2_state(report, status))
     if not isinstance(status, Mapping):
         if schema_version == B0_REPORT_LEGACY_SCHEMA_VERSION:
             errors.append("governance/b0-status.yaml must be a mapping")
@@ -1731,6 +1801,7 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
     if repository.get("relationship") != "implementation commit immediately before the evidence-only report commit":
         errors.append("B0 report must document the implementation/evidence-only commit relationship")
     evidence_commit: str | None = None
+    frozen_report: Mapping[str, Any] | None = None
     if isinstance(evaluated_commit, str) and re.fullmatch(r"[0-9a-f]{40}", evaluated_commit):
         try:
             actual_tree = _git(
@@ -1765,31 +1836,48 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
                     "B0 report evaluated_commit must be the direct parent of the evidence-only commit and must not equal it"
                 )
             else:
-                committed_report = _git(
+                committed_report, report_read_error = _committed_regular_file(
                     repo_root,
-                    "--no-replace-objects",
-                    "show",
-                    f"{recorded}:governance/b0-report.json",
+                    recorded,
+                    "governance/b0-report.json",
+                    "frozen B0 report",
                 )
-                if committed_report != (repo_root / "governance/b0-report.json").read_bytes():
-                    errors.append("B0 report working-tree content must match its committed evidence-only revision")
-                try:
-                    frozen_report = _strict_json_loads(committed_report)
-                except (
-                    UnicodeDecodeError,
-                    json.JSONDecodeError,
-                    RecursionError,
-                    ValueError,
-                ) as exc:
-                    errors.append(f"B0 report committed evidence is not strict JSON: {exc}")
+                if report_read_error or committed_report is None:
+                    errors.append(
+                        report_read_error or "frozen B0 report is unavailable"
+                    )
                 else:
-                    if (
-                        schema_version == B0_REPORT_SCHEMA_VERSION
-                        and not _exact_json_value(report, frozen_report)
-                    ):
+                    if committed_report != (
+                        repo_root / "governance/b0-report.json"
+                    ).read_bytes():
                         errors.append(
-                            "B0 report mapping must match the frozen evidence report"
+                            "B0 report working-tree content must match its committed evidence-only revision"
                         )
+                    try:
+                        frozen_value = _strict_json_loads(committed_report)
+                    except (
+                        UnicodeDecodeError,
+                        json.JSONDecodeError,
+                        RecursionError,
+                        ValueError,
+                    ) as exc:
+                        errors.append(
+                            f"B0 report committed evidence is not strict JSON: {exc}"
+                        )
+                    else:
+                        if not isinstance(frozen_value, Mapping):
+                            errors.append(
+                                "B0 report committed evidence must contain a JSON object"
+                            )
+                        else:
+                            frozen_report = frozen_value
+                            if (
+                                schema_version == B0_REPORT_SCHEMA_VERSION
+                                and not _exact_json_value(report, frozen_report)
+                            ):
+                                errors.append(
+                                    "B0 report mapping must match the frozen evidence report"
+                                )
                 parent_line = (
                     _git(
                         repo_root,
@@ -1810,7 +1898,8 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
                 elif parent_line[1] != evaluated_commit:
                     errors.append("B0 report evaluated_commit must be the direct parent of the evidence-only commit")
                 else:
-                    evidence_commit = recorded
+                    if frozen_report is not None:
+                        evidence_commit = recorded
                     changed = frozenset(
                         line
                         for line in _git(
@@ -1832,7 +1921,50 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
         except subprocess.CalledProcessError as exc:
             errors.append(f"B0 report cannot verify evaluated Git identity: {exc}")
 
-    if schema_version == B0_REPORT_LEGACY_SCHEMA_VERSION:
+    if schema_version == B0_REPORT_SCHEMA_VERSION:
+        frozen_status: Mapping[str, Any] | None = None
+        frozen_manifest: Mapping[str, Any] | None = None
+        if evidence_commit is not None and frozen_report is not None:
+            frozen_status, status_error = _committed_yaml_mapping(
+                repo_root,
+                evidence_commit,
+                "governance/b0-status.yaml",
+                "frozen B0 status",
+            )
+            if status_error:
+                errors.append(status_error)
+            frozen_manifest, manifest_error = _committed_yaml_mapping(
+                repo_root,
+                evidence_commit,
+                "governance/authority-provenance.yaml",
+                "frozen B0 authority provenance",
+            )
+            if manifest_error:
+                errors.append(manifest_error)
+        if frozen_report is not None and frozen_status is not None:
+            errors.extend(validate_b0_schema_2_state(frozen_report, frozen_status))
+            report = frozen_report
+            status = frozen_status
+        else:
+            errors.extend(validate_b0_schema_2_state(report, {}))
+            status = {}
+        if frozen_manifest is not None:
+            errors.extend(
+                validate_provenance(
+                    frozen_manifest,
+                    repo_root,
+                    check_worktree=False,
+                )
+            )
+            if frozen_status is not None:
+                errors.extend(
+                    validate_b0_status(
+                        frozen_status,
+                        frozen_manifest,
+                        repo_root,
+                    )
+                )
+    else:
         errors.extend(_validate_b0_legacy_state(report, status))
 
     status_items = status.get("items")
@@ -1983,7 +2115,7 @@ def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], rep
 
 
 def _load_yaml(path: Path) -> Dict[str, Any]:
-    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    data = _strict_yaml_loads(path.read_bytes())
     if not isinstance(data, dict):
         raise ValueError(f"{path} must contain a YAML mapping")
     return data

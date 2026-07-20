@@ -514,6 +514,59 @@ def test_b0_report_rejects_a_merge_evidence_revision(tmp_path: Path) -> None:
     assert any("single-parent" in error for error in errors)
 
 
+def test_b0_report_rejects_a_symlink_mode_frozen_report(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, evidence_commit = _install_schema_2_evidence_revision(
+        clone, validator
+    )
+    replacement = _replace_evidence_report_with_symlink_mode(
+        clone, evidence_commit
+    )
+
+    mode = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "ls-tree",
+            replacement,
+            "--",
+            "governance/b0-report.json",
+        ],
+        text=True,
+    ).split()[0]
+    assert mode == "120000"
+    assert (clone / "governance/b0-report.json").read_bytes() == _git_show_bytes(
+        clone, replacement, "governance/b0-report.json"
+    )
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any("frozen B0 report" in error and "regular file" in error for error in errors)
+
+
+def test_b0_report_rejects_an_evidence_revision_with_a_fourth_changed_path(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, _ = _install_schema_2_evidence_revision(
+        clone,
+        validator,
+        extra_evidence_path="unrelated.txt",
+    )
+
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any(
+        "evidence-only commit diff" in error and "unrelated.txt" in error
+        for error in errors
+    )
+
+
 def test_schema_2_report_remains_valid_on_descendants_of_the_evidence_commit(
     tmp_path: Path,
 ) -> None:
@@ -522,10 +575,105 @@ def test_schema_2_report_remains_valid_on_descendants_of_the_evidence_commit(
     report, status, evidence_commit = _install_schema_2_evidence_revision(
         clone, validator
     )
-    (clone / "phase0-placeholder.txt").write_text("later development\n", encoding="utf-8")
+    digest_path = "CONSOLIDATED_PLAN.md"
+    frozen_digest_bytes = _git_show_bytes(clone, evidence_commit, digest_path)
+    (clone / digest_path).write_text(
+        "descendant plan bytes differ from frozen evidence\n",
+        encoding="utf-8",
+    )
     descendant = _commit_clone(clone, "later development commit")
 
     assert descendant != evidence_commit
+    assert (clone / digest_path).read_bytes() != frozen_digest_bytes
+    assert validator.validate_b0_report(report, status, clone) == []
+
+
+def test_schema_2_report_ignores_live_status_and_authority_drift_on_descendants(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, evidence_commit = _install_schema_2_evidence_revision(
+        clone, validator
+    )
+    live_status = copy.deepcopy(status)
+    live_status["status"] = "open"
+    live_status["items"]["B0.2"]["status"] = "open"
+    live_status["items"]["B0.2"]["open_reason"] = (
+        "authoritative_remote_url_absent"
+    )
+    (clone / "governance/b0-status.yaml").write_text(
+        yaml.safe_dump(live_status, sort_keys=False),
+        encoding="utf-8",
+    )
+    provenance_path = clone / "governance/authority-provenance.yaml"
+    live_provenance = yaml.safe_load(provenance_path.read_bytes())
+    live_provenance["status"] = "provisional"
+    live_provenance["authority_state"] = "local-only/provisional"
+    for entry in live_provenance["sources"]:
+        entry["origin_state"] = "local-only/provisional"
+        entry["upstream_url"] = None
+    provenance_path.write_text(
+        yaml.safe_dump(live_provenance, sort_keys=False),
+        encoding="utf-8",
+    )
+    descendant = _commit_clone(clone, "drift live closure documents")
+
+    assert descendant != evidence_commit
+    assert validator.validate_b0_report(report, live_status, clone) == []
+
+
+def test_schema_2_report_remains_valid_on_a_merge_tip(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, evidence_commit = _install_schema_2_evidence_revision(
+        clone, validator
+    )
+    subprocess.run(
+        ["git", "-C", str(clone), "checkout", "--quiet", "-b", "side"],
+        check=True,
+        capture_output=True,
+    )
+    (clone / "side.txt").write_text("side descendant\n", encoding="utf-8")
+    _commit_clone(clone, "side descendant")
+    subprocess.run(
+        ["git", "-C", str(clone), "checkout", "--quiet", "--detach", evidence_commit],
+        check=True,
+        capture_output=True,
+    )
+    (clone / "mainline.txt").write_text("mainline descendant\n", encoding="utf-8")
+    _commit_clone(clone, "mainline descendant")
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "-c",
+            "user.name=policy-test",
+            "-c",
+            "user.email=policy@test",
+            "merge",
+            "--quiet",
+            "--no-ff",
+            "side",
+            "-m",
+            "merge descendants",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    merge_tip = subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", "HEAD"], text=True
+    ).strip()
+
+    assert len(
+        subprocess.check_output(
+            ["git", "-C", str(clone), "rev-list", "--parents", "-n", "1", merge_tip],
+            text=True,
+        ).split()
+    ) == 3
     assert validator.validate_b0_report(report, status, clone) == []
 
 
@@ -664,6 +812,19 @@ def _committed_clone(tmp_path: Path) -> Path:
     )
     subprocess.run(
         ["git", "-C", str(clone), "checkout", "--quiet", _head()],
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "remote",
+            "set-url",
+            "origin",
+            "git@github.com:TimoKruth/EvoNN-Research.git",
+        ],
         check=True,
         capture_output=True,
     )
@@ -820,7 +981,13 @@ def _checked_in_evidence_digests(
     }
 
 
-def _install_schema_2_evidence_revision(clone: Path, validator) -> tuple[dict, dict, str]:
+def _install_schema_2_evidence_revision(
+    clone: Path,
+    validator,
+    *,
+    frozen_status_content: bytes | None = None,
+    extra_evidence_path: str | None = None,
+) -> tuple[dict, dict, str]:
     report_path = clone / "governance/b0-report.json"
     status_path = clone / "governance/b0-status.yaml"
     task_report_path = clone / ".superpowers/sdd/task-6-report.md"
@@ -869,7 +1036,9 @@ def _install_schema_2_evidence_revision(clone: Path, validator) -> tuple[dict, d
     for item in status["items"].values():
         item["status"] = "closed"
         item["open_reason"] = None
-    status_content = yaml.safe_dump(status, sort_keys=False).encode()
+    status_content = frozen_status_content or yaml.safe_dump(
+        status, sort_keys=False
+    ).encode()
     final_task_report = original_task_report + b"\nSchema 2 closure evidence.\n"
     report["checked_in_evidence"] = _checked_in_evidence_digests(
         clone,
@@ -884,13 +1053,81 @@ def _install_schema_2_evidence_revision(clone: Path, validator) -> tuple[dict, d
     _write_report(report_path, report)
     status_path.write_bytes(status_content)
     task_report_path.write_bytes(final_task_report)
+    if extra_evidence_path is not None:
+        extra_path = clone / extra_evidence_path
+        extra_path.parent.mkdir(parents=True, exist_ok=True)
+        extra_path.write_text("unrelated evidence revision change\n", encoding="utf-8")
     evidence_commit = _commit_clone(clone, "install schema 2 closure evidence")
     changed = subprocess.check_output(
         ["git", "-C", str(clone), "diff", "--name-only", f"{parent}..{evidence_commit}"],
         text=True,
     ).splitlines()
-    assert set(changed) == set(validator.B0_EVIDENCE_ONLY_PATHS)
+    expected_paths = set(validator.B0_EVIDENCE_ONLY_PATHS)
+    if extra_evidence_path is not None:
+        expected_paths.add(extra_evidence_path)
+    assert set(changed) == expected_paths
     return report, status, evidence_commit
+
+
+def _replace_evidence_report_with_symlink_mode(
+    clone: Path,
+    evidence_commit: str,
+) -> str:
+    report_path = "governance/b0-report.json"
+    report_content = _git_show_bytes(clone, evidence_commit, report_path)
+    report_blob = subprocess.run(
+        ["git", "-C", str(clone), "hash-object", "-w", "--stdin"],
+        input=report_content,
+        check=True,
+        capture_output=True,
+    ).stdout.decode().strip()
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "update-index",
+            "--add",
+            "--cacheinfo",
+            f"120000,{report_blob},{report_path}",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    tree = subprocess.check_output(
+        ["git", "-C", str(clone), "write-tree"], text=True
+    ).strip()
+    parent = subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", f"{evidence_commit}^"],
+        text=True,
+    ).strip()
+    replacement = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "-c",
+            "user.name=policy-test",
+            "-c",
+            "user.email=policy@test",
+            "commit-tree",
+            tree,
+            "-p",
+            parent,
+            "-m",
+            "install symlink-mode schema 2 evidence",
+        ],
+        text=True,
+    ).strip()
+    subprocess.run(
+        ["git", "-C", str(clone), "update-ref", "HEAD", replacement],
+        check=True,
+        capture_output=True,
+    )
+    worktree_report = clone / report_path
+    worktree_report.unlink()
+    worktree_report.write_bytes(report_content)
+    return replacement
 
 
 def _install_fresh_schema_1_evidence_revision(clone: Path, validator) -> tuple[dict, dict, str]:
@@ -940,9 +1177,15 @@ def test_schema_2_public_validation_uses_frozen_evidence_commit(
     validator = _validator()
     clone = _committed_clone(tmp_path)
     report, status, evidence_commit = _install_schema_2_evidence_revision(clone, validator)
-    (clone / "phase0-placeholder.txt").write_text("later development\n", encoding="utf-8")
+    hosted_path = report["hosted_runtime_probes"][0]["artifact_path"]
+    frozen_hosted_bytes = _git_show_bytes(clone, evidence_commit, hosted_path)
+    (clone / hosted_path).write_text(
+        '{"descendant": "hosted bytes differ from frozen evidence"}\n',
+        encoding="utf-8",
+    )
     descendant = _commit_clone(clone, "descendant after frozen evidence")
     assert descendant != evidence_commit
+    assert (clone / hosted_path).read_bytes() != frozen_hosted_bytes
     original = validator.validate_hosted_probe_evidence
     calls = []
 
@@ -954,6 +1197,90 @@ def test_schema_2_public_validation_uses_frozen_evidence_commit(
 
     assert validator.validate_b0_report(report, status, clone) == []
     assert calls == [(report["hosted_runtime_probes"], clone, evidence_commit)]
+
+
+def test_schema_2_closure_uses_frozen_status_not_a_closed_descendant(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    frozen_open_status = yaml.safe_dump(_status(), sort_keys=False).encode()
+    report, closed_status, evidence_commit = _install_schema_2_evidence_revision(
+        clone,
+        validator,
+        frozen_status_content=frozen_open_status,
+    )
+    live_status_content = yaml.safe_dump(closed_status, sort_keys=False).encode()
+    (clone / "governance/b0-status.yaml").write_bytes(live_status_content)
+    descendant = _commit_clone(clone, "close status after frozen evidence")
+
+    assert descendant != evidence_commit
+    errors = validator.validate_b0_report(report, closed_status, clone)
+
+    assert any(
+        "b0-status.yaml top-level status must be closed" in error
+        for error in errors
+    ), errors
+
+
+def test_schema_2_closure_uses_frozen_authority_not_a_pinned_descendant(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    provenance_path = clone / "governance/authority-provenance.yaml"
+    remote_provenance = provenance_path.read_bytes()
+    local_provenance = yaml.safe_load(remote_provenance)
+    local_provenance["status"] = "provisional"
+    local_provenance["authority_state"] = "local-only/provisional"
+    for entry in local_provenance["sources"]:
+        entry["origin_state"] = "local-only/provisional"
+        entry["upstream_url"] = None
+    provenance_path.write_text(
+        yaml.safe_dump(local_provenance, sort_keys=False),
+        encoding="utf-8",
+    )
+    report, status, evidence_commit = _install_schema_2_evidence_revision(
+        clone, validator
+    )
+    provenance_path.write_bytes(remote_provenance)
+    descendant = _commit_clone(clone, "pin authority after frozen evidence")
+
+    assert descendant != evidence_commit
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any("frozen B0 authority" in error or "local-only authority" in error for error in errors)
+
+
+def test_schema_2_closure_rejects_duplicate_keys_in_frozen_status_yaml(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    closed_status = copy.deepcopy(_status())
+    closed_status["status"] = "closed"
+    for item in closed_status["items"].values():
+        item["status"] = "closed"
+        item["open_reason"] = None
+    frozen_status_content = (
+        yaml.safe_dump(closed_status, sort_keys=False).encode()
+        + b"status: open\n"
+    )
+    report, status, evidence_commit = _install_schema_2_evidence_revision(
+        clone,
+        validator,
+        frozen_status_content=frozen_status_content,
+    )
+    (clone / "governance/b0-status.yaml").write_text(
+        yaml.safe_dump(status, sort_keys=False),
+        encoding="utf-8",
+    )
+    descendant = _commit_clone(clone, "replace malformed frozen status")
+
+    assert descendant != evidence_commit
+    errors = validator.validate_b0_report(report, status, clone)
+
+    assert any("frozen B0 status" in error and "duplicate YAML key" in error for error in errors)
 
 
 def test_schema_2_mapping_must_match_the_frozen_evidence_report(
@@ -1302,6 +1629,11 @@ def test_schema_2_downgrade_latch_scans_merged_side_parent_history(
 ) -> None:
     validator = _validator()
     clone = _committed_clone(tmp_path)
+    subprocess.run(
+        ["git", "-C", str(clone), "checkout", "--quiet", "--detach", LEGACY_REPORT_REVISION],
+        check=True,
+        capture_output=True,
+    )
     base = subprocess.check_output(
         ["git", "-C", str(clone), "rev-parse", "HEAD"], text=True
     ).strip()
@@ -1378,8 +1710,10 @@ def test_schema_1_validation_requires_complete_history_in_a_shallow_clone(
     assert any("full history" in error or "shallow" in error for error in errors)
 
 
+@pytest.mark.parametrize("malformed_schema_version", [[], {}])
 def test_schema_2_history_scan_skips_deleted_and_malformed_snapshots(
     tmp_path: Path,
+    malformed_schema_version,
 ) -> None:
     validator = _validator()
     clone = _committed_clone(tmp_path)
@@ -1390,6 +1724,11 @@ def test_schema_2_history_scan_skips_deleted_and_malformed_snapshots(
     _commit_clone(clone, "delete report snapshot")
     report_path.write_text('{"schema_version":', encoding="utf-8")
     _commit_clone(clone, "record malformed report snapshot")
+    report_path.write_text(
+        json.dumps({"schema_version": malformed_schema_version}) + "\n",
+        encoding="utf-8",
+    )
+    _commit_clone(clone, "record malformed schema declaration")
     legacy_content = _git_show_bytes(
         clone, LEGACY_REPORT_REVISION, "governance/b0-report.json"
     )
