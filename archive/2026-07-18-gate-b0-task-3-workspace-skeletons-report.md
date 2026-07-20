@@ -1,3 +1,10 @@
+---
+document_kind: process_report
+status: archived
+authoritative: false
+subject: gate_b0
+---
+
 # Task 3 Report — Workspace Package Skeletons
 
 ## Status
