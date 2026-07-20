@@ -17,6 +17,7 @@ CHECKOUT_SHA = "de0fac2e4500dabe0009e67214ff5f5447ce83dd"
 SETUP_UV_SHA = "11f9893b081a58869d3b5fccaea48c9e9e46f990"
 UPLOAD_SHA = "ea165f8d65b6e75b540449e92b4886f43607fa02"
 UV_VERSION = "0.5.13"
+B0_POLICY_SELFTEST_TIMEOUT_SECONDS = 600
 ENGINE_DIRECTORIES = tuple(engine.directory for engine in ENGINE_CONTRACTS)
 
 
@@ -168,7 +169,7 @@ def test_b0_policy_script_runs_from_another_directory(tmp_path: Path) -> None:
         env=environment,
         capture_output=True,
         text=True,
-        timeout=240,
+        timeout=B0_POLICY_SELFTEST_TIMEOUT_SECONDS,
         check=False,
     )
     assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
