@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 import importlib.util
-import json
 from pathlib import Path
 import subprocess
 
@@ -512,26 +511,22 @@ def test_remote_pinned_provenance_requires_active_status_and_canonical_urls(
 def test_commit_a_allows_only_the_historical_b02_open_state_when_closure_pending(
     validator,
     manifest: dict,
-    b0_status: dict,
 ) -> None:
-    historical_status = copy.deepcopy(b0_status)
-    if historical_status["status"] == "closed":
-        report = json.loads(
-            (REPO_ROOT / "governance/b0-report.json").read_text(encoding="utf-8")
+    historical_status = yaml.safe_load(
+        subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(REPO_ROOT),
+                "--no-replace-objects",
+                "show",
+                (
+                    f"{validator.B0_REPORT_LEGACY_REVISION}:"
+                    "governance/b0-status.yaml"
+                ),
+            ]
         )
-        evaluated_commit = report["repository"]["evaluated_commit"]
-        historical_status = yaml.safe_load(
-            subprocess.check_output(
-                [
-                    "git",
-                    "-C",
-                    str(REPO_ROOT),
-                    "--no-replace-objects",
-                    "show",
-                    f"{evaluated_commit}:governance/b0-status.yaml",
-                ]
-            )
-        )
+    )
 
     assert historical_status["status"] == "open"
     assert validator.validate_b0_status(
