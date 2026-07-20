@@ -1297,6 +1297,68 @@ def _merge_ours(clone: Path, revision: str, message: str) -> str:
     ).strip()
 
 
+def _commit_report_merge(
+    clone: Path,
+    *,
+    first_parent: str,
+    second_parent: str,
+    report_revision: str,
+    message: str,
+) -> str:
+    assert subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", "HEAD"],
+        text=True,
+    ).strip() == first_parent
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "checkout",
+            "--quiet",
+            report_revision,
+            "--",
+            "governance/b0-report.json",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    tree = subprocess.check_output(
+        ["git", "-C", str(clone), "write-tree"], text=True
+    ).strip()
+    merge = subprocess.check_output(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "-c",
+            "user.name=policy-test",
+            "-c",
+            "user.email=policy@test",
+            "commit-tree",
+            tree,
+            "-p",
+            first_parent,
+            "-p",
+            second_parent,
+            "-m",
+            message,
+        ],
+        text=True,
+    ).strip()
+    subprocess.run(
+        ["git", "-C", str(clone), "update-ref", "HEAD", merge, first_parent],
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(clone), "reset", "--quiet", "--hard", merge],
+        check=True,
+        capture_output=True,
+    )
+    return merge
+
+
 def _install_fresh_schema_1_evidence_revision(clone: Path, validator) -> tuple[dict, dict, str]:
     report_path = clone / "governance/b0-report.json"
     status_path = clone / "governance/b0-status.yaml"
@@ -1853,6 +1915,66 @@ def test_schema_2_history_rejects_a_restored_schema_2_tip_after_downgrade(
     errors = validator.validate_b0_report(report, status, clone)
 
     assert any("schema downgrade" in error for error in errors)
+
+
+def test_schema_history_rejects_merge_downgrade_from_nonfirst_parent_report(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    _, _, schema_2_tip = _install_schema_2_evidence_revision(clone, validator)
+    downgrade_merge = _commit_report_merge(
+        clone,
+        first_parent=schema_2_tip,
+        second_parent=LEGACY_REPORT_REVISION,
+        report_revision=LEGACY_REPORT_REVISION,
+        message="merge pinned legacy report as a downgrade",
+    )
+    assert _git_show_bytes(
+        clone, downgrade_merge, "governance/b0-report.json"
+    ) != _git_show_bytes(clone, schema_2_tip, "governance/b0-report.json")
+    assert _git_show_bytes(
+        clone, downgrade_merge, "governance/b0-report.json"
+    ) == _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-report.json")
+
+    report, status, _ = _install_schema_2_evidence_revision(clone, validator)
+
+    report_errors = validator.validate_b0_report(report, status, clone)
+    repository_errors = validator.validate_repository(clone)
+
+    assert any("schema downgrade" in error for error in report_errors), report_errors
+    assert any("schema downgrade" in error for error in repository_errors), repository_errors
+
+
+def test_schema_history_allows_first_parent_merge_carrier_and_later_reattestation(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _committed_clone(tmp_path)
+    report, status, schema_2_tip = _install_schema_2_evidence_revision(clone, validator)
+    carrier_merge = _commit_report_merge(
+        clone,
+        first_parent=schema_2_tip,
+        second_parent=LEGACY_REPORT_REVISION,
+        report_revision=schema_2_tip,
+        message="carry first-parent schema 2 report through merge",
+    )
+    assert _git_show_bytes(
+        clone, carrier_merge, "governance/b0-report.json"
+    ) == _git_show_bytes(clone, schema_2_tip, "governance/b0-report.json")
+    assert _git_show_bytes(
+        clone, carrier_merge, "governance/b0-report.json"
+    ) != _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-report.json")
+
+    assert validator.validate_b0_report(report, status, clone) == []
+    assert validator.validate_repository(clone) == []
+
+    reattested_report, reattested_status, _ = _install_schema_2_evidence_revision(
+        clone, validator
+    )
+
+    assert validator.validate_b0_report(reattested_report, reattested_status, clone) == []
+    assert validator.validate_repository(clone) == []
 
 
 def test_schema_2_downgrade_latch_uses_the_version_marker_alone(

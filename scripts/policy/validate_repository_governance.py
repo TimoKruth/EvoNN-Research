@@ -1788,6 +1788,7 @@ def _validate_b0_schema_history(
         return [f"B0 report cannot inspect complete committed schema history: {exc}"]
 
     declarations: List[tuple[str, str]] = []
+    legacy_transition_merges: set[str] = set()
     for revision_line in revisions:
         revision, *parents = revision_line.split()
         content, read_error = _committed_regular_file(
@@ -1799,17 +1800,23 @@ def _validate_b0_schema_history(
         if read_error or content is None:
             continue
         if len(parents) > 1:
-            parent_contents = [
-                _committed_regular_file(
-                    repo_root,
-                    parent,
-                    "governance/b0-report.json",
-                    "historical B0 report parent",
-                )[0]
-                for parent in parents
-            ]
-            if content in parent_contents:
+            first_parent_content, _ = _committed_regular_file(
+                repo_root,
+                parents[0],
+                "governance/b0-report.json",
+                "historical B0 report first parent",
+            )
+            if content == first_parent_content:
                 continue
+            if B0_REPORT_LEGACY_REVISION in parents[1:]:
+                legacy_content, _ = _committed_regular_file(
+                    repo_root,
+                    B0_REPORT_LEGACY_REVISION,
+                    "governance/b0-report.json",
+                    "frozen B0 legacy report parent",
+                )
+                if content == legacy_content:
+                    legacy_transition_merges.add(revision)
         try:
             historical = _strict_json_loads(content)
         except (UnicodeDecodeError, json.JSONDecodeError, RecursionError, ValueError):
@@ -1879,6 +1886,8 @@ def _validate_b0_schema_history(
         except (OSError, TypeError, ValueError, UnicodeError) as exc:
             return [f"B0 report cannot verify frozen schema 1.0.0 history: {exc}"]
         else:
+            continue
+        if legacy_revision in legacy_transition_merges:
             continue
         return [
             "B0 report schema 1.0.0 is permitted only at frozen transition revision "
