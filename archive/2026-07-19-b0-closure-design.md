@@ -1,3 +1,8 @@
+---
+authoritative: false
+status: archived
+---
+
 # Gate B0 Closure Design
 
 ## Status

@@ -1,3 +1,10 @@
+---
+document_kind: process_report
+status: archived
+authoritative: false
+subject: gate_b0
+---
+
 # Task 2 Report — Install plan and provenance controls
 
 ## Implementation summary

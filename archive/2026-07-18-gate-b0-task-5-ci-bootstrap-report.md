@@ -1,3 +1,10 @@
+---
+document_kind: process_report
+status: archived
+authoritative: false
+subject: gate_b0
+---
+
 # Task 5 Report — Dual-host CI bootstrap and runtime evidence
 
 ## Status
