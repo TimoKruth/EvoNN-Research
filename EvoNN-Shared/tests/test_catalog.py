@@ -112,8 +112,20 @@ PUBLIC_FIELDS = {
     },
     CanonicalIdEntry: {"id", "definition_sha256"},
     CanonicalIdRegistry: {"schema_version", "entries"},
-    PackBudgetPolicy: {"evaluation_count", "symmetry"},
-    BenchmarkPack: {"schema_version", "pack_name", "ladder_tier", "benchmarks", "budget_policy"},
+    PackBudgetPolicy: {"evaluation_count"},
+    BenchmarkPack: {
+        "schema_version",
+        "pack_name",
+        "ladder_tier",
+        "benchmarks",
+        "budget_policy",
+        "symmetry",
+        "modalities",
+        "expected_local_runtime_class",
+        "minimum_contenders",
+        "suitability",
+        "full_fidelity_local_safe",
+    },
 }
 
 
@@ -144,7 +156,13 @@ def pack_data(pack_name: str = "contract_model_pack", **changes: object) -> dict
         "pack_name": pack_name,
         "ladder_tier": LadderTier.A,
         "benchmarks": ("contract_alpha", "contract_beta"),
-        "budget_policy": {"evaluation_count": 4, "symmetry": "symmetric"},
+        "budget_policy": {"evaluation_count": 4},
+        "symmetry": "symmetric",
+        "modalities": (InputModality.TABULAR,),
+        "expected_local_runtime_class": "medium",
+        "minimum_contenders": ("linear_contender", "tree_contender"),
+        "suitability": "daily",
+        "full_fidelity_local_safe": True,
     }
     data.update(changes)
     return data
@@ -193,7 +211,12 @@ ladder_tier: A
 benchmarks: [{benchmark_id}]
 budget_policy:
   evaluation_count: 2
-  symmetry: symmetric
+symmetry: symmetric
+modalities: [tabular]
+expected_local_runtime_class: fast
+minimum_contenders: [linear_contender]
+suitability: smoke
+full_fidelity_local_safe: true
 """
 
 
@@ -239,6 +262,25 @@ def invoke_fallback_yaml(tmp_path: Path, benchmark_id: str, payload: bytes) -> N
     fallback.mkdir()
     (fallback / f"{benchmark_id}.yaml").write_bytes(payload)
     get_benchmark(benchmark_id, shared_root=root, fallback_catalog_dirs=(fallback,))
+
+
+def hostile_yaml(complexity: str) -> bytes:
+    if complexity == "depth":
+        payload = f"value: {'[' * 400}0{']' * 400}\n".encode()
+    else:
+        payload = f"values: [{','.join(['x'] * 10_001)}]\n".encode()
+    assert len(payload) < 1024 * 1024
+    return payload
+
+
+def assert_invalid_yaml_composer(action: Callable[[], object]) -> None:
+    error = assert_catalog_error(
+        InvalidCatalogYamlError,
+        "invalid_catalog_yaml",
+        action,
+    )
+    assert type(error) is InvalidCatalogYamlError
+    assert type(error.__cause__) is yaml.composer.ComposerError
 
 
 def test_constant_public_surface_exact_models_and_enums() -> None:
@@ -841,6 +883,101 @@ def test_pack_constructor_exceptions_use_stable_yaml_error(
     assert type(error.__cause__) is ValueError
 
 
+@pytest.mark.parametrize("complexity", ("depth", "nodes"))
+@pytest.mark.parametrize("action_name", ("get_benchmark", "list_benchmarks", "load_parity_pack"))
+def test_hostile_benchmark_complexity_is_bounded_during_composition(
+    tmp_path: Path,
+    complexity: str,
+    action_name: str,
+) -> None:
+    root = empty_root(tmp_path / "root")
+    benchmark_id = "contract_hostile_benchmark"
+    fallback_catalog = tmp_path / "fallback-catalog"
+    fallback_catalog.mkdir()
+    (fallback_catalog / f"{benchmark_id}.yaml").write_bytes(hostile_yaml(complexity))
+    fallback_pack = tmp_path / "fallback-pack"
+    fallback_pack.mkdir()
+    pack_name = "contract_hostile_pack"
+    (fallback_pack / f"{pack_name}.yaml").write_text(
+        yaml_for_pack(pack_name, benchmark_id),
+        encoding="utf-8",
+    )
+    actions = {
+        "get_benchmark": lambda: get_benchmark(
+            benchmark_id,
+            shared_root=root,
+            fallback_catalog_dirs=(fallback_catalog,),
+        ),
+        "list_benchmarks": lambda: list_benchmarks(
+            shared_root=root,
+            fallback_catalog_dirs=(fallback_catalog,),
+        ),
+        "load_parity_pack": lambda: load_parity_pack(
+            pack_name,
+            shared_root=root,
+            fallback_pack_dirs=(fallback_pack,),
+            fallback_catalog_dirs=(fallback_catalog,),
+        ),
+    }
+    assert_invalid_yaml_composer(actions[action_name])
+
+
+@pytest.mark.parametrize("complexity", ("depth", "nodes"))
+@pytest.mark.parametrize("action_name", ("get_benchmark", "list_benchmarks", "load_parity_pack"))
+def test_hostile_canonical_registry_complexity_is_bounded_during_composition(
+    tmp_path: Path,
+    complexity: str,
+    action_name: str,
+) -> None:
+    root = empty_root(tmp_path / "root")
+    (root / "catalog" / "canonical_ids.yaml").write_bytes(hostile_yaml(complexity))
+    pack_name = "contract_hostile_registry_pack"
+    (root / "suites" / "parity" / f"{pack_name}.yaml").write_text(
+        yaml_for_pack(pack_name, "contract_missing"),
+        encoding="utf-8",
+    )
+    actions = {
+        "get_benchmark": lambda: get_benchmark("contract_missing", shared_root=root),
+        "list_benchmarks": lambda: list_benchmarks(shared_root=root),
+        "load_parity_pack": lambda: load_parity_pack(pack_name, shared_root=root),
+    }
+    assert_invalid_yaml_composer(actions[action_name])
+
+
+@pytest.mark.parametrize("complexity", ("depth", "nodes"))
+@pytest.mark.parametrize("action_name", ("resolve_pack_path", "load_parity_pack"))
+def test_hostile_pack_complexity_is_bounded_during_composition(
+    tmp_path: Path,
+    complexity: str,
+    action_name: str,
+) -> None:
+    root = empty_root(tmp_path / "root")
+    pack_name = "contract_hostile_pack"
+    (root / "suites" / "parity" / f"{pack_name}.yaml").write_bytes(hostile_yaml(complexity))
+    actions = {
+        "resolve_pack_path": lambda: resolve_pack_path(pack_name, shared_root=root),
+        "load_parity_pack": lambda: load_parity_pack(pack_name, shared_root=root),
+    }
+    assert_invalid_yaml_composer(actions[action_name])
+
+
+@pytest.mark.parametrize("exception_type", (MemoryError, KeyboardInterrupt, SystemExit))
+def test_loader_preserves_non_yaml_control_flow_exceptions(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    exception_type: type[BaseException],
+) -> None:
+    root = empty_root(tmp_path / "root")
+
+    def raise_exception(_loader: object) -> object:
+        raise exception_type("injected")
+
+    monkeypatch.setattr(catalog._CatalogSafeLoader, "get_single_data", raise_exception)
+    with pytest.raises(exception_type) as caught:
+        get_benchmark("contract_missing", shared_root=root)
+    assert type(caught.value) is exception_type
+
+
 def test_oversized_yaml_rejects_before_model_validation(tmp_path: Path) -> None:
     payload = b"#" * (1024 * 1024 + 1)
     assert_catalog_error(
@@ -908,19 +1045,168 @@ def test_unknown_benchmark_and_pack_have_stable_distinct_errors(tmp_path: Path) 
     assert str(pack_error) == "pack not found: contract_missing"
 
 
-def test_pack_model_order_uniqueness_symmetry_and_divisibility() -> None:
-    assert BenchmarkPack.model_validate(pack_data()).benchmarks == ("contract_alpha", "contract_beta")
-    for system in SystemId:
-        policy = PackBudgetPolicy(evaluation_count=2, symmetry=f"leaning-{system.value}")
-        assert policy.symmetry == f"leaning-{system.value}"
+def test_complete_spec_shaped_pack_dictionary_validates() -> None:
+    pack = BenchmarkPack.model_validate(pack_data())
+    assert pack == BenchmarkPack(
+        schema_version="1.0.0",
+        pack_name="contract_model_pack",
+        ladder_tier=LadderTier.A,
+        benchmarks=("contract_alpha", "contract_beta"),
+        budget_policy=PackBudgetPolicy(evaluation_count=4),
+        symmetry="symmetric",
+        modalities=(InputModality.TABULAR,),
+        expected_local_runtime_class="medium",
+        minimum_contenders=("linear_contender", "tree_contender"),
+        suitability="daily",
+        full_fidelity_local_safe=True,
+    )
+
+
+def test_pack_fixtures_load_with_exact_admission_declarations() -> None:
+    canonical = load_parity_pack("contract_parity_pack", shared_root=CANONICAL_FIXTURE)
+    assert canonical.ladder_tier is LadderTier.A
+    assert canonical.benchmarks == (
+        "contract_beta_regression",
+        "contract_alpha_classification",
+    )
+    assert canonical.budget_policy.evaluation_count == 4
+    assert canonical.symmetry == "symmetric"
+    assert canonical.modalities == (InputModality.TABULAR,)
+    assert canonical.expected_local_runtime_class == "medium"
+    assert canonical.minimum_contenders == ("linear_contender", "tree_contender")
+    assert canonical.suitability == "daily"
+    assert canonical.full_fidelity_local_safe is True
+
+    fallback = load_parity_pack(
+        "contract_fallback_pack",
+        shared_root=CANONICAL_FIXTURE,
+        fallback_pack_dirs=(FALLBACK_PACK_FIXTURE,),
+        fallback_catalog_dirs=(FALLBACK_FIXTURE,),
+    )
+    assert fallback.ladder_tier is LadderTier.B
+    assert fallback.benchmarks == ("contract_fallback_sequence",)
+    assert fallback.budget_policy.evaluation_count == 2
+    assert fallback.symmetry == "leaning-prism"
+    assert fallback.modalities == (InputModality.SEQUENCE,)
+    assert fallback.expected_local_runtime_class == "slow"
+    assert fallback.minimum_contenders == ("linear_contender",)
+    assert fallback.suitability == "overnight"
+    assert fallback.full_fidelity_local_safe is False
+
+
+@pytest.mark.parametrize(
+    "field",
+    (
+        "schema_version",
+        "pack_name",
+        "ladder_tier",
+        "benchmarks",
+        "budget_policy",
+        "symmetry",
+        "modalities",
+        "expected_local_runtime_class",
+        "minimum_contenders",
+        "suitability",
+        "full_fidelity_local_safe",
+    ),
+)
+def test_every_pack_field_is_mandatory(field: str) -> None:
+    data = pack_data()
+    del data[field]
+    with pytest.raises(ValidationError):
+        BenchmarkPack.model_validate(data)
+
+
+def test_obsolete_nested_symmetry_shape_rejects() -> None:
+    data = pack_data(budget_policy={"evaluation_count": 4, "symmetry": "symmetric"})
+    del data["symmetry"]
+    with pytest.raises(ValidationError):
+        BenchmarkPack.model_validate(data)
+
+
+def test_pack_literal_symmetry_and_boolean_state_matrix_is_exact() -> None:
+    for symmetry in ("symmetric", *(f"leaning-{system.value}" for system in SystemId)):
+        assert BenchmarkPack.model_validate(pack_data(symmetry=symmetry)).symmetry == symmetry
+    for runtime_class in ("fast", "medium", "slow"):
+        pack = BenchmarkPack.model_validate(
+            pack_data(expected_local_runtime_class=runtime_class)
+        )
+        assert pack.expected_local_runtime_class == runtime_class
+    for suitability in ("smoke", "daily", "overnight", "special-study"):
+        pack = BenchmarkPack.model_validate(pack_data(suitability=suitability))
+        assert pack.suitability == suitability
+    for local_safe in (True, False):
+        pack = BenchmarkPack.model_validate(
+            pack_data(full_fidelity_local_safe=local_safe)
+        )
+        assert pack.full_fidelity_local_safe is local_safe
+
+
+@pytest.mark.parametrize(
+    "modalities",
+    (
+        (),
+        (InputModality.TABULAR, InputModality.TABULAR),
+        (InputModality.TABULAR, InputModality.IMAGE),
+    ),
+)
+def test_pack_modalities_reject_empty_duplicate_and_unsorted_values(
+    modalities: tuple[InputModality, ...],
+) -> None:
+    with pytest.raises(ValidationError):
+        BenchmarkPack.model_validate(pack_data(modalities=modalities))
+
+
+def test_pack_modalities_accept_all_values_in_utf8_order() -> None:
+    modalities = tuple(sorted(InputModality, key=lambda item: item.value.encode("utf-8")))
+    assert BenchmarkPack.model_validate(pack_data(modalities=modalities)).modalities == modalities
+
+
+@pytest.mark.parametrize(
+    "minimum_contenders",
+    (
+        (),
+        ("linear_contender", "linear_contender"),
+        ("tree_contender", "linear_contender"),
+        ("bad-id",),
+    ),
+)
+def test_pack_minimum_contenders_reject_invalid_sets(
+    minimum_contenders: tuple[str, ...],
+) -> None:
+    with pytest.raises(ValidationError):
+        BenchmarkPack.model_validate(
+            pack_data(minimum_contenders=minimum_contenders)
+        )
+
+
+@pytest.mark.parametrize(
+    "changes",
+    (
+        {"expected_local_runtime_class": "weekend"},
+        {"suitability": "local"},
+        {"suitability": "weekend"},
+        {"full_fidelity_local_safe": "true"},
+        {"full_fidelity_local_safe": 0},
+        {"full_fidelity_local_safe": 1},
+        {"symmetry": "leaning-unknown"},
+        {"symmetry": "asymmetric"},
+    ),
+)
+def test_pack_rejects_unknown_literals_and_nonboolean_fidelity(
+    changes: dict[str, object],
+) -> None:
+    with pytest.raises(ValidationError):
+        BenchmarkPack.model_validate(pack_data(**changes))
+
+
+def test_pack_benchmarks_and_evaluation_count_rules_are_preserved() -> None:
     invalid = [
         pack_data(benchmarks=()),
         pack_data(benchmarks=("contract_alpha", "contract_alpha")),
         pack_data(benchmarks=("bad-id",)),
-        pack_data(budget_policy={"evaluation_count": 3, "symmetry": "symmetric"}),
-        pack_data(budget_policy={"evaluation_count": 0, "symmetry": "symmetric"}),
-        pack_data(budget_policy={"evaluation_count": 4, "symmetry": "leaning-unknown"}),
-        pack_data(budget_policy={"evaluation_count": 4, "symmetry": "asymmetric"}),
+        pack_data(budget_policy={"evaluation_count": 3}),
+        pack_data(budget_policy={"evaluation_count": 0}),
     ]
     for data in invalid:
         with pytest.raises(ValidationError):
@@ -1014,7 +1300,12 @@ ladder_tier: A
 benchmarks: [contract_zeta, contract_alpha]
 budget_policy:
   evaluation_count: 2
-  symmetry: symmetric
+symmetry: symmetric
+modalities: [tabular]
+expected_local_runtime_class: fast
+minimum_contenders: [linear_contender]
+suitability: smoke
+full_fidelity_local_safe: true
 """,
         encoding="utf-8",
     )
@@ -1039,7 +1330,12 @@ ladder_tier: B
 benchmarks: [contract_alpha_classification, contract_fallback_sequence]
 budget_policy:
   evaluation_count: 4
-  symmetry: symmetric
+symmetry: symmetric
+modalities: [sequence, tabular]
+expected_local_runtime_class: medium
+minimum_contenders: [linear_contender, tree_contender]
+suitability: daily
+full_fidelity_local_safe: false
 """,
         encoding="utf-8",
     )

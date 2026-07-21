@@ -16,7 +16,7 @@ from typing import Any, Literal, TypeVar
 from pydantic import Field, ValidationError, field_validator, model_validator
 import yaml
 from yaml.events import AliasEvent
-from yaml.nodes import MappingNode
+from yaml.nodes import MappingNode, SequenceNode
 
 from . import benchmarks as _benchmarks
 from .budgets import ContractModel, LadderTier, _canonical_id, _human_text, _utf8_sorted_unique
@@ -27,6 +27,8 @@ CATALOG_SCHEMA_VERSION = "1.0.0"
 
 _SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 _MAX_YAML_BYTES = 1024 * 1024
+_MAX_YAML_COLLECTION_DEPTH = 64
+_MAX_YAML_NODES = 10_000
 _DEFINITION_SCHEMA = "evonn.catalog.benchmark/v1"
 _PATH_TYPE = type(Path())
 _ENVIRONMENT_ROOT = "EVONN_SHARED_BENCHMARKS_DIR"
@@ -166,7 +168,25 @@ class CanonicalIdRegistry(ContractModel):
 
 class PackBudgetPolicy(ContractModel):
     evaluation_count: int = Field(gt=0)
+
+
+class BenchmarkPack(ContractModel):
+    schema_version: Literal["1.0.0"]
+    pack_name: str
+    ladder_tier: LadderTier
+    benchmarks: tuple[str, ...]
+    budget_policy: PackBudgetPolicy
     symmetry: str
+    modalities: tuple[InputModality, ...]
+    expected_local_runtime_class: Literal["fast", "medium", "slow"]
+    minimum_contenders: tuple[str, ...]
+    suitability: Literal["smoke", "daily", "overnight", "special-study"]
+    full_fidelity_local_safe: bool
+
+    @field_validator("pack_name")
+    @classmethod
+    def _validate_pack_name(cls, value: str) -> str:
+        return _canonical_id(value, "pack_name")
 
     @field_validator("symmetry")
     @classmethod
@@ -176,18 +196,29 @@ class PackBudgetPolicy(ContractModel):
             raise ValueError("symmetry must be symmetric or leaning-<system>")
         return value
 
-
-class BenchmarkPack(ContractModel):
-    schema_version: Literal["1.0.0"]
-    pack_name: str
-    ladder_tier: LadderTier
-    benchmarks: tuple[str, ...]
-    budget_policy: PackBudgetPolicy
-
-    @field_validator("pack_name")
+    @field_validator("modalities")
     @classmethod
-    def _validate_pack_name(cls, value: str) -> str:
-        return _canonical_id(value, "pack_name")
+    def _validate_modalities(
+        cls,
+        value: tuple[InputModality, ...],
+    ) -> tuple[InputModality, ...]:
+        if not value:
+            raise ValueError("modalities must be nonempty")
+        ordered = tuple(sorted(value, key=lambda item: item.value.encode("utf-8")))
+        if value != ordered:
+            raise ValueError("modalities must be UTF-8 sorted")
+        if len(value) != len(set(value)):
+            raise ValueError("modalities must not contain duplicates")
+        return value
+
+    @field_validator("minimum_contenders")
+    @classmethod
+    def _validate_minimum_contenders(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        if not value:
+            raise ValueError("minimum_contenders must be nonempty")
+        for contender_id in value:
+            _canonical_id(contender_id, "minimum_contenders")
+        return _utf8_sorted_unique(value, "minimum_contenders")
 
     @field_validator("benchmarks")
     @classmethod
@@ -250,16 +281,59 @@ class UnknownPackBenchmarkError(CatalogError):
 
 
 class _CatalogSafeLoader(yaml.SafeLoader):
+    def __init__(self, stream: Any) -> None:
+        super().__init__(stream)
+        self._collection_depth = 0
+        self._composed_node_count = 0
+
     def compose_node(self, parent: Any, index: Any) -> Any:
-        if self.check_event(AliasEvent):
-            event = self.peek_event()
+        event = self.peek_event()
+        if isinstance(event, AliasEvent):
             raise yaml.composer.ComposerError(
                 "while composing catalog YAML",
                 event.start_mark,
                 "aliases are not allowed",
                 event.start_mark,
             )
+        if self._composed_node_count >= _MAX_YAML_NODES:
+            raise yaml.composer.ComposerError(
+                "while composing catalog YAML",
+                event.start_mark,
+                "catalog YAML node limit exceeded",
+                event.start_mark,
+            )
+        self._composed_node_count += 1
         return super().compose_node(parent, index)
+
+    def compose_mapping_node(self, anchor: Any) -> MappingNode:
+        event = self.peek_event()
+        self._collection_depth += 1
+        try:
+            if self._collection_depth > _MAX_YAML_COLLECTION_DEPTH:
+                raise yaml.composer.ComposerError(
+                    "while composing catalog YAML",
+                    event.start_mark,
+                    "catalog YAML collection depth limit exceeded",
+                    event.start_mark,
+                )
+            return super().compose_mapping_node(anchor)
+        finally:
+            self._collection_depth -= 1
+
+    def compose_sequence_node(self, anchor: Any) -> SequenceNode:
+        event = self.peek_event()
+        self._collection_depth += 1
+        try:
+            if self._collection_depth > _MAX_YAML_COLLECTION_DEPTH:
+                raise yaml.composer.ComposerError(
+                    "while composing catalog YAML",
+                    event.start_mark,
+                    "catalog YAML collection depth limit exceeded",
+                    event.start_mark,
+                )
+            return super().compose_sequence_node(anchor)
+        finally:
+            self._collection_depth -= 1
 
     def construct_mapping(self, node: MappingNode, deep: bool = False) -> dict[object, object]:
         if not isinstance(node, MappingNode):

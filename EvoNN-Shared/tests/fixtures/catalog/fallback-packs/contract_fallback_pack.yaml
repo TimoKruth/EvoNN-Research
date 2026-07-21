@@ -4,4 +4,9 @@ ladder_tier: B
 benchmarks: [contract_fallback_sequence]
 budget_policy:
   evaluation_count: 2
-  symmetry: leaning-prism
+symmetry: leaning-prism
+modalities: [sequence]
+expected_local_runtime_class: slow
+minimum_contenders: [linear_contender]
+suitability: overnight
+full_fidelity_local_safe: false
