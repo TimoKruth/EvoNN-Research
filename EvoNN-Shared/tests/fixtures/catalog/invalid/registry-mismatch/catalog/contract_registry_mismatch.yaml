@@ -1,0 +1,18 @@
+schema_version: 1.0.0
+id: contract_registry_mismatch
+display_name: Contract Registry Mismatch
+status: implemented
+task_kind: classification
+input_modality: tabular
+input_shape: [1]
+output_dim: 2
+primary_metric:
+  name: accuracy
+  direction: max
+ceiling:
+  value: 1.0
+  tie_policy: not_evidence
+budget_epochs: 1
+runtime_class: fast
+required_contenders: [linear_contender]
+tags: []

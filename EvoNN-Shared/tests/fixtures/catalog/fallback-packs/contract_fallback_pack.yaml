@@ -1,0 +1,7 @@
+schema_version: 1.0.0
+pack_name: contract_fallback_pack
+ladder_tier: B
+benchmarks: [contract_fallback_sequence]
+budget_policy:
+  evaluation_count: 2
+  symmetry: leaning-prism

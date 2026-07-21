@@ -1,0 +1,18 @@
+schema_version: 1.0.0
+id: contract_fallback_sequence
+display_name: Contract Fallback Sequence
+status: planned
+task_kind: forecasting
+input_modality: sequence
+input_shape: [16, 2]
+output_dim: 2
+primary_metric:
+  name: mean_absolute_error
+  direction: min
+ceiling:
+  value: null
+  tie_policy: best_observed
+budget_epochs: 8
+runtime_class: slow
+required_contenders: [linear_contender]
+tags: [generated, offline]

@@ -1,0 +1,7 @@
+schema_version: 1.0.0
+pack_name: contract_parity_pack
+ladder_tier: A
+benchmarks: [contract_beta_regression, contract_alpha_classification]
+budget_policy:
+  evaluation_count: 4
+  symmetry: symmetric

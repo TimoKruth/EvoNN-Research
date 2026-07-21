@@ -1,0 +1,6 @@
+schema_version: 1.0.0
+entries:
+  - id: contract_alpha_classification
+    definition_sha256: 15031066a9e11dbe6c3c9459126f2e9f422c1ee84821693a6cd9efe4c66f017d
+  - id: contract_beta_regression
+    definition_sha256: c5cf1fe93fdae18259f1c6b60676ad50350d4724b914632ec79042295ffa736e
