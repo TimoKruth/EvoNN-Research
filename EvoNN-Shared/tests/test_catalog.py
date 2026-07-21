@@ -52,6 +52,14 @@ FALLBACK_FIXTURE = FIXTURES / "fallback-a"
 FALLBACK_PACK_FIXTURE = FIXTURES / "fallback-packs"
 INVALID_FIXTURE = FIXTURES / "invalid"
 PRODUCTION_ROOT = Path(__file__).parents[2] / "shared-benchmarks"
+HOSTILE_CONSTRUCTOR_SCALARS = (
+    "9" * 5_000,
+    "2026-99-99",
+)
+MALFORMED_ROOTS = (
+    Path("bad\0root"),
+    Path("bad\ud800root"),
+)
 EXPECTED_PUBLIC = {
     "CATALOG_SCHEMA_VERSION",
     "BenchmarkStatus",
@@ -175,6 +183,17 @@ budget_epochs: 2
 runtime_class: fast
 required_contenders: [linear_contender]
 tags: []
+"""
+
+
+def yaml_for_pack(pack_name: str, benchmark_id: str) -> str:
+    return f"""schema_version: 1.0.0
+pack_name: {pack_name}
+ladder_tier: A
+benchmarks: [{benchmark_id}]
+budget_policy:
+  evaluation_count: 2
+  symmetry: symmetric
 """
 
 
@@ -507,6 +526,90 @@ def test_empty_environment_override_and_non_path_arguments_reject(tmp_path: Path
         assert_catalog_error(UnsafeCatalogPathError, "unsafe_catalog_path", action)
 
 
+@pytest.mark.parametrize(
+    "malformed_root",
+    MALFORMED_ROOTS,
+    ids=("embedded_nul", "malformed_unicode"),
+)
+@pytest.mark.parametrize(
+    "action_name",
+    ("get_benchmark", "list_benchmarks", "resolve_pack_path", "load_parity_pack"),
+)
+def test_malformed_shared_root_uses_stable_path_error(
+    malformed_root: Path,
+    action_name: str,
+) -> None:
+    actions = {
+        "get_benchmark": lambda: get_benchmark(
+            "contract_missing",
+            shared_root=malformed_root,
+        ),
+        "list_benchmarks": lambda: list_benchmarks(shared_root=malformed_root),
+        "resolve_pack_path": lambda: resolve_pack_path(
+            "contract_missing_pack",
+            shared_root=malformed_root,
+        ),
+        "load_parity_pack": lambda: load_parity_pack(
+            "contract_missing_pack",
+            shared_root=malformed_root,
+        ),
+    }
+    error = assert_catalog_error(
+        UnsafeCatalogPathError,
+        "unsafe_catalog_path",
+        actions[action_name],
+    )
+    assert type(error) is UnsafeCatalogPathError
+    expected_cause = ValueError if malformed_root == MALFORMED_ROOTS[0] else UnicodeEncodeError
+    assert type(error.__cause__) is expected_cause
+
+
+@pytest.mark.parametrize(
+    "malformed_root",
+    MALFORMED_ROOTS,
+    ids=("embedded_nul", "malformed_unicode"),
+)
+@pytest.mark.parametrize(
+    "action_name",
+    ("get_benchmark", "list_benchmarks", "resolve_pack_path", "load_parity_pack"),
+)
+def test_malformed_fallback_directory_uses_stable_path_error(
+    tmp_path: Path,
+    malformed_root: Path,
+    action_name: str,
+) -> None:
+    root = empty_root(tmp_path / "root")
+    actions = {
+        "get_benchmark": lambda: get_benchmark(
+            "contract_missing",
+            shared_root=root,
+            fallback_catalog_dirs=(malformed_root,),
+        ),
+        "list_benchmarks": lambda: list_benchmarks(
+            shared_root=root,
+            fallback_catalog_dirs=(malformed_root,),
+        ),
+        "resolve_pack_path": lambda: resolve_pack_path(
+            "contract_missing_pack",
+            shared_root=root,
+            fallback_pack_dirs=(malformed_root,),
+        ),
+        "load_parity_pack": lambda: load_parity_pack(
+            "contract_missing_pack",
+            shared_root=root,
+            fallback_pack_dirs=(malformed_root,),
+        ),
+    }
+    error = assert_catalog_error(
+        UnsafeCatalogPathError,
+        "unsafe_catalog_path",
+        actions[action_name],
+    )
+    assert type(error) is UnsafeCatalogPathError
+    expected_cause = ValueError if malformed_root == MALFORMED_ROOTS[0] else UnicodeEncodeError
+    assert type(error.__cause__) is expected_cause
+
+
 def test_canonical_wins_fallback_only_resolves_and_merged_list_is_sorted(tmp_path: Path) -> None:
     root = copy_canonical_root(tmp_path / "root")
     fallback = tmp_path / "fallback"
@@ -644,6 +747,98 @@ def test_empty_nonmapping_multiple_alias_unsupported_and_invalid_utf8_yaml_rejec
         "invalid_catalog_yaml",
         lambda: invoke_fallback_yaml(tmp_path, "contract_invalid_yaml", payload),
     )
+
+
+@pytest.mark.parametrize(
+    "scalar",
+    HOSTILE_CONSTRUCTOR_SCALARS,
+    ids=("large_decimal", "invalid_timestamp"),
+)
+@pytest.mark.parametrize("action_name", ("get_benchmark", "list_benchmarks", "load_parity_pack"))
+def test_benchmark_constructor_exceptions_use_stable_yaml_error(
+    tmp_path: Path,
+    scalar: str,
+    action_name: str,
+) -> None:
+    root = empty_root(tmp_path / "root")
+    benchmark_id = "contract_hostile_benchmark"
+    fallback_catalog = tmp_path / "fallback-catalog"
+    write_fallback(
+        fallback_catalog,
+        benchmark_id,
+        text=yaml_for_benchmark(benchmark_id, display_name=scalar),
+    )
+    fallback_pack = tmp_path / "fallback-pack"
+    fallback_pack.mkdir()
+    pack_name = "contract_hostile_pack"
+    (fallback_pack / f"{pack_name}.yaml").write_text(
+        yaml_for_pack(pack_name, benchmark_id),
+        encoding="utf-8",
+    )
+    actions = {
+        "get_benchmark": lambda: get_benchmark(
+            benchmark_id,
+            shared_root=root,
+            fallback_catalog_dirs=(fallback_catalog,),
+        ),
+        "list_benchmarks": lambda: list_benchmarks(
+            shared_root=root,
+            fallback_catalog_dirs=(fallback_catalog,),
+        ),
+        "load_parity_pack": lambda: load_parity_pack(
+            pack_name,
+            shared_root=root,
+            fallback_pack_dirs=(fallback_pack,),
+            fallback_catalog_dirs=(fallback_catalog,),
+        ),
+    }
+    error = assert_catalog_error(
+        InvalidCatalogYamlError,
+        "invalid_catalog_yaml",
+        actions[action_name],
+    )
+    assert type(error) is InvalidCatalogYamlError
+    assert type(error.__cause__) is ValueError
+
+
+@pytest.mark.parametrize(
+    "scalar",
+    HOSTILE_CONSTRUCTOR_SCALARS,
+    ids=("large_decimal", "invalid_timestamp"),
+)
+@pytest.mark.parametrize("action_name", ("resolve_pack_path", "load_parity_pack"))
+def test_pack_constructor_exceptions_use_stable_yaml_error(
+    tmp_path: Path,
+    scalar: str,
+    action_name: str,
+) -> None:
+    root = empty_root(tmp_path / "root")
+    fallback_pack = tmp_path / "fallback-pack"
+    fallback_pack.mkdir()
+    pack_name = "contract_hostile_pack"
+    (fallback_pack / f"{pack_name}.yaml").write_text(
+        yaml_for_pack(scalar, "contract_hostile_benchmark"),
+        encoding="utf-8",
+    )
+    actions = {
+        "resolve_pack_path": lambda: resolve_pack_path(
+            pack_name,
+            shared_root=root,
+            fallback_pack_dirs=(fallback_pack,),
+        ),
+        "load_parity_pack": lambda: load_parity_pack(
+            pack_name,
+            shared_root=root,
+            fallback_pack_dirs=(fallback_pack,),
+        ),
+    }
+    error = assert_catalog_error(
+        InvalidCatalogYamlError,
+        "invalid_catalog_yaml",
+        actions[action_name],
+    )
+    assert type(error) is InvalidCatalogYamlError
+    assert type(error.__cause__) is ValueError
 
 
 def test_oversized_yaml_rejects_before_model_validation(tmp_path: Path) -> None:

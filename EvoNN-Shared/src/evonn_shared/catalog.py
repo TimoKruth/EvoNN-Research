@@ -374,7 +374,7 @@ def _open_directory_path(path: Path, label: str) -> int:
         else:
             descriptor = os.open(".", flags)
             components = path.parts
-    except OSError as error:
+    except (OSError, ValueError) as error:
         raise UnsafeCatalogPathError(f"unable to open {label} safely") from error
 
     active_descriptor: int | None = descriptor
@@ -385,7 +385,7 @@ def _open_directory_path(path: Path, label: str) -> int:
             assert active_descriptor is not None
             try:
                 next_descriptor = os.open(component, flags, dir_fd=active_descriptor)
-            except OSError as error:
+            except (OSError, ValueError) as error:
                 raise UnsafeCatalogPathError(f"unable to open {label} safely") from error
             retired_descriptor = active_descriptor
             active_descriptor = None
@@ -479,7 +479,7 @@ def _parse_yaml(payload: bytes, label: str) -> dict[str, object]:
     loader = _CatalogSafeLoader(text)
     try:
         value = loader.get_single_data()
-    except yaml.YAMLError as error:
+    except (yaml.YAMLError, ValueError, OverflowError) as error:
         raise InvalidCatalogYamlError(f"catalog YAML is invalid: {label}") from error
     finally:
         loader.dispose()
