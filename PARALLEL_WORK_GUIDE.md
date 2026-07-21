@@ -37,12 +37,18 @@ The following remain joint decisions or nonparallel integration points: B0, Foun
 
 ## Current authorization state
 
-Gate B0 local implementation is complete, but the gate remains open on B0.2 (`authoritative_remote_url_absent`) and B0.5 (`hosted_ci_not_executed`). Therefore the first lane split is not authorized, and no Phase 0 work may begin.
+Gate B0 is closed. The authoritative repository is pinned, the Linux/NumPy and
+macOS/MLX hosted bootstrap probes are preserved and validated offline, and the
+joint B0 integration record is checked in.
 
-After both blockers close and joint B0 integration passes, the first safe parallel point is Phase 0. Before branches begin, both lanes must jointly freeze the Phase 0 interfaces from the consolidated plan:
+Closure does not itself authorize immediate parallel implementation. The first
+safe parallel point remains Phase 0, and no Phase 0 lane branch may begin before
+both lanes jointly freeze and record:
 
-- canonical-encoding/digest API, Lane A to Lane B for checkpoint checksums;
-- export model shapes, Lane A to Lane B for RunWorkspace fixtures;
-- catalog loader signatures, Lane B to Lane A for validators.
+- the canonical-encoding/digest API;
+- the export model shapes;
+- the catalog-loader signatures.
 
-Only then may Phase 0 split exactly as recorded above: Lane A owns WP-0.2 through WP-0.5; Lane B owns WP-0.1 and WP-0.6 through WP-0.9; WP-0.10 and the phase exit remain joint.
+After that freeze, Phase 0 may split exactly as recorded above. Lane A owns
+WP-0.2 through WP-0.5; Lane B owns WP-0.1 and WP-0.6 through WP-0.9; WP-0.10 and
+the phase exit remain joint.

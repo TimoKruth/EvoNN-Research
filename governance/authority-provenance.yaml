@@ -1,14 +1,14 @@
 schema_version: 1
-status: provisional
-authority_state: local-only/provisional
+status: active
+authority_state: remote-pinned
 digest_method: canonical-sha256-tree-v1
 sources:
   - id: claude-spec
     scope: directory
     path: claude-spec/
     normative_role: Lab normative specification; wins over the execution plan on disagreement
-    origin_state: local-only/provisional
-    upstream_url: null
+    origin_state: authoritative-remote
+    upstream_url: https://github.com/TimoKruth/EvoNN-Research.git
     source_commit: 2c622528ac31f9e86d3fd9e03fab3279b3819d72
     declared_version: 0.1.0-draft.1
     imported_at: "2026-07-17T14:49:43Z"
@@ -23,8 +23,8 @@ sources:
     scope: file
     path: PROGRAM_CHARTER.md
     normative_role: Program boundaries, workstreams, and interop gating relationships
-    origin_state: local-only/provisional
-    upstream_url: null
+    origin_state: authoritative-remote
+    upstream_url: https://github.com/TimoKruth/EvoNN-Research.git
     source_commit: 2c622528ac31f9e86d3fd9e03fab3279b3819d72
     declared_version: rev.2
     imported_at: "2026-07-17T14:49:43Z"
@@ -39,8 +39,8 @@ sources:
     scope: file
     path: claudex-spec/19-research-interop.md
     normative_role: Product consumer acceptance and Product-owned I2 authority
-    origin_state: local-only/provisional
-    upstream_url: null
+    origin_state: authoritative-remote
+    upstream_url: https://github.com/TimoKruth/EvoNN-Research.git
     source_commit: 2c622528ac31f9e86d3fd9e03fab3279b3819d72
     declared_version: 1.0.0-draft
     imported_at: "2026-07-17T14:49:43Z"

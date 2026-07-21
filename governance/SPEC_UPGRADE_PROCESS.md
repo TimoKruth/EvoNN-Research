@@ -51,3 +51,17 @@ The policy validator repeats the same procedure against both the pinned commit a
 ## Closing B0.2
 
 B0.2 stays open while the authority state is `local-only/provisional` and every `upstream_url` is null. Once a real authoritative remote exists, a reviewed pull request may set the remote URLs, change the authority state, and close B0.2 without changing the already verified source commit, Git object IDs, or content digests. If the remote's authoritative bytes differ, that is a source upgrade and the full process above applies.
+
+## Gate B0 Remote-Pinning Closure Record
+
+Gate B0.2 was closed through the reviewed B0 closure pull request by changing
+the authority document from `local-only/provisional` to `remote-pinned` and
+setting every authority entry to
+`https://github.com/TimoKruth/EvoNN-Research.git`.
+
+This transition did not change governing-source bytes, source commits,
+declared versions, import timestamps, Git object types or IDs, content
+digests, authority roles, consumer-acceptance ownership, or supersession
+state. It is therefore a provenance-state transition, not a source upgrade.
+Any future change to the pinned bytes or identities remains subject to the
+full upgrade process above.

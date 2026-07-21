@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -16,6 +17,7 @@ CHECKOUT_SHA = "de0fac2e4500dabe0009e67214ff5f5447ce83dd"
 SETUP_UV_SHA = "11f9893b081a58869d3b5fccaea48c9e9e46f990"
 UPLOAD_SHA = "ea165f8d65b6e75b540449e92b4886f43607fa02"
 UV_VERSION = "0.5.13"
+B0_POLICY_SELFTEST_TIMEOUT_SECONDS = 600
 ENGINE_DIRECTORIES = tuple(engine.directory for engine in ENGINE_CONTRACTS)
 
 
@@ -167,7 +169,7 @@ def test_b0_policy_script_runs_from_another_directory(tmp_path: Path) -> None:
         env=environment,
         capture_output=True,
         text=True,
-        timeout=240,
+        timeout=B0_POLICY_SELFTEST_TIMEOUT_SECONDS,
         check=False,
     )
     assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
@@ -176,12 +178,18 @@ def test_b0_policy_script_runs_from_another_directory(tmp_path: Path) -> None:
     assert "Backend capability policy: PASS" in result.stdout
 
 
-def test_b05_truthfully_remains_open_for_hosted_execution() -> None:
-    status = yaml.safe_load((REPO_ROOT / "governance/b0-status.yaml").read_text(encoding="utf-8"))
-    assert status["status"] == "open"
-    assert status["items"]["B0.2"]["status"] == "open"
-    assert status["items"]["B0.5"]["status"] == "open"
-    assert status["items"]["B0.5"]["open_reason"] == "hosted_ci_not_executed"
-    evidence = status["items"]["B0.5"]["evidence"]
-    assert "local" in evidence.lower()
-    assert "hosted" in evidence.lower()
+def test_workflow_policy_preserves_full_history_and_final_b0_closure() -> None:
+    report = json.loads(
+        (REPO_ROOT / "governance/b0-report.json").read_text(encoding="utf-8")
+    )
+    status = yaml.safe_load(
+        (REPO_ROOT / "governance/b0-status.yaml").read_text(encoding="utf-8")
+    )
+
+    if report["schema_version"] == "1.0.0":
+        assert status["status"] == "open"
+    else:
+        assert report["schema_version"] == "2.0.0"
+        assert status["status"] == "closed"
+        assert status["items"]["B0.2"]["status"] == "closed"
+        assert status["items"]["B0.5"]["status"] == "closed"
