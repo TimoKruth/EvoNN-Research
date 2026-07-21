@@ -685,32 +685,6 @@ def _load_fallback_catalog(opened: tuple[tuple[Path, int], ...]) -> dict[str, Be
     return definitions
 
 
-def _load_matching_fallback_benchmark(
-    opened: tuple[tuple[Path, int], ...],
-    benchmark_id: str,
-) -> BenchmarkSpec | None:
-    filename = f"{benchmark_id}.yaml"
-    matches: list[tuple[bytes, str]] = []
-    for directory_index, (_, directory_fd) in enumerate(opened, start=1):
-        label = f"fallback catalog {directory_index}/{filename}"
-        payload = _read_file_at(directory_fd, filename, label, optional=True)
-        if payload is not None:
-            matches.append((payload, label))
-    if len(matches) > 1:
-        raise DuplicateCatalogDefinitionError(
-            f"duplicate fallback benchmark definition: {benchmark_id}"
-        )
-    if not matches:
-        return None
-    payload, label = matches[0]
-    spec = _parse_model(payload, BenchmarkSpec, label)
-    if spec.id != benchmark_id:
-        raise InvalidCatalogModelError(
-            f"fallback filename/model ID mismatch: {benchmark_id}, {spec.id}"
-        )
-    return spec
-
-
 def get_benchmark(
     benchmark_id: str,
     *,
@@ -727,7 +701,8 @@ def get_benchmark(
     with _open_fallback_directories(fallback_catalog_dirs, "catalog") as fallbacks:
         if benchmark_id in canonical:
             return canonical[benchmark_id]
-        fallback = _load_matching_fallback_benchmark(fallbacks, benchmark_id)
+        fallback_catalog = _load_fallback_catalog(fallbacks)
+        fallback = fallback_catalog[benchmark_id] if benchmark_id in fallback_catalog else None
     if fallback is None:
         raise BenchmarkNotFoundError(f"benchmark not found: {benchmark_id}")
     return fallback
@@ -748,6 +723,36 @@ def list_benchmarks(
         merged = _load_fallback_catalog(fallbacks)
     merged.update(canonical)
     return tuple(merged[identifier] for identifier in sorted(merged, key=lambda item: item.encode("utf-8")))
+
+
+def _load_fallback_packs(
+    opened: tuple[tuple[Path, int], ...],
+) -> dict[str, tuple[Path, BenchmarkPack]]:
+    discovered: list[tuple[str, Path, BenchmarkPack]] = []
+    for directory_index, (directory, directory_fd) in enumerate(opened, start=1):
+        for name in _list_directory(directory_fd, f"fallback pack directory {directory_index}"):
+            stem = _safe_yaml_name(name)
+            if stem is None:
+                raise UnsafeCatalogPathError(f"unsafe fallback pack entry: {name!r}")
+            label = f"fallback pack {directory_index}/{name}"
+            payload = _read_file_at(directory_fd, name, label)
+            assert payload is not None
+            pack = _parse_model(payload, BenchmarkPack, label)
+            discovered.append((stem, directory / name, pack))
+
+    packs: dict[str, tuple[Path, BenchmarkPack]] = {}
+    for _, path, pack in discovered:
+        if pack.pack_name in packs:
+            raise DuplicateCatalogDefinitionError(
+                f"duplicate fallback pack definition: {pack.pack_name}"
+            )
+        packs[pack.pack_name] = (path, pack)
+    for stem, _, pack in discovered:
+        if pack.pack_name != stem:
+            raise InvalidCatalogModelError(
+                f"pack filename/model name mismatch: {stem}, {pack.pack_name}"
+            )
+    return packs
 
 
 def _select_pack(
@@ -787,25 +792,11 @@ def _select_pack(
                 )
             return root / "suites" / "parity" / filename, pack
 
-        matches: list[tuple[Path, bytes, str]] = []
-        for directory_index, (directory, directory_fd) in enumerate(fallbacks, start=1):
-            label = f"fallback pack {directory_index}/{filename}"
-            payload = _read_file_at(directory_fd, filename, label, optional=True)
-            if payload is not None:
-                matches.append((directory / filename, payload, label))
-        if len(matches) > 1:
-            raise DuplicateCatalogDefinitionError(
-                f"duplicate fallback pack definition: {pack_name}"
-            )
-        if not matches:
+        fallback_packs = _load_fallback_packs(fallbacks)
+        selected = fallback_packs[pack_name] if pack_name in fallback_packs else None
+        if selected is None:
             raise PackNotFoundError(f"pack not found: {pack_name}")
-        path, payload, label = matches[0]
-        pack = _parse_model(payload, BenchmarkPack, label)
-        if pack.pack_name != pack_name:
-            raise InvalidCatalogModelError(
-                f"pack filename/model name mismatch: {pack_name}, {pack.pack_name}"
-            )
-        return path, pack
+        return selected
 
 
 def resolve_pack_path(

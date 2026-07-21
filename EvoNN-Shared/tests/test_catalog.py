@@ -555,6 +555,28 @@ def test_two_fallback_files_declaring_same_model_id_use_duplicate_error(tmp_path
     )
 
 
+def test_get_benchmark_rejects_differently_named_files_declaring_requested_id(
+    tmp_path: Path,
+) -> None:
+    root = empty_root(tmp_path / "root")
+    fallback = tmp_path / "fallback"
+    write_fallback(fallback, "contract_target")
+    write_fallback(
+        fallback,
+        "contract_shadow",
+        text=yaml_for_benchmark("contract_target", display_name="Contract Shadow"),
+    )
+    assert_catalog_error(
+        DuplicateCatalogDefinitionError,
+        "duplicate_catalog_definition",
+        lambda: get_benchmark(
+            "contract_target",
+            shared_root=root,
+            fallback_catalog_dirs=(fallback,),
+        ),
+    )
+
+
 def test_merged_listing_is_deterministic_under_creation_and_argument_order(tmp_path: Path) -> None:
     root = empty_root(tmp_path / "root")
     first = tmp_path / "first"
@@ -751,6 +773,40 @@ def test_duplicate_fallback_packs_malformed_and_stem_name_mismatch_reject(tmp_pa
         "invalid_catalog_model",
         lambda: resolve_pack_path("contract_fallback_pack", shared_root=root, fallback_pack_dirs=(first,)),
     )
+
+
+def test_fallback_pack_loaders_reject_differently_named_files_declaring_requested_name(
+    tmp_path: Path,
+) -> None:
+    root = copy_canonical_root(tmp_path / "root")
+    fallback = tmp_path / "fallback"
+    fallback.mkdir()
+    pack_text = (
+        CANONICAL_FIXTURE / "suites" / "parity" / "contract_parity_pack.yaml"
+    ).read_text(encoding="utf-8").replace(
+        "pack_name: contract_parity_pack",
+        "pack_name: contract_target_pack",
+    )
+    (fallback / "contract_target_pack.yaml").write_text(pack_text, encoding="utf-8")
+    (fallback / "contract_shadow_pack.yaml").write_text(pack_text, encoding="utf-8")
+    actions = (
+        lambda: resolve_pack_path(
+            "contract_target_pack",
+            shared_root=root,
+            fallback_pack_dirs=(fallback,),
+        ),
+        lambda: load_parity_pack(
+            "contract_target_pack",
+            shared_root=root,
+            fallback_pack_dirs=(fallback,),
+        ),
+    )
+    for action in actions:
+        assert_catalog_error(
+            DuplicateCatalogDefinitionError,
+            "duplicate_catalog_definition",
+            action,
+        )
 
 
 def test_unknown_pack_benchmark_references_are_utf8_sorted(tmp_path: Path) -> None:
