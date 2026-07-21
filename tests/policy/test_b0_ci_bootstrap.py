@@ -20,6 +20,26 @@ UPLOAD_SHA = "ea165f8d65b6e75b540449e92b4886f43607fa02"
 UV_VERSION = "0.5.13"
 B0_POLICY_SELFTEST_TIMEOUT_SECONDS = 600
 ENGINE_DIRECTORIES = tuple(engine.directory for engine in ENGINE_CONTRACTS)
+PHASE0_CONTRACT_SCRIPT = "scripts/ci/phase0-contract-checks.sh"
+ROOT_CONTRACT_PATH = "tests/contracts/test_phase0_shared_interfaces.py"
+FROZEN_SHARED_SOURCE_PATHS = (
+    "EvoNN-Shared/src/evonn_shared/canonical.py",
+    "EvoNN-Shared/src/evonn_shared/rng.py",
+    "EvoNN-Shared/src/evonn_shared/budgets.py",
+    "EvoNN-Shared/src/evonn_shared/telemetry.py",
+    "EvoNN-Shared/src/evonn_shared/exports.py",
+    "EvoNN-Shared/src/evonn_shared/catalog.py",
+)
+FROZEN_SHARED_TEST_PATHS = (
+    "EvoNN-Shared/tests/test_canonical.py",
+    "EvoNN-Shared/tests/test_rng.py",
+    "EvoNN-Shared/tests/test_budgets.py",
+    "EvoNN-Shared/tests/test_telemetry.py",
+    "EvoNN-Shared/tests/test_exports.py",
+    "EvoNN-Shared/tests/test_catalog.py",
+)
+RUFF_PHASE0_PATHS = (ROOT_CONTRACT_PATH, *FROZEN_SHARED_SOURCE_PATHS, *FROZEN_SHARED_TEST_PATHS)
+PYTEST_PHASE0_PATHS = (ROOT_CONTRACT_PATH, *FROZEN_SHARED_TEST_PATHS)
 
 
 def _workflow(name: str) -> tuple[dict, str]:
@@ -50,6 +70,23 @@ def _uses(steps: list[dict]) -> list[str]:
     return [str(step["uses"]) for step in steps if "uses" in step]
 
 
+def _logical_shell_commands(text: str) -> list[list[str]]:
+    commands: list[list[str]] = []
+    current = ""
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        continued = line.endswith("\\")
+        segment = line[:-1].rstrip() if continued else line
+        current = f"{current} {segment}".strip()
+        if not continued:
+            commands.append(current.split())
+            current = ""
+    assert not current
+    return commands
+
+
 @pytest.mark.parametrize(
     ("workflow_name", "job_name"),
     (("linux-trust.yml", "linux-trust"), ("macos-engines.yml", "macos-engines")),
@@ -63,6 +100,41 @@ def test_hosted_workflows_fetch_full_git_history(workflow_name: str, job_name: s
     )
 
     assert checkout["with"]["fetch-depth"] == 0
+
+
+@pytest.mark.parametrize(
+    ("workflow_name", "job_name", "runtime_step_name"),
+    (
+        ("linux-trust.yml", "linux-trust", "Execute and validate NumPy runtime probe"),
+        ("macos-engines.yml", "macos-engines", "Execute and validate MLX runtime probe"),
+    ),
+)
+def test_hosted_workflows_run_exact_phase0_contract_step_between_sync_and_probe(
+    workflow_name: str,
+    job_name: str,
+    runtime_step_name: str,
+) -> None:
+    workflow, _ = _workflow(workflow_name)
+    steps = _steps(_job(workflow, job_name))
+    expected_step = {
+        "name": "Run Phase 0 shared contract checks",
+        "run": PHASE0_CONTRACT_SCRIPT,
+    }
+
+    assert [step for step in steps if step.get("name") == expected_step["name"]] == [expected_step]
+    assert [step for step in steps if step.get("run") == PHASE0_CONTRACT_SCRIPT] == [expected_step]
+    assert _run_text(steps).count(PHASE0_CONTRACT_SCRIPT) == 1
+
+    sync_index = next(
+        index
+        for index, step in enumerate(steps)
+        if step.get("run") == "uv sync --all-packages --group dev --locked"
+    )
+    phase0_index = steps.index(expected_step)
+    runtime_index = next(
+        index for index, step in enumerate(steps) if step.get("name") == runtime_step_name
+    )
+    assert sync_index < phase0_index < runtime_index
 
 
 def test_linux_workflow_has_exact_trust_lane_contract() -> None:
@@ -147,6 +219,49 @@ def test_engine_dependency_markers_are_exact_and_linux_safe() -> None:
     contenders = (REPO_ROOT / "EvoNN-Contenders/pyproject.toml").read_text(encoding="utf-8")
     assert "scikit-learn" not in contenders.lower()
     assert "sklearn" not in contenders.lower()
+
+
+def test_phase0_contract_script_is_executable_cwd_independent_and_exactly_locked() -> None:
+    script = REPO_ROOT / PHASE0_CONTRACT_SCRIPT
+    assert script.is_file()
+    assert os.access(script, os.X_OK)
+    text = script.read_text(encoding="utf-8")
+
+    assert text.startswith("#!/usr/bin/env bash\nset -euo pipefail\n")
+    assert 'source "$script_dir/_common.sh"' in text
+    assert PHASE0_CONTRACT_SCRIPT not in text
+    assert "\ntrue\n" not in text
+    assert "echo" not in text
+    assert "printf" not in text
+    assert "uv run --locked" in text
+    assert "uv run --frozen" not in text
+
+    uv_commands = [command for command in _logical_shell_commands(text) if command[0] == "uv"]
+    assert uv_commands == [
+        ["uv", "lock", "--check"],
+        [
+            "uv",
+            "run",
+            "--locked",
+            "--all-packages",
+            "--group",
+            "dev",
+            "ruff",
+            "check",
+            *RUFF_PHASE0_PATHS,
+        ],
+        [
+            "uv",
+            "run",
+            "--locked",
+            "--all-packages",
+            "--group",
+            "dev",
+            "pytest",
+            "-q",
+            *PYTEST_PHASE0_PATHS,
+        ],
+    ]
 
 
 def test_b0_policy_script_uses_common_root_and_complete_nonrecursive_test_discovery() -> None:

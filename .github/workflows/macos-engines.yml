@@ -25,6 +25,8 @@ jobs:
         run: uv python install 3.13
       - name: Synchronize locked workspace
         run: uv sync --all-packages --group dev --locked
+      - name: Run Phase 0 shared contract checks
+        run: scripts/ci/phase0-contract-checks.sh
       - name: Assert Apple Silicon host and MLX installation
         run: |
           test "$(uname -m)" = "arm64"
