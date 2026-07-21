@@ -372,14 +372,25 @@ def _record_error(
     return primary
 
 
-def _descriptor_is_closed(descriptor: int) -> bool:
+def _descriptor_matches_status(
+    descriptor: int,
+    original_status: os.stat_result,
+    primary: BaseException | None,
+    context: str,
+) -> tuple[bool | None, BaseException | None]:
     try:
-        os.fstat(descriptor)
+        current_status = os.fstat(descriptor)
     except OSError as error:
         if error.errno == errno.EBADF:
-            return True
-        raise
-    return False
+            return False, primary
+        return None, _record_error(primary, error, f"{context} identity check failed")
+    except BaseException as error:
+        return None, _record_error(primary, error, f"{context} identity check failed")
+    if _same_file_identity(original_status, current_status):
+        return True, primary
+    if primary is not None:
+        primary.add_note(f"{context}: descriptor {descriptor} was reused; fallback close skipped")
+    return False, primary
 
 
 def _close_descriptor(descriptor: int) -> None:
@@ -391,34 +402,41 @@ def _close_owned_descriptor(
     primary: BaseException | None,
     context: str,
 ) -> tuple[bool, BaseException | None]:
+    original_status: os.stat_result | None = None
+    try:
+        original_status = os.fstat(descriptor)
+    except OSError as error:
+        if error.errno == errno.EBADF:
+            return True, primary
+        primary = _record_error(primary, error, f"{context} identity capture failed")
+    except BaseException as error:
+        primary = _record_error(primary, error, f"{context} identity capture failed")
+
     try:
         _close_descriptor(descriptor)
     except BaseException as error:
         primary = _record_error(primary, error, context)
+    else:
+        return True, primary
 
-    try:
-        if _descriptor_is_closed(descriptor):
+    if original_status is not None:
+        matches, primary = _descriptor_matches_status(descriptor, original_status, primary, context)
+        if matches is False:
             return True, primary
-    except BaseException as error:
-        primary = _record_error(primary, error, f"{context} liveness check failed")
+        if matches is True:
+            try:
+                os.close(descriptor)
+            except BaseException as error:
+                primary = _record_error(primary, error, f"{context} direct fallback failed")
+            else:
+                return True, primary
+            matches, primary = _descriptor_matches_status(descriptor, original_status, primary, context)
+            if matches is False:
+                return True, primary
 
-    try:
-        os.close(descriptor)
-    except OSError as error:
-        if error.errno != errno.EBADF:
-            primary = _record_error(primary, error, f"{context} direct fallback failed")
-    except BaseException as error:
-        primary = _record_error(primary, error, f"{context} direct fallback failed")
-
-    try:
-        closed = _descriptor_is_closed(descriptor)
-    except BaseException as error:
-        primary = _record_error(primary, error, f"{context} final liveness check failed")
-        closed = False
-    if not closed:
-        leak_error = OSError(errno.EIO, f"{context} left descriptor {descriptor} open")
-        primary = _record_error(primary, leak_error, context)
-    return closed, primary
+    leak_error = OSError(errno.EIO, f"{context} left descriptor {descriptor} ownership unresolved")
+    primary = _record_error(primary, leak_error, context)
+    return False, primary
 
 
 def _open_file_at(directory_fd: int, filename: str) -> int:
@@ -466,45 +484,60 @@ def _close_owned_file(
     descriptor: int,
     primary: BaseException | None,
 ) -> tuple[bool, BaseException | None]:
+    original_status: os.stat_result | None = None
+    try:
+        original_status = os.fstat(descriptor)
+    except OSError as error:
+        if error.errno == errno.EBADF:
+            return True, primary
+        primary = _record_error(primary, error, "file close identity capture failed")
+    except BaseException as error:
+        primary = _record_error(primary, error, "file close identity capture failed")
+
     try:
         _close_file(file)
     except BaseException as error:
         primary = _record_error(primary, error, "file close failed")
+    else:
+        return True, primary
 
-    try:
-        if _descriptor_is_closed(descriptor):
+    if file.closed:
+        return True, primary
+    if original_status is not None:
+        matches, primary = _descriptor_matches_status(descriptor, original_status, primary, "file close failed")
+        if matches is False:
             return True, primary
-    except BaseException as error:
-        primary = _record_error(primary, error, "file close liveness check failed")
+        if matches is True:
+            try:
+                file.close()
+            except BaseException as error:
+                primary = _record_error(primary, error, "direct file-object close fallback failed")
+            else:
+                return True, primary
+            if file.closed:
+                return True, primary
+            matches, primary = _descriptor_matches_status(descriptor, original_status, primary, "file close fallback")
+            if matches is False:
+                return True, primary
+            if matches is True:
+                try:
+                    os.close(descriptor)
+                except BaseException as error:
+                    primary = _record_error(primary, error, "raw file descriptor fallback failed")
+                else:
+                    return True, primary
+                matches, primary = _descriptor_matches_status(
+                    descriptor,
+                    original_status,
+                    primary,
+                    "raw file descriptor fallback",
+                )
+                if matches is False:
+                    return True, primary
 
-    try:
-        file.close()
-    except BaseException as error:
-        primary = _record_error(primary, error, "direct file-object close fallback failed")
-
-    try:
-        if _descriptor_is_closed(descriptor):
-            return True, primary
-    except BaseException as error:
-        primary = _record_error(primary, error, "file fallback liveness check failed")
-
-    try:
-        os.close(descriptor)
-    except OSError as error:
-        if error.errno != errno.EBADF:
-            primary = _record_error(primary, error, "raw file descriptor fallback failed")
-    except BaseException as error:
-        primary = _record_error(primary, error, "raw file descriptor fallback failed")
-
-    try:
-        closed = _descriptor_is_closed(descriptor)
-    except BaseException as error:
-        primary = _record_error(primary, error, "file final liveness check failed")
-        closed = False
-    if not closed:
-        leak_error = OSError(errno.EIO, f"file close left descriptor {descriptor} open")
-        primary = _record_error(primary, leak_error, "file close failed")
-    return closed, primary
+    leak_error = OSError(errno.EIO, f"file close left descriptor {descriptor} ownership unresolved")
+    primary = _record_error(primary, leak_error, "file close failed")
+    return False, primary
 
 
 def _write_file_at(directory_fd: int, filename: str, payload: bytes) -> None:
@@ -559,14 +592,38 @@ def _cleanup_staging(
     parent_fd: int,
     staging_name: str,
     staging_fd: int | None,
+    created_status: os.stat_result | None,
     primary: BaseException,
 ) -> bool:
     if staging_fd is None:
-        primary.add_note(
-            "staging descriptor was not verified; no name-based cleanup was attempted and an "
-            "externally renamed empty owned staging directory may require operator cleanup"
-        )
-        return False
+        if created_status is None:
+            primary.add_note(
+                "staging descriptor and created identity were unavailable; no name-based cleanup "
+                "was attempted"
+            )
+            return False
+        try:
+            named_status = os.stat(staging_name, dir_fd=parent_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            return True
+        except BaseException as error:
+            primary.add_note(f"staging cleanup identity check failed: {error!r}")
+            return False
+        if not _same_file_identity(created_status, named_status):
+            primary.add_note(
+                "staging descriptor was not verified and the source name no longer identifies the "
+                "created directory; replacement was preserved and an externally renamed empty "
+                "owned staging directory may require operator cleanup"
+            )
+            return False
+        try:
+            os.rmdir(staging_name, dir_fd=parent_fd)
+        except FileNotFoundError:
+            return True
+        except BaseException as error:
+            primary.add_note(f"staging cleanup failed: {error!r}")
+            return False
+        return True
 
     for filename in _EXPORT_FILENAMES:
         try:
@@ -654,6 +711,7 @@ def write_export(
     parent_fd: int | None = os.open(parent, parent_flags)
     staging_name = f".{destination_name}.tmp-{secrets.token_hex(16)}"
     staging_fd: int | None = None
+    created_status: os.stat_result | None = None
     staging_owned = False
     staging_verified = False
     published = False
@@ -723,7 +781,7 @@ def write_export(
     except BaseException as error:
         if staging_owned and not published:
             cleanup_fd = staging_fd if staging_verified else None
-            staging_closed = _cleanup_staging(parent_fd, staging_name, cleanup_fd, error)
+            staging_closed = _cleanup_staging(parent_fd, staging_name, cleanup_fd, created_status, error)
             if staging_closed:
                 staging_fd = None
         raise

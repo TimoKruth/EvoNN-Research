@@ -952,6 +952,107 @@ def _assert_fd_closed(descriptor: int) -> None:
     assert error.value.errno == errno.EBADF
 
 
+def _assert_fd_open_for(descriptor: int, path: Path) -> None:
+    assert (os.fstat(descriptor).st_dev, os.fstat(descriptor).st_ino) == (path.stat().st_dev, path.stat().st_ino)
+
+
+@pytest.mark.parametrize("raise_after_reuse", [False, True])
+def test_raw_close_never_closes_reused_descriptor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    raise_after_reuse: bool,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    destination = tmp_path / f"raw-close-reuse-{raise_after_reuse}"
+    replacement = tmp_path / f"raw-replacement-{raise_after_reuse}"
+    parent_fd: int | None = None
+    replacement_fd: int | None = None
+    native = exports._load_exclusive_rename()
+
+    def capture_parent(parent_descriptor: int, source_name: str, destination_name: str) -> None:
+        nonlocal parent_fd
+        parent_fd = parent_descriptor
+        native(parent_descriptor, source_name, destination_name)
+
+    def close_then_reuse(descriptor: int) -> None:
+        nonlocal replacement_fd
+        os.close(descriptor)
+        if descriptor == parent_fd:
+            replacement_fd = os.open(replacement, os.O_RDONLY | os.O_CREAT | os.O_CLOEXEC, 0o600)
+            assert replacement_fd == descriptor
+            if raise_after_reuse:
+                raise OSError("raw close raised after reuse")
+
+    monkeypatch.setattr(exports, "_load_exclusive_rename", lambda: capture_parent)
+    monkeypatch.setattr(exports, "_close_descriptor", close_then_reuse)
+
+    try:
+        if raise_after_reuse:
+            with pytest.raises(OSError, match="raw close raised after reuse"):
+                write_export(destination, manifest, results, summary)
+        else:
+            write_export(destination, manifest, results, summary)
+        assert replacement_fd is not None
+        _assert_fd_open_for(replacement_fd, replacement)
+        assert sorted(path.name for path in destination.iterdir()) == [
+            MANIFEST_FILENAME,
+            RESULTS_FILENAME,
+            SUMMARY_FILENAME,
+        ]
+    finally:
+        if replacement_fd is not None:
+            try:
+                os.close(replacement_fd)
+            except OSError as error:
+                if error.errno != errno.EBADF:
+                    raise
+
+
+@pytest.mark.parametrize("raise_after_reuse", [False, True])
+def test_file_object_close_never_closes_reused_descriptor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    raise_after_reuse: bool,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    destination = tmp_path / f"file-close-reuse-{raise_after_reuse}"
+    replacement = tmp_path / f"file-replacement-{raise_after_reuse}"
+    replacement_fd: int | None = None
+
+    def close_then_reuse(file: object) -> None:
+        nonlocal replacement_fd
+        descriptor = file.fileno()
+        file.close()
+        if replacement_fd is None:
+            replacement_fd = os.open(replacement, os.O_RDONLY | os.O_CREAT | os.O_CLOEXEC, 0o600)
+            assert replacement_fd == descriptor
+            if raise_after_reuse:
+                raise OSError("file close raised after reuse")
+
+    monkeypatch.setattr(exports, "_close_file", close_then_reuse)
+
+    try:
+        if raise_after_reuse:
+            with pytest.raises(OSError, match="file close raised after reuse"):
+                write_export(destination, manifest, results, summary)
+            assert not destination.exists()
+        else:
+            write_export(destination, manifest, results, summary)
+        assert replacement_fd is not None
+        _assert_fd_open_for(replacement_fd, replacement)
+    finally:
+        if replacement_fd is not None:
+            try:
+                os.close(replacement_fd)
+            except OSError as error:
+                if error.errno != errno.EBADF:
+                    raise
+
+
 def test_source_name_replacement_is_detected_without_publishing_or_deleting_replacement(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1033,6 +1134,41 @@ def test_staging_open_identity_mismatch_preserves_unverified_replacement(
     assert (replacement / "attacker-marker").read_bytes() == b"replacement"
     assert sorted(moved_owned.iterdir()) == []
     assert any("staging descriptor was not verified" in note for note in error.value.__notes__)
+
+
+def test_same_inode_staging_open_failure_removes_owned_staging(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    destination = tmp_path / "staging-open-emfile"
+    actual_open = exports.os.open
+    staging_open_attempted = False
+
+    def fail_staging_open(
+        path: object,
+        flags: int,
+        mode: int = 0o777,
+        *,
+        dir_fd: int | None = None,
+    ) -> int:
+        nonlocal staging_open_attempted
+        if isinstance(path, str) and path.startswith(".staging-open-emfile.tmp-"):
+            staging_open_attempted = True
+            raise OSError(errno.EMFILE, "staging open exhausted descriptors")
+        return actual_open(path, flags, mode, dir_fd=dir_fd)
+
+    monkeypatch.setattr(exports.os, "open", fail_staging_open)
+
+    with pytest.raises(OSError, match="staging open exhausted descriptors") as error:
+        write_export(destination, manifest, results, summary)
+
+    assert error.value.errno == errno.EMFILE
+    assert staging_open_attempted
+    assert not destination.exists()
+    assert not list(tmp_path.glob(".staging-open-emfile.tmp-*"))
 
 
 def test_post_rename_staging_close_failure_still_attempts_parent_fsync(
