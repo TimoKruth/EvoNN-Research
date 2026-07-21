@@ -942,10 +942,6 @@ def test_writer_rejects_path_and_model_subclasses_before_dispatch(tmp_path: Path
         write_export(PathSubclass(tmp_path / "path-subclass"), manifest, results, summary)
 
 
-def _open_fd_count() -> int:
-    return len(os.listdir("/dev/fd"))
-
-
 def _assert_fd_closed(descriptor: int) -> None:
     with pytest.raises(OSError) as error:
         os.fstat(descriptor)
@@ -1046,6 +1042,99 @@ def test_file_object_close_never_closes_reused_descriptor(
         _assert_fd_open_for(replacement_fd, replacement)
     finally:
         if replacement_fd is not None:
+            try:
+                os.close(replacement_fd)
+            except OSError as error:
+                if error.errno != errno.EBADF:
+                    raise
+
+
+def test_raw_exceptional_close_preserves_same_inode_replacement(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    destination = tmp_path / "raw-same-inode-reuse"
+    parent_fd: int | None = None
+    replacement_fd: int | None = None
+    native = exports._load_exclusive_rename()
+
+    def capture_parent(parent_descriptor: int, source_name: str, destination_name: str) -> None:
+        nonlocal parent_fd
+        parent_fd = parent_descriptor
+        native(parent_descriptor, source_name, destination_name)
+
+    def close_reopen_same_parent_then_raise(descriptor: int) -> None:
+        nonlocal replacement_fd
+        os.close(descriptor)
+        if descriptor == parent_fd:
+            replacement_fd = os.open(tmp_path, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
+            assert replacement_fd == descriptor
+            raise OSError("raw close raised after same-inode reuse")
+
+    monkeypatch.setattr(exports, "_load_exclusive_rename", lambda: capture_parent)
+    monkeypatch.setattr(exports, "_close_descriptor", close_reopen_same_parent_then_raise)
+
+    try:
+        with pytest.raises(OSError, match="raw close raised after same-inode reuse"):
+            write_export(destination, manifest, results, summary)
+        assert replacement_fd is not None
+        _assert_fd_open_for(replacement_fd, tmp_path)
+        assert sorted(path.name for path in destination.iterdir()) == [
+            MANIFEST_FILENAME,
+            RESULTS_FILENAME,
+            SUMMARY_FILENAME,
+        ]
+    finally:
+        if replacement_fd is not None:
+            try:
+                os.close(replacement_fd)
+            except OSError as error:
+                if error.errno != errno.EBADF:
+                    raise
+
+
+def test_file_exceptional_close_preserves_same_inode_replacement(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    destination = tmp_path / "file-same-inode-reuse"
+    replacement_fd: int | None = None
+    replacement_status: os.stat_result | None = None
+    captured_file: object | None = None
+
+    def close_reopen_same_file_then_raise(file: object) -> None:
+        nonlocal captured_file, replacement_fd, replacement_status
+        captured_file = file
+        descriptor = file.fileno()
+        replacement_status = os.fstat(descriptor)
+        staged_file = next(tmp_path.glob(".file-same-inode-reuse.tmp-*/manifest.json"))
+        os.close(descriptor)
+        replacement_fd = os.open(staged_file, os.O_RDONLY | os.O_CLOEXEC)
+        assert replacement_fd == descriptor
+        raise OSError("file close raised after same-inode reuse")
+
+    monkeypatch.setattr(exports, "_close_file", close_reopen_same_file_then_raise)
+
+    try:
+        with pytest.raises(OSError, match="file close raised after same-inode reuse"):
+            write_export(destination, manifest, results, summary)
+        assert replacement_fd is not None and replacement_status is not None
+        assert (os.fstat(replacement_fd).st_dev, os.fstat(replacement_fd).st_ino) == (
+            replacement_status.st_dev,
+            replacement_status.st_ino,
+        )
+        assert not destination.exists()
+        assert not list(tmp_path.glob(".file-same-inode-reuse.tmp-*"))
+    finally:
+        if captured_file is not None and not captured_file.closed:
+            captured_file.close()
+        elif replacement_fd is not None:
             try:
                 os.close(replacement_fd)
             except OSError as error:
@@ -1178,8 +1267,8 @@ def test_post_rename_staging_close_failure_still_attempts_parent_fsync(
     import evonn_shared.exports as exports
 
     manifest, results, summary = models()
-    baseline = _open_fd_count()
     staging_fd: int | None = None
+    staging_close_attempts = 0
     fsync_calls: list[int] = []
     original_fsync = exports._fsync_directory_fd
 
@@ -1191,7 +1280,9 @@ def test_post_rename_staging_close_failure_still_attempts_parent_fsync(
         original_fsync(descriptor)
 
     def fail_staging_close(descriptor: int) -> None:
+        nonlocal staging_close_attempts
         if descriptor == staging_fd:
+            staging_close_attempts += 1
             raise OSError("post-rename staging close failed")
         os.close(descriptor)
 
@@ -1199,14 +1290,22 @@ def test_post_rename_staging_close_failure_still_attempts_parent_fsync(
     monkeypatch.setattr(exports, "_close_descriptor", fail_staging_close, raising=False)
     destination = tmp_path / "post-close"
 
-    with pytest.raises(OSError, match="post-rename staging close failed"):
-        write_export(destination, manifest, results, summary)
+    try:
+        with pytest.raises(OSError, match="post-rename staging close failed"):
+            write_export(destination, manifest, results, summary)
 
-    assert len(fsync_calls) == 2
-    assert staging_fd is not None
-    _assert_fd_closed(staging_fd)
-    assert _open_fd_count() == baseline
-    assert sorted(path.name for path in destination.iterdir()) == [MANIFEST_FILENAME, RESULTS_FILENAME, SUMMARY_FILENAME]
+        assert len(fsync_calls) == 2
+        assert staging_close_attempts == 1
+        assert staging_fd is not None
+        os.fstat(staging_fd)
+        assert sorted(path.name for path in destination.iterdir()) == [
+            MANIFEST_FILENAME,
+            RESULTS_FILENAME,
+            SUMMARY_FILENAME,
+        ]
+    finally:
+        if staging_fd is not None:
+            os.close(staging_fd)
 
 
 def test_post_rename_close_and_parent_fsync_errors_are_aggregated_deterministically(
@@ -1217,6 +1316,7 @@ def test_post_rename_close_and_parent_fsync_errors_are_aggregated_deterministica
 
     manifest, results, summary = models()
     staging_fd: int | None = None
+    staging_close_attempts = 0
     fsync_calls = 0
     original_fsync = exports._fsync_directory_fd
 
@@ -1230,7 +1330,9 @@ def test_post_rename_close_and_parent_fsync_errors_are_aggregated_deterministica
         raise OSError("parent fsync also failed")
 
     def fail_staging_close(descriptor: int) -> None:
+        nonlocal staging_close_attempts
         if descriptor == staging_fd:
+            staging_close_attempts += 1
             raise OSError("post-rename staging close primary")
         os.close(descriptor)
 
@@ -1238,12 +1340,23 @@ def test_post_rename_close_and_parent_fsync_errors_are_aggregated_deterministica
     monkeypatch.setattr(exports, "_close_descriptor", fail_staging_close, raising=False)
     destination = tmp_path / "post-close-and-fsync"
 
-    with pytest.raises(OSError, match="post-rename staging close primary") as error:
-        write_export(destination, manifest, results, summary)
+    try:
+        with pytest.raises(OSError, match="post-rename staging close primary") as error:
+            write_export(destination, manifest, results, summary)
 
-    assert fsync_calls == 2
-    assert any("parent fsync also failed" in note for note in error.value.__notes__)
-    assert sorted(path.name for path in destination.iterdir()) == [MANIFEST_FILENAME, RESULTS_FILENAME, SUMMARY_FILENAME]
+        assert fsync_calls == 2
+        assert staging_close_attempts == 1
+        assert staging_fd is not None
+        os.fstat(staging_fd)
+        assert any("parent fsync also failed" in note for note in error.value.__notes__)
+        assert sorted(path.name for path in destination.iterdir()) == [
+            MANIFEST_FILENAME,
+            RESULTS_FILENAME,
+            SUMMARY_FILENAME,
+        ]
+    finally:
+        if staging_fd is not None:
+            os.close(staging_fd)
 
 
 def test_restrictive_umask_still_produces_exact_staging_and_file_modes(tmp_path: Path) -> None:
@@ -1309,40 +1422,40 @@ def test_group_or_other_writable_parent_is_rejected_before_staging(tmp_path: Pat
         parent.chmod(0o700)
 
 
-def test_file_close_failure_fallback_closes_raw_descriptor_and_restores_fd_count(
+def test_file_close_failure_is_not_retried_and_test_closes_indeterminate_file(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     import evonn_shared.exports as exports
 
     manifest, results, summary = models()
-    baseline = _open_fd_count()
-    captured: list[int] = []
+    captured: list[object] = []
 
     def fail_before_file_close(file: object) -> None:
-        captured.append(file.fileno())
+        captured.append(file)
         raise OSError("file close primary")
 
     monkeypatch.setattr(exports, "_close_file", fail_before_file_close)
     with pytest.raises(OSError, match="file close primary"):
-        write_export(tmp_path / "file-close-fallback", manifest, results, summary)
+        write_export(tmp_path / "file-close-no-retry", manifest, results, summary)
 
-    assert captured
-    for descriptor in captured:
-        _assert_fd_closed(descriptor)
-    assert _open_fd_count() == baseline
+    assert len(captured) == 1
+    file = captured[0]
+    descriptor = file.fileno()
+    os.fstat(descriptor)
+    file.close()
+    _assert_fd_closed(descriptor)
 
 
-def test_staging_cleanup_close_failure_fallback_closes_descriptor(
+def test_staging_cleanup_close_failure_is_not_retried(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     import evonn_shared.exports as exports
 
     manifest, results, summary = models()
-    baseline = _open_fd_count()
     staging_fd: int | None = None
-    close_attempted = False
+    close_attempts = 0
     original_fsync = exports._fsync_directory_fd
 
     def capture_staging(descriptor: int) -> None:
@@ -1351,9 +1464,9 @@ def test_staging_cleanup_close_failure_fallback_closes_descriptor(
         original_fsync(descriptor)
 
     def fail_staging_close(descriptor: int) -> None:
-        nonlocal close_attempted
+        nonlocal close_attempts
         if descriptor == staging_fd:
-            close_attempted = True
+            close_attempts += 1
             raise OSError("staging cleanup close")
         os.close(descriptor)
 
@@ -1365,25 +1478,28 @@ def test_staging_cleanup_close_failure_fallback_closes_descriptor(
         lambda: lambda parent_fd, source_name, destination_name: (_ for _ in ()).throw(OSError("rename primary")),
     )
 
-    with pytest.raises(OSError, match="rename primary") as error:
-        write_export(tmp_path / "cleanup-close-fallback", manifest, results, summary)
+    try:
+        with pytest.raises(OSError, match="rename primary") as error:
+            write_export(tmp_path / "cleanup-close-no-retry", manifest, results, summary)
 
-    assert close_attempted
-    assert any("staging cleanup close" in note for note in error.value.__notes__)
-    assert staging_fd is not None
-    _assert_fd_closed(staging_fd)
-    assert _open_fd_count() == baseline
+        assert close_attempts == 1
+        assert any("staging cleanup close" in note for note in error.value.__notes__)
+        assert staging_fd is not None
+        os.fstat(staging_fd)
+    finally:
+        if staging_fd is not None:
+            os.close(staging_fd)
 
 
-def test_parent_close_failure_fallback_closes_descriptor_and_preserves_destination(
+def test_parent_close_failure_is_not_retried_and_preserves_destination(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     import evonn_shared.exports as exports
 
     manifest, results, summary = models()
-    baseline = _open_fd_count()
     parent_fd: int | None = None
+    close_attempts = 0
     native = exports._load_exclusive_rename()
 
     def capture_parent(parent_descriptor: int, source_name: str, destination_name: str) -> None:
@@ -1392,18 +1508,28 @@ def test_parent_close_failure_fallback_closes_descriptor_and_preserves_destinati
         native(parent_descriptor, source_name, destination_name)
 
     def fail_parent_close(descriptor: int) -> None:
+        nonlocal close_attempts
         if descriptor == parent_fd:
+            close_attempts += 1
             raise OSError("parent close primary")
         os.close(descriptor)
 
     monkeypatch.setattr(exports, "_load_exclusive_rename", lambda: capture_parent)
     monkeypatch.setattr(exports, "_close_descriptor", fail_parent_close, raising=False)
-    destination = tmp_path / "parent-close-fallback"
+    destination = tmp_path / "parent-close-no-retry"
 
-    with pytest.raises(OSError, match="parent close primary"):
-        write_export(destination, manifest, results, summary)
+    try:
+        with pytest.raises(OSError, match="parent close primary"):
+            write_export(destination, manifest, results, summary)
 
-    assert parent_fd is not None
-    _assert_fd_closed(parent_fd)
-    assert _open_fd_count() == baseline
-    assert sorted(path.name for path in destination.iterdir()) == [MANIFEST_FILENAME, RESULTS_FILENAME, SUMMARY_FILENAME]
+        assert close_attempts == 1
+        assert parent_fd is not None
+        os.fstat(parent_fd)
+        assert sorted(path.name for path in destination.iterdir()) == [
+            MANIFEST_FILENAME,
+            RESULTS_FILENAME,
+            SUMMARY_FILENAME,
+        ]
+    finally:
+        if parent_fd is not None:
+            os.close(parent_fd)
