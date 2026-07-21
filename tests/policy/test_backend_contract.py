@@ -34,6 +34,15 @@ def test_canonical_contract_declares_exact_workspace_and_engine_sets() -> None:
         "primordia",
     ]
     assert len(contract.EXPECTED_MANIFESTS) == 8
+    assert [package.dependencies for package in contract.PACKAGE_CONTRACTS] == [
+        (),
+        ("evonn-shared",),
+        ("evonn-shared",),
+        contract.ENGINE_DEPENDENCIES,
+        contract.ENGINE_DEPENDENCIES,
+        contract.ENGINE_DEPENDENCIES,
+        contract.ENGINE_DEPENDENCIES,
+    ]
     assert contract.ENGINE_DEPENDENCIES == (
         "evonn-shared",
         "numpy>=2.1,<3",

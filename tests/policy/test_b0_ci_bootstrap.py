@@ -10,7 +10,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from evonn_shared.backend_contract import ENGINE_CONTRACTS, ENGINE_DEPENDENCIES
+from evonn_shared.backend_contract import ENGINE_CONTRACTS
+from evonn_shared.workspace_contract import WORKSPACE_DEPENDENCY_BY_DIRECTORY
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CHECKOUT_SHA = "de0fac2e4500dabe0009e67214ff5f5447ce83dd"
@@ -139,7 +140,9 @@ def test_engine_dependency_markers_are_exact_and_linux_safe() -> None:
     for directory in ENGINE_DIRECTORIES:
         with (REPO_ROOT / directory / "pyproject.toml").open("rb") as stream:
             metadata = tomllib.load(stream)
-        assert metadata["project"]["dependencies"] == list(ENGINE_DEPENDENCIES)
+        assert metadata["project"]["dependencies"] == list(
+            WORKSPACE_DEPENDENCY_BY_DIRECTORY[directory].dependencies
+        )
 
     contenders = (REPO_ROOT / "EvoNN-Contenders/pyproject.toml").read_text(encoding="utf-8")
     assert "scikit-learn" not in contenders.lower()
@@ -153,6 +156,7 @@ def test_b0_policy_script_uses_common_root_and_complete_nonrecursive_test_discov
     assert "tests/policy" in text and "tests/ci" in text
     assert "not b0_policy_script_selftest" in text
     assert "not all_check_scripts" in text
+    assert "scripts/policy/validate_workspace_dependencies.py" in text
     assert "test_repository_governance.py" not in text
     assert "test_workspace_skeletons.py" not in text
 
@@ -176,6 +180,7 @@ def test_b0_policy_script_runs_from_another_directory(tmp_path: Path) -> None:
     assert "Repository governance policy: PASS" in result.stdout
     assert "Import boundary policy: PASS" in result.stdout
     assert "Backend capability policy: PASS" in result.stdout
+    assert "Workspace dependency policy: PASS" in result.stdout
 
 
 def test_workflow_policy_preserves_full_history_and_final_b0_closure() -> None:

@@ -8,7 +8,10 @@ version = "0.0.0"
 description = "B0 shared contract substrate skeleton for EvoNN"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "pydantic>=2.11,<3",
+    "PyYAML>=6.0.2,<7",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/evonn_shared"]

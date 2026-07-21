@@ -11,13 +11,13 @@ from pathlib import Path
 import pytest
 
 from evonn_shared.backend_contract import EXPECTED_MANIFESTS, PACKAGE_CONTRACTS
+from evonn_shared.workspace_contract import WORKSPACE_DEPENDENCY_BY_DIRECTORY
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PACKAGES = {
     package.directory: (package.distribution, package.module, package.system)
     for package in PACKAGE_CONTRACTS
 }
-PACKAGE_CONTRACT_BY_DIRECTORY = {package.directory: package for package in PACKAGE_CONTRACTS}
 CHECK_SCRIPTS = {
     "shared-checks.sh",
     "benchmarks-checks.sh",
@@ -57,8 +57,8 @@ def test_package_metadata_and_installed_import_identity(directory: str, package:
     assert metadata["project"]["name"] == distribution
     assert metadata["project"]["requires-python"] == ">=3.13"
     assert metadata["build-system"]["build-backend"]
-    contract = PACKAGE_CONTRACT_BY_DIRECTORY[directory]
-    assert metadata["project"]["dependencies"] == list(contract.dependencies)
+    dependency_contract = WORKSPACE_DEPENDENCY_BY_DIRECTORY[directory]
+    assert metadata["project"]["dependencies"] == list(dependency_contract.dependencies)
     if distribution != "evonn-shared":
         assert metadata["tool"]["uv"]["sources"]["evonn-shared"] == {"workspace": True}
 

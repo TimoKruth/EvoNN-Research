@@ -1,4 +1,4 @@
-"""Canonical B0 package, dependency, and backend capability contract."""
+"""Immutable B0 bootstrap identities, dependencies, and capability contract."""
 
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ class PackageContract(NamedTuple):
     dependencies: tuple[str, ...]
 
 
+# Historical B0 bootstrap expectations; current workspace truth lives in workspace_contract.
 ENGINE_DEPENDENCIES = (
     "evonn-shared",
     "numpy>=2.1,<3",

@@ -1190,6 +1190,7 @@ def test_only_exact_policy_and_runtime_scripts_may_import_workspace_packages(
         "import prism\nimport stratograph\nimport topograph\n",
     )
     _append_script(repository_copy, "policy/validate_backend_capabilities.py", "import evonn_shared\n")
+    _append_script(repository_copy, "policy/validate_workspace_dependencies.py", "import evonn_shared\n")
 
     diagnostics = _diagnostics(validator, repository_copy)
 
@@ -1204,6 +1205,7 @@ def test_only_exact_policy_and_runtime_scripts_may_import_workspace_packages(
         for path in (
             "scripts/policy/validate_import_boundaries.py",
             "scripts/policy/validate_backend_capabilities.py",
+            "scripts/policy/validate_workspace_dependencies.py",
             "scripts/ci/runtime_probe.py",
         )
     )
