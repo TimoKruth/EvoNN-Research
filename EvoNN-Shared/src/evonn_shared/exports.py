@@ -408,34 +408,29 @@ def _open_file_at(directory_fd: int, filename: str) -> int:
     raise primary
 
 
-def _write_all(file: Any, payload: bytes) -> None:
+def _write_all(descriptor: int, payload: bytes) -> None:
     remaining = memoryview(payload)
     while remaining:
-        written = file.write(remaining)
-        if written is None or written <= 0:
+        written = os.write(descriptor, remaining)
+        if written <= 0:
             raise OSError(errno.EIO, "file write made no progress")
         remaining = remaining[written:]
 
 
-def _flush_file(file: Any) -> None:
-    file.flush()
+def _fsync_file(descriptor: int) -> None:
+    os.fsync(descriptor)
 
 
-def _fsync_file(file: Any) -> None:
-    os.fsync(file.fileno())
-
-
-def _close_file(file: Any) -> None:
-    file.close()
+def _close_file(descriptor: int) -> None:
+    os.close(descriptor)
 
 
 def _close_owned_file(
-    file: Any,
     descriptor: int,
     primary: BaseException | None,
 ) -> BaseException | None:
     try:
-        _close_file(file)
+        _close_file(descriptor)
     except BaseException as error:
         primary = _record_error(primary, error, "file close failed")
         primary.add_note(
@@ -446,21 +441,14 @@ def _close_owned_file(
 
 def _write_file_at(directory_fd: int, filename: str, payload: bytes) -> None:
     descriptor = _open_file_at(directory_fd, filename)
-    file = None
     primary: BaseException | None = None
     try:
-        file = os.fdopen(descriptor, "wb", buffering=0)
-        _write_all(file, payload)
-        _flush_file(file)
-        _fsync_file(file)
+        _write_all(descriptor, payload)
+        _fsync_file(descriptor)
     except BaseException as error:
         primary = error
 
-    if file is not None:
-        primary = _close_owned_file(file, descriptor, primary)
-        file = None
-    else:
-        primary = _close_owned_descriptor(descriptor, primary, f"{filename} fdopen cleanup")
+    primary = _close_owned_file(descriptor, primary)
     if primary is not None:
         raise primary
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 import datetime as dt
 import errno
+import gc
 import hashlib
 import json
 import os
@@ -632,7 +633,54 @@ def test_serialization_failure_happens_before_any_filesystem_touch(tmp_path: Pat
     assert not list(tmp_path.glob(".serialization-failure.tmp-*"))
 
 
-@pytest.mark.parametrize("helper_name", ["_open_file_at", "_write_all", "_flush_file", "_fsync_file", "_close_file"])
+def test_file_publication_does_not_create_fd_owning_file_objects(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    monkeypatch.setattr(
+        exports.os,
+        "fdopen",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("fdopen must not be called")),
+    )
+
+    destination = tmp_path / "raw-descriptor-publication"
+    write_export(destination, manifest, results, summary)
+
+    for filename in [MANIFEST_FILENAME, RESULTS_FILENAME, SUMMARY_FILENAME]:
+        assert (destination / filename).read_bytes() == (GOLDEN_ROOT / filename).read_bytes()
+
+
+def test_write_all_loops_until_raw_descriptor_payload_is_complete(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import evonn_shared.exports as exports
+
+    path = tmp_path / "partial-raw-writes"
+    descriptor = os.open(path, os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC, 0o600)
+    original_write = os.write
+    write_sizes: list[int] = []
+
+    def short_write(target: int, payload: object) -> int:
+        limited = memoryview(payload)[:3]
+        write_sizes.append(len(limited))
+        return original_write(target, limited)
+
+    monkeypatch.setattr(exports.os, "write", short_write)
+    try:
+        exports._write_all(descriptor, b"abcdefgh")
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        assert os.read(descriptor, 8) == b"abcdefgh"
+    finally:
+        os.close(descriptor)
+
+    assert write_sizes == [3, 3, 2]
+
+
+@pytest.mark.parametrize("helper_name", ["_open_file_at", "_write_all", "_fsync_file", "_close_file"])
 @pytest.mark.parametrize("target_call", [1, 2, 3])
 def test_each_file_operation_fault_cleans_staging(
     tmp_path: Path,
@@ -666,7 +714,7 @@ def test_pre_rename_faults_cleanup_only_owned_staging_and_leave_no_destination(t
     import evonn_shared.exports as exports
 
     manifest, results, summary = models()
-    helpers = ["_open_file_at", "_write_all", "_flush_file", "_fsync_file", "_close_file", "_fsync_directory_fd", "_load_exclusive_rename"]
+    helpers = ["_open_file_at", "_write_all", "_fsync_file", "_close_file", "_fsync_directory_fd", "_load_exclusive_rename"]
     for index, helper in enumerate(helpers):
         destination = tmp_path / f"fault-{index}"
         original = getattr(exports, helper)
@@ -1007,7 +1055,7 @@ def test_raw_close_never_closes_reused_descriptor(
 
 
 @pytest.mark.parametrize("raise_after_reuse", [False, True])
-def test_file_object_close_never_closes_reused_descriptor(
+def test_file_descriptor_close_never_closes_reused_descriptor(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     raise_after_reuse: bool,
@@ -1019,10 +1067,9 @@ def test_file_object_close_never_closes_reused_descriptor(
     replacement = tmp_path / f"file-replacement-{raise_after_reuse}"
     replacement_fd: int | None = None
 
-    def close_then_reuse(file: object) -> None:
+    def close_then_reuse(descriptor: int) -> None:
         nonlocal replacement_fd
-        descriptor = file.fileno()
-        file.close()
+        os.close(descriptor)
         if replacement_fd is None:
             replacement_fd = os.open(replacement, os.O_RDONLY | os.O_CREAT | os.O_CLOEXEC, 0o600)
             assert replacement_fd == descriptor
@@ -1096,7 +1143,7 @@ def test_raw_exceptional_close_preserves_same_inode_replacement(
                     raise
 
 
-def test_file_exceptional_close_preserves_same_inode_replacement(
+def test_file_close_exception_cannot_finalize_same_inode_replacement(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1106,12 +1153,14 @@ def test_file_exceptional_close_preserves_same_inode_replacement(
     destination = tmp_path / "file-same-inode-reuse"
     replacement_fd: int | None = None
     replacement_status: os.stat_result | None = None
-    captured_file: object | None = None
 
-    def close_reopen_same_file_then_raise(file: object) -> None:
-        nonlocal captured_file, replacement_fd, replacement_status
-        captured_file = file
-        descriptor = file.fileno()
+    def close_reopen_same_file_then_raise(file_or_descriptor: object) -> None:
+        nonlocal replacement_fd, replacement_status
+        descriptor = (
+            file_or_descriptor
+            if type(file_or_descriptor) is int
+            else file_or_descriptor.fileno()
+        )
         replacement_status = os.fstat(descriptor)
         staged_file = next(tmp_path.glob(".file-same-inode-reuse.tmp-*/manifest.json"))
         os.close(descriptor)
@@ -1122,19 +1171,25 @@ def test_file_exceptional_close_preserves_same_inode_replacement(
     monkeypatch.setattr(exports, "_close_file", close_reopen_same_file_then_raise)
 
     try:
-        with pytest.raises(OSError, match="file close raised after same-inode reuse"):
+        try:
             write_export(destination, manifest, results, summary)
+        except OSError as error:
+            assert "file close raised after same-inode reuse" in str(error)
+            error.__traceback__ = None
+        else:
+            pytest.fail("write_export did not report the injected close failure")
+
+        gc.collect()
         assert replacement_fd is not None and replacement_status is not None
-        assert (os.fstat(replacement_fd).st_dev, os.fstat(replacement_fd).st_ino) == (
+        replacement_after_gc = os.fstat(replacement_fd)
+        assert (replacement_after_gc.st_dev, replacement_after_gc.st_ino) == (
             replacement_status.st_dev,
             replacement_status.st_ino,
         )
         assert not destination.exists()
         assert not list(tmp_path.glob(".file-same-inode-reuse.tmp-*"))
     finally:
-        if captured_file is not None and not captured_file.closed:
-            captured_file.close()
-        elif replacement_fd is not None:
+        if replacement_fd is not None:
             try:
                 os.close(replacement_fd)
             except OSError as error:
@@ -1422,17 +1477,17 @@ def test_group_or_other_writable_parent_is_rejected_before_staging(tmp_path: Pat
         parent.chmod(0o700)
 
 
-def test_file_close_failure_is_not_retried_and_test_closes_indeterminate_file(
+def test_file_close_failure_is_not_retried_and_test_closes_indeterminate_descriptor(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     import evonn_shared.exports as exports
 
     manifest, results, summary = models()
-    captured: list[object] = []
+    captured: list[int] = []
 
-    def fail_before_file_close(file: object) -> None:
-        captured.append(file)
+    def fail_before_file_close(descriptor: int) -> None:
+        captured.append(descriptor)
         raise OSError("file close primary")
 
     monkeypatch.setattr(exports, "_close_file", fail_before_file_close)
@@ -1440,10 +1495,9 @@ def test_file_close_failure_is_not_retried_and_test_closes_indeterminate_file(
         write_export(tmp_path / "file-close-no-retry", manifest, results, summary)
 
     assert len(captured) == 1
-    file = captured[0]
-    descriptor = file.fileno()
+    descriptor = captured[0]
     os.fstat(descriptor)
-    file.close()
+    os.close(descriptor)
     _assert_fd_closed(descriptor)
 
 
