@@ -940,3 +940,334 @@ def test_writer_rejects_path_and_model_subclasses_before_dispatch(tmp_path: Path
         write_export(tmp_path / "model-subclass", hostile_manifest, results, summary)
     with pytest.raises(TypeError):
         write_export(PathSubclass(tmp_path / "path-subclass"), manifest, results, summary)
+
+
+def _open_fd_count() -> int:
+    return len(os.listdir("/dev/fd"))
+
+
+def _assert_fd_closed(descriptor: int) -> None:
+    with pytest.raises(OSError) as error:
+        os.fstat(descriptor)
+    assert error.value.errno == errno.EBADF
+
+
+def test_source_name_replacement_is_detected_without_publishing_or_deleting_replacement(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    destination = tmp_path / "source-swap"
+    moved_owned = tmp_path / "externally-moved-owned"
+    original_fsync = exports._fsync_directory_fd
+    swapped = False
+    replacement_name: str | None = None
+
+    def swap_after_staging_fsync(descriptor: int) -> None:
+        nonlocal swapped, replacement_name
+        original_fsync(descriptor)
+        if swapped:
+            return
+        candidates = list(tmp_path.glob(".source-swap.tmp-*"))
+        assert len(candidates) == 1
+        owned_name = candidates[0]
+        replacement_name = owned_name.name
+        os.rename(owned_name, moved_owned)
+        owned_name.mkdir(mode=0o700)
+        (owned_name / "attacker-marker").write_bytes(b"replacement")
+        swapped = True
+
+    monkeypatch.setattr(exports, "_fsync_directory_fd", swap_after_staging_fsync)
+
+    with pytest.raises(OSError, match="staging source identity mismatch") as error:
+        write_export(destination, manifest, results, summary)
+
+    assert swapped and replacement_name is not None
+    assert not destination.exists()
+    replacement = tmp_path / replacement_name
+    assert (replacement / "attacker-marker").read_bytes() == b"replacement"
+    assert sorted(moved_owned.iterdir()) == []
+    assert any("externally renamed empty owned staging directory" in note for note in error.value.__notes__)
+
+
+def test_staging_open_identity_mismatch_preserves_unverified_replacement(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    destination = tmp_path / "staging-open-swap"
+    moved_owned = tmp_path / "externally-moved-before-open"
+    actual_open = exports.os.open
+    swapped = False
+    replacement: Path | None = None
+
+    def swap_before_staging_open(
+        path: object,
+        flags: int,
+        mode: int = 0o777,
+        *,
+        dir_fd: int | None = None,
+    ) -> int:
+        nonlocal swapped, replacement
+        if not swapped and isinstance(path, str) and path.startswith(".staging-open-swap.tmp-"):
+            replacement = tmp_path / path
+            os.rename(replacement, moved_owned)
+            replacement.mkdir(mode=0o700)
+            (replacement / MANIFEST_FILENAME).write_bytes(b"replacement manifest")
+            (replacement / "attacker-marker").write_bytes(b"replacement")
+            swapped = True
+        return actual_open(path, flags, mode, dir_fd=dir_fd)
+
+    monkeypatch.setattr(exports.os, "open", swap_before_staging_open)
+
+    with pytest.raises(OSError, match="opened staging directory is not the created inode") as error:
+        write_export(destination, manifest, results, summary)
+
+    assert swapped and replacement is not None
+    assert not destination.exists()
+    assert (replacement / MANIFEST_FILENAME).read_bytes() == b"replacement manifest"
+    assert (replacement / "attacker-marker").read_bytes() == b"replacement"
+    assert sorted(moved_owned.iterdir()) == []
+    assert any("staging descriptor was not verified" in note for note in error.value.__notes__)
+
+
+def test_post_rename_staging_close_failure_still_attempts_parent_fsync(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    baseline = _open_fd_count()
+    staging_fd: int | None = None
+    fsync_calls: list[int] = []
+    original_fsync = exports._fsync_directory_fd
+
+    def track_fsync(descriptor: int) -> None:
+        nonlocal staging_fd
+        fsync_calls.append(descriptor)
+        if staging_fd is None:
+            staging_fd = descriptor
+        original_fsync(descriptor)
+
+    def fail_staging_close(descriptor: int) -> None:
+        if descriptor == staging_fd:
+            raise OSError("post-rename staging close failed")
+        os.close(descriptor)
+
+    monkeypatch.setattr(exports, "_fsync_directory_fd", track_fsync)
+    monkeypatch.setattr(exports, "_close_descriptor", fail_staging_close, raising=False)
+    destination = tmp_path / "post-close"
+
+    with pytest.raises(OSError, match="post-rename staging close failed"):
+        write_export(destination, manifest, results, summary)
+
+    assert len(fsync_calls) == 2
+    assert staging_fd is not None
+    _assert_fd_closed(staging_fd)
+    assert _open_fd_count() == baseline
+    assert sorted(path.name for path in destination.iterdir()) == [MANIFEST_FILENAME, RESULTS_FILENAME, SUMMARY_FILENAME]
+
+
+def test_post_rename_close_and_parent_fsync_errors_are_aggregated_deterministically(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    staging_fd: int | None = None
+    fsync_calls = 0
+    original_fsync = exports._fsync_directory_fd
+
+    def fail_parent_fsync(descriptor: int) -> None:
+        nonlocal staging_fd, fsync_calls
+        fsync_calls += 1
+        if fsync_calls == 1:
+            staging_fd = descriptor
+            original_fsync(descriptor)
+            return
+        raise OSError("parent fsync also failed")
+
+    def fail_staging_close(descriptor: int) -> None:
+        if descriptor == staging_fd:
+            raise OSError("post-rename staging close primary")
+        os.close(descriptor)
+
+    monkeypatch.setattr(exports, "_fsync_directory_fd", fail_parent_fsync)
+    monkeypatch.setattr(exports, "_close_descriptor", fail_staging_close, raising=False)
+    destination = tmp_path / "post-close-and-fsync"
+
+    with pytest.raises(OSError, match="post-rename staging close primary") as error:
+        write_export(destination, manifest, results, summary)
+
+    assert fsync_calls == 2
+    assert any("parent fsync also failed" in note for note in error.value.__notes__)
+    assert sorted(path.name for path in destination.iterdir()) == [MANIFEST_FILENAME, RESULTS_FILENAME, SUMMARY_FILENAME]
+
+
+def test_restrictive_umask_still_produces_exact_staging_and_file_modes(tmp_path: Path) -> None:
+    private_parent = tmp_path / "private-parent"
+    private_parent.mkdir(mode=0o700)
+    script = """
+import os
+from pathlib import Path
+from evonn_shared.exports import Manifest, Results, RunSummary, write_export
+fixture = Path(__import__('sys').argv[1])
+parent = Path(__import__('sys').argv[2])
+os.umask(0o777)
+write_export(
+    parent / 'umask-export',
+    Manifest.model_validate_json((fixture / 'manifest.json').read_bytes()),
+    Results.model_validate_json((fixture / 'results.json').read_bytes()),
+    RunSummary.model_validate_json((fixture / 'summary.json').read_bytes()),
+)
+assert (parent / 'umask-export').stat().st_mode & 0o777 == 0o700
+for filename in ('manifest.json', 'results.json', 'summary.json'):
+    assert (parent / 'umask-export' / filename).stat().st_mode & 0o777 == 0o600
+"""
+    subprocess.run(
+        [sys.executable, "-c", script, str(FIXTURE_ROOT / "valid"), str(private_parent)],
+        check=True,
+        cwd=Path(__file__).parents[2],
+    )
+
+
+def test_parent_wrong_owner_is_rejected_before_staging(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    parent = tmp_path / "wrong-owner"
+    parent.mkdir(mode=0o700)
+    actual_lstat = exports.os.lstat
+
+    def wrong_owner_lstat(path: object) -> os.stat_result:
+        status = actual_lstat(path)
+        if Path(path) == parent:
+            values = list(status)
+            values[4] = os.geteuid() + 1
+            return os.stat_result(values)
+        return status
+
+    monkeypatch.setattr(exports.os, "lstat", wrong_owner_lstat)
+    with pytest.raises(PermissionError, match="effective UID"):
+        write_export(parent / "export", manifest, results, summary)
+    assert list(parent.iterdir()) == []
+
+
+@pytest.mark.parametrize("mode", [0o720, 0o702])
+def test_group_or_other_writable_parent_is_rejected_before_staging(tmp_path: Path, mode: int) -> None:
+    manifest, results, summary = models()
+    parent = tmp_path / f"writable-{mode:o}"
+    parent.mkdir(mode=0o700)
+    parent.chmod(mode)
+    try:
+        with pytest.raises(PermissionError, match="group or others"):
+            write_export(parent / "export", manifest, results, summary)
+        assert list(parent.iterdir()) == []
+    finally:
+        parent.chmod(0o700)
+
+
+def test_file_close_failure_fallback_closes_raw_descriptor_and_restores_fd_count(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    baseline = _open_fd_count()
+    captured: list[int] = []
+
+    def fail_before_file_close(file: object) -> None:
+        captured.append(file.fileno())
+        raise OSError("file close primary")
+
+    monkeypatch.setattr(exports, "_close_file", fail_before_file_close)
+    with pytest.raises(OSError, match="file close primary"):
+        write_export(tmp_path / "file-close-fallback", manifest, results, summary)
+
+    assert captured
+    for descriptor in captured:
+        _assert_fd_closed(descriptor)
+    assert _open_fd_count() == baseline
+
+
+def test_staging_cleanup_close_failure_fallback_closes_descriptor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    baseline = _open_fd_count()
+    staging_fd: int | None = None
+    close_attempted = False
+    original_fsync = exports._fsync_directory_fd
+
+    def capture_staging(descriptor: int) -> None:
+        nonlocal staging_fd
+        staging_fd = descriptor
+        original_fsync(descriptor)
+
+    def fail_staging_close(descriptor: int) -> None:
+        nonlocal close_attempted
+        if descriptor == staging_fd:
+            close_attempted = True
+            raise OSError("staging cleanup close")
+        os.close(descriptor)
+
+    monkeypatch.setattr(exports, "_fsync_directory_fd", capture_staging)
+    monkeypatch.setattr(exports, "_close_descriptor", fail_staging_close, raising=False)
+    monkeypatch.setattr(
+        exports,
+        "_load_exclusive_rename",
+        lambda: lambda parent_fd, source_name, destination_name: (_ for _ in ()).throw(OSError("rename primary")),
+    )
+
+    with pytest.raises(OSError, match="rename primary") as error:
+        write_export(tmp_path / "cleanup-close-fallback", manifest, results, summary)
+
+    assert close_attempted
+    assert any("staging cleanup close" in note for note in error.value.__notes__)
+    assert staging_fd is not None
+    _assert_fd_closed(staging_fd)
+    assert _open_fd_count() == baseline
+
+
+def test_parent_close_failure_fallback_closes_descriptor_and_preserves_destination(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import evonn_shared.exports as exports
+
+    manifest, results, summary = models()
+    baseline = _open_fd_count()
+    parent_fd: int | None = None
+    native = exports._load_exclusive_rename()
+
+    def capture_parent(parent_descriptor: int, source_name: str, destination_name: str) -> None:
+        nonlocal parent_fd
+        parent_fd = parent_descriptor
+        native(parent_descriptor, source_name, destination_name)
+
+    def fail_parent_close(descriptor: int) -> None:
+        if descriptor == parent_fd:
+            raise OSError("parent close primary")
+        os.close(descriptor)
+
+    monkeypatch.setattr(exports, "_load_exclusive_rename", lambda: capture_parent)
+    monkeypatch.setattr(exports, "_close_descriptor", fail_parent_close, raising=False)
+    destination = tmp_path / "parent-close-fallback"
+
+    with pytest.raises(OSError, match="parent close primary"):
+        write_export(destination, manifest, results, summary)
+
+    assert parent_fd is not None
+    _assert_fd_closed(parent_fd)
+    assert _open_fd_count() == baseline
+    assert sorted(path.name for path in destination.iterdir()) == [MANIFEST_FILENAME, RESULTS_FILENAME, SUMMARY_FILENAME]

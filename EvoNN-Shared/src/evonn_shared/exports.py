@@ -361,11 +361,83 @@ def _load_exclusive_rename() -> Callable[[int, str, str], None]:
     return exclusive_rename
 
 
+def _record_error(
+    primary: BaseException | None,
+    error: BaseException,
+    context: str,
+) -> BaseException:
+    if primary is None:
+        return error
+    primary.add_note(f"{context}: {error!r}")
+    return primary
+
+
+def _descriptor_is_closed(descriptor: int) -> bool:
+    try:
+        os.fstat(descriptor)
+    except OSError as error:
+        if error.errno == errno.EBADF:
+            return True
+        raise
+    return False
+
+
+def _close_descriptor(descriptor: int) -> None:
+    os.close(descriptor)
+
+
+def _close_owned_descriptor(
+    descriptor: int,
+    primary: BaseException | None,
+    context: str,
+) -> tuple[bool, BaseException | None]:
+    try:
+        _close_descriptor(descriptor)
+    except BaseException as error:
+        primary = _record_error(primary, error, context)
+
+    try:
+        if _descriptor_is_closed(descriptor):
+            return True, primary
+    except BaseException as error:
+        primary = _record_error(primary, error, f"{context} liveness check failed")
+
+    try:
+        os.close(descriptor)
+    except OSError as error:
+        if error.errno != errno.EBADF:
+            primary = _record_error(primary, error, f"{context} direct fallback failed")
+    except BaseException as error:
+        primary = _record_error(primary, error, f"{context} direct fallback failed")
+
+    try:
+        closed = _descriptor_is_closed(descriptor)
+    except BaseException as error:
+        primary = _record_error(primary, error, f"{context} final liveness check failed")
+        closed = False
+    if not closed:
+        leak_error = OSError(errno.EIO, f"{context} left descriptor {descriptor} open")
+        primary = _record_error(primary, leak_error, context)
+    return closed, primary
+
+
 def _open_file_at(directory_fd: int, filename: str) -> int:
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC
     if hasattr(os, "O_NOFOLLOW"):
         flags |= os.O_NOFOLLOW
-    return os.open(filename, flags, 0o600, dir_fd=directory_fd)
+    descriptor = os.open(filename, flags, 0o600, dir_fd=directory_fd)
+    primary: BaseException | None = None
+    try:
+        os.fchmod(descriptor, 0o600)
+        if stat.S_IMODE(os.fstat(descriptor).st_mode) != 0o600:
+            raise OSError(errno.EIO, f"failed to establish exact mode 0600 for {filename}")
+        return descriptor
+    except BaseException as error:
+        primary = error
+    closed, primary = _close_owned_descriptor(descriptor, primary, f"{filename} open cleanup")
+    if not closed:
+        primary.add_note(f"descriptor {descriptor} remains owned after failed file setup")
+    raise primary
 
 
 def _write_all(file: Any, payload: bytes) -> None:
@@ -389,28 +461,79 @@ def _close_file(file: Any) -> None:
     file.close()
 
 
+def _close_owned_file(
+    file: Any,
+    descriptor: int,
+    primary: BaseException | None,
+) -> tuple[bool, BaseException | None]:
+    try:
+        _close_file(file)
+    except BaseException as error:
+        primary = _record_error(primary, error, "file close failed")
+
+    try:
+        if _descriptor_is_closed(descriptor):
+            return True, primary
+    except BaseException as error:
+        primary = _record_error(primary, error, "file close liveness check failed")
+
+    try:
+        file.close()
+    except BaseException as error:
+        primary = _record_error(primary, error, "direct file-object close fallback failed")
+
+    try:
+        if _descriptor_is_closed(descriptor):
+            return True, primary
+    except BaseException as error:
+        primary = _record_error(primary, error, "file fallback liveness check failed")
+
+    try:
+        os.close(descriptor)
+    except OSError as error:
+        if error.errno != errno.EBADF:
+            primary = _record_error(primary, error, "raw file descriptor fallback failed")
+    except BaseException as error:
+        primary = _record_error(primary, error, "raw file descriptor fallback failed")
+
+    try:
+        closed = _descriptor_is_closed(descriptor)
+    except BaseException as error:
+        primary = _record_error(primary, error, "file final liveness check failed")
+        closed = False
+    if not closed:
+        leak_error = OSError(errno.EIO, f"file close left descriptor {descriptor} open")
+        primary = _record_error(primary, leak_error, "file close failed")
+    return closed, primary
+
+
 def _write_file_at(directory_fd: int, filename: str, payload: bytes) -> None:
     descriptor = _open_file_at(directory_fd, filename)
     file = None
     primary: BaseException | None = None
     try:
         file = os.fdopen(descriptor, "wb", buffering=0)
-        descriptor = -1
         _write_all(file, payload)
         _flush_file(file)
         _fsync_file(file)
     except BaseException as error:
         primary = error
-    try:
-        if file is not None:
-            _close_file(file)
-        elif descriptor >= 0:
-            os.close(descriptor)
-    except BaseException as close_error:
-        if primary is None:
-            primary = close_error
-        else:
-            primary.add_note(f"file close cleanup failed: {close_error!r}")
+
+    if file is not None:
+        closed, primary = _close_owned_file(file, descriptor, primary)
+        if closed:
+            descriptor = -1
+        file = None
+    else:
+        closed, primary = _close_owned_descriptor(descriptor, primary, f"{filename} fdopen cleanup")
+        if closed:
+            descriptor = -1
+    if descriptor >= 0:
+        primary = _record_error(
+            primary,
+            OSError(errno.EIO, f"descriptor {descriptor} remains open"),
+            f"{filename} ownership failure",
+        )
     if primary is not None:
         raise primary
 
@@ -419,28 +542,61 @@ def _fsync_directory_fd(directory_fd: int) -> None:
     os.fsync(directory_fd)
 
 
-def _cleanup_staging(parent_fd: int, staging_name: str, staging_fd: int | None, primary: BaseException) -> None:
-    cleanup_errors: list[BaseException] = []
-    if staging_fd is not None:
-        for filename in _EXPORT_FILENAMES:
-            try:
-                os.unlink(filename, dir_fd=staging_fd)
-            except FileNotFoundError:
-                pass
-            except BaseException as error:
-                cleanup_errors.append(error)
-        try:
-            os.close(staging_fd)
-        except BaseException as error:
-            cleanup_errors.append(error)
+def _same_file_identity(first: os.stat_result, second: os.stat_result) -> bool:
+    return (first.st_dev, first.st_ino) == (second.st_dev, second.st_ino)
+
+
+def _staging_name_matches_fd(parent_fd: int, staging_name: str, staging_fd: int) -> bool:
+    owned_status = os.fstat(staging_fd)
     try:
-        os.rmdir(staging_name, dir_fd=parent_fd)
+        named_status = os.stat(staging_name, dir_fd=parent_fd, follow_symlinks=False)
     except FileNotFoundError:
-        pass
+        return False
+    return _same_file_identity(owned_status, named_status)
+
+
+def _cleanup_staging(
+    parent_fd: int,
+    staging_name: str,
+    staging_fd: int | None,
+    primary: BaseException,
+) -> bool:
+    if staging_fd is None:
+        primary.add_note(
+            "staging descriptor was not verified; no name-based cleanup was attempted and an "
+            "externally renamed empty owned staging directory may require operator cleanup"
+        )
+        return False
+
+    for filename in _EXPORT_FILENAMES:
+        try:
+            os.unlink(filename, dir_fd=staging_fd)
+        except FileNotFoundError:
+            pass
+        except BaseException as error:
+            primary.add_note(f"staging cleanup failed: {error!r}")
+
+    try:
+        source_matches = _staging_name_matches_fd(parent_fd, staging_name, staging_fd)
     except BaseException as error:
-        cleanup_errors.append(error)
-    for error in cleanup_errors:
-        primary.add_note(f"staging cleanup failed: {error!r}")
+        source_matches = False
+        primary.add_note(f"staging cleanup identity check failed: {error!r}")
+    if source_matches:
+        try:
+            os.rmdir(staging_name, dir_fd=parent_fd)
+        except FileNotFoundError:
+            pass
+        except BaseException as error:
+            primary.add_note(f"staging cleanup failed: {error!r}")
+    else:
+        primary.add_note(
+            "staging source name no longer identifies the owned directory; "
+            "replacement was preserved and an externally renamed empty owned staging directory "
+            "may require operator cleanup"
+        )
+
+    closed, _ = _close_owned_descriptor(staging_fd, primary, "staging cleanup close failed")
+    return closed
 
 
 def _validate_destination(directory: object) -> tuple[Path, str]:
@@ -449,6 +605,15 @@ def _validate_destination(directory: object) -> tuple[Path, str]:
     if directory.name in ("", ".", ".."):
         raise ValueError("directory must have a normal final name")
     return directory.parent, directory.name
+
+
+def _validate_parent_status(status: os.stat_result, parent: Path) -> None:
+    if stat.S_ISLNK(status.st_mode) or not stat.S_ISDIR(status.st_mode):
+        raise NotADirectoryError(errno.ENOTDIR, "export parent must be a real directory", parent)
+    if status.st_uid != os.geteuid():
+        raise PermissionError(errno.EPERM, "export parent must be owned by the effective UID", parent)
+    if status.st_mode & 0o022:
+        raise PermissionError(errno.EPERM, "export parent must not be writable by group or others", parent)
 
 
 def write_export(
@@ -478,24 +643,26 @@ def write_export(
     parent, destination_name = _validate_destination(directory)
     exclusive_rename = _load_exclusive_rename()
 
-    try:
-        parent_status = os.lstat(parent)
-    except FileNotFoundError:
-        raise
-    if stat.S_ISLNK(parent_status.st_mode) or not stat.S_ISDIR(parent_status.st_mode):
-        raise NotADirectoryError(errno.ENOTDIR, "export parent must be a real directory", parent)
+    parent_status = os.lstat(parent)
+    _validate_parent_status(parent_status, parent)
 
     parent_flags = os.O_RDONLY | os.O_CLOEXEC
     if hasattr(os, "O_DIRECTORY"):
         parent_flags |= os.O_DIRECTORY
     if hasattr(os, "O_NOFOLLOW"):
         parent_flags |= os.O_NOFOLLOW
-    parent_fd = os.open(parent, parent_flags)
+    parent_fd: int | None = os.open(parent, parent_flags)
     staging_name = f".{destination_name}.tmp-{secrets.token_hex(16)}"
     staging_fd: int | None = None
     staging_owned = False
+    staging_verified = False
     published = False
     try:
+        opened_parent_status = os.fstat(parent_fd)
+        _validate_parent_status(opened_parent_status, parent)
+        if not _same_file_identity(parent_status, opened_parent_status):
+            raise OSError(errno.ESTALE, "export parent identity changed while opening", parent)
+
         try:
             os.stat(destination_name, dir_fd=parent_fd, follow_symlinks=False)
         except FileNotFoundError:
@@ -505,45 +672,82 @@ def write_export(
 
         os.mkdir(staging_name, 0o700, dir_fd=parent_fd)
         staging_owned = True
+        created_status = os.stat(staging_name, dir_fd=parent_fd, follow_symlinks=False)
+        os.chmod(staging_name, 0o700, dir_fd=parent_fd, follow_symlinks=False)
         staging_flags = os.O_RDONLY | os.O_CLOEXEC
         if hasattr(os, "O_DIRECTORY"):
             staging_flags |= os.O_DIRECTORY
         if hasattr(os, "O_NOFOLLOW"):
             staging_flags |= os.O_NOFOLLOW
         staging_fd = os.open(staging_name, staging_flags, dir_fd=parent_fd)
+        opened_staging_status = os.fstat(staging_fd)
+        named_staging_status = os.stat(staging_name, dir_fd=parent_fd, follow_symlinks=False)
+        if not _same_file_identity(created_status, opened_staging_status) or not _same_file_identity(
+            opened_staging_status, named_staging_status
+        ):
+            raise OSError(errno.ESTALE, "opened staging directory is not the created inode")
+        staging_verified = True
+        os.fchmod(staging_fd, 0o700)
+        if stat.S_IMODE(os.fstat(staging_fd).st_mode) != 0o700:
+            raise OSError(errno.EIO, "failed to establish exact staging mode 0700")
+
         for filename in _EXPORT_FILENAMES:
             _write_file_at(staging_fd, filename, payloads[filename])
         _fsync_directory_fd(staging_fd)
 
+        if not _staging_name_matches_fd(parent_fd, staging_name, staging_fd):
+            raise OSError(errno.ESTALE, "staging source identity mismatch before publication")
         exclusive_rename(parent_fd, staging_name, destination_name)
         staging_owned = False
         published = True
-        os.close(staging_fd)
-        staging_fd = None
-        _fsync_directory_fd(parent_fd)
+
+        post_publication_error: BaseException | None = None
+        staging_closed, post_publication_error = _close_owned_descriptor(
+            staging_fd,
+            post_publication_error,
+            "post-rename staging close failed",
+        )
+        if staging_closed:
+            staging_fd = None
+        try:
+            _fsync_directory_fd(parent_fd)
+        except BaseException as error:
+            post_publication_error = _record_error(
+                post_publication_error,
+                error,
+                "parent directory fsync failed after publication",
+            )
+        if post_publication_error is not None:
+            raise post_publication_error
         return digests
     except BaseException as error:
         if staging_owned and not published:
-            _cleanup_staging(parent_fd, staging_name, staging_fd, error)
-            staging_fd = None
+            cleanup_fd = staging_fd if staging_verified else None
+            staging_closed = _cleanup_staging(parent_fd, staging_name, cleanup_fd, error)
+            if staging_closed:
+                staging_fd = None
         raise
     finally:
         active_error = sys.exception()
-        close_error: BaseException | None = None
-        for descriptor in (staging_fd, parent_fd):
-            if descriptor is None:
-                continue
-            try:
-                os.close(descriptor)
-            except BaseException as error:
-                if active_error is not None:
-                    active_error.add_note(f"descriptor cleanup failed: {error!r}")
-                elif close_error is None:
-                    close_error = error
-                else:
-                    close_error.add_note(f"additional descriptor cleanup failed: {error!r}")
-        if close_error is not None:
-            raise close_error
+        final_error: BaseException | None = active_error
+        if staging_fd is not None:
+            staging_closed, final_error = _close_owned_descriptor(
+                staging_fd,
+                final_error,
+                "final staging descriptor close failed",
+            )
+            if staging_closed:
+                staging_fd = None
+        if parent_fd is not None:
+            parent_closed, final_error = _close_owned_descriptor(
+                parent_fd,
+                final_error,
+                "parent close failed",
+            )
+            if parent_closed:
+                parent_fd = None
+        if active_error is None and final_error is not None:
+            raise final_error
 
 
 __all__ = [
