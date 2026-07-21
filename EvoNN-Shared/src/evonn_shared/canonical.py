@@ -161,11 +161,11 @@ def _encode(
         return ["b", value]
     if isinstance(value, os.PathLike) or isinstance(value, (dt.date, dt.time, dt.timedelta, dt.tzinfo)):
         raise _unsupported_type(value)
-    if isinstance(value, int):
+    if type(value) is int:
         if not _SIGNED_64_MIN <= value <= _SIGNED_64_MAX:
             raise IntegerOutOfRangeError("canonical integers must be in the signed 64-bit range")
         return ["i", str(value)]
-    if isinstance(value, float):
+    if type(value) is float:
         if not math.isfinite(value):
             raise NonFiniteFloatError("canonical floats must be finite binary64 values")
         normalized = 0.0 if value == 0.0 else value
@@ -227,7 +227,7 @@ def _validate_field(key: str, value: object) -> None:
 
 
 def _is_absolute_or_drive_qualified_path(value: str) -> bool:
-    return value.startswith("/") or value.startswith("\\\\") or _WINDOWS_DRIVE_PATTERN.match(value) is not None
+    return value.startswith(("/", "\\")) or _WINDOWS_DRIVE_PATTERN.match(value) is not None
 
 
 def _unsupported_type(value: object) -> UnsupportedCanonicalTypeError:

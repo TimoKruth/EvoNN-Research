@@ -55,6 +55,21 @@ def test_root_seed_boundaries_are_accepted(root_seed: int) -> None:
     assert 0 <= rng.derive_stream(root_seed, rng.StreamName.SEARCH) < 2**128
 
 
+class AdversarialSeed(int):
+    def to_bytes(self, *args: object, **kwargs: object) -> bytes:
+        return b"forged-seed"
+
+
+def test_seed_subclasses_with_overridden_to_bytes_are_rejected() -> None:
+    rng = _rng()
+
+    with pytest.raises(rng.InvalidRootSeedError) as error:
+        rng.derive_stream(AdversarialSeed(42), rng.StreamName.SEARCH)
+
+    assert error.value.code == "invalid_root_seed"
+    assert str(error.value) == "root_seed must be an integer in the range 0 <= root_seed < 2**256"
+
+
 @pytest.mark.parametrize("root_seed", [True, False, -1, 2**256, 1.0, "1", None])
 def test_invalid_root_seeds_are_rejected(root_seed: object) -> None:
     rng = _rng()

@@ -123,6 +123,30 @@ def test_nonfinite_floats_are_rejected(value: float) -> None:
     assert str(error.value) == "canonical floats must be finite binary64 values"
 
 
+class AdversarialInt(int):
+    def __str__(self) -> str:
+        return "forged-int"
+
+
+class AdversarialFloat(float):
+    def hex(self) -> str:
+        return "forged-float"
+
+
+@pytest.mark.parametrize("value", [AdversarialInt(7), AdversarialFloat(1.5)])
+def test_numeric_subclasses_with_overridden_formatters_are_rejected(value: object) -> None:
+    canonical = _canonical()
+
+    with pytest.raises(canonical.UnsupportedCanonicalTypeError) as error:
+        canonical.canonical_bytes(value, schema_version=SCHEMA_VERSION)
+
+    value_type = type(value)
+    assert error.value.code == "unsupported_canonical_type"
+    assert str(error.value) == (
+        f"unsupported canonical value type: {value_type.__module__}.{value_type.__qualname__}"
+    )
+
+
 @pytest.mark.parametrize(
     "schema_version",
     [None, True, 1, "", "EVONN/v1", "has space", "é/v1", "-bad", "a" * 129],
@@ -214,6 +238,7 @@ def test_volatile_field_names_are_rejected_recursively(value: object) -> None:
         ("artifact_path", "C:\\results\\run.json"),
         ("artifact_path", "D:/results/run.json"),
         ("artifact_path", "C:drive-qualified.json"),
+        ("output_path", "\\rooted\\result.json"),
         ("output_path", "\\\\server\\share\\run.json"),
         ("output_path", "//server/share/run.json"),
     ],

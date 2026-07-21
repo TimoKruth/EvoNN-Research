@@ -34,7 +34,7 @@ class InvalidStreamNameError(CanonicalIdentityError):
 def derive_stream(root_seed: int, name: StreamName) -> int:
     """Derive one stable unsigned 128-bit stream seed from the root seed."""
 
-    if isinstance(root_seed, bool) or not isinstance(root_seed, int) or not 0 <= root_seed < 2**256:
+    if type(root_seed) is not int or not 0 <= root_seed < 2**256:
         raise InvalidRootSeedError(
             "root_seed must be an integer in the range 0 <= root_seed < 2**256"
         )
