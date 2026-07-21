@@ -7,7 +7,7 @@ import hashlib
 
 from .canonical import CanonicalIdentityError
 
-_RNG_STREAM_DOMAIN = b"evonn-rng-stream-v1\0"
+_RNG_STREAM_DOMAIN = b"evonn-rng-stream/v1\0"
 
 
 class StreamName(StrEnum):
