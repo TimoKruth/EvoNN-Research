@@ -227,7 +227,7 @@ def _validate_field(key: str, value: object) -> None:
 
 
 def _is_absolute_or_drive_qualified_path(value: str) -> bool:
-    return value.startswith(("/", "\\")) or _WINDOWS_DRIVE_PATTERN.match(value) is not None
+    return str.startswith(value, ("/", "\\")) or _WINDOWS_DRIVE_PATTERN.match(value) is not None
 
 
 def _unsupported_type(value: object) -> UnsupportedCanonicalTypeError:

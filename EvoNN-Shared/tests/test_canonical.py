@@ -253,6 +253,26 @@ def test_absolute_or_drive_qualified_paths_are_rejected(key: str, value: str) ->
     assert str(error.value) == f"absolute or drive-qualified path is forbidden for field: {key!r}"
 
 
+class AdversarialPathString(str):
+    def startswith(self, *args: object, **kwargs: object) -> bool:
+        return False
+
+
+def test_path_string_subclass_cannot_override_rooted_path_detection() -> None:
+    canonical = _canonical()
+
+    with pytest.raises(canonical.AbsolutePathError) as error:
+        canonical.canonical_bytes(
+            {"output_path": AdversarialPathString("/tmp/result.json")},
+            schema_version=SCHEMA_VERSION,
+        )
+
+    assert error.value.code == "absolute_path"
+    assert str(error.value) == (
+        "absolute or drive-qualified path is forbidden for field: 'output_path'"
+    )
+
+
 def test_unrelated_timestamp_looking_values_and_relative_paths_are_allowed() -> None:
     canonical = _canonical()
     value = {
