@@ -39,6 +39,21 @@ def test_repository_governance_policy_passes(validator) -> None:
     assert validator.validate_repository(REPO_ROOT) == []
 
 
+def test_repository_governance_aggregates_phase0_interface_freeze_errors(
+    validator,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        validator,
+        "_validate_phase0_interface_freeze",
+        lambda repo_root: [f"synthetic Phase 0 error at {repo_root.name}"],
+    )
+
+    errors = validator.validate_repository(REPO_ROOT)
+
+    assert "synthetic Phase 0 error at EvoNN" in errors
+
+
 def test_empty_report_cannot_skip_report_validation(validator, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(validator, "_load_json", lambda _path: {})
     errors = validator.validate_repository(REPO_ROOT)

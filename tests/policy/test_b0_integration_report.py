@@ -29,6 +29,21 @@ HOSTED_MACOS_PATH = (
 )
 LEGACY_REPORT_REVISION = "cc067143fd3143eaba490c4dcc9f3765db1d70f2"
 LEGACY_TRANSITION_MERGE = "e6117bc2f7c25d52b1bf0ea30361e25b2f2ddfe8"
+PHASE0_APRIME = "b720ea6461c970e3875f8ef735e3e63cf680b660"
+PHASE0_BINDING_PATHS = (
+    "CONSOLIDATED_PLAN.md",
+    "PARALLEL_WORK_GUIDE.md",
+    "governance/phase0-interface-freeze.yaml",
+    "reviews/2026-07-21-phase0-lane-a-producer-review.md",
+    "reviews/2026-07-21-phase0-lane-b-consumer-review.md",
+    "scripts/ci/b0-policy-checks.sh",
+    "scripts/policy/validate_phase0_interface_freeze.py",
+    "scripts/policy/validate_repository_governance.py",
+    "tests/policy/test_b0_ci_bootstrap.py",
+    "tests/policy/test_b0_integration_report.py",
+    "tests/policy/test_phase0_interface_freeze.py",
+    "tests/policy/test_repository_governance.py",
+)
 SCHEMA_2_B02_REQUIRED_EVIDENCE = frozenset(
     {
         "governance/authority-provenance.yaml",
@@ -368,7 +383,12 @@ def test_parallel_work_guide_is_non_authoritative_and_records_exact_lane_model()
     ):
         assert required in text
     assert "Gate B0 is closed" in text
-    assert "no Phase 0 lane branch may begin before" in text
+    assert "status: approved_pending_merge" in text
+    assert "lane_authorization: false" in text
+    assert "no Phase 0 lane branch exists" in text
+    assert "protected PR merge → verify canonical merge → attestation" in text
+    assert "WP-0.10 and the Phase 0 exit remain joint" in text
+    assert "no Phase 0 lane branch may begin before" not in text
     for row in EXPECTED_LANE_ROWS:
         assert row in text
 
@@ -389,15 +409,18 @@ def test_consolidated_plan_records_closed_b0_and_exact_next_actions() -> None:
     assert "29658842317" in b0_section
     assert "29658842318" in b0_section
 
+    phase0_section = text.split("## Phase 0", 1)[1].split("## Phase 1", 1)[0]
+    for item in ("WP-0.1", "WP-0.2", "WP-0.3", "WP-0.4", "WP-0.5", "WP-0.6", "WP-0.7", "WP-0.8", "WP-0.9", "WP-0.10"):
+        assert f"- [ ] **{item}" in phase0_section
+
     next_actions = text.split("## Immediate Next Actions", 1)[1]
-    expected_actions = (
-        "Jointly freeze the Phase 0 interfaces",
-        "Record the co-signed interface freeze",
-        "Create the Phase 0 Lane A and Lane B implementation branches",
-        "Begin the assigned Phase 0 work packages",
-    )
-    positions = [next_actions.index(action) for action in expected_actions]
-    assert positions == sorted(positions)
+    assert "status: approved_pending_merge" in next_actions
+    assert "lane_authorization: false" in next_actions
+    assert "protected PR merge → verify canonical merge → attestation" in next_actions
+    assert "only then create the Phase 0 lane and integration branches" in next_actions
+    assert "WP-0.10 and the Phase 0 exit remain joint" in next_actions
+    assert "Jointly freeze the Phase 0 interfaces" not in next_actions
+    assert "Record the co-signed interface freeze" not in next_actions
 
 
 def test_checked_in_b0_report_is_complete_and_valid() -> None:
@@ -960,6 +983,64 @@ def _committed_clone(tmp_path: Path) -> Path:
         check=True,
         capture_output=True,
     )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "remote",
+            "set-url",
+            "origin",
+            "git@github.com:TimoKruth/EvoNN-Research.git",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    return clone
+
+
+def _phase0_binding_clone(tmp_path: Path) -> Path:
+    clone = tmp_path / "phase0-binding-clone"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-local", str(REPO_ROOT), str(clone)],
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(clone), "checkout", "--quiet", "--detach", PHASE0_APRIME],
+        check=True,
+        capture_output=True,
+    )
+    for relative in PHASE0_BINDING_PATHS:
+        source = REPO_ROOT / relative
+        assert source.is_file(), relative
+        destination = clone / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+    binding = _commit_clone(clone, "synthetic Phase 0 binding")
+    parent = subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", f"{binding}^"],
+        text=True,
+    ).strip()
+    changed = {
+        relative
+        for relative in subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(clone),
+                "diff-tree",
+                "--no-commit-id",
+                "--name-only",
+                "-r",
+                binding,
+            ],
+            text=True,
+        ).splitlines()
+        if relative
+    }
+    assert parent == PHASE0_APRIME
+    assert changed == set(PHASE0_BINDING_PATHS)
     subprocess.run(
         [
             "git",
@@ -2221,11 +2302,11 @@ def test_schema_history_rejects_merge_downgrade_from_nonfirst_parent_report(
     assert any("schema downgrade" in error for error in repository_errors), repository_errors
 
 
-def test_schema_history_allows_first_parent_merge_carrier_and_later_reattestation(
+def test_b0_schema_history_allows_carrier_and_reattestation_while_aggregate_rejects_historical_evidence_mutation(
     tmp_path: Path,
 ) -> None:
     validator = _validator()
-    clone = _committed_clone(tmp_path)
+    clone = _phase0_binding_clone(tmp_path)
     report, status, schema_2_tip = _install_schema_2_evidence_revision(clone, validator)
     carrier_merge = _commit_report_merge(
         clone,
@@ -2240,16 +2321,24 @@ def test_schema_history_allows_first_parent_merge_carrier_and_later_reattestatio
     assert _git_show_bytes(
         clone, carrier_merge, "governance/b0-report.json"
     ) != _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-report.json")
+    expected_aggregate_errors = {
+        "historical B0 evidence must remain mode/object-identical to canonical base: "
+        ".superpowers/sdd/task-6-report.md",
+        "historical B0 evidence must remain mode/object-identical to canonical base: "
+        "governance/b0-report.json",
+        "historical B0 evidence must remain mode/object-identical to canonical base: "
+        "governance/b0-status.yaml",
+    }
 
     assert validator.validate_b0_report(report, status, clone) == []
-    assert validator.validate_repository(clone) == []
+    assert set(validator.validate_repository(clone)) == expected_aggregate_errors
 
     reattested_report, reattested_status, _ = _install_schema_2_evidence_revision(
         clone, validator
     )
 
     assert validator.validate_b0_report(reattested_report, reattested_status, clone) == []
-    assert validator.validate_repository(clone) == []
+    assert set(validator.validate_repository(clone)) == expected_aggregate_errors
 
 
 def test_schema_2_downgrade_latch_uses_the_version_marker_alone(

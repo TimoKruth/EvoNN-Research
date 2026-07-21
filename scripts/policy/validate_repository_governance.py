@@ -2279,6 +2279,35 @@ def _load_json(path: Path) -> Dict[str, Any]:
     return data
 
 
+def _validate_phase0_interface_freeze(repo_root: Path) -> List[str]:
+    validator_path = repo_root / "scripts/policy/validate_phase0_interface_freeze.py"
+    record_path = repo_root / "governance/phase0-interface-freeze.yaml"
+    if not validator_path.is_file() or not record_path.is_file():
+        return []
+    try:
+        result = subprocess.run(
+            [sys.executable, str(validator_path)],
+            cwd=repo_root,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+    except OSError as exc:
+        return [f"cannot validate Phase 0 interface freeze: {exc}"]
+    if result.returncode == 0:
+        return []
+    diagnostics = [
+        line.removeprefix("ERROR: ")
+        for line in result.stdout.splitlines()
+        if line.startswith("ERROR: ")
+    ]
+    if diagnostics:
+        return diagnostics
+    detail = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
+    return [f"cannot validate Phase 0 interface freeze: {detail}"]
+
+
 def validate_repository(repo_root: Path) -> List[str]:
     errors = _validate_no_git_grafts(repo_root)
     if errors:
@@ -2333,6 +2362,7 @@ def validate_repository(repo_root: Path) -> List[str]:
     for required_doc in ("SPEC_UPGRADE_PROCESS.md", "SPEC_TRACEABILITY.md"):
         if not (repo_root / "governance" / required_doc).is_file():
             errors.append(f"governance/{required_doc} is missing")
+    errors.extend(_validate_phase0_interface_freeze(repo_root))
     return errors
 
 

@@ -226,7 +226,29 @@ telemetry models, identity + RNG). **B:** WP-0.1, 0.6, 0.7, 0.8, 0.9
 **Joint:** WP-0.10 integrity gate (consumes both lanes) + phase exit.
 *Interface freeze:* canonical-encoding/digest API (A→B for checkpoint
 checksums), export model shapes (A→B for RunWorkspace fixtures), catalog
-loader signatures (B→A for validators).
+loader signatures (B→A for validators). The co-signed freeze is approved and
+recorded, but lane creation remains merge-gated.
+
+<!-- phase0-interface-freeze:begin -->
+```yaml
+freeze_id: phase0-interface-freeze-v1
+governance_record: governance/phase0-interface-freeze.yaml
+approved_commit: b720ea6461c970e3875f8ef735e3e63cf680b660
+approved_tree: f1c5742c2581d270af05714b5ef8514c3f49d996
+digests:
+  canonical_digest_rng: 1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc
+  export_models: b18bcdcc8fd8e4cbb6d9dfb1f82c0d998a1f3fedce927991d79388139c2275fc
+  catalog_loaders: 81cf090ba61b1bfb1bdbf4a5e74c9fe46bfe34f36dcc5c44f72cd4f5cb33edc5
+reviews:
+  - reviews/2026-07-21-phase0-lane-a-producer-review.md
+  - reviews/2026-07-21-phase0-lane-b-consumer-review.md
+status: approved_pending_merge
+lane_authorization: false
+lane_branches: none
+next_sequence: protected PR merge → verify canonical merge → attestation → only then create lane/integration branches
+joint_boundary: WP-0.10 and the Phase 0 exit remain joint
+```
+<!-- phase0-interface-freeze:end -->
 
 - [ ] **WP-0.1 Workspace tooling.** Root workspace config, ruff/pytest
   config, `scripts/ci/*-checks.sh` per package wired into the B0 CI lanes.
@@ -749,11 +771,8 @@ provenance-envelope schema (A→B, co-signed before fixture work starts).
 
 ## Immediate Next Actions
 
-1. Jointly freeze the Phase 0 interfaces named in the Phase 0 lane block:
-   canonical-encoding/digest API, export model shapes, and catalog-loader
-   signatures.
-2. Record the co-signed interface freeze before changing any frozen boundary.
-3. Create the Phase 0 Lane A and Lane B implementation branches only after the
-   freeze is recorded.
-4. Begin the assigned Phase 0 work packages while keeping WP-0.10 and the phase
-   exit joint.
+The durable governance record is `governance/phase0-interface-freeze.yaml` with
+`status: approved_pending_merge` and `lane_authorization: false`. No Phase 0
+lane or integration branch exists. The required sequence is
+protected PR merge → verify canonical merge → attestation → only then create the Phase 0 lane and integration branches. WP-0.10 and the Phase 0 exit remain joint. No Phase 0
+implementation work is authorized before that sequence completes.

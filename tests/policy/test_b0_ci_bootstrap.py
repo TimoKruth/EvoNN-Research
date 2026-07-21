@@ -275,6 +275,39 @@ def test_b0_policy_script_uses_common_root_and_complete_nonrecursive_test_discov
     assert "test_repository_governance.py" not in text
     assert "test_workspace_skeletons.py" not in text
 
+    commands = [
+        command
+        for command in _logical_shell_commands(text)
+        if command and command[0] == "uv"
+    ]
+    assert commands[:3] == [
+        ["uv", "lock", "--check"],
+        [
+            "uv",
+            "run",
+            "--locked",
+            "--all-packages",
+            "--group",
+            "dev",
+            "python",
+            "scripts/policy/validate_phase0_interface_freeze.py",
+        ],
+        [
+            "uv",
+            "run",
+            "--locked",
+            "--all-packages",
+            "--group",
+            "dev",
+            "python",
+            "scripts/policy/validate_repository_governance.py",
+        ],
+    ]
+    assert sum(
+        command[-1:] == ["scripts/policy/validate_phase0_interface_freeze.py"]
+        for command in commands
+    ) == 1
+
 
 @pytest.mark.b0_policy_script_selftest
 def test_b0_policy_script_runs_from_another_directory(tmp_path: Path) -> None:
@@ -292,6 +325,7 @@ def test_b0_policy_script_runs_from_another_directory(tmp_path: Path) -> None:
         check=False,
     )
     assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    assert "Phase 0 interface freeze policy: PASS" in result.stdout
     assert "Repository governance policy: PASS" in result.stdout
     assert "Import boundary policy: PASS" in result.stdout
     assert "Backend capability policy: PASS" in result.stdout
