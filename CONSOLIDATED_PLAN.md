@@ -207,10 +207,12 @@ from all reporting surfaces (Phases 1/3 → WP-7.3).
 the shared ground both lanes stand on).
 
 **Exit (contract evidence):** Gate B0 is closed by the anchored schema-2
-report and closed status evidence. Binding C has recorded the approved Phase 0
-interface freeze in `approved_pending_merge` state. Lane and integration work
-remain unauthorized until the protected freeze PR merge is verified on
-canonical `origin/main` and a separate authorization attestation is merged.
+report and closed status evidence. Historical Binding C remains immutable and
+records the v1 pending freeze. The ordinary Binding D supersession records the
+reviewed A-double-prime v2 freeze in `approved_pending_merge` state. Lane and
+integration work remain unauthorized until the protected freeze PR merge is
+verified on canonical `origin/main` and a separate authorization attestation is
+merged.
 
 ---
 
@@ -228,19 +230,27 @@ checksums), export model shapes (A→B for RunWorkspace fixtures), catalog
 loader signatures (B→A for validators). The co-signed freeze is approved and
 recorded, but lane creation remains merge-gated.
 
+*Joint amendment mini-review:* A-double-prime changes six frozen implementation
+and contract-test paths to close strict container validation, canonical UTC
+parsing, and catalog error-taxonomy gaps. Public symbols and signatures remain
+unchanged, all three surface digests were recomputed, both fresh reciprocal
+reviews approved the exact replacement commit and tree, and no benchmark,
+capability, or scientific evidence was added. Freeze v2 supersedes v1 while
+remaining subject to the same protected merge and attestation sequence.
+
 <!-- phase0-interface-freeze:begin -->
 ```yaml
-freeze_id: phase0-interface-freeze-v1
+freeze_id: phase0-interface-freeze-v2
 governance_record: governance/phase0-interface-freeze.yaml
-approved_commit: b720ea6461c970e3875f8ef735e3e63cf680b660
-approved_tree: f1c5742c2581d270af05714b5ef8514c3f49d996
+approved_commit: 25352a4bd7c33b73077d9f9be231b2bb1b48109f
+approved_tree: 78a72f1a2229d9e94cd78512be0585f08b2a5895
 digests:
   canonical_digest_rng: 1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc
-  export_models: b18bcdcc8fd8e4cbb6d9dfb1f82c0d998a1f3fedce927991d79388139c2275fc
-  catalog_loaders: 81cf090ba61b1bfb1bdbf4a5e74c9fe46bfe34f36dcc5c44f72cd4f5cb33edc5
+  export_models: f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72
+  catalog_loaders: 3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc
 reviews:
-  - reviews/2026-07-21-phase0-lane-a-producer-review.md
-  - reviews/2026-07-21-phase0-lane-b-consumer-review.md
+  - reviews/2026-07-23-phase0-lane-a-producer-a2-review.md
+  - reviews/2026-07-23-phase0-lane-b-consumer-a2-review.md
 status: approved_pending_merge
 lane_authorization: false
 lane_branches: none

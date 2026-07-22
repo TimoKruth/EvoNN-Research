@@ -1,12 +1,12 @@
 schema_version: "1.0.0"
 document_kind: phase_interface_freeze
 phase: 0
-freeze_id: phase0-interface-freeze-v1
+freeze_id: phase0-interface-freeze-v2
 status: approved_pending_merge
-supersedes: null
+supersedes: phase0-interface-freeze-v1
 canonical_base_commit: b22316d3dea7e0f01ee8aa359f4786897b0680ba
-approved_commit: b720ea6461c970e3875f8ef735e3e63cf680b660
-approved_tree: f1c5742c2581d270af05714b5ef8514c3f49d996
+approved_commit: 25352a4bd7c33b73077d9f9be231b2bb1b48109f
+approved_tree: 78a72f1a2229d9e94cd78512be0585f08b2a5895
 digest_method: canonical-sha256-file-set-v1
 frozen_surfaces:
   - surface_id: canonical_digest_rng
@@ -145,7 +145,7 @@ frozen_surfaces:
       - EvoNN-Shared/tests/test_exports.py
       - EvoNN-Shared/tests/test_telemetry.py
       - tests/contracts/test_phase0_shared_interfaces.py
-    sha256: b18bcdcc8fd8e4cbb6d9dfb1f82c0d998a1f3fedce927991d79388139c2275fc
+    sha256: f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72
   - surface_id: catalog_loaders
     version_id: "1.0.0"
     direction: lane_b_to_lane_a
@@ -208,20 +208,20 @@ frozen_surfaces:
       - EvoNN-Shared/tests/test_catalog.py
       - shared-benchmarks/catalog/canonical_ids.yaml
       - tests/contracts/test_phase0_shared_interfaces.py
-    sha256: 81cf090ba61b1bfb1bdbf4a5e74c9fe46bfe34f36dcc5c44f72cd4f5cb33edc5
+    sha256: 3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc
 reviews:
   - lane: lane_a
     role: lane_a_contract_owner
-    reviewer: phase0-lane-a-producer-aprime-reviewer-20260721
-    subject: phase0-frozen-surface-a-prime-lane-a-producer-review
-    reviewed_commit: b720ea6461c970e3875f8ef735e3e63cf680b660
-    reviewed_tree: f1c5742c2581d270af05714b5ef8514c3f49d996
+    reviewer: phase0-lane-a-producer-a2-reviewer-20260723
+    subject: phase0-frozen-surface-a-double-prime-lane-a-producer-review
+    reviewed_commit: 25352a4bd7c33b73077d9f9be231b2bb1b48109f
+    reviewed_tree: 78a72f1a2229d9e94cd78512be0585f08b2a5895
     reviewed_digests:
       canonical_digest_rng: 1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc
-      export_models: b18bcdcc8fd8e4cbb6d9dfb1f82c0d998a1f3fedce927991d79388139c2275fc
-      catalog_loaders: 81cf090ba61b1bfb1bdbf4a5e74c9fe46bfe34f36dcc5c44f72cd4f5cb33edc5
-    evidence_path: reviews/2026-07-21-phase0-lane-a-producer-review.md
-    evidence_sha256: 9299b5a0e3aef5ac5d2dabe053ca205783f15920605dde57d6b5964f69a66833
+      export_models: f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72
+      catalog_loaders: 3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc
+    evidence_path: reviews/2026-07-23-phase0-lane-a-producer-a2-review.md
+    evidence_sha256: e546bb678bddbec18a705e6484f54de11fcfcece3b099b9f18b095c540cb741d
     independent_review: true
     decision: approved
     findings:
@@ -232,16 +232,16 @@ reviews:
       minor: 0
   - lane: lane_b
     role: lane_b_contract_owner
-    reviewer: phase0-lane-b-consumer-aprime-reviewer-20260721
-    subject: phase0-frozen-surface-aprime-lane-b-consumer-review
-    reviewed_commit: b720ea6461c970e3875f8ef735e3e63cf680b660
-    reviewed_tree: f1c5742c2581d270af05714b5ef8514c3f49d996
+    reviewer: phase0-lane-b-consumer-a2-reviewer-20260723
+    subject: phase0-frozen-surface-a-double-prime-lane-b-consumer-review
+    reviewed_commit: 25352a4bd7c33b73077d9f9be231b2bb1b48109f
+    reviewed_tree: 78a72f1a2229d9e94cd78512be0585f08b2a5895
     reviewed_digests:
       canonical_digest_rng: 1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc
-      export_models: b18bcdcc8fd8e4cbb6d9dfb1f82c0d998a1f3fedce927991d79388139c2275fc
-      catalog_loaders: 81cf090ba61b1bfb1bdbf4a5e74c9fe46bfe34f36dcc5c44f72cd4f5cb33edc5
-    evidence_path: reviews/2026-07-21-phase0-lane-b-consumer-review.md
-    evidence_sha256: f82e42b230fb60f8d1e58d9f072f3aba43f2375fe9578a4854987fbc0291072c
+      export_models: f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72
+      catalog_loaders: 3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc
+    evidence_path: reviews/2026-07-23-phase0-lane-b-consumer-a2-review.md
+    evidence_sha256: 171ff311c5a6f61e1f71bbd2d913f6c221bf4657ec169400117113a1c16039af
     independent_review: true
     decision: approved
     findings:

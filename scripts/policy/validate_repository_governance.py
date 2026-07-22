@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import stat
 import subprocess
 import sys
@@ -23,8 +24,9 @@ REQUIRED_B0_ITEM_IDS: Tuple[str, ...] = ("B0.1", "B0.2", "B0.3", "B0.4", "B0.5",
 EXCLUDED_PROSE_SCAN_TREES: Set[str] = {"archive", "claude-spec", "claudex-spec"}
 IGNORED_INTERNAL_TREES: Set[str] = {".git", ".claude", ".superpowers", ".pytest_cache"}
 PHASE0_STANDALONE_VALIDATOR_SHA256 = (
-    "b49c67d2b3bc67f2e71009329e4193fb272c76c858b175d516161f01035db7a4"
+    "3b2a459bcf38fee5b7e82f8b7f9f4fb343900349f6b6080846b84a74fb787885"
 )
+GIT_EXECUTABLE = shutil.which("git", path=os.defpath)
 PHASE0_GIT_OVERRIDE_VARIABLES: Set[str] = {
     "GIT_DIR",
     "GIT_WORK_TREE",
@@ -588,19 +590,34 @@ def validate_archived_plans(root: Path) -> List[str]:
     return errors
 
 
+def _git_environment() -> Dict[str, str]:
+    return {
+        "GIT_NO_REPLACE_OBJECTS": "1",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_CONFIG_GLOBAL": os.devnull,
+        "LANG": "C",
+        "LC_ALL": "C",
+    }
+
+
 def _git(repo_root: Path, *args: str) -> bytes:
-    return subprocess.check_output(["git", "-C", str(repo_root), *args], stderr=subprocess.STDOUT)
+    if GIT_EXECUTABLE is None:
+        raise OSError("trusted Git executable is unavailable")
+    return subprocess.check_output(
+        [GIT_EXECUTABLE, "-C", str(repo_root), *args],
+        env=_git_environment(),
+        stderr=subprocess.STDOUT,
+    )
 
 
 def _validate_no_git_grafts(repo_root: Path) -> List[str]:
     try:
-        result = subprocess.run(
-            ["git", "-C", str(repo_root), "rev-parse", "--git-path", "info/grafts"],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        raw_path = result.stdout.decode("utf-8").strip()
+        raw_path = _git(
+            repo_root,
+            "rev-parse",
+            "--git-path",
+            "info/grafts",
+        ).decode("utf-8").strip()
         grafts_path = Path(raw_path)
         if not grafts_path.is_absolute():
             grafts_path = repo_root / grafts_path
@@ -2405,6 +2422,13 @@ def _sanitized_child_detail(result: subprocess.CompletedProcess[Any]) -> str:
     return detail or f"exit {result.returncode}"
 
 
+def _phase0_child_environment() -> Dict[str, str]:
+    environment = os.environ.copy()
+    environment.pop("PYTHONPATH", None)
+    environment.pop("PYTHONHOME", None)
+    return environment
+
+
 def _validate_phase0_interface_freeze(repo_root: Path) -> List[str]:
     supplied = sorted(
         key
@@ -2442,8 +2466,9 @@ def _validate_phase0_interface_freeze(repo_root: Path) -> List[str]:
 
     try:
         result = subprocess.run(
-            [sys.executable, str(validator_path)],
+            [sys.executable, "-I", str(validator_path)],
             cwd=repo_root,
+            env=_phase0_child_environment(),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=False,

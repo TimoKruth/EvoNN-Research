@@ -16,10 +16,33 @@ import sys
 from typing import Any
 from urllib.parse import urlparse
 
-import yaml
-from yaml.events import AliasEvent
-from yaml.nodes import MappingNode, SequenceNode
-from yaml.tokens import AliasToken, AnchorToken, DocumentStartToken, TagToken
+
+if __name__ == "__main__" and not sys.flags.isolated:
+    isolated_environment = os.environ.copy()
+    isolated_environment.pop("PYTHONPATH", None)
+    isolated_environment.pop("PYTHONHOME", None)
+    try:
+        os.execve(
+            sys.executable,
+            [sys.executable, "-I", str(Path(__file__).resolve()), *sys.argv[1:]],
+            isolated_environment,
+        )
+    except OSError as exc:
+        print(f"ERROR: cannot restart Phase 0 validator in isolated mode: {exc}")
+        raise SystemExit(1) from None
+
+
+# These imports must follow the isolated-mode restart so a sibling module cannot
+# shadow PyYAML before policy validation begins.
+import yaml  # noqa: E402
+from yaml.events import AliasEvent  # noqa: E402
+from yaml.nodes import MappingNode, SequenceNode  # noqa: E402
+from yaml.tokens import (  # noqa: E402
+    AliasToken,
+    AnchorToken,
+    DocumentStartToken,
+    TagToken,
+)
 
 
 SCHEMA_VERSION = "1.0.0"
@@ -305,6 +328,102 @@ VERIFIED_AUTHORIZATION = {
     "authorized": True,
     "reason": "freeze_pull_request_merged_and_canonical_merge_verified",
 }
+
+
+class FreezeContract:
+    __slots__ = (
+        "freeze_id",
+        "supersedes",
+        "approved_commit",
+        "approved_tree",
+        "digests",
+        "reviews",
+        "amendment_rule",
+        "_initialized",
+    )
+
+    def __init__(
+        self,
+        *,
+        freeze_id: str,
+        supersedes: str | None,
+        approved_commit: str,
+        approved_tree: str,
+        digests: Mapping[str, str],
+        reviews: tuple[Mapping[str, str], ...],
+        amendment_rule: Mapping[str, Any],
+    ) -> None:
+        object.__setattr__(self, "freeze_id", freeze_id)
+        object.__setattr__(self, "supersedes", supersedes)
+        object.__setattr__(self, "approved_commit", approved_commit)
+        object.__setattr__(self, "approved_tree", approved_tree)
+        object.__setattr__(self, "digests", digests)
+        object.__setattr__(self, "reviews", reviews)
+        object.__setattr__(self, "amendment_rule", amendment_rule)
+        object.__setattr__(self, "_initialized", True)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if getattr(self, "_initialized", False):
+            raise AttributeError("FreezeContract is immutable")
+        object.__setattr__(self, name, value)
+
+
+V2_DIGESTS = {
+    "canonical_digest_rng": "1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc",
+    "export_models": "f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72",
+    "catalog_loaders": "3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc",
+}
+V2_REVIEWS = (
+    {
+        "lane": "lane_a",
+        "role": "lane_a_contract_owner",
+        "reviewer": "phase0-lane-a-producer-a2-reviewer-20260723",
+        "subject": "phase0-frozen-surface-a-double-prime-lane-a-producer-review",
+        "evidence_path": "reviews/2026-07-23-phase0-lane-a-producer-a2-review.md",
+        "evidence_sha256": "e546bb678bddbec18a705e6484f54de11fcfcece3b099b9f18b095c540cb741d",
+    },
+    {
+        "lane": "lane_b",
+        "role": "lane_b_contract_owner",
+        "reviewer": "phase0-lane-b-consumer-a2-reviewer-20260723",
+        "subject": "phase0-frozen-surface-a-double-prime-lane-b-consumer-review",
+        "evidence_path": "reviews/2026-07-23-phase0-lane-b-consumer-a2-review.md",
+        "evidence_sha256": "171ff311c5a6f61e1f71bbd2d913f6c221bf4657ec169400117113a1c16039af",
+    },
+)
+V2_AMENDMENT_RULE = {
+    "frozen_byte_or_mode_change_invalidates_current_freeze": True,
+    "requires_new_freeze_version": True,
+    "next_record_must_supersede": "phase0-interface-freeze-v1",
+    "requires_fresh_lane_a_review": True,
+    "requires_fresh_lane_b_review": True,
+    "requires_joint_mini_review": True,
+    "replacement_freeze_must_be_merged_before_lane_creation": True,
+}
+V1_CONTRACT = FreezeContract(
+    freeze_id=FREEZE_ID,
+    supersedes=None,
+    approved_commit=APPROVED_COMMIT,
+    approved_tree=APPROVED_TREE,
+    digests=DIGESTS,
+    reviews=REVIEWS,
+    amendment_rule=AMENDMENT_RULE,
+)
+V2_CONTRACT = FreezeContract(
+    freeze_id="phase0-interface-freeze-v2",
+    supersedes=FREEZE_ID,
+    approved_commit="25352a4bd7c33b73077d9f9be231b2bb1b48109f",
+    approved_tree="78a72f1a2229d9e94cd78512be0585f08b2a5895",
+    digests=V2_DIGESTS,
+    reviews=V2_REVIEWS,
+    amendment_rule=V2_AMENDMENT_RULE,
+)
+CONTRACTS = {
+    V1_CONTRACT.freeze_id: V1_CONTRACT,
+    V2_CONTRACT.freeze_id: V2_CONTRACT,
+}
+
+
 BINDING_PATHS = frozenset(
     {
         "CONSOLIDATED_PLAN.md",
@@ -326,11 +445,18 @@ BINDING_MODES = {
     for relative in BINDING_PATHS
 }
 BINDING_RECORD_OBJECT = "55e06bd8ef6cfdb2e17a6ca6f78ef179d1053c84"
-REVIEW_PATHS = frozenset(review["evidence_path"] for review in REVIEWS)
+REVIEW_PATHS = frozenset(
+    review["evidence_path"]
+    for contract in CONTRACTS.values()
+    for review in contract.reviews
+)
 ACTIVE_DOCUMENT_PATHS = ("CONSOLIDATED_PLAN.md", "PARALLEL_WORK_GUIDE.md")
-REPAIRABLE_BINDING_PATHS = BINDING_PATHS - REVIEW_PATHS - {
-    "governance/phase0-interface-freeze.yaml"
-}
+ACTIVE_BINDING_REQUIRED_PATHS = frozenset(
+    {"governance/phase0-interface-freeze.yaml", *ACTIVE_DOCUMENT_PATHS}
+)
+ACTIVE_BINDING_ALLOWED_PATHS = frozenset(
+    {*BINDING_PATHS, *REVIEW_PATHS}
+)
 ATTESTATION_ALLOWED_PATHS = frozenset(
     {
         "governance/phase0-interface-freeze.yaml",
@@ -344,8 +470,11 @@ ATTESTATION_ALLOWED_PATHS = frozenset(
 )
 HISTORICAL_B0_PATHS = (
     ".superpowers/sdd/task-6-report.md",
+    "governance/authority-provenance.yaml",
     "governance/b0-report.json",
     "governance/b0-status.yaml",
+    "governance/evidence/b0/hosted/linux-runtime-probe.json",
+    "governance/evidence/b0/hosted/macos-runtime-probe.json",
     "reviews/2026-07-19-b0-closure-review.md",
 )
 PROHIBITED_REF = re.compile(
@@ -353,48 +482,41 @@ PROHIBITED_REF = re.compile(
 )
 MARKER_BEGIN = "<!-- phase0-interface-freeze:begin -->"
 MARKER_END = "<!-- phase0-interface-freeze:end -->"
-PENDING_MARKER_BODY = """```yaml
-freeze_id: phase0-interface-freeze-v1
+def _expected_marker_body(
+    record: Mapping[str, Any],
+    contract: FreezeContract,
+) -> str:
+    reviews = "\n".join(
+        f"  - {review['evidence_path']}" for review in contract.reviews
+    )
+    common = f"""freeze_id: {contract.freeze_id}
 governance_record: governance/phase0-interface-freeze.yaml
-approved_commit: b720ea6461c970e3875f8ef735e3e63cf680b660
-approved_tree: f1c5742c2581d270af05714b5ef8514c3f49d996
+approved_commit: {contract.approved_commit}
+approved_tree: {contract.approved_tree}
 digests:
-  canonical_digest_rng: 1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc
-  export_models: b18bcdcc8fd8e4cbb6d9dfb1f82c0d998a1f3fedce927991d79388139c2275fc
-  catalog_loaders: 81cf090ba61b1bfb1bdbf4a5e74c9fe46bfe34f36dcc5c44f72cd4f5cb33edc5
+  canonical_digest_rng: {contract.digests['canonical_digest_rng']}
+  export_models: {contract.digests['export_models']}
+  catalog_loaders: {contract.digests['catalog_loaders']}
 reviews:
-  - reviews/2026-07-21-phase0-lane-a-producer-review.md
-  - reviews/2026-07-21-phase0-lane-b-consumer-review.md
+{reviews}"""
+    if record.get("status") != STATUS_VERIFIED:
+        return f"""```yaml
+{common}
 status: approved_pending_merge
 lane_authorization: false
 lane_branches: none
 next_sequence: protected PR merge → verify canonical merge → attestation → only then create lane/integration branches
 joint_boundary: WP-0.10 and the Phase 0 exit remain joint
 ```"""
-
-
-def _expected_marker_body(record: Mapping[str, Any]) -> str:
-    if record.get("status") != STATUS_VERIFIED:
-        return PENDING_MARKER_BODY
     merge = record.get("merge_verification")
     merge = merge if isinstance(merge, Mapping) else {}
     return f"""```yaml
-freeze_id: phase0-interface-freeze-v1
-governance_record: governance/phase0-interface-freeze.yaml
-approved_commit: b720ea6461c970e3875f8ef735e3e63cf680b660
-approved_tree: f1c5742c2581d270af05714b5ef8514c3f49d996
-digests:
-  canonical_digest_rng: 1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc
-  export_models: b18bcdcc8fd8e4cbb6d9dfb1f82c0d998a1f3fedce927991d79388139c2275fc
-  catalog_loaders: 81cf090ba61b1bfb1bdbf4a5e74c9fe46bfe34f36dcc5c44f72cd4f5cb33edc5
-reviews:
-  - reviews/2026-07-21-phase0-lane-a-producer-review.md
-  - reviews/2026-07-21-phase0-lane-b-consumer-review.md
+{common}
 status: merged_verified
 lane_authorization: true
 canonical_merge_commit: {merge.get('canonical_merge_commit')}
 verified_at: {merge.get('verified_at')}
-lane_branches: none
+lane_branch_creation: authorized
 authorization_effective_after: separate authorization attestation is merged
 joint_boundary: WP-0.10 and the Phase 0 exit remain joint
 ```"""
@@ -609,16 +731,34 @@ def _exact_list(value: Any, expected: Sequence[Any], label: str, errors: list[st
     return value
 
 
-def _validate_record_schema(record: Mapping[str, Any]) -> list[str]:
+def _contract_for_record(
+    record: Mapping[str, Any],
+    errors: list[str],
+) -> FreezeContract | None:
+    freeze_id = record.get("freeze_id")
+    if not isinstance(freeze_id, str):
+        errors.append("Phase 0 record freeze_id must select a supported contract")
+        return None
+    contract = CONTRACTS.get(freeze_id)
+    if contract is None:
+        errors.append(f"Phase 0 record freeze_id is unsupported: {freeze_id}")
+        return None
+    return contract
+
+
+def _validate_record_schema(
+    record: Mapping[str, Any],
+    contract: FreezeContract,
+) -> list[str]:
     errors: list[str] = []
     record = _mapping(record, TOP_LEVEL_FIELDS, "Phase 0 record", errors)
     exact_scalars = {
         "schema_version": SCHEMA_VERSION,
         "document_kind": "phase_interface_freeze",
-        "freeze_id": FREEZE_ID,
+        "freeze_id": contract.freeze_id,
         "canonical_base_commit": CANONICAL_BASE,
-        "approved_commit": APPROVED_COMMIT,
-        "approved_tree": APPROVED_TREE,
+        "approved_commit": contract.approved_commit,
+        "approved_tree": contract.approved_tree,
         "digest_method": DIGEST_METHOD,
     }
     for field, expected in exact_scalars.items():
@@ -627,8 +767,11 @@ def _validate_record_schema(record: Mapping[str, Any]) -> list[str]:
             errors.append(f"Phase 0 record {field} must be {expected}")
     if type(record.get("phase")) is not int or record.get("phase") != 0:
         errors.append("Phase 0 record phase must be exact integer 0")
-    if record.get("supersedes") is not None:
-        errors.append("Phase 0 record supersedes must be null")
+    if record.get("supersedes") != contract.supersedes:
+        errors.append(
+            "Phase 0 record supersedes must be "
+            f"{contract.supersedes if contract.supersedes is not None else 'null'}"
+        )
     if record.get("status") not in {STATUS_PENDING, STATUS_VERIFIED}:
         errors.append("Phase 0 record status must be approved_pending_merge or merged_verified")
 
@@ -637,9 +780,9 @@ def _validate_record_schema(record: Mapping[str, Any]) -> list[str]:
         errors.append("Phase 0 record must contain exactly three surfaces")
         surfaces = surfaces if isinstance(surfaces, list) else []
     actual_ids = [surface.get("surface_id") if isinstance(surface, Mapping) else None for surface in surfaces]
-    if actual_ids != list(DIGESTS):
+    if actual_ids != list(contract.digests):
         errors.append("Phase 0 surface order must be canonical_digest_rng, export_models, catalog_loaders")
-    for index, surface_id in enumerate(DIGESTS):
+    for index, surface_id in enumerate(contract.digests):
         surface = _mapping(
             surfaces[index] if index < len(surfaces) else None,
             SURFACE_FIELDS,
@@ -661,8 +804,8 @@ def _validate_record_schema(record: Mapping[str, Any]) -> list[str]:
         )
         if frozen_paths != list(FROZEN_PATHS[surface_id]):
             errors.append(f"Phase 0 surface {surface_id} canonical frozen_paths are invalid")
-        if surface.get("sha256") != DIGESTS[surface_id]:
-            errors.append(f"Phase 0 surface {surface_id} sha256 must be {DIGESTS[surface_id]}")
+        if surface.get("sha256") != contract.digests[surface_id]:
+            errors.append(f"Phase 0 surface {surface_id} sha256 must be {contract.digests[surface_id]}")
         modules = surface.get("public_modules")
         expected_modules = PUBLIC_MODULES[surface_id]
         if not isinstance(modules, list) or len(modules) != len(expected_modules):
@@ -701,7 +844,7 @@ def _validate_record_schema(record: Mapping[str, Any]) -> list[str]:
         errors.append("Phase 0 review order must be lane_a then lane_b")
     reviewers: list[Any] = []
     evidence_paths: list[Any] = []
-    for index, expected in enumerate(REVIEWS):
+    for index, expected in enumerate(contract.reviews):
         review = _mapping(
             reviews[index] if index < len(reviews) else None,
             REVIEW_FIELDS,
@@ -714,18 +857,24 @@ def _validate_record_schema(record: Mapping[str, Any]) -> list[str]:
                 errors.append(f"Phase 0 review {index} {field} must be {expected[field]}")
         reviewers.append(review.get("reviewer"))
         evidence_paths.append(review.get("evidence_path"))
-        if review.get("reviewed_commit") != APPROVED_COMMIT:
-            errors.append(f"Phase 0 review {index} reviewed_commit must be A-prime")
-        if review.get("reviewed_tree") != APPROVED_TREE:
-            errors.append(f"Phase 0 review {index} reviewed_tree must be A-prime tree")
+        if review.get("reviewed_commit") != contract.approved_commit:
+            errors.append(
+                f"Phase 0 review {index} reviewed_commit must match approved_commit"
+            )
+        if review.get("reviewed_tree") != contract.approved_tree:
+            errors.append(
+                f"Phase 0 review {index} reviewed_tree must match approved_tree"
+            )
         reviewed_digests = _mapping(
             review.get("reviewed_digests"),
-            tuple(DIGESTS),
+            tuple(contract.digests),
             f"Phase 0 review {index} reviewed_digests",
             errors,
         )
-        if dict(reviewed_digests) != DIGESTS:
-            errors.append(f"Phase 0 review {index} reviewed_digests must match the approved triple")
+        if dict(reviewed_digests) != dict(contract.digests):
+            errors.append(
+                f"Phase 0 review {index} reviewed_digests must match the approved triple"
+            )
         if review.get("independent_review") is not True:
             errors.append(f"Phase 0 review {index} independent_review must be true")
         if review.get("decision") != "approved":
@@ -745,7 +894,7 @@ def _validate_record_schema(record: Mapping[str, Any]) -> list[str]:
         for field in amendment_boolean_fields
     ):
         errors.append("Phase 0 amendment_rule boolean fields must be strict booleans")
-    if not _deep_exact_equal(dict(amendment), AMENDMENT_RULE):
+    if not _deep_exact_equal(dict(amendment), dict(contract.amendment_rule)):
         errors.append("Phase 0 amendment_rule must match the exact invalidation rule")
     merge = _mapping(record.get("merge_verification"), MERGE_FIELDS, "Phase 0 merge_verification", errors)
     authorization = _mapping(record.get("lane_authorization"), AUTHORIZATION_FIELDS, "Phase 0 lane_authorization", errors)
@@ -962,35 +1111,48 @@ def _validate_path_checkout(
     return errors
 
 
-def _validate_frozen_paths(repo_root: Path, aprime_tree: Mapping[str, tuple[str, str, str]], head_tree: Mapping[str, tuple[str, str, str]]) -> list[str]:
+def _validate_frozen_paths(
+    repo_root: Path,
+    approved_tree: Mapping[str, tuple[str, str, str]],
+    head_tree: Mapping[str, tuple[str, str, str]],
+    contract: FreezeContract,
+) -> list[str]:
     errors: list[str] = []
     for surface_id, paths in FROZEN_PATHS.items():
         manifest = bytearray()
         for relative in paths:
-            aprime_entry = aprime_tree[relative] if relative in aprime_tree else None
-            if aprime_entry is None:
-                errors.append(f"{surface_id}: A-prime frozen path is missing: {relative}")
+            approved_entry = approved_tree[relative] if relative in approved_tree else None
+            if approved_entry is None:
+                errors.append(
+                    f"{surface_id}: approved frozen path is missing: {relative}"
+                )
                 continue
-            if aprime_entry[:2] != ("100644", "blob"):
-                errors.append(f"{surface_id}: A-prime frozen path must be 100644 blob: {relative}")
+            if approved_entry[:2] != ("100644", "blob"):
+                errors.append(
+                    f"{surface_id}: approved frozen path must be 100644 blob: {relative}"
+                )
                 continue
             head_entry = head_tree[relative] if relative in head_tree else None
-            if head_entry != aprime_entry:
-                errors.append(f"{surface_id}: HEAD frozen path mode/object differs from A-prime: {relative}")
-            content = _blob(repo_root, aprime_entry[2])
+            if head_entry != approved_entry:
+                errors.append(
+                    f"{surface_id}: HEAD frozen path mode/object differs from approved commit: {relative}"
+                )
+            content = _blob(repo_root, approved_entry[2])
             manifest.extend(f"{_sha256(content)}  {relative}\n".encode("utf-8"))
-            if head_entry == aprime_entry:
+            if head_entry == approved_entry:
                 errors.extend(
                     _validate_path_checkout(
                         repo_root,
                         relative,
-                        aprime_entry,
+                        approved_entry,
                         f"{surface_id}: frozen path",
                     )
                 )
         actual_digest = _sha256(bytes(manifest))
-        if actual_digest != DIGESTS[surface_id]:
-            errors.append(f"{surface_id}: recomputed A-prime digest does not match approved sha256")
+        if actual_digest != contract.digests[surface_id]:
+            errors.append(
+                f"{surface_id}: recomputed approved-commit digest does not match approved sha256"
+            )
     return errors
 
 
@@ -1016,9 +1178,14 @@ def _frontmatter(content: bytes, label: str, errors: list[str]) -> Mapping[str, 
     return value
 
 
-def _validate_reviews(repo_root: Path, binding_tree: Mapping[str, tuple[str, str, str]], head_tree: Mapping[str, tuple[str, str, str]]) -> list[str]:
+def _validate_reviews(
+    repo_root: Path,
+    binding_tree: Mapping[str, tuple[str, str, str]],
+    head_tree: Mapping[str, tuple[str, str, str]],
+    contract: FreezeContract,
+) -> list[str]:
     errors: list[str] = []
-    for expected in REVIEWS:
+    for expected in contract.reviews:
         relative = expected["evidence_path"]
         binding_entry = binding_tree[relative] if relative in binding_tree else None
         head_entry = head_tree[relative] if relative in head_tree else None
@@ -1050,7 +1217,7 @@ def _validate_reviews(repo_root: Path, binding_tree: Mapping[str, tuple[str, str
             "status": "delivered",
             "authoritative": False,
             "subject": expected["subject"],
-            "reviewed_ref": APPROVED_COMMIT,
+            "reviewed_ref": contract.approved_commit,
             "reviewer": expected["reviewer"],
             "verdict": "approved",
         }
@@ -1117,6 +1284,114 @@ def _binding_commit(repo_root: Path, errors: list[str]) -> str | None:
     return binding
 
 
+def _same_freeze_contract(
+    pending_record: Mapping[str, Any],
+    current_record: Mapping[str, Any],
+) -> bool:
+    transition_fields = {"status", "merge_verification", "lane_authorization"}
+    return all(
+        _deep_exact_equal(pending_record.get(field), current_record.get(field))
+        for field in TOP_LEVEL_FIELDS
+        if field not in transition_fields
+    )
+
+
+def _active_binding_commit(
+    repo_root: Path,
+    historical_binding: str,
+    current_record: Mapping[str, Any],
+    contract: FreezeContract,
+    errors: list[str],
+) -> str | None:
+    if contract is V1_CONTRACT:
+        return historical_binding
+
+    record_path = "governance/phase0-interface-freeze.yaml"
+    candidates: list[str] = []
+    try:
+        revisions = _record_revisions_after_binding(repo_root, historical_binding)
+        historical_record = (
+            "100644",
+            "blob",
+            BINDING_RECORD_OBJECT,
+        )
+        for revision in revisions:
+            parent_line = _git_text(
+                repo_root,
+                "rev-list",
+                "--parents",
+                "-n",
+                "1",
+                revision,
+            ).split()
+            if len(parent_line) != 2:
+                continue
+            parent = parent_line[1]
+            parent_entry = _tree(
+                repo_root,
+                parent,
+                "candidate active binding parent",
+                errors,
+            ).get(record_path)
+            if parent_entry != historical_record:
+                continue
+            revision_entry = _tree(
+                repo_root,
+                revision,
+                "candidate active binding",
+                errors,
+            ).get(record_path)
+            if revision_entry is None or revision_entry[:2] != ("100644", "blob"):
+                continue
+            try:
+                pending_record = _load_phase0_interface_freeze_content(
+                    _blob(repo_root, revision_entry[2])
+                )
+            except (OSError, ValueError, UnicodeError, yaml.YAMLError):
+                continue
+            if pending_record.get("status") != STATUS_PENDING:
+                continue
+            if _validate_record_schema(pending_record, contract):
+                continue
+            if not _same_freeze_contract(pending_record, current_record):
+                continue
+            changed = _commit_changed_paths(repo_root, revision)
+            if not ACTIVE_BINDING_REQUIRED_PATHS.issubset(changed):
+                continue
+            if not changed.issubset(ACTIVE_BINDING_ALLOWED_PATHS):
+                continue
+            if _git(
+                repo_root,
+                "merge-base",
+                "--is-ancestor",
+                historical_binding,
+                revision,
+                check=False,
+            ).returncode != 0:
+                continue
+            if _git(
+                repo_root,
+                "merge-base",
+                "--is-ancestor",
+                contract.approved_commit,
+                revision,
+                check=False,
+            ).returncode != 0:
+                continue
+            candidates.append(revision)
+    except (OSError, subprocess.CalledProcessError, UnicodeError, ValueError) as exc:
+        errors.append(f"cannot locate active Phase 0 binding: {_error_text(exc)}")
+        return None
+
+    if len(candidates) != 1:
+        errors.append(
+            f"Phase 0 freeze_id {contract.freeze_id} must have exactly one ordinary "
+            f"pending supersession binding commit; found {candidates}"
+        )
+        return None
+    return candidates[0]
+
+
 def _changed_paths_between(repo_root: Path, base: str, tip: str) -> set[str]:
     return {
         item.decode("utf-8")
@@ -1136,10 +1411,18 @@ def _changed_paths_between(repo_root: Path, base: str, tip: str) -> set[str]:
 
 
 def _commit_changed_paths(repo_root: Path, commit: str) -> set[str]:
-    parents = _git_text(repo_root, "rev-list", "--parents", "-n", "1", commit).split()
-    if len(parents) != 2:
-        raise ValueError(f"feature-side commit must have exactly one parent: {commit}")
-    return _changed_paths_between(repo_root, parents[1], commit)
+    parent_line = _git_text(
+        repo_root,
+        "rev-list",
+        "--parents",
+        "-n",
+        "1",
+        commit,
+    ).split()
+    parent_ids = parent_line[1:]
+    if not parent_ids:
+        raise ValueError(f"commit must have at least one parent: {commit}")
+    return _changed_paths_between(repo_root, parent_ids[0], commit)
 
 
 def _validate_exact_feature_merge(
@@ -1175,6 +1458,116 @@ def _validate_exact_feature_merge(
     return errors
 
 
+def _pending_feature_tip(
+    repo_root: Path,
+    binding: str,
+) -> tuple[list[str], str]:
+    errors: list[str] = []
+    try:
+        parent_line = _git_text(
+            repo_root,
+            "rev-list",
+            "--parents",
+            "-n",
+            "1",
+            "HEAD",
+        ).split()
+        if len(parent_line) == 2:
+            return errors, "HEAD"
+        if len(parent_line) != 3:
+            errors.append(
+                "pending Phase 0 merge candidate must have exactly two parents"
+            )
+            return errors, "HEAD"
+
+        merge_commit, first_parent, feature_parent = parent_line
+        if _git(
+            repo_root,
+            "merge-base",
+            "--is-ancestor",
+            binding,
+            first_parent,
+            check=False,
+        ).returncode == 0:
+            return errors, "HEAD"
+
+        origin_result = _git(
+            repo_root,
+            "config",
+            "--local",
+            "--get-all",
+            "remote.origin.url",
+            check=False,
+        )
+        origin_urls = [
+            line
+            for line in origin_result.stdout.decode("utf-8").splitlines()
+            if line
+        ]
+        if (
+            len(origin_urls) != 1
+            or _normalize_repository_identity(origin_urls[0])
+            != CANONICAL_REPOSITORY_IDENTITY
+        ):
+            errors.append(
+                "pending Phase 0 merge candidate requires exactly one canonical origin URL"
+            )
+
+        remote_result = _git(
+            repo_root,
+            "rev-parse",
+            "--verify",
+            "refs/remotes/origin/main^{commit}",
+            check=False,
+        )
+        if remote_result.returncode != 0:
+            errors.append(
+                "pending Phase 0 merge candidate requires refs/remotes/origin/main"
+            )
+        elif remote_result.stdout.decode("ascii").strip() != first_parent:
+            errors.append(
+                "pending Phase 0 merge candidate first parent must equal origin/main"
+            )
+
+        if _git(
+            repo_root,
+            "merge-base",
+            "--is-ancestor",
+            binding,
+            first_parent,
+            check=False,
+        ).returncode == 0:
+            errors.append(
+                "Binding C must not be an ancestor of the pending merge first parent"
+            )
+        if _git(
+            repo_root,
+            "merge-base",
+            "--is-ancestor",
+            binding,
+            feature_parent,
+            check=False,
+        ).returncode != 0:
+            errors.append(
+                "Binding C must be reachable through the pending merge feature parent"
+            )
+        errors.extend(
+            _validate_exact_feature_merge(
+                repo_root,
+                merge_commit,
+                first_parent,
+                feature_parent,
+                "pending freeze",
+            )
+        )
+        return errors, feature_parent
+    except (OSError, subprocess.CalledProcessError, UnicodeError, ValueError) as exc:
+        errors.append(
+            f"cannot verify prospective pending freeze merge: {_error_text(exc)}"
+        )
+        return errors, "HEAD"
+
+
 def _validate_feature_descendants(repo_root: Path, binding: str, tip: str) -> list[str]:
     errors: list[str] = []
     try:
@@ -1189,25 +1582,50 @@ def _validate_feature_descendants(repo_root: Path, binding: str, tip: str) -> li
             ).splitlines()
             if commit
         ]
+        historical_b0_paths = set(HISTORICAL_B0_PATHS)
+        frozen_paths = {
+            relative
+            for surface_paths in FROZEN_PATHS.values()
+            for relative in surface_paths
+        }
+        immutable_freeze_paths = frozen_paths | set(REVIEW_PATHS)
         for commit in commits:
             changed = _commit_changed_paths(repo_root, commit)
-            forbidden = sorted(changed - REPAIRABLE_BINDING_PATHS)
-            if forbidden:
+            historical = sorted(changed & historical_b0_paths)
+            if historical:
                 errors.append(
-                    f"pending descendant changes paths outside the repairable Binding-C allowlist at {commit}: {forbidden}"
+                    "historical B0 evidence must not change in any pending "
+                    f"descendant at {commit}: {historical}"
+                )
+            immutable = sorted(changed & immutable_freeze_paths)
+            if immutable:
+                errors.append(
+                    "pending descendants must not change frozen or reciprocal-review "
+                    f"paths at {commit}: {immutable}"
                 )
     except (OSError, subprocess.CalledProcessError, UnicodeError, ValueError) as exc:
         errors.append(f"cannot verify Binding-C feature-side descendants: {_error_text(exc)}")
     return errors
 
 
-def _validate_binding_bytes(repo_root: Path, binding: str, binding_tree: Mapping[str, tuple[str, str, str]], head_tree: Mapping[str, tuple[str, str, str]], status: Any) -> list[str]:
+def _validate_binding_bytes(
+    repo_root: Path,
+    historical_binding: str,
+    active_binding: str,
+    historical_binding_tree: Mapping[str, tuple[str, str, str]],
+    active_binding_tree: Mapping[str, tuple[str, str, str]],
+    head_tree: Mapping[str, tuple[str, str, str]],
+    status: Any,
+) -> list[str]:
     errors: list[str] = []
     for relative in sorted(BINDING_PATHS):
         expected_mode = BINDING_MODES[relative]
-        binding_entry = binding_tree[relative] if relative in binding_tree else None
-        head_entry = head_tree[relative] if relative in head_tree else None
-        if binding_entry is None or binding_entry[:2] != (expected_mode, "blob"):
+        historical_entry = historical_binding_tree.get(relative)
+        head_entry = head_tree.get(relative)
+        if historical_entry is None or historical_entry[:2] != (
+            expected_mode,
+            "blob",
+        ):
             errors.append(
                 f"Phase 0 Binding C path must be a {expected_mode} regular blob: {relative}"
             )
@@ -1216,24 +1634,62 @@ def _validate_binding_bytes(repo_root: Path, binding: str, binding_tree: Mapping
                 f"Phase 0 HEAD binding path must remain a {expected_mode} blob: {relative}"
             )
 
+    for review in V1_CONTRACT.reviews:
+        relative = review["evidence_path"]
+        if head_tree.get(relative) != historical_binding_tree.get(relative):
+            errors.append(
+                "historical reciprocal review evidence must remain "
+                f"mode/object-identical to Binding C: {relative}"
+            )
+
     record_path = "governance/phase0-interface-freeze.yaml"
-    binding_record = binding_tree[record_path] if record_path in binding_tree else None
-    if binding_record != ("100644", "blob", BINDING_RECORD_OBJECT):
-        errors.append("Phase 0 Binding C must contain the exact canonical pending record blob")
+    historical_record = historical_binding_tree.get(record_path)
+    if historical_record != ("100644", "blob", BINDING_RECORD_OBJECT):
+        errors.append(
+            "Phase 0 Binding C must contain the exact canonical pending record blob"
+        )
+    active_record = active_binding_tree.get(record_path)
+    if active_record is None or active_record[:2] != ("100644", "blob"):
+        errors.append("active Phase 0 binding must contain a 100644 record blob")
     if status != STATUS_VERIFIED:
-        binding_entry = binding_record
-        head_entry = head_tree[record_path] if record_path in head_tree else None
-        if binding_entry is not None and head_entry != binding_entry:
+        head_entry = head_tree.get(record_path)
+        if active_record is not None and head_entry != active_record:
             errors.append(
                 "Phase 0 record binding bytes/mode must be preserved at HEAD while "
                 "status is approved_pending_merge"
             )
-        errors.extend(_validate_feature_descendants(repo_root, binding, "HEAD"))
+        prospective_errors, feature_tip = _pending_feature_tip(
+            repo_root,
+            active_binding,
+        )
+        errors.extend(prospective_errors)
+        errors.extend(
+            _validate_feature_descendants(
+                repo_root,
+                active_binding,
+                feature_tip,
+            )
+        )
 
     try:
-        ancestry = _git(repo_root, "merge-base", "--is-ancestor", binding, "HEAD", check=False)
-        if ancestry.returncode != 0:
-            errors.append("Phase 0 binding commit must be an ancestor of HEAD")
+        if _git(
+            repo_root,
+            "merge-base",
+            "--is-ancestor",
+            historical_binding,
+            "HEAD",
+            check=False,
+        ).returncode != 0:
+            errors.append("Phase 0 Binding C must be an ancestor of HEAD")
+        if _git(
+            repo_root,
+            "merge-base",
+            "--is-ancestor",
+            active_binding,
+            "HEAD",
+            check=False,
+        ).returncode != 0:
+            errors.append("active Phase 0 binding commit must be an ancestor of HEAD")
     except OSError as exc:
         errors.append(f"cannot verify Phase 0 binding ancestry: {_error_text(exc)}")
     return errors
@@ -1265,452 +1721,16 @@ def _validate_historical_b0(
     return errors
 
 
-def _document_paragraphs_without_marker(text: str) -> tuple[str, ...]:
-    without_marker = re.sub(
-        rf"{re.escape(MARKER_BEGIN)}.*?{re.escape(MARKER_END)}",
-        "",
-        text,
-        flags=re.DOTALL,
-    )
-    return tuple(
-        lowered
-        for paragraph in re.split(r"\n\s*\n", without_marker)
-        if (lowered := " ".join(paragraph.lower().split()))
-    )
-
-
-def _authorization_clauses(text: str) -> tuple[str, ...]:
-    return tuple(
-        sentence.strip(" ,")
-        for paragraph in _document_paragraphs_without_marker(text)
-        for sentence in re.split(r"(?<=[.!?;])\s+", paragraph)
-        if sentence.strip(" ,")
-    )
-
-
-LANE_AUTHORIZATION_SUBJECT = (
-    r"(?:"
-    r"(?:phase\s+0\s+)?(?:lane(?:\s+(?:and|or)\s+integration)?|integration)\s+"
-    r"(?:work|implementation|branches?|(?:branch\s+)?creation)"
-    r"|phase\s+0\s+implementation\s+work"
-    r")"
-)
-LANE_AUTHORIZATION_ACTION = r"(?:begin|start|proceed|commence|be\s+created)"
-LANE_SCOPE_ACTION = (
-    r"(?:begin(?:ning)?|start(?:ing)?|proceed(?:ing)?|commenc(?:e|ing)|"
-    r"implement(?:ation|ing)?|be\s+created|bypass(?:ing)?|skip(?:ping)?|"
-    r"violat(?:e|ing)|circumvent(?:ing)?)"
-)
-LANE_SUBJECT = re.compile(rf"\b{LANE_AUTHORIZATION_SUBJECT}\b")
-ADVERSATIVE_PREDICATE_BOUNDARY = re.compile(
-    r"(?:,?\s+but\s+|(?<!not),?\s+yet\s+)"
-)
-COORDINATED_PREDICATE_BOUNDARY = re.compile(
-    rf"\s+(?:and|or)\s+(?="
-    r"(?:it\s+)?(?:may|can|will|shall|is|are|has|have|remain|remains|was|were)\b"
-    rf"|(?:(?:to|from)\s+)?{LANE_SCOPE_ACTION}\b"
-    r")"
-)
-RESTRICTION_HEAD = re.compile(
-    r"^\s*(?P<head>"
-    r"(?:remain|remains|is|are|was|were)\s+(?:(?:still|currently)\s+)*"
-    r"(?:not\s+(?:(?:yet|currently|still)\s+)?authorized|prohibited|forbidden)"
-    r")\s+(?P<preposition>to|from)\b"
-)
-AUTHORITY_NOUN = r"(?:authorization|permission)"
-AUTHORITY_PURPOSE = (
-    rf"(?:for\s+{LANE_AUTHORIZATION_SUBJECT}"
-    rf"|to\s+(?:begin|start|commence)\s+{LANE_AUTHORIZATION_SUBJECT})"
-)
-GRANT_AUXILIARY = (
-    r"(?:(?:is|are)\s+(?:(?:now|currently|immediately|hereby)\s+)*"
-    r"|(?:has|have)\s+(?:(?:now|already|hereby|currently|immediately)\s+)*been\s+)"
-)
-PENDING_GRANT_PATTERNS = (
-    re.compile(
-        rf"\b{LANE_AUTHORIZATION_SUBJECT}\s+(?:"
-        r"(?:is|are)\s+(?:(?:now|currently|immediately|hereby)\s+)*"
-        r"(?:authorized|permitted|allowed)(?:\s+(?:now|currently|immediately))?"
-        r"|(?:has|have)\s+(?:(?:now|already|hereby|currently|immediately)\s+)*been\s+"
-        r"(?:authorized|permitted|allowed)"
-        rf"|(?:may|can)\s+(?:(?:now|only|currently|immediately)\s+)*"
-        rf"{LANE_AUTHORIZATION_ACTION}"
-        r"(?:\s+(?:now|immediately))?"
-        r")\b"
-    ),
-    re.compile(
-        rf"\b(?:we|(?:this|the)\s+(?:approval|attestation|record))\s+"
-        rf"(?:(?:now|hereby|currently|immediately)\s+)*"
-        rf"(?:authorize|permit|allow)(?:s)?\s+"
-        rf"{LANE_AUTHORIZATION_SUBJECT}\b"
-    ),
-    re.compile(
-        rf"\b{AUTHORITY_NOUN}\s+{AUTHORITY_PURPOSE}\s+"
-        rf"{GRANT_AUXILIARY}granted\b"
-    ),
-    re.compile(
-        rf"\b{AUTHORITY_NOUN}\s+{GRANT_AUXILIARY}granted\s+"
-        rf"{AUTHORITY_PURPOSE}(?:\s+(?:now|immediately))?\b"
-    ),
-)
-VERIFIED_DENIAL_PATTERNS = (
-    re.compile(
-        rf"\b{LANE_AUTHORIZATION_SUBJECT}\s+(?:"
-        r"(?:remain|remains|is|are)\s+(?:(?:still|currently)\s+)*"
-        r"(?:merge-gated|unauthorized|prohibited|forbidden|withheld|"
-        r"blocked(?:\s+pending\b[^.;]*)?|"
-        r"not\s+(?:(?:yet|currently|still)\s+)?(?:authorized|permitted|allowed))"
-        r"|(?:has|have)\s+(?:(?:yet|currently|still)\s+)*not\s+"
-        r"(?:(?:yet|currently|still)\s+)*been\s+(?:authorized|permitted|allowed)"
-        rf"|(?:may\s+not|cannot|can\s+not|(?:will|shall)\s+not)\s+"
-        rf"{LANE_AUTHORIZATION_ACTION}"
-        r")\b"
-    ),
-    re.compile(
-        rf"\b{AUTHORITY_NOUN}\s+{AUTHORITY_PURPOSE}\s+(?:"
-        r"(?:remain|remains|is|are)\s+(?:(?:still|currently)\s+)*"
-        r"(?:withheld|denied|pending|not\s+(?:(?:yet|currently|still)\s+)?granted)"
-        r"|(?:has|have)\s+(?:(?:yet|currently|still)\s+)*not\s+"
-        r"(?:(?:yet|currently|still)\s+)*been\s+granted"
-        r")\b"
-    ),
-    re.compile(
-        rf"\b{AUTHORITY_NOUN}\s+(?:remain|remains|is|are)\s+"
-        r"(?:(?:still|currently)\s+)*(?:withheld|denied|pending)\s+"
-        rf"{AUTHORITY_PURPOSE}\b"
-    ),
-    re.compile(
-        rf"\b{AUTHORITY_NOUN}\s+(?:is|are)\s+"
-        r"(?:(?:yet|currently|still|immediately)\s+)*not\s+"
-        r"(?:(?:yet|currently|still|immediately)\s+)*granted\s+"
-        rf"{AUTHORITY_PURPOSE}\b"
-    ),
-    re.compile(
-        rf"\b{AUTHORITY_NOUN}\s+(?:has|have)\s+"
-        r"(?:(?:yet|currently|still)\s+)*not\s+"
-        r"(?:(?:yet|currently|still)\s+)*been\s+granted\s+"
-        rf"{AUTHORITY_PURPOSE}\b"
-    ),
-)
-VERIFIED_NO_ACTION = re.compile(
-    rf"\bno\s+{LANE_AUTHORIZATION_SUBJECT}\s+(?:"
-    rf"(?:may|can|will|shall)\s+(?:(?:only|currently|immediately)\s+)*"
-    rf"{LANE_AUTHORIZATION_ACTION}"
-    r"|(?:is|are)\s+(?:(?:currently|immediately|still)\s+)*"
-    r"(?:authorized|permitted|allowed)"
-    r")\b"
-)
-FUTURE_EVENT = (
-    r"(?:"
-    r"(?:approval|authorization|attestation|merge|gate)\b[^.;]{0,60}"
-    r"\b(?:recorded|merged|completed)\b"
-    r"|(?:authorization\s+)?(?:attestation|merge|gate)\b"
-    r")"
-)
-FUTURE_GATE = (
-    rf"(?:after|when|if|once|following|until)\b[^.;]{{0,100}}\b{FUTURE_EVENT}"
-)
-VERIFIED_GATED_ACTION = re.compile(
-    rf"\b{LANE_AUTHORIZATION_SUBJECT}\s+(?:may|can|will|shall)\s+"
-    rf"(?:(?:only|not|currently|immediately)\s+)*{LANE_AUTHORIZATION_ACTION}"
-    rf"\b[^.;]{{0,100}}\b(?:only\s+)?{FUTURE_GATE}"
-)
-VERIFIED_GATED_AUTHORIZATION = re.compile(
-    rf"\b{LANE_AUTHORIZATION_SUBJECT}\s+(?:"
-    r"(?:is|are)\s+(?:(?:now|currently|immediately|hereby)\s+)*"
-    r"(?:authorized|permitted|allowed)"
-    r"|(?:has|have)\s+(?:(?:now|already|hereby|currently|immediately)\s+)*been\s+"
-    r"(?:authorized|permitted|allowed)"
-    r"|(?:will|shall)\s+(?:only\s+)?be\s+(?:authorized|permitted|allowed)"
-    rf")\b[^.;]{{0,100}}\b(?:only\s+)?{FUTURE_GATE}"
-)
-VERIFIED_PREFIX_GATED_PREDICATE = re.compile(
-    rf"(?:^|[.;])\s*(?:only\s+)?{FUTURE_GATE}\s*[,:]\s*"
-    rf"{LANE_AUTHORIZATION_SUBJECT}\s+(?:"
-    rf"(?:may|can|will|shall)\s+(?:(?:only|not|currently|immediately)\s+)*"
-    rf"{LANE_AUTHORIZATION_ACTION}"
-    r"|(?:is|are)\s+(?:(?:now|currently|immediately|hereby)\s+)*"
-    r"(?:authorized|permitted|allowed)"
-    r"|(?:has|have)\s+(?:(?:now|already|hereby|currently|immediately)\s+)*"
-    r"been\s+(?:authorized|permitted|allowed)"
-    r")\b"
-)
-VERIFIED_DOES_NOT_AUTHORIZE = re.compile(
-    rf"\bdoes\s+not\s+authorize\b[^.;]{{0,120}}\b{LANE_AUTHORIZATION_SUBJECT}\b"
-)
-VERIFIED_STALE_MARKER = re.compile(
-    r"\b(?:approved_pending_merge|lane_authorization:\s*false)\b"
-)
-PENDING_GATE_BYPASS = re.compile(
-    r"(?:"
-    r"\b(?:bypass(?:ed|ing)?|skip(?:ped|ping)?|ignore(?:d|ing)?)\b"
-    r"[^.;,]{0,100}\b(?:merge|attestation|gate)\b"
-    r"|\b(?:merge|attestation|gate)\b[^.;,]{0,100}"
-    r"\b(?:bypass(?:ed|ing)?|skip(?:ped|ping)?|ignore(?:d|ing)?)\b"
-    r")"
-)
-PENDING_FREEZE_NEEDED = re.compile(
-    r"\bfreeze\b[^.;,]{0,100}"
-    r"\b(?:still\s+needs|needs|must|remains\s+to\s+be)\b"
-    r"[^.;,]{0,100}\b(?:created|recorded)\b"
-)
-
-
-def _authorization_predicates(text: str) -> tuple[str, ...]:
-    predicates: list[str] = []
-    finite_predicate = re.compile(
-        r"^(?:may|can|will|shall|is|are|has|have|remain|remains)\b"
-    )
-    for clause in _authorization_clauses(text):
-        inherited_subject: str | None = None
-        for local_clause in ADVERSATIVE_PREDICATE_BOUNDARY.split(clause):
-            local_clause = local_clause.strip(" ,")
-            subject_match = LANE_SUBJECT.search(local_clause)
-            if subject_match is None and inherited_subject is not None:
-                continuation = re.sub(r"^it\s+(?=[a-z])", "", local_clause)
-                if finite_predicate.match(continuation):
-                    local_clause = f"{inherited_subject} {continuation}"
-                    subject_match = LANE_SUBJECT.search(local_clause)
-            if subject_match is None:
-                predicates.append(local_clause)
-                continue
-            inherited_subject = subject_match.group()
-            prefix = local_clause[: subject_match.start()]
-            subject = subject_match.group()
-            tail = local_clause[subject_match.end() :]
-            pieces = COORDINATED_PREDICATE_BOUNDARY.split(tail)
-            if len(pieces) == 1:
-                predicates.append(local_clause)
-                continue
-            restriction: tuple[str, str] | None = None
-            for piece in pieces:
-                normalized = re.sub(
-                    r"^\s*it\s+(?="
-                    r"(?:may|can|will|shall|is|are|has|have|remain|remains)\b)",
-                    "",
-                    piece,
-                )
-                predicate = normalized
-                explicit_scope = re.match(r"^\s*(?:to|from)\b", normalized) is not None
-                bare_scope = re.match(rf"^\s*{LANE_SCOPE_ACTION}\b", normalized) is not None
-                if restriction is not None and explicit_scope:
-                    predicate = f"{restriction[0]} {normalized.lstrip()}"
-                elif restriction is not None and bare_scope:
-                    predicate = f"{restriction[0]} {restriction[1]} {normalized.lstrip()}"
-                match = RESTRICTION_HEAD.match(predicate)
-                if match is not None:
-                    restriction = (match.group("head"), match.group("preposition"))
-                elif not (explicit_scope or bare_scope):
-                    restriction = None
-                predicates.append(f"{prefix}{subject} {predicate.lstrip()}".strip(" ,"))
-    return tuple(predicates)
-
-
-def _reported_claim_is_nonassertive(before: str, after: str) -> bool:
-    if re.search(
-        r"\b(?:(?:not\s+true|incorrect|false)(?:\s+to\s+say)?|not\s+the\s+case)"
-        r"\s+that(?:\s+the)?\s*$",
-        before,
-    ):
-        return True
-    if re.search(
-        r"\bno\s+(?:claim|statement)\s+(?:claims?|says?|asserts?)\s+that\s*$",
-        before,
-    ):
-        return True
-    if re.search(r"\bdoes\s+not\s+mean(?:\s+that)?\s*$", before):
-        return True
-    historical_outcome = re.search(
-        r"\b(?:is|was)\s+(?:obsolete|superseded|historical|incorrect|false)\b",
-        after,
-    )
-    if historical_outcome is None:
-        return False
-    if re.search(
-        r"\b(?:the\s+)?(?:(?:former|previous|historical|obsolete|earlier|prior)\s+)?"
-        r"(?:claim|statement)\s+that\s*$",
-        before,
-    ):
-        return True
-    return bool(
-        re.search(
-            r"\b(?:the\s+)?(?:former|previous|historical|obsolete|earlier|prior)"
-            r"(?:\s+(?:status|marker))?\s*$",
-            before,
-        )
-        and re.match(
-            r"(?:\s+(?:status|marker))?\s+(?:is|was)\s+"
-            r"(?:obsolete|superseded|historical|incorrect|false)\b",
-            after,
-        )
-    )
-
-
-def _broad_pending_assertion_is_qualified(
-    clause: str,
-    assertion: re.Match[str],
-) -> bool:
-    before = clause[: assertion.start()]
-    after = clause[assertion.end() :]
-    if _reported_claim_is_nonassertive(before, after):
-        return True
-    if re.search(
-        r"\b(?:(?:not\s+true|incorrect|false)(?:\s+to\s+say)?|not\s+the\s+case)"
-        r"\s+that\b[^.;,]{0,100}$",
-        before,
-    ):
-        return True
-    context = f"{before[-80:]}{assertion.group()}"
-    return re.search(
-        r"\b(?:do|does|must|should|shall|may|can)\s+not\b",
-        context,
-    ) is not None
-
-
-def _pending_grant_is_qualified(clause: str, grant: re.Match[str]) -> bool:
-    before = clause[: grant.start()]
-    after = clause[grant.end() :]
-    if re.search(r"(?:^|[,;:])\s*(?:no|not|never|neither)\s*$", before):
-        return True
-    if re.search(
-        r"\b(?:does\s+not\s+mean(?:\s+that)?|whether|"
-        r"planning(?:\s+(?:for|of)(?:\s+the)?)?)\s*$",
-        before,
-    ):
-        return True
-    if _reported_claim_is_nonassertive(before, after):
-        return True
-    if re.search(
-        rf"(?:^|[.;])\s*(?:only\s+)?{FUTURE_GATE}\s*[,:]\s*$",
-        before,
-    ):
-        return True
-    timing = re.match(
-        r"\s*(?P<punctuation>[,:]|\()?\s*"
-        r"(?:only\s+)?(?:after|when|if|once|following)\b",
-        after,
-    )
-    if timing is None:
-        return False
-    return timing.group("punctuation") != "(" or ")" in after[timing.end() :]
-
-
-def _pending_prose_contradiction(text: str) -> bool:
-    for lowered in _authorization_predicates(text):
-        for pattern in PENDING_GRANT_PATTERNS:
-            if any(
-                not _pending_grant_is_qualified(lowered, grant)
-                for grant in pattern.finditer(lowered)
-            ):
-                return True
-        for pattern in (PENDING_GATE_BYPASS, PENDING_FREEZE_NEEDED):
-            if any(
-                not _broad_pending_assertion_is_qualified(lowered, assertion)
-                for assertion in pattern.finditer(lowered)
-            ):
-                return True
-    return False
-
-
-def _verified_assertion_is_qualified(clause: str, assertion: re.Match[str]) -> bool:
-    return _reported_claim_is_nonassertive(
-        clause[: assertion.start()],
-        clause[assertion.end() :],
-    )
-
-
-def _verified_status_marker_is_qualified(
-    clause: str,
-    marker: re.Match[str],
-) -> bool:
-    before = clause[: marker.start()]
-    after = clause[marker.end() :]
-    if _reported_claim_is_nonassertive(before, after):
-        return True
-    coordination = re.compile(r"(?:[,;]\s*|\s+(?:but|yet|and|or)\s+)")
-    local_before = coordination.split(before)[-1]
-    local_after = coordination.split(after, maxsplit=1)[0]
-    historical_wrapper = re.search(
-        r"\b(?:the\s+)?(?:former|previous|historical|obsolete|earlier|prior)\s+"
-        r"(?:claim|statement)\s+that\b[^.;,]{0,100}$",
-        local_before,
-    )
-    historical_outcome = re.search(
-        r"\b(?:is|was|remain|remains)\s+"
-        r"(?:obsolete|superseded|historical|incorrect|false)\b",
-        local_after,
-    )
-    if historical_wrapper is not None and historical_outcome is not None:
-        return True
-    return re.search(
-        r"\b(?:"
-        r"no\s+(?:claim|statement)\s+(?:claims?|says?|asserts?)"
-        r"|(?:(?:not\s+true|incorrect|false)(?:\s+to\s+say)?|not\s+the\s+case)"
-        r")\s+that\b[^.;,]{0,100}$",
-        local_before,
-    ) is not None
-
-
-def _verified_denial_is_qualified(clause: str, denial: re.Match[str]) -> bool:
-    before = clause[: denial.start()]
-    after = clause[denial.end() :]
-    if _reported_claim_is_nonassertive(before, after):
-        return True
-    if re.search(
-        r"\b(?:bypass(?:ing)?|skip(?:ping)?|violat(?:e|ing)|circumvent(?:ing)?)\b"
-        r"[^;]*\bduring\s*$",
-        before,
-    ):
-        return True
-    if re.match(r"\s+outside\s+(?:the\s+)?wp-0\.10\b", after):
-        return True
-    return (
-        re.match(
-            r"\s+(?:from|to)\s+"
-            r"(?:bypass(?:ing)?|skip(?:ping)?|violat(?:e|ing)|circumvent(?:ing)?)\b",
-            after,
-        )
-        is not None
-    )
-
-
-def _verified_prose_contradiction(text: str) -> bool:
-    for lowered in _authorization_predicates(text):
-        if any(
-            not _verified_status_marker_is_qualified(lowered, marker)
-            for marker in VERIFIED_STALE_MARKER.finditer(lowered)
-        ):
-            return True
-        for pattern in VERIFIED_DENIAL_PATTERNS:
-            if any(
-                not _verified_denial_is_qualified(lowered, denial)
-                for denial in pattern.finditer(lowered)
-            ):
-                return True
-        for pattern in (
-            VERIFIED_NO_ACTION,
-            VERIFIED_GATED_ACTION,
-            VERIFIED_GATED_AUTHORIZATION,
-            VERIFIED_PREFIX_GATED_PREDICATE,
-            VERIFIED_DOES_NOT_AUTHORIZE,
-        ):
-            if any(
-                not _verified_assertion_is_qualified(lowered, assertion)
-                for assertion in pattern.finditer(lowered)
-            ):
-                return True
-    return False
-
-
 def _validate_documents(
     repo_root: Path,
     record: Mapping[str, Any],
     head_tree: Mapping[str, tuple[str, str, str]],
+    contract: FreezeContract,
 ) -> list[str]:
     errors: list[str] = []
     blocks: dict[str, str] = {}
     texts: dict[str, str] = {}
-    expected_marker = _expected_marker_body(record)
+    expected_marker = _expected_marker_body(record, contract)
     for relative in ACTIVE_DOCUMENT_PATHS:
         entry = head_tree[relative] if relative in head_tree else None
         if entry is None or entry[:2] != ("100644", "blob"):
@@ -1730,11 +1750,6 @@ def _validate_documents(
         blocks[relative] = block
         if block != expected_marker:
             errors.append(f"plan/guide Phase 0 marker block is not exact: {relative}")
-        status = record.get("status")
-        if status == STATUS_PENDING and _pending_prose_contradiction(text):
-            errors.append(f"plan/guide pending authorization prose contradicts the record: {relative}")
-        if status == STATUS_VERIFIED and _verified_prose_contradiction(text):
-            errors.append(f"plan/guide verified authorization prose contradicts the record: {relative}")
     if len(blocks) == 2 and len(set(blocks.values())) != 1:
         errors.append("plan/guide Phase 0 authorization blocks must agree exactly")
 
@@ -1822,9 +1837,38 @@ def _validate_record_transition_history(
     try:
         revisions = _record_revisions_after_binding(repo_root, binding)
         if record.get("status") == STATUS_PENDING:
-            if revisions:
+            unexpected_revisions: list[str] = []
+            head = _git_text(repo_root, "rev-parse", "HEAD").strip()
+            for revision in revisions:
+                parent_line = _git_text(
+                    repo_root,
+                    "rev-list",
+                    "--parents",
+                    "-n",
+                    "1",
+                    revision,
+                ).split()
+                if revision == head and len(parent_line) == 3:
+                    revision_entry = _tree(
+                        repo_root,
+                        revision,
+                        "pending record carrier",
+                        errors,
+                    ).get(record_path)
+                    feature_entry = _tree(
+                        repo_root,
+                        parent_line[2],
+                        "pending record carrier feature parent",
+                        errors,
+                    ).get(record_path)
+                    if revision_entry == feature_entry:
+                        continue
+                unexpected_revisions.append(revision)
+            if unexpected_revisions:
                 errors.append(
-                    f"pending Phase 0 record must have no record transition or rewrite after Binding C; found {revisions}"
+                    "pending Phase 0 record must have no record transition or "
+                    "rewrite after Binding C; found "
+                    f"{unexpected_revisions}"
                 )
             return errors, None
 
@@ -1889,6 +1933,23 @@ def _validate_record_transition_history(
                 )
             if revision == transition:
                 continue
+            if (
+                transition_record is not None
+                and _git(
+                    repo_root,
+                    "merge-base",
+                    "--is-ancestor",
+                    transition,
+                    revision,
+                    check=False,
+                ).returncode
+                == 0
+                and revision_entry != transition_record
+            ):
+                errors.append(
+                    "Phase 0 descendants after verification must preserve exact "
+                    f"verified record bytes; pending record selected at {revision}"
+                )
             if len(parent_ids) == 1 and revision_entry != parent_entries[0]:
                 errors.append(
                     f"Phase 0 record history contains an extra record transition or rewrite at {revision}"
@@ -1996,37 +2057,68 @@ def _validate_verified_topology(
             parents = _git_text(repo_root, "rev-list", "--parents", "-n", "1", transition).split()
             if len(parents) != 2 or parents[1] != merge_commit:
                 errors.append("verified record transition must have the canonical freeze merge as direct first parent")
-            if remote_main is None or _git(
-                repo_root,
-                "merge-base",
-                "--is-ancestor",
-                transition,
-                remote_main,
-                check=False,
-            ).returncode != 0:
-                errors.append("authorization attestation commit must be reachable from origin/main")
+            if remote_main is None:
+                errors.append(
+                    "authorization attestation requires canonical origin/main"
+                )
             else:
                 carrier: str | None = None
-                for candidate in reversed(
-                    _git_text(
+                transition_on_remote = _git(
+                    repo_root,
+                    "merge-base",
+                    "--is-ancestor",
+                    transition,
+                    remote_main,
+                    check=False,
+                ).returncode == 0
+                if transition_on_remote:
+                    for candidate in reversed(
+                        _git_text(
+                            repo_root,
+                            "rev-list",
+                            "--first-parent",
+                            f"{merge_commit}..{remote_main}",
+                        ).splitlines()
+                    ):
+                        if _git(
+                            repo_root,
+                            "merge-base",
+                            "--is-ancestor",
+                            transition,
+                            candidate,
+                            check=False,
+                        ).returncode == 0:
+                            carrier = candidate
+                            break
+                elif remote_main == merge_commit:
+                    head = _git_text(repo_root, "rev-parse", "HEAD").strip()
+                    prospective_parents = _git_text(
                         repo_root,
                         "rev-list",
-                        "--first-parent",
-                        f"{merge_commit}..{remote_main}",
-                    ).splitlines()
-                ):
-                    if _git(
-                        repo_root,
-                        "merge-base",
-                        "--is-ancestor",
-                        transition,
-                        candidate,
-                        check=False,
-                    ).returncode == 0:
-                        carrier = candidate
-                        break
+                        "--parents",
+                        "-n",
+                        "1",
+                        head,
+                    ).split()
+                    if prospective_parents == [head, remote_main, transition]:
+                        carrier = head
+                    else:
+                        errors.append(
+                            "prospective authorization attestation must be the exact "
+                            "two-parent HEAD merge of origin/main and the transition"
+                        )
+                else:
+                    errors.append(
+                        "authorization attestation commit must be reachable from "
+                        "origin/main or carried by the exact prospective HEAD merge"
+                    )
+
                 if carrier is None:
-                    errors.append("authorization attestation must be introduced by a canonical origin/main attestation merge")
+                    if transition_on_remote:
+                        errors.append(
+                            "authorization attestation must be introduced by a "
+                            "canonical origin/main attestation merge"
+                        )
                 else:
                     carrier_parents = _git_text(
                         repo_root,
@@ -2037,12 +2129,16 @@ def _validate_verified_topology(
                         carrier,
                     ).split()
                     if len(carrier_parents) != 3:
-                        errors.append("authorization attestation must be introduced by an exact two-parent attestation merge")
+                        errors.append(
+                            "authorization attestation must be introduced by an exact "
+                            "two-parent attestation merge"
+                        )
                     else:
                         carrier_first, carrier_feature = carrier_parents[1:]
                         if carrier_first != merge_commit:
                             errors.append(
-                                "authorization attestation merge first parent must be the canonical freeze merge"
+                                "authorization attestation merge first parent must be "
+                                "the canonical freeze merge"
                             )
                         if _git(
                             repo_root,
@@ -2052,7 +2148,10 @@ def _validate_verified_topology(
                             carrier_first,
                             check=False,
                         ).returncode == 0:
-                            errors.append("authorization attestation must not pre-exist the attestation merge first parent")
+                            errors.append(
+                                "authorization attestation must not pre-exist the "
+                                "attestation merge first parent"
+                            )
                         if _git(
                             repo_root,
                             "merge-base",
@@ -2061,9 +2160,15 @@ def _validate_verified_topology(
                             carrier_feature,
                             check=False,
                         ).returncode != 0:
-                            errors.append("authorization attestation must arrive through the attestation merge feature parent")
+                            errors.append(
+                                "authorization attestation must arrive through the "
+                                "attestation merge feature parent"
+                            )
                         if carrier_feature != transition:
-                            errors.append("authorization attestation merge feature parent must be the exact transition commit")
+                            errors.append(
+                                "authorization attestation merge feature parent must "
+                                "be the exact transition commit"
+                            )
                         errors.extend(
                             _validate_exact_feature_merge(
                                 repo_root,
@@ -2075,7 +2180,8 @@ def _validate_verified_topology(
                         )
                         if carrier not in head_first_parent:
                             errors.append(
-                                "authorization attestation carrier must be present on current HEAD first-parent history"
+                                "authorization attestation carrier must be present on "
+                                "current HEAD first-parent history"
                             )
     except (OSError, subprocess.CalledProcessError, UnicodeError, ValueError) as exc:
         errors.append(f"cannot verify canonical merge topology: {_error_text(exc)}")
@@ -2091,20 +2197,6 @@ def validate_phase0_interface_freeze(
         return sorted(set(errors))
 
     _object(repo_root, CANONICAL_BASE, "commit", "canonical base", errors)
-    _object(repo_root, APPROVED_COMMIT, "commit", "A-prime", errors)
-    _object(repo_root, APPROVED_TREE, "tree", "approved tree", errors)
-    try:
-        actual_tree = _git_text(repo_root, "rev-parse", f"{APPROVED_COMMIT}^{{tree}}").strip()
-        if actual_tree != APPROVED_TREE:
-            errors.append("A-prime tree does not equal approved_tree")
-        if _git(repo_root, "merge-base", "--is-ancestor", CANONICAL_BASE, APPROVED_COMMIT, check=False).returncode != 0:
-            errors.append("canonical base must be an ancestor of A-prime")
-        if _git(repo_root, "merge-base", "--is-ancestor", APPROVED_COMMIT, "HEAD", check=False).returncode != 0:
-            errors.append("A-prime must be an ancestor of HEAD; squash/cherry-pick transplantation is forbidden")
-    except (OSError, subprocess.CalledProcessError, UnicodeError) as exc:
-        errors.append(f"cannot verify A-prime topology: {_error_text(exc)}")
-
-    aprime_tree = _tree(repo_root, APPROVED_COMMIT, "A-prime", errors)
     head_tree = _tree(repo_root, "HEAD", "HEAD", errors)
     base_tree = _tree(repo_root, CANONICAL_BASE, "canonical base", errors)
 
@@ -2129,51 +2221,139 @@ def validate_phase0_interface_freeze(
             errors.append(str(exc))
             committed_record = {}
 
-    errors.extend(_validate_record_schema(committed_record))
+    selected_contract = _contract_for_record(committed_record, errors)
+    contract = selected_contract or V1_CONTRACT
+    errors.extend(_validate_record_schema(committed_record, contract))
     if record is not None and not _deep_exact_equal(record, committed_record):
-        errors.append("caller-supplied Phase 0 record must exactly match the committed record")
+        errors.append(
+            "caller-supplied Phase 0 record must exactly match the committed record"
+        )
     record = committed_record
 
-    errors.extend(_validate_frozen_paths(repo_root, aprime_tree, head_tree))
+    _object(
+        repo_root,
+        contract.approved_commit,
+        "commit",
+        "approved freeze commit",
+        errors,
+    )
+    _object(
+        repo_root,
+        contract.approved_tree,
+        "tree",
+        "approved freeze tree",
+        errors,
+    )
+    try:
+        actual_tree = _git_text(
+            repo_root,
+            "rev-parse",
+            f"{contract.approved_commit}^{{tree}}",
+        ).strip()
+        if actual_tree != contract.approved_tree:
+            errors.append("approved freeze commit tree does not equal approved_tree")
+        if _git(
+            repo_root,
+            "merge-base",
+            "--is-ancestor",
+            CANONICAL_BASE,
+            contract.approved_commit,
+            check=False,
+        ).returncode != 0:
+            errors.append("canonical base must be an ancestor of approved_commit")
+        if _git(
+            repo_root,
+            "merge-base",
+            "--is-ancestor",
+            contract.approved_commit,
+            "HEAD",
+            check=False,
+        ).returncode != 0:
+            errors.append(
+                "approved_commit must be an ancestor of HEAD; "
+                "squash/cherry-pick transplantation is forbidden"
+            )
+    except (OSError, subprocess.CalledProcessError, UnicodeError) as exc:
+        errors.append(f"cannot verify approved freeze topology: {_error_text(exc)}")
+
+    approved_tree = _tree(
+        repo_root,
+        contract.approved_commit,
+        "approved freeze commit",
+        errors,
+    )
+    errors.extend(
+        _validate_frozen_paths(repo_root, approved_tree, head_tree, contract)
+    )
     errors.extend(_validate_historical_b0(repo_root, head_tree, base_tree))
 
     topology_errors: list[str] = []
-    binding = _binding_commit(repo_root, errors)
-    if binding is None and record.get("status") == STATUS_VERIFIED:
-        topology_errors.append("Binding C must be reachable through the sole feature parent")
-        errors.extend(topology_errors)
-    if binding is not None:
-        binding_tree = _tree(repo_root, binding, "Binding C", errors)
-        errors.extend(
-            _validate_binding_bytes(
-                repo_root,
-                binding,
-                binding_tree,
-                head_tree,
-                record.get("status"),
-            )
+    historical_binding = _binding_commit(repo_root, errors)
+    if historical_binding is None and record.get("status") == STATUS_VERIFIED:
+        topology_errors.append(
+            "Binding C must be reachable through the sole feature parent"
         )
-        errors.extend(_validate_reviews(repo_root, binding_tree, head_tree))
-        if record.get("status") == STATUS_PENDING:
-            transition_errors, _ = _validate_record_transition_history(
+        errors.extend(topology_errors)
+    if historical_binding is not None:
+        historical_binding_tree = _tree(
+            repo_root,
+            historical_binding,
+            "Binding C",
+            errors,
+        )
+        active_binding = _active_binding_commit(
+            repo_root,
+            historical_binding,
+            record,
+            contract,
+            errors,
+        )
+        if active_binding is not None:
+            active_binding_tree = _tree(
                 repo_root,
-                record,
-                binding,
-                binding_tree,
+                active_binding,
+                "active Phase 0 binding",
+                errors,
             )
-            topology_errors.extend(transition_errors)
-        else:
-            topology_errors.extend(
-                _validate_verified_topology(
+            errors.extend(
+                _validate_binding_bytes(
                     repo_root,
-                    record,
-                    binding,
-                    binding_tree,
+                    historical_binding,
+                    active_binding,
+                    historical_binding_tree,
+                    active_binding_tree,
+                    head_tree,
+                    record.get("status"),
                 )
             )
-        errors.extend(topology_errors)
+            errors.extend(
+                _validate_reviews(
+                    repo_root,
+                    active_binding_tree,
+                    head_tree,
+                    contract,
+                )
+            )
+            if record.get("status") == STATUS_PENDING:
+                transition_errors, _ = _validate_record_transition_history(
+                    repo_root,
+                    record,
+                    active_binding,
+                    active_binding_tree,
+                )
+                topology_errors.extend(transition_errors)
+            else:
+                topology_errors.extend(
+                    _validate_verified_topology(
+                        repo_root,
+                        record,
+                        active_binding,
+                        active_binding_tree,
+                    )
+                )
+            errors.extend(topology_errors)
 
-    errors.extend(_validate_documents(repo_root, record, head_tree))
+    errors.extend(_validate_documents(repo_root, record, head_tree, contract))
     authorization = record.get("lane_authorization")
     authorized = (
         isinstance(authorization, Mapping)

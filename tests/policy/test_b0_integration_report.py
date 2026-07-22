@@ -16,6 +16,7 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR_PATH = REPO_ROOT / "scripts/policy/validate_repository_governance.py"
+PHASE0_VALIDATOR_PATH = REPO_ROOT / "scripts/policy/validate_phase0_interface_freeze.py"
 REPORT_PATH = REPO_ROOT / "governance/b0-report.json"
 GUIDE_PATH = REPO_ROOT / "PARALLEL_WORK_GUIDE.md"
 PLAN_PATH = REPO_ROOT / "CONSOLIDATED_PLAN.md"
@@ -1099,6 +1100,35 @@ def _phase0_binding_clone(tmp_path: Path) -> Path:
     }
     assert parent == PHASE0_APRIME
     assert changed == set(PHASE0_BINDING_PATHS)
+
+    standalone_relative = "scripts/policy/validate_phase0_interface_freeze.py"
+    standalone_path = clone / standalone_relative
+    standalone_path.write_bytes(PHASE0_VALIDATOR_PATH.read_bytes())
+    standalone_path.chmod(0o644)
+    repair = _commit_clone(clone, "install current standalone Phase 0 validator")
+    assert subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", f"{repair}^"],
+        text=True,
+    ).strip() == binding
+    repair_paths = {
+        relative
+        for relative in subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(clone),
+                "diff-tree",
+                "--no-commit-id",
+                "--name-only",
+                "-r",
+                repair,
+            ],
+            text=True,
+        ).splitlines()
+        if relative
+    }
+    assert repair_paths == {standalone_relative}
+
     subprocess.run(
         [
             "git",

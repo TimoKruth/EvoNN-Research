@@ -20,6 +20,31 @@ APRIME = "b720ea6461c970e3875f8ef735e3e63cf680b660"
 APRIME_TREE = "f1c5742c2581d270af05714b5ef8514c3f49d996"
 CANONICAL_BASE = "b22316d3dea7e0f01ee8aa359f4786897b0680ba"
 CANONICAL_ORIGIN = "git@github.com:TimoKruth/EvoNN-Research.git"
+A_DOUBLE_PRIME = "25352a4bd7c33b73077d9f9be231b2bb1b48109f"
+A_DOUBLE_PRIME_TREE = "78a72f1a2229d9e94cd78512be0585f08b2a5895"
+V2_DIGESTS = {
+    "canonical_digest_rng": "1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc",
+    "export_models": "f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72",
+    "catalog_loaders": "3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc",
+}
+V2_REVIEW_IDENTITIES = (
+    {
+        "lane": "lane_a",
+        "role": "lane_a_contract_owner",
+        "reviewer": "phase0-lane-a-producer-a2-reviewer-20260723",
+        "subject": "phase0-frozen-surface-a-double-prime-lane-a-producer-review",
+        "evidence_path": "reviews/2026-07-23-phase0-lane-a-producer-a2-review.md",
+        "evidence_sha256": "e546bb678bddbec18a705e6484f54de11fcfcece3b099b9f18b095c540cb741d",
+    },
+    {
+        "lane": "lane_b",
+        "role": "lane_b_contract_owner",
+        "reviewer": "phase0-lane-b-consumer-a2-reviewer-20260723",
+        "subject": "phase0-frozen-surface-a-double-prime-lane-b-consumer-review",
+        "evidence_path": "reviews/2026-07-23-phase0-lane-b-consumer-a2-review.md",
+        "evidence_sha256": "171ff311c5a6f61e1f71bbd2d913f6c221bf4657ec169400117113a1c16039af",
+    },
+)
 ALLOWED_BINDING_PATHS = (
     "CONSOLIDATED_PLAN.md",
     "PARALLEL_WORK_GUIDE.md",
@@ -151,9 +176,26 @@ def _binding_clone(tmp_path: Path, *, omit_path: str | None = None) -> Path:
         check=True,
         capture_output=True,
     )
-    if omit_path != "CONSOLIDATED_PLAN.md":
-        (clone / "CONSOLIDATED_PLAN.md").write_bytes((REPO_ROOT / "CONSOLIDATED_PLAN.md").read_bytes())
-        _commit(clone, "install current active plan repair")
+    return clone
+
+
+def _current_clone(tmp_path: Path) -> Path:
+    clone = tmp_path / "current-clone"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-local", str(REPO_ROOT), str(clone)],
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(clone), "checkout", "--quiet", "--detach", "HEAD"],
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(clone), "remote", "set-url", "origin", CANONICAL_ORIGIN],
+        check=True,
+        capture_output=True,
+    )
     return clone
 
 
@@ -161,6 +203,40 @@ def _record(repository: Path) -> dict:
     loaded = yaml.safe_load((repository / "governance/phase0-interface-freeze.yaml").read_bytes())
     assert isinstance(loaded, dict)
     return loaded
+
+
+def _v2_record(repository: Path) -> dict:
+    record = copy.deepcopy(_record(repository))
+    record["freeze_id"] = "phase0-interface-freeze-v2"
+    record["supersedes"] = "phase0-interface-freeze-v1"
+    record["approved_commit"] = A_DOUBLE_PRIME
+    record["approved_tree"] = A_DOUBLE_PRIME_TREE
+    for surface in record["frozen_surfaces"]:
+        surface["sha256"] = V2_DIGESTS[surface["surface_id"]]
+    reviews = []
+    for identity in V2_REVIEW_IDENTITIES:
+        reviews.append(
+            {
+                **identity,
+                "reviewed_commit": A_DOUBLE_PRIME,
+                "reviewed_tree": A_DOUBLE_PRIME_TREE,
+                "reviewed_digests": copy.deepcopy(V2_DIGESTS),
+                "independent_review": True,
+                "decision": "approved",
+                "findings": {
+                    "critical": 0,
+                    "important": 0,
+                    "specification": 0,
+                    "frozen_correctness": 0,
+                    "minor": 0,
+                },
+            }
+        )
+    record["reviews"] = reviews
+    record["amendment_rule"]["next_record_must_supersede"] = (
+        "phase0-interface-freeze-v1"
+    )
+    return record
 
 
 def _assert_valid(validator, repository: Path) -> dict:
@@ -174,6 +250,50 @@ def _write_record(repository: Path, record: dict) -> None:
         yaml.safe_dump(record, sort_keys=False),
         encoding="utf-8",
     )
+
+
+def _v2_pending_marker() -> str:
+    return f"""```yaml
+freeze_id: phase0-interface-freeze-v2
+governance_record: governance/phase0-interface-freeze.yaml
+approved_commit: {A_DOUBLE_PRIME}
+approved_tree: {A_DOUBLE_PRIME_TREE}
+digests:
+  canonical_digest_rng: {V2_DIGESTS["canonical_digest_rng"]}
+  export_models: {V2_DIGESTS["export_models"]}
+  catalog_loaders: {V2_DIGESTS["catalog_loaders"]}
+reviews:
+  - {V2_REVIEW_IDENTITIES[0]["evidence_path"]}
+  - {V2_REVIEW_IDENTITIES[1]["evidence_path"]}
+status: approved_pending_merge
+lane_authorization: false
+lane_branches: none
+next_sequence: protected PR merge → verify canonical merge → attestation → only then create lane/integration branches
+joint_boundary: WP-0.10 and the Phase 0 exit remain joint
+```"""
+
+
+def _v2_verified_marker(merge_commit: str, verified_at: str) -> str:
+    return f"""```yaml
+freeze_id: phase0-interface-freeze-v2
+governance_record: governance/phase0-interface-freeze.yaml
+approved_commit: {A_DOUBLE_PRIME}
+approved_tree: {A_DOUBLE_PRIME_TREE}
+digests:
+  canonical_digest_rng: {V2_DIGESTS["canonical_digest_rng"]}
+  export_models: {V2_DIGESTS["export_models"]}
+  catalog_loaders: {V2_DIGESTS["catalog_loaders"]}
+reviews:
+  - {V2_REVIEW_IDENTITIES[0]["evidence_path"]}
+  - {V2_REVIEW_IDENTITIES[1]["evidence_path"]}
+status: merged_verified
+lane_authorization: true
+canonical_merge_commit: {merge_commit}
+verified_at: {verified_at}
+lane_branch_creation: authorized
+authorization_effective_after: separate authorization attestation is merged
+joint_boundary: WP-0.10 and the Phase 0 exit remain joint
+```"""
 
 
 def _verified_marker(merge_commit: str, verified_at: str) -> str:
@@ -193,7 +313,7 @@ status: merged_verified
 lane_authorization: true
 canonical_merge_commit: {merge_commit}
 verified_at: {verified_at}
-lane_branches: none
+lane_branch_creation: authorized
 authorization_effective_after: separate authorization attestation is merged
 joint_boundary: WP-0.10 and the Phase 0 exit remain joint
 ```"""
@@ -304,15 +424,84 @@ def _tree_with_extra_path(repository: Path, relative: str) -> str:
     return tree
 
 
+def _prospective_freeze_merge(
+    repository: Path,
+    *,
+    approved_commit: str = APRIME,
+) -> tuple[str, str]:
+    feature_parent = str(_git(repository, "rev-parse", "HEAD")).strip()
+    approved_tree = str(
+        _git(repository, "rev-parse", f"{approved_commit}^{{tree}}")
+    ).strip()
+    feature_tree = str(
+        _git(repository, "rev-parse", f"{feature_parent}^{{tree}}")
+    ).strip()
+    git = [
+        "git",
+        "-C",
+        str(repository),
+        "-c",
+        "user.name=policy-test",
+        "-c",
+        "user.email=policy@test",
+    ]
+    first_parent = subprocess.check_output(
+        [
+            *git,
+            "commit-tree",
+            approved_tree,
+            "-p",
+            approved_commit,
+            "-m",
+            "canonical main",
+        ],
+        text=True,
+    ).strip()
+    merge = subprocess.check_output(
+        [
+            *git,
+            "commit-tree",
+            feature_tree,
+            "-p",
+            first_parent,
+            "-p",
+            feature_parent,
+            "-m",
+            "prospective freeze merge",
+        ],
+        text=True,
+    ).strip()
+    subprocess.run(
+        ["git", "-C", str(repository), "reset", "--hard", "--quiet", merge],
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(repository),
+            "update-ref",
+            "refs/remotes/origin/main",
+            first_parent,
+        ],
+        check=True,
+        capture_output=True,
+    )
+    return first_parent, feature_parent
+
+
 def _verified_transition(
     repository: Path,
     *,
+    approved_commit: str = APRIME,
     include_binding_in_first_parent: bool = False,
     include_binding_in_feature_parent: bool = True,
     merge_on_first_parent: bool = True,
     freeze_merge_extra_path: str | None = None,
     attestation_merge_extra_path: str | None = None,
     attestation_first_parent_extra_path: str | None = None,
+    publish_attestation: bool = True,
 ) -> tuple[str, str]:
     binding = _historical_binding(repository)
     feature_tip = str(_git(repository, "rev-parse", "HEAD")).strip()
@@ -325,7 +514,7 @@ def _verified_transition(
         "-c",
         "user.email=policy@test",
     ]
-    first_parent_base = binding if include_binding_in_first_parent else APRIME
+    first_parent_base = binding if include_binding_in_first_parent else approved_commit
     first_parent_tree = str(_git(repository, "rev-parse", f"{first_parent_base}^{{tree}}")).strip()
     first_parent = subprocess.check_output(
         [*git, "commit-tree", first_parent_tree, "-p", first_parent_base, "-m", "canonical main parent"],
@@ -335,7 +524,15 @@ def _verified_transition(
         feature_parent = feature_tip
     else:
         feature_parent = subprocess.check_output(
-            [*git, "commit-tree", first_parent_tree, "-p", APRIME, "-m", "unrelated feature parent"],
+            [
+                *git,
+                "commit-tree",
+                first_parent_tree,
+                "-p",
+                approved_commit,
+                "-m",
+                "unrelated feature parent",
+            ],
             text=True,
         ).strip()
     merge_tree = str(_git(repository, "rev-parse", f"{feature_tip}^{{tree}}")).strip()
@@ -375,7 +572,12 @@ def _verified_transition(
         "reason": "freeze_pull_request_merged_and_canonical_merge_verified",
     }
     _write_record(repository, record)
-    _replace_marker(repository, _verified_marker(merge_commit, verified_at))
+    marker = (
+        _v2_verified_marker(merge_commit, verified_at)
+        if record.get("freeze_id") == "phase0-interface-freeze-v2"
+        else _verified_marker(merge_commit, verified_at)
+    )
+    _replace_marker(repository, marker)
     _replace_authorization_prose(repository)
     transition = _commit(repository, "attest canonical freeze merge")
     transition_tree = str(_git(repository, "rev-parse", f"{transition}^{{tree}}")).strip()
@@ -428,7 +630,14 @@ def _verified_transition(
         capture_output=True,
     )
     subprocess.run(
-        ["git", "-C", str(repository), "update-ref", "refs/remotes/origin/main", attestation_merge],
+        [
+            "git",
+            "-C",
+            str(repository),
+            "update-ref",
+            "refs/remotes/origin/main",
+            attestation_merge if publish_attestation else merge_commit,
+        ],
         check=True,
         capture_output=True,
     )
@@ -686,19 +895,38 @@ def test_both_review_bytes_mode_symlink_missing_and_uncommitted_only_fail(
             )
 
 
-def test_historical_b0_evidence_byte_and_mode_drift_fail(validator, tmp_path: Path) -> None:
-    for mutation in ("bytes", "mode"):
-        clone = _binding_clone(tmp_path / mutation)
-        _assert_valid(validator, clone)
-        relative = "governance/b0-status.yaml"
-        path = clone / relative
-        if mutation == "bytes":
-            path.write_bytes(path.read_bytes() + b"# forged\n")
-        else:
-            path.chmod(0o755)
-        _commit(clone, f"mutate historical evidence {mutation}")
-        errors = validator.validate_phase0_interface_freeze(clone)
-        assert any("historical B0 evidence" in error for error in errors), errors
+@pytest.mark.parametrize(
+    "relative",
+    [
+        ".superpowers/sdd/task-6-report.md",
+        "governance/authority-provenance.yaml",
+        "governance/b0-report.json",
+        "governance/b0-status.yaml",
+        "governance/evidence/b0/hosted/linux-runtime-probe.json",
+        "governance/evidence/b0/hosted/macos-runtime-probe.json",
+        "reviews/2026-07-19-b0-closure-review.md",
+    ],
+)
+@pytest.mark.parametrize("mutation", ["bytes", "mode"])
+def test_historical_b0_evidence_byte_and_mode_drift_fail(
+    validator,
+    tmp_path: Path,
+    relative: str,
+    mutation: str,
+) -> None:
+    clone = _binding_clone(tmp_path)
+    _assert_valid(validator, clone)
+    path = clone / relative
+    if mutation == "bytes":
+        path.write_bytes(path.read_bytes() + b"# forged\n")
+    else:
+        path.chmod(0o755)
+    _commit(clone, f"mutate historical evidence {mutation}")
+    errors = validator.validate_phase0_interface_freeze(clone)
+    assert any(
+        "historical B0 evidence" in error and relative in error
+        for error in errors
+    ), errors
 
 
 def test_prohibited_lane_refs_fail_while_unauthorized(validator, tmp_path: Path) -> None:
@@ -739,6 +967,86 @@ def test_ordinary_descendant_may_change_repairable_binding_file(
         assert _git(clone, "rev-parse", f"{binding}:{relative}") == _git(
             clone, "rev-parse", f"HEAD:{relative}"
         )
+
+
+def test_v2_pending_supersession_preserves_historical_binding_c(
+    validator,
+    tmp_path: Path,
+) -> None:
+    clone = _current_clone(tmp_path)
+    binding_c = _historical_binding(clone)
+    binding_c_record = str(
+        _git(
+            clone,
+            "rev-parse",
+            f"{binding_c}:governance/phase0-interface-freeze.yaml",
+        )
+    ).strip()
+    record = _v2_record(clone)
+    _write_record(clone, record)
+    _replace_marker(clone, _v2_pending_marker())
+    binding_d = _commit(clone, "bind pending Phase 0 freeze v2")
+
+    assert str(
+        _git(
+            clone,
+            "rev-parse",
+            f"{binding_c}:governance/phase0-interface-freeze.yaml",
+        )
+    ).strip() == binding_c_record
+    assert str(_git(clone, "rev-parse", f"{binding_d}^")).strip() != binding_c
+    assert validator.validate_phase0_interface_freeze(clone) == []
+
+
+def test_v2_rejects_historical_review_rewrite_before_supersession_binding(
+    validator,
+    tmp_path: Path,
+) -> None:
+    clone = _current_clone(tmp_path)
+    relative = next(iter(REVIEW_DIGESTS))
+    path = clone / relative
+    path.write_bytes(path.read_bytes() + b"\nforged historical review evidence\n")
+    _commit(clone, "rewrite historical reciprocal review evidence")
+
+    record = _v2_record(clone)
+    _write_record(clone, record)
+    _replace_marker(clone, _v2_pending_marker())
+    _commit(clone, "bind pending Phase 0 freeze v2")
+
+    errors = validator.validate_phase0_interface_freeze(clone)
+
+    assert any(
+        "historical reciprocal review evidence" in error and relative in error
+        for error in errors
+    ), errors
+
+
+def test_v2_exact_prospective_freeze_merge_uses_supersession_binding(
+    validator,
+    tmp_path: Path,
+) -> None:
+    clone = _current_clone(tmp_path)
+    record = _v2_record(clone)
+    _write_record(clone, record)
+    _replace_marker(clone, _v2_pending_marker())
+    _commit(clone, "bind pending Phase 0 freeze v2")
+    _prospective_freeze_merge(clone, approved_commit=A_DOUBLE_PRIME)
+
+    assert validator.validate_phase0_interface_freeze(clone) == []
+
+
+def test_v2_verified_transition_uses_supersession_binding(
+    validator,
+    tmp_path: Path,
+) -> None:
+    clone = _current_clone(tmp_path)
+    record = _v2_record(clone)
+    _write_record(clone, record)
+    _replace_marker(clone, _v2_pending_marker())
+    _commit(clone, "bind pending Phase 0 freeze v2")
+    _verified_transition(clone, approved_commit=A_DOUBLE_PRIME)
+
+    assert validator.validate_phase0_interface_freeze(clone) == []
 
 
 def test_pending_record_bytes_and_mode_remain_bound(validator, tmp_path: Path) -> None:
@@ -921,6 +1229,36 @@ def test_plan_and_guide_disagreement_checked_boxes_and_stale_wording_fail(valida
         assert any("plan/guide" in error or "WP-0" in error for error in errors), errors
 
 
+def test_exact_prospective_freeze_merge_is_valid(
+    validator,
+    tmp_path: Path,
+) -> None:
+    clone = _binding_clone(tmp_path)
+    first_parent, feature_parent = _prospective_freeze_merge(clone)
+
+    head_parents = str(_git(clone, "rev-list", "--parents", "-n", "1", "HEAD")).split()
+    assert head_parents[1:] == [first_parent, feature_parent]
+    assert str(_git(clone, "rev-parse", "refs/remotes/origin/main")).strip() == first_parent
+    assert validator.validate_phase0_interface_freeze(clone) == []
+
+
+def test_exact_prospective_attestation_merge_is_valid(
+    validator,
+    tmp_path: Path,
+) -> None:
+    clone = _binding_clone(tmp_path)
+    _, merge_commit = _verified_transition(clone, publish_attestation=False)
+
+    carrier = str(_git(clone, "rev-parse", "HEAD")).strip()
+    carrier_parents = str(
+        _git(clone, "rev-list", "--parents", "-n", "1", carrier)
+    ).split()
+    assert carrier_parents[1] == merge_commit
+    assert carrier_parents[2] == str(_git(clone, "rev-parse", "HEAD^2")).strip()
+    assert str(_git(clone, "rev-parse", "refs/remotes/origin/main")).strip() == merge_commit
+    assert validator.validate_phase0_interface_freeze(clone) == []
+
+
 def test_complete_verified_transition_is_valid(validator, tmp_path: Path) -> None:
     clone = _binding_clone(tmp_path)
     _, merge_commit = _verified_transition(clone)
@@ -1096,6 +1434,11 @@ def test_verified_transition_requires_canonical_origin_and_remote_attestation(
 ) -> None:
     local_only = _binding_clone(tmp_path / "local-only")
     _, merge_commit = _verified_transition(local_only)
+    transition = str(_git(local_only, "rev-parse", "HEAD^2")).strip()
+    subprocess.run(
+        ["git", "-C", str(local_only), "reset", "--hard", "--quiet", transition],
+        check=True,
+    )
     subprocess.run(
         ["git", "-C", str(local_only), "update-ref", "refs/remotes/origin/main", merge_commit],
         check=True,
@@ -1284,6 +1627,81 @@ def test_record_history_rejects_reverted_and_multiple_transitions(validator, tmp
     assert any("record transition" in error or "record rewrite" in error for error in errors), errors
 
 
+def test_verified_history_rejects_pending_merge_selection_then_reverification(
+    validator,
+    tmp_path: Path,
+) -> None:
+    clone = _binding_clone(tmp_path)
+    binding = _historical_binding(clone)
+    _verified_transition(clone)
+    verified_carrier = str(_git(clone, "rev-parse", "HEAD")).strip()
+    verified_tree = str(
+        _git(clone, "rev-parse", f"{verified_carrier}^{{tree}}")
+    ).strip()
+    pending_tree = str(_git(clone, "rev-parse", f"{binding}^{{tree}}")).strip()
+    git = [
+        "git",
+        "-C",
+        str(clone),
+        "-c",
+        "user.name=policy-test",
+        "-c",
+        "user.email=policy@test",
+    ]
+    pending_selection = subprocess.check_output(
+        [
+            *git,
+            "commit-tree",
+            pending_tree,
+            "-p",
+            verified_carrier,
+            "-p",
+            binding,
+            "-m",
+            "select pending record after verification",
+        ],
+        text=True,
+    ).strip()
+    reverification = subprocess.check_output(
+        [
+            *git,
+            "commit-tree",
+            verified_tree,
+            "-p",
+            pending_selection,
+            "-p",
+            verified_carrier,
+            "-m",
+            "select verified record again",
+        ],
+        text=True,
+    ).strip()
+    subprocess.run(
+        ["git", "-C", str(clone), "reset", "--hard", "--quiet", reverification],
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "update-ref",
+            "refs/remotes/origin/main",
+            reverification,
+        ],
+        check=True,
+        capture_output=True,
+    )
+
+    errors = validator.validate_phase0_interface_freeze(clone)
+
+    assert any(
+        "verified record bytes" in error or "pending record" in error
+        for error in errors
+    ), errors
+
+
 def test_public_record_argument_must_equal_committed_authority(validator, tmp_path: Path) -> None:
     clone = _binding_clone(tmp_path)
     committed = _record(clone)
@@ -1359,6 +1777,23 @@ def test_verified_timestamp_must_be_a_real_canonical_utc_instant(
     assert any("verified_at must be strict UTC" in error for error in errors), errors
 
 
+def test_verified_marker_authorizes_creation_without_claiming_branch_absence(
+    validator,
+) -> None:
+    record = {
+        "status": "merged_verified",
+        "merge_verification": {
+            "canonical_merge_commit": "0" * 40,
+            "verified_at": "2026-07-23T12:00:00Z",
+        },
+    }
+
+    marker = validator._expected_marker_body(record, validator.V2_CONTRACT)
+
+    assert "lane_branch_creation: authorized" in marker
+    assert "lane_branches: none" not in marker
+
+
 def test_verified_and_pending_markers_are_record_sensitive(validator, tmp_path: Path) -> None:
     verified = _binding_clone(tmp_path / "verified")
     _verified_transition(verified)
@@ -1432,239 +1867,23 @@ def test_pending_markers_reject_status_or_authorization_mismatch(
     assert any(relative in error and "marker block is not exact" in error for error in errors), errors
 
 
-@pytest.mark.parametrize(
-    "prose",
-    [
-        "Phase 0 lane work may begin now.",
-        "Phase 0 lane and integration work is permitted immediately.",
-        "Phase 0 lane and integration work is now authorized.",
-        "Phase 0 lane and integration branches may now be created.",
-        "Lane branch creation is permitted now.",
-        (
-            "No Phase 0 lane or integration branch may be created now. "
-            "Phase 0 lane work may begin now."
-        ),
-        "No Phase 0 lane branch exists, and Phase 0 lane work may begin now.",
-        "Phase 0 lane work may begin now unless someone objects.",
-        "Phase 0 lane work is permitted until the authorization attestation is merged.",
-        "Phase 0 lane work may commence immediately.",
-        "Phase 0 lane work is hereby authorized.",
-        "Authorization is granted for Phase 0 lane work.",
-        "Phase 0 lane work is allowed immediately.",
-        "Permission is granted to begin Phase 0 lane work now.",
-        "Phase 0 lane work is not yet authorized but may begin now.",
-        "Phase 0 lane work is authorized after attestation and may begin now.",
-        "We hereby authorize Phase 0 lane work.",
-        "Phase 0 lane work has been authorized.",
-        "Permission to begin Phase 0 lane work is hereby granted.",
-        "Authorization has now been granted for Phase 0 lane work.",
-        "Phase 0 lane work remains unauthorized and can start immediately.",
-        "We hereby permit Phase 0 lane work.",
-        "We hereby allow Phase 0 lane work.",
-        "The attestation hereby permits Phase 0 lane work.",
-        "Phase 0 lane work remains unauthorized but it may begin now.",
-        "Phase 0 lane work remains unauthorized but may immediately begin.",
-        "This approval now allows Phase 0 integration work.",
-        "Phase 0 lane work remains unauthorized and it can immediately start.",
-        "This attestation currently authorizes Phase 0 lane work.",
-        "Phase 0 lane work has currently been authorized.",
-        "The protected attestation gate may be bypassed.",
-        "Bypassing the attestation gate is allowed.",
-        "This record immediately permits Phase 0 integration work.",
-        "Phase 0 lane work has immediately been allowed.",
-        "The authorization gate is currently being bypassed.",
-        "Do not bypass the merge gate, but the attestation gate may be bypassed.",
-        (
-            "The interface freeze must not be created, but the interface freeze "
-            "still needs to be created."
-        ),
-        (
-            "This approval does not mean that Phase 0 lane work may begin after "
-            "attestation, but it may begin now."
-        ),
-        "Do not bypass the merge gate, yet the attestation gate may be bypassed.",
-        (
-            "The interface freeze must not be created, yet the interface freeze "
-            "still needs to be created."
-        ),
-        (
-            "This approval does not mean that Phase 0 lane work may begin after "
-            "attestation, yet it may begin now."
-        ),
-    ],
-)
-def test_pending_prose_rejects_unqualified_authorization_grants(
-    validator,
-    prose: str,
-) -> None:
-    assert validator._pending_prose_contradiction(prose)
-
-
-@pytest.mark.parametrize(
-    "prose",
-    [
-        "No Phase 0 lane or integration branch may be created now.",
-        "Phase 0 lane work may not begin now.",
-        "Phase 0 lane work may begin only after attestation.",
-        "Whether Phase 0 lane work may begin now remains pending.",
-        "This approval does not mean Phase 0 lane work may begin now.",
-        "Lane branch creation is permitted only after the authorization attestation is merged.",
-        "Whether lane branch creation is permitted now remains undecided.",
-        "Planning Phase 0 lane and integration work is permitted immediately.",
-        "After the authorization attestation is merged, Phase 0 lane work is permitted.",
-        "Phase 0 lane work may begin when the authorization attestation is merged.",
-        "Phase 0 lane work may begin after attestation.",
-        "It is not true that Phase 0 lane work may begin now.",
-        "The former claim that Phase 0 lane work is permitted is obsolete.",
-        "Once the authorization attestation is merged, Phase 0 lane work is authorized.",
-        "Phase 0 lane work is allowed once the authorization attestation is merged.",
-        "Following the authorization attestation, Phase 0 lane work may begin.",
-        "Phase 0 lane work may begin following the authorization attestation.",
-        "Planning for Phase 0 lane work is permitted immediately.",
-        "It is false to say that Phase 0 lane work is allowed immediately.",
-        "No statement claims that Phase 0 lane work is authorized.",
-        "Phase 0 lane work is authorized, once the attestation is merged.",
-        "Planning for lane branch creation is allowed now.",
-        "Planning of Phase 0 lane work is permitted immediately.",
-        "It is not the case that Phase 0 lane work is permitted now.",
-        "The claim that Phase 0 lane work is authorized is false.",
-        "The prior statement that Phase 0 lane work is permitted is obsolete.",
-        "Phase 0 lane work is authorized: once the attestation is merged.",
-        "Phase 0 lane work is authorized (once the attestation is merged).",
-        "Planning of lane branch creation is allowed immediately.",
-        "The claim that Phase 0 lane work is permitted is obsolete.",
-        "This approval does not mean that Phase 0 lane work may begin now.",
-        "Planning for the Phase 0 lane work is permitted immediately.",
-        "After the attestation is merged: Phase 0 lane work is authorized.",
-        "Do not bypass the attestation gate.",
-        "It is false that the Phase 0 interface freeze still needs to be created.",
-        "Planning of the Phase 0 lane work is allowed now.",
-        "Once approval is recorded: Phase 0 lane work is permitted.",
-        "The attestation gate must not be bypassed.",
-    ],
-)
-def test_pending_prose_allows_qualified_or_non_authorizing_statements(
-    validator,
-    prose: str,
-) -> None:
-    assert not validator._pending_prose_contradiction(prose)
-
-
-@pytest.mark.parametrize(
-    "prose",
-    [
-        "Phase 0 remains approved_pending_merge.",
-        "Phase 0 lane_authorization: false.",
-        "Phase 0 lane and integration work remains unauthorized.",
-        "Phase 0 lane work remains merge-gated.",
-        "Phase 0 lane and integration work is prohibited.",
-        "Phase 0 lane and integration work is forbidden.",
-        "Phase 0 lane and integration work is not permitted.",
-        "Phase 0 lane and integration work may not begin.",
-        "Phase 0 lane and integration work cannot start.",
-        "Phase 0 lane work is not yet authorized.",
-        "Phase 0 lane work remains blocked pending attestation.",
-        "Authorization for Phase 0 lane work remains withheld.",
-        "No Phase 0 lane work is permitted.",
-        "Phase 0 lane work may begin only following attestation.",
-        "Phase 0 lane work is not allowed.",
-        "Phase 0 lane work may begin after attestation.",
-        "Phase 0 lane work may only begin after attestation.",
-        "Phase 0 lane work is authorized only after attestation.",
-        "Phase 0 lane work has not yet been authorized.",
-        "Permission for Phase 0 lane work has not yet been granted.",
-        "Phase 0 lane work is not authorized to bypass WP-0.10 or to begin implementation.",
-        "Phase 0 lane work is prohibited from bypassing WP-0.10 and from starting.",
-        "Phase 0 lane work is allowed only following a future attestation.",
-        "Authorization has not yet been granted for Phase 0 lane work.",
-        "Phase 0 lane work has still not been authorized.",
-        "Phase 0 lane work will be authorized after attestation.",
-        "Phase 0 lane work shall not begin until attestation.",
-        "Phase 0 lane work may begin after approval is recorded.",
-        "Phase 0 lane work is not authorized to bypass WP-0.10 or begin implementation.",
-        "Phase 0 lane work is authorized, but it remains prohibited.",
-        "Phase 0 lane work will only be permitted once approval is recorded.",
-        "Phase 0 lane work is not authorized to bypass WP-0.10 and start implementation.",
-        "No Phase 0 lane work is currently authorized.",
-        "No Phase 0 lane work shall begin.",
-        "Authorization is not yet granted for Phase 0 lane work.",
-        "After approval is recorded, Phase 0 lane work may begin.",
-        "When the attestation is merged, Phase 0 lane work is authorized.",
-        "No Phase 0 lane work is immediately permitted.",
-        "No Phase 0 lane work will begin.",
-        "Permission is currently not granted for Phase 0 lane work.",
-        "Once authorization is recorded: Phase 0 lane work can start.",
-    ],
-)
-def test_verified_prose_rejects_pending_unauthorized_or_prohibited_claims(
-    validator,
-    prose: str,
-) -> None:
-    assert validator._verified_prose_contradiction(prose)
-
-
-@pytest.mark.parametrize(
-    "prose",
-    [
-        "Phase 0 lane work is authorized by the merged attestation.",
-        "No Phase 0 lane branch is claimed to exist yet.",
-        "Phase 0 lane implementation may begin from the attested canonical history.",
-        "Bypassing WP-0.10 during Phase 0 lane and integration work is prohibited.",
-        "Phase 0 lane and integration work is prohibited from bypassing WP-0.10.",
-        "Phase 0 lane work is not authorized to bypass WP-0.10.",
-        "The former statement that Phase 0 lane work is prohibited is obsolete.",
-        "The earlier statement that Phase 0 lane work is prohibited is obsolete.",
-        "Phase 0 lane work is not authorized outside WP-0.10.",
-        "The prior statement that Phase 0 lane work is prohibited is obsolete.",
-        "The claim that Phase 0 lane work is prohibited is false.",
-        "This note does not mean Phase 0 lane work is unauthorized.",
-        "The prior claim that Phase 0 lane work is forbidden is obsolete.",
-        "This note does not mean that Phase 0 lane work is unauthorized.",
-        "This record does not mean that Phase 0 lane work is prohibited.",
-        "The former status approved_pending_merge is obsolete.",
-        "The prior lane_authorization: false marker is obsolete.",
-        "No statement claims that Phase 0 remains approved_pending_merge.",
-        "It is false that Phase 0 lane_authorization: false remains current.",
-        "The former claim that Phase 0 remains approved_pending_merge is obsolete.",
-        (
-            "The prior statement that Phase 0 lane_authorization: false remains current "
-            "is false."
-        ),
-        "The previous claim that Phase 0 still remains approved_pending_merge is false.",
-        (
-            "The historical statement that Phase 0 still reports lane_authorization: false "
-            "is obsolete."
-        ),
-    ],
-)
-def test_verified_prose_allows_noncontradictory_authorization_statements(
-    validator,
-    prose: str,
-) -> None:
-    assert not validator._verified_prose_contradiction(prose)
-
-
-def test_pending_documents_reject_appended_authorization_contradictions(
+def test_exact_marker_block_is_the_only_document_authorization_authority(
     validator,
     tmp_path: Path,
 ) -> None:
-    contradictions = (
-        "Phase 0 lane and integration work is now authorized.",
-        "Phase 0 lane and integration branches may now be created.",
-        "Lane branch creation is permitted now.",
-        "The protected merge and attestation gate may be ignored.",
-        "The Phase 0 interface freeze still needs to be created and recorded.",
+    clone = _binding_clone(tmp_path)
+    path = clone / "PARALLEL_WORK_GUIDE.md"
+    path.write_text(
+        path.read_text(encoding="utf-8")
+        + "\n\nPhase 0 lane work may begin now. The team has the green light.\n",
+        encoding="utf-8",
     )
-    for index, contradiction in enumerate(contradictions):
-        clone = _binding_clone(tmp_path / str(index))
-        path = clone / "PARALLEL_WORK_GUIDE.md"
-        path.write_text(path.read_text(encoding="utf-8") + f"\n\n{contradiction}\n", encoding="utf-8")
-        _commit(clone, "append contradictory governance prose")
-        errors = validator.validate_phase0_interface_freeze(clone)
-        assert any("contradict" in error or "authorization prose" in error for error in errors), errors
+    _commit(clone, "append non-authoritative authorization prose")
+
+    assert validator.validate_phase0_interface_freeze(clone) == []
 
 
-def test_verified_documents_reject_pending_authorization_prose(
+def test_verified_marker_remains_authoritative_over_stale_prose(
     validator,
     tmp_path: Path,
 ) -> None:
@@ -1673,18 +1892,28 @@ def test_verified_documents_reject_pending_authorization_prose(
     path = clone / "PARALLEL_WORK_GUIDE.md"
     path.write_text(
         path.read_text(encoding="utf-8")
-        + "\n\nPhase 0 lane and integration work remain unauthorized until a later attestation.\n",
+        + "\n\nPhase 0 lane work remains unauthorized until a later attestation.\n",
         encoding="utf-8",
     )
-    head = _commit(clone, "append stale pending authorization prose")
+    head = _commit(clone, "append non-authoritative stale prose")
     subprocess.run(
         ["git", "-C", str(clone), "update-ref", "refs/remotes/origin/main", head],
         check=True,
     )
 
-    errors = validator.validate_phase0_interface_freeze(clone)
+    assert validator.validate_phase0_interface_freeze(clone) == []
 
-    assert any("verified authorization prose contradicts" in error for error in errors), errors
+
+
+
+
+
+
+
+
+
+
+
 
 
 def test_active_plan_omits_obsolete_b0_exit_wording() -> None:
@@ -1755,15 +1984,58 @@ def test_repairable_binding_fixture_survives_restoring_aprime_bytes(
     assert validator.validate_phase0_interface_freeze(clone) == []
 
 
-def test_pending_descendant_rejects_implementation_paths(validator, tmp_path: Path) -> None:
+def test_pending_record_allows_unrelated_ordinary_descendants(
+    validator,
+    tmp_path: Path,
+) -> None:
     clone = _binding_clone(tmp_path)
-    implementation = clone / "EvoNN-Shared/src/evonn_shared/unauthorized.py"
-    implementation.write_text("UNAUTHORIZED = True\n", encoding="utf-8")
-    _commit(clone, "attempt unauthorized pending implementation")
+    unrelated = clone / "notes/unrelated.txt"
+    unrelated.parent.mkdir(parents=True)
+    unrelated.write_text("ordinary descendant\n", encoding="utf-8")
+    _commit(clone, "add unrelated ordinary descendant")
 
-    errors = validator.validate_phase0_interface_freeze(clone)
+    assert validator.validate_phase0_interface_freeze(clone) == []
 
-    assert any("pending descendant" in error and "unauthorized.py" in error for error in errors), errors
+
+def test_pending_record_allows_unrelated_merge_tips(
+    validator,
+    tmp_path: Path,
+) -> None:
+    clone = _binding_clone(tmp_path)
+    base = str(_git(clone, "rev-parse", "HEAD")).strip()
+    side_path = clone / "notes/side.txt"
+    side_path.parent.mkdir(parents=True)
+    side_path.write_text("side\n", encoding="utf-8")
+    side = _commit(clone, "add unrelated side descendant")
+    subprocess.run(
+        ["git", "-C", str(clone), "reset", "--hard", "--quiet", base],
+        check=True,
+    )
+    main_path = clone / "notes/main.txt"
+    main_path.parent.mkdir(parents=True)
+    main_path.write_text("main\n", encoding="utf-8")
+    _commit(clone, "add unrelated main descendant")
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(clone),
+            "-c",
+            "user.name=policy-test",
+            "-c",
+            "user.email=policy@test",
+            "merge",
+            "--no-ff",
+            "--quiet",
+            "-m",
+            "merge unrelated descendants",
+            side,
+        ],
+        check=True,
+        capture_output=True,
+    )
+
+    assert validator.validate_phase0_interface_freeze(clone) == []
 
 
 def test_index_and_worktree_drift_cannot_mask_protected_committed_bytes(
@@ -1960,6 +2232,33 @@ def test_shared_clone_alternate_object_store_is_rejected(validator, tmp_path: Pa
     errors = validator.validate_phase0_interface_freeze(shared)
 
     assert any("alternate object" in error for error in errors), errors
+
+
+def test_cli_reexecutes_in_isolated_mode_before_sibling_imports(tmp_path: Path) -> None:
+    clone = _binding_clone(tmp_path / "clone")
+    validator_path = clone / "scripts/policy/validate_phase0_interface_freeze.py"
+    shutil.copy2(VALIDATOR_PATH, validator_path)
+    (clone / "scripts/policy/yaml.py").write_text(
+        "raise SystemExit(0)\n",
+        encoding="utf-8",
+    )
+    (clone / "governance/phase0-interface-freeze.yaml").write_text(
+        "schema_version: [\n",
+        encoding="utf-8",
+    )
+    _commit(clone, "install hostile sibling yaml module")
+
+    result = subprocess.run(
+        [sys.executable, str(validator_path)],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert "invalid" in result.stdout.lower() or "yaml" in result.stdout.lower()
+    assert "Traceback" not in result.stdout + result.stderr
 
 
 def test_cli_is_cwd_independent_strict_and_traceback_free(tmp_path: Path) -> None:

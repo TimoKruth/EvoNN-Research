@@ -213,6 +213,76 @@ def test_phase0_aggregate_rejects_committed_standalone_validator_replacement(
     ]
 
 
+def test_phase0_aggregate_uses_trusted_git_outside_caller_path(
+    validator,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    hostile_bin = tmp_path / "hostile-bin"
+    hostile_bin.mkdir()
+    fake_git = hostile_bin / "git"
+    fake_git.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    fake_git.chmod(0o755)
+    monkeypatch.setenv("PATH", str(hostile_bin))
+
+    assert validator._phase0_binding_introduced(REPO_ROOT) is True
+
+
+def test_phase0_aggregate_uses_isolated_sanitized_python(
+    validator,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    clone = _clone_at(tmp_path)
+    captured: dict[str, object] = {}
+    original_run = validator.subprocess.run
+    monkeypatch.setenv("PYTHONPATH", str(tmp_path / "hostile-pythonpath"))
+    monkeypatch.setenv("PYTHONHOME", str(tmp_path / "hostile-pythonhome"))
+
+    def fake_run(command, *args, **kwargs):
+        if command and command[0] == validator.sys.executable:
+            captured["command"] = command
+            captured["cwd"] = kwargs.get("cwd")
+            captured["env"] = kwargs.get("env")
+            return subprocess.CompletedProcess(command, 0, stdout=b"", stderr=b"")
+        return original_run(command, *args, **kwargs)
+
+    monkeypatch.setattr(validator.subprocess, "run", fake_run)
+
+    assert validator._validate_phase0_interface_freeze(clone) == []
+    assert captured["command"] == [
+        validator.sys.executable,
+        "-I",
+        str(clone / "scripts/policy/validate_phase0_interface_freeze.py"),
+    ]
+    assert captured["cwd"] == clone
+    environment = captured["env"]
+    assert isinstance(environment, dict)
+    assert "PYTHONPATH" not in environment
+    assert "PYTHONHOME" not in environment
+
+
+def test_phase0_aggregate_rejects_sibling_yaml_import_shadow(
+    validator,
+    tmp_path: Path,
+) -> None:
+    clone = _clone_at(tmp_path)
+    (clone / "scripts/policy/yaml.py").write_text(
+        "raise SystemExit(0)\n",
+        encoding="utf-8",
+    )
+    (clone / "governance/phase0-interface-freeze.yaml").write_text(
+        "schema_version: [\n",
+        encoding="utf-8",
+    )
+    _commit(clone, "install hostile sibling yaml module")
+
+    errors = validator._validate_phase0_interface_freeze(clone)
+
+    assert errors
+    assert any("invalid" in error.lower() or "yaml" in error.lower() for error in errors), errors
+
+
 def test_phase0_aggregate_rejects_symlinked_git_pack_directory(
     validator,
     tmp_path: Path,
@@ -587,12 +657,19 @@ def test_provenance_pinned_source_reads_ignore_replacement_objects(
     ) == []
 
     protected_git = validator._git
+    protected_environment = validator._git_environment
     for vulnerable_subcommand in ("rev-parse", "cat-file", "ls-tree", "show"):
         def selectively_unprotected_git(repo_root: Path, *args: str) -> bytes:
             if args[:2] == ("--no-replace-objects", vulnerable_subcommand):
                 args = args[1:]
             return protected_git(repo_root, *args)
 
+        def unprotected_environment() -> dict[str, str]:
+            environment = protected_environment()
+            environment.pop("GIT_NO_REPLACE_OBJECTS", None)
+            return environment
+
+        monkeypatch.setattr(validator, "_git_environment", unprotected_environment)
         monkeypatch.setattr(validator, "_git", selectively_unprotected_git)
         errors = validator.validate_provenance(
             manifest,
@@ -600,6 +677,7 @@ def test_provenance_pinned_source_reads_ignore_replacement_objects(
             check_worktree=False,
         )
         monkeypatch.setattr(validator, "_git", protected_git)
+        monkeypatch.setattr(validator, "_git_environment", protected_environment)
 
         assert errors, f"{vulnerable_subcommand} accepted replacement objects"
 

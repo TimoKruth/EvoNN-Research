@@ -290,6 +290,7 @@ def test_b0_policy_script_uses_common_root_and_complete_nonrecursive_test_discov
             "--group",
             "dev",
             "python",
+            "-I",
             "scripts/policy/validate_phase0_interface_freeze.py",
         ],
         [
@@ -300,6 +301,7 @@ def test_b0_policy_script_uses_common_root_and_complete_nonrecursive_test_discov
             "--group",
             "dev",
             "python",
+            "-I",
             "scripts/policy/validate_repository_governance.py",
         ],
     ]
