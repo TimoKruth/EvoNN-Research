@@ -44,6 +44,10 @@ PHASE0_BINDING_PATHS = (
     "tests/policy/test_phase0_interface_freeze.py",
     "tests/policy/test_repository_governance.py",
 )
+PHASE0_BINDING_MODES = {
+    relative: "100755" if relative == "scripts/ci/b0-policy-checks.sh" else "100644"
+    for relative in PHASE0_BINDING_PATHS
+}
 SCHEMA_2_B02_REQUIRED_EVIDENCE = frozenset(
     {
         "governance/authority-provenance.yaml",
@@ -408,6 +412,11 @@ def test_consolidated_plan_records_closed_b0_and_exact_next_actions() -> None:
     assert "f68856f0c2fdf0ebc73671264b5a3ab0cff3b224" in b0_section
     assert "29658842317" in b0_section
     assert "29658842318" in b0_section
+    assert "legacy open record until Commit B" not in b0_section
+    assert "jointly freeze and record the Phase 0 interfaces" not in b0_section
+    assert "approved_pending_merge" in b0_section
+    assert "protected freeze PR" in b0_section
+    assert "separate authorization attestation" in b0_section
 
     phase0_section = text.split("## Phase 0", 1)[1].split("## Phase 1", 1)[0]
     for item in ("WP-0.1", "WP-0.2", "WP-0.3", "WP-0.4", "WP-0.5", "WP-0.6", "WP-0.7", "WP-0.8", "WP-0.9", "WP-0.10"):
@@ -999,7 +1008,52 @@ def _committed_clone(tmp_path: Path) -> Path:
     return clone
 
 
+def _historical_phase0_binding() -> str:
+    revisions = [
+        revision
+        for revision in subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(REPO_ROOT),
+                "--no-replace-objects",
+                "log",
+                "--diff-filter=A",
+                "--format=%H",
+                "HEAD",
+                "--",
+                "governance/phase0-interface-freeze.yaml",
+            ],
+            text=True,
+        ).splitlines()
+        if revision
+    ]
+    assert len(revisions) == 1, revisions
+    binding = revisions[0]
+    assert subprocess.check_output(
+        ["git", "-C", str(REPO_ROOT), "rev-parse", f"{binding}^"], text=True
+    ).strip() == PHASE0_APRIME
+    changed = set(
+        subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(REPO_ROOT),
+                "diff-tree",
+                "--no-commit-id",
+                "--name-only",
+                "-r",
+                binding,
+            ],
+            text=True,
+        ).splitlines()
+    )
+    assert changed == set(PHASE0_BINDING_PATHS)
+    return binding
+
+
 def _phase0_binding_clone(tmp_path: Path) -> Path:
+    binding_source = _historical_phase0_binding()
     clone = tmp_path / "phase0-binding-clone"
     subprocess.run(
         ["git", "clone", "--quiet", "--no-local", str(REPO_ROOT), str(clone)],
@@ -1012,11 +1066,15 @@ def _phase0_binding_clone(tmp_path: Path) -> Path:
         capture_output=True,
     )
     for relative in PHASE0_BINDING_PATHS:
-        source = REPO_ROOT / relative
-        assert source.is_file(), relative
+        entry = subprocess.check_output(
+            ["git", "-C", str(REPO_ROOT), "ls-tree", binding_source, "--", relative],
+            text=True,
+        ).strip().split()
+        assert entry[:2] == [PHASE0_BINDING_MODES[relative], "blob"], (relative, entry)
         destination = clone / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, destination)
+        destination.write_bytes(_git_show_bytes(REPO_ROOT, binding_source, relative))
+        destination.chmod(0o755 if PHASE0_BINDING_MODES[relative] == "100755" else 0o644)
     binding = _commit_clone(clone, "synthetic Phase 0 binding")
     parent = subprocess.check_output(
         ["git", "-C", str(clone), "rev-parse", f"{binding}^"],
@@ -2302,6 +2360,18 @@ def test_schema_history_rejects_merge_downgrade_from_nonfirst_parent_report(
     assert any("schema downgrade" in error for error in repository_errors), repository_errors
 
 
+def test_historical_phase0_binding_fixture_survives_aprime_repairable_bytes(
+    tmp_path: Path,
+) -> None:
+    validator = _validator()
+    clone = _phase0_binding_clone(tmp_path)
+    relative = "tests/policy/test_repository_governance.py"
+    (clone / relative).write_bytes(_git_show_bytes(clone, PHASE0_APRIME, relative))
+    _commit_clone(clone, "restore repairable Phase 0 path to A-prime bytes")
+
+    assert validator._validate_phase0_interface_freeze(clone) == []
+
+
 def test_b0_schema_history_allows_carrier_and_reattestation_while_aggregate_rejects_historical_evidence_mutation(
     tmp_path: Path,
 ) -> None:
@@ -2322,12 +2392,12 @@ def test_b0_schema_history_allows_carrier_and_reattestation_while_aggregate_reje
         clone, carrier_merge, "governance/b0-report.json"
     ) != _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-report.json")
     expected_aggregate_errors = {
-        "historical B0 evidence must remain mode/object-identical to canonical base: "
-        ".superpowers/sdd/task-6-report.md",
-        "historical B0 evidence must remain mode/object-identical to canonical base: "
-        "governance/b0-report.json",
-        "historical B0 evidence must remain mode/object-identical to canonical base: "
-        "governance/b0-status.yaml",
+        "Phase 0 interface freeze validator: historical B0 evidence must remain "
+        "mode/object-identical to canonical base: .superpowers/sdd/task-6-report.md",
+        "Phase 0 interface freeze validator: historical B0 evidence must remain "
+        "mode/object-identical to canonical base: governance/b0-report.json",
+        "Phase 0 interface freeze validator: historical B0 evidence must remain "
+        "mode/object-identical to canonical base: governance/b0-status.yaml",
     }
 
     assert validator.validate_b0_report(report, status, clone) == []

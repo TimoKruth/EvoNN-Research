@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import importlib.util
 from pathlib import Path
+import shutil
 import subprocess
 
 import pytest
@@ -11,6 +12,7 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR_PATH = REPO_ROOT / "scripts/policy/validate_repository_governance.py"
+PHASE0_VALIDATOR_PATH = REPO_ROOT / "scripts/policy/validate_phase0_interface_freeze.py"
 
 
 @pytest.fixture(scope="module")
@@ -35,6 +37,36 @@ def b0_status() -> dict:
     return yaml.safe_load((REPO_ROOT / "governance/b0-status.yaml").read_text(encoding="utf-8"))
 
 
+def _clone_at(tmp_path: Path, revision: str = "HEAD") -> Path:
+    clone = tmp_path / "clone"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-local", str(REPO_ROOT), str(clone)],
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(clone), "checkout", "--quiet", "--detach", revision],
+        check=True,
+        capture_output=True,
+    )
+    return clone
+
+
+def _commit(repository: Path, message: str) -> str:
+    git = [
+        "git",
+        "-C",
+        str(repository),
+        "-c",
+        "user.name=policy-test",
+        "-c",
+        "user.email=policy@test",
+    ]
+    subprocess.run([*git, "add", "-A"], check=True, capture_output=True)
+    subprocess.run([*git, "commit", "--quiet", "-m", message], check=True, capture_output=True)
+    return subprocess.check_output(["git", "-C", str(repository), "rev-parse", "HEAD"], text=True).strip()
+
+
 def test_repository_governance_policy_passes(validator) -> None:
     assert validator.validate_repository(REPO_ROOT) == []
 
@@ -51,7 +83,189 @@ def test_repository_governance_aggregates_phase0_interface_freeze_errors(
 
     errors = validator.validate_repository(REPO_ROOT)
 
-    assert "synthetic Phase 0 error at EvoNN" in errors
+    assert f"synthetic Phase 0 error at {REPO_ROOT.name}" in errors
+
+
+@pytest.mark.parametrize(
+    "missing",
+    [
+        ("scripts/policy/validate_phase0_interface_freeze.py",),
+        ("governance/phase0-interface-freeze.yaml",),
+        (
+            "scripts/policy/validate_phase0_interface_freeze.py",
+            "governance/phase0-interface-freeze.yaml",
+        ),
+    ],
+)
+def test_phase0_aggregate_requires_both_artifacts_after_binding_introduction(
+    validator,
+    tmp_path: Path,
+    missing: tuple[str, ...],
+) -> None:
+    clone = _clone_at(tmp_path)
+    for relative in missing:
+        (clone / relative).unlink()
+    _commit(clone, "delete Phase 0 aggregate artifact")
+
+    errors = validator._validate_phase0_interface_freeze(clone)
+
+    for relative in missing:
+        assert any(relative in error and "missing" in error for error in errors), errors
+
+
+def test_phase0_aggregate_rejects_inherited_git_context_before_artifact_skip(
+    validator,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = _clone_at(tmp_path / "target")
+    for relative in (
+        "scripts/policy/validate_phase0_interface_freeze.py",
+        "governance/phase0-interface-freeze.yaml",
+    ):
+        (target / relative).unlink()
+    _commit(target, "delete Phase 0 aggregate artifacts")
+    pre_binding = _clone_at(
+        tmp_path / "pre-binding",
+        "b720ea6461c970e3875f8ef735e3e63cf680b660",
+    )
+    monkeypatch.setenv("GIT_DIR", str(pre_binding / ".git"))
+
+    errors = validator._validate_phase0_interface_freeze(target)
+
+    assert any("Git override environment is forbidden" in error and "GIT_DIR" in error for error in errors), errors
+
+
+def test_phase0_aggregate_preserves_pre_binding_no_artifact_history(
+    validator,
+    tmp_path: Path,
+) -> None:
+    clone = _clone_at(tmp_path, "b720ea6461c970e3875f8ef735e3e63cf680b660")
+
+    assert not (clone / "governance/phase0-interface-freeze.yaml").exists()
+    assert not (clone / "scripts/policy/validate_phase0_interface_freeze.py").exists()
+    assert validator._validate_phase0_interface_freeze(clone) == []
+
+
+@pytest.mark.parametrize(
+    ("present", "missing_needle"),
+    [
+        ("governance/phase0-interface-freeze.yaml", "validator"),
+        ("scripts/policy/validate_phase0_interface_freeze.py", "record"),
+    ],
+)
+def test_phase0_aggregate_rejects_single_pre_binding_artifact(
+    validator,
+    tmp_path: Path,
+    present: str,
+    missing_needle: str,
+) -> None:
+    clone = _clone_at(tmp_path, "b720ea6461c970e3875f8ef735e3e63cf680b660")
+    artifact = clone / present
+    artifact.parent.mkdir(parents=True, exist_ok=True)
+    artifact.write_text("forged\n", encoding="utf-8")
+
+    errors = validator._validate_phase0_interface_freeze(clone)
+
+    assert any(missing_needle in error and "missing" in error for error in errors), errors
+
+
+@pytest.mark.parametrize("mutation", ["bytes", "mode", "symlink", "missing"])
+def test_phase0_aggregate_validates_standalone_validator_integrity(
+    validator,
+    tmp_path: Path,
+    mutation: str,
+) -> None:
+    clone = _clone_at(tmp_path)
+    path = clone / "scripts/policy/validate_phase0_interface_freeze.py"
+    if mutation == "bytes":
+        path.write_bytes(path.read_bytes() + b"# drift\n")
+    elif mutation == "mode":
+        path.chmod(0o755)
+    elif mutation == "symlink":
+        path.unlink()
+        path.symlink_to("validate_repository_governance.py")
+    else:
+        path.unlink()
+
+    errors = validator._validate_phase0_interface_freeze(clone)
+
+    assert any("standalone validator" in error or "validate_phase0_interface_freeze.py" in error for error in errors), errors
+
+
+def test_phase0_aggregate_rejects_committed_standalone_validator_replacement(
+    validator,
+    tmp_path: Path,
+) -> None:
+    clone = _clone_at(tmp_path)
+    validator_path = clone / "scripts/policy/validate_phase0_interface_freeze.py"
+    validator_path.write_text(
+        "#!/usr/bin/env python3\nraise SystemExit(0)\n",
+        encoding="utf-8",
+    )
+    _commit(clone, "replace delegated Phase 0 validator")
+
+    errors = validator._validate_phase0_interface_freeze(clone)
+
+    assert errors == [
+        "Phase 0 standalone validator HEAD blob SHA-256 does not match the pinned validator: "
+        "scripts/policy/validate_phase0_interface_freeze.py"
+    ]
+
+
+def test_phase0_aggregate_rejects_symlinked_git_pack_directory(
+    validator,
+    tmp_path: Path,
+) -> None:
+    clone = _clone_at(tmp_path / "clone")
+    standalone_relative = "scripts/policy/validate_phase0_interface_freeze.py"
+    shutil.copy2(PHASE0_VALIDATOR_PATH, clone / standalone_relative)
+    if subprocess.run(
+        ["git", "-C", str(clone), "diff", "--quiet", "HEAD", "--", standalone_relative],
+        check=False,
+    ).returncode != 0:
+        _commit(clone, "install current standalone Phase 0 validator")
+    pack_directory = clone / ".git/objects/pack"
+    external_pack_directory = tmp_path / "external-pack"
+    pack_directory.rename(external_pack_directory)
+    pack_directory.symlink_to(external_pack_directory, target_is_directory=True)
+
+    errors = validator._validate_phase0_interface_freeze(clone)
+
+    assert any(
+        "Phase 0 interface freeze validator" in error
+        and "symbolic links are forbidden below .git/objects: pack" in error
+        for error in errors
+    ), errors
+
+
+def test_phase0_aggregate_sanitizes_non_error_child_failures(
+    validator,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    clone = _clone_at(tmp_path)
+    original_run = validator.subprocess.run
+
+    def fake_run(command, *args, **kwargs):
+        if command and command[0] == validator.sys.executable:
+            return subprocess.CompletedProcess(
+                command,
+                7,
+                stdout="unbounded\x00detail\n" + "x" * 5000,
+                stderr="Traceback (most recent call last): secret\n",
+            )
+        return original_run(command, *args, **kwargs)
+
+    monkeypatch.setattr(validator.subprocess, "run", fake_run)
+
+    errors = validator._validate_phase0_interface_freeze(clone)
+
+    assert len(errors) == 1
+    assert errors[0].startswith("Phase 0 interface freeze validator failed:")
+    assert "Traceback" not in errors[0]
+    assert "\x00" not in errors[0]
+    assert len(errors[0]) < 1200
 
 
 def test_empty_report_cannot_skip_report_validation(validator, monkeypatch: pytest.MonkeyPatch) -> None:

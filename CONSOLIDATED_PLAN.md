@@ -206,12 +206,11 @@ from all reporting surfaces (Phases 1/3 → WP-7.3).
 **Lane split & sync:** B0 was executed **jointly** (it is small and creates
 the shared ground both lanes stand on).
 
-**Exit (contract evidence):** Gate B0 is closed in this Commit A. Commit A is
-the closure implementation that the later direct-child evidence-only Commit B
-will evaluate; the anchored machine-readable report and status remain the
-legacy open record until Commit B records that evaluation. Closure does not
-authorize immediate lane work. The next permitted action is to jointly freeze
-and record the Phase 0 interfaces before creating either lane branch.
+**Exit (contract evidence):** Gate B0 is closed by the anchored schema-2
+report and closed status evidence. Binding C has recorded the approved Phase 0
+interface freeze in `approved_pending_merge` state. Lane and integration work
+remain unauthorized until the protected freeze PR merge is verified on
+canonical `origin/main` and a separate authorization attestation is merged.
 
 ---
 
