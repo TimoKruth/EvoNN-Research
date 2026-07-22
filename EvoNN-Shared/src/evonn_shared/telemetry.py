@@ -20,6 +20,9 @@ from .budgets import (
 )
 
 _SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+_RFC3339_UTC_PATTERN = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{6})?Z$"
+)
 
 
 class SystemId(StrEnum):
@@ -101,10 +104,12 @@ class RunTiming(ContractModel):
     @classmethod
     def _reject_datetime_subclasses(cls, value: object, info: Any) -> object:
         if info.mode == "json" and type(value) is str:
+            if _RFC3339_UTC_PATTERN.fullmatch(value) is None:
+                raise ValueError("timing markers must use canonical RFC 3339 UTC strings")
             try:
-                return dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+                return dt.datetime.fromisoformat(value[:-1] + "+00:00")
             except ValueError as error:
-                raise ValueError("timing markers must use RFC 3339 datetime strings") from error
+                raise ValueError("timing markers must use canonical RFC 3339 UTC strings") from error
         if value is not None and isinstance(value, dt.datetime) and type(value) is not dt.datetime:
             raise ValueError("datetime subclasses are not accepted")
         return value

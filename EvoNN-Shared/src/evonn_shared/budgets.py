@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from enum import Enum, StrEnum
 import math
 import re
@@ -34,10 +35,16 @@ def _reject_scalar_subclasses(value: object) -> None:
         if value_type is not str:
             raise ValueError("string subclasses are not accepted")
         return
-    if value_type is dict:
-        for item in value.values():
+    if isinstance(value, Mapping):
+        if value_type is not dict:
+            raise ValueError("mapping subclasses are not accepted")
+        for key, item in value.items():
+            _reject_scalar_subclasses(key)
             _reject_scalar_subclasses(item)
-    elif value_type is tuple or value_type is list:
+        return
+    if isinstance(value, (tuple, list)):
+        if value_type not in (tuple, list):
+            raise ValueError("sequence subclasses are not accepted")
         for item in value:
             _reject_scalar_subclasses(item)
 

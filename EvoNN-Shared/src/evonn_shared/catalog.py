@@ -470,7 +470,11 @@ def _open_directory_path(path: Path, label: str) -> int:
                 raise
             active_descriptor = next_descriptor
         assert active_descriptor is not None
-        if not stat.S_ISDIR(os.fstat(active_descriptor).st_mode):
+        try:
+            status = os.fstat(active_descriptor)
+        except OSError as error:
+            raise UnsafeCatalogPathError(f"unable to inspect {label} safely") from error
+        if not stat.S_ISDIR(status.st_mode):
             raise UnsafeCatalogPathError(f"{label} is not a directory")
         return active_descriptor
     except BaseException as error:
@@ -485,7 +489,11 @@ def _open_child_directory(parent_fd: int, name: str, label: str) -> int:
     except OSError as error:
         raise UnsafeCatalogPathError(f"unable to open {label} safely") from error
     try:
-        if not stat.S_ISDIR(os.fstat(descriptor).st_mode):
+        try:
+            status = os.fstat(descriptor)
+        except OSError as error:
+            raise UnsafeCatalogPathError(f"unable to inspect {label} safely") from error
+        if not stat.S_ISDIR(status.st_mode):
             raise UnsafeCatalogPathError(f"{label} is not a directory")
         return descriptor
     except BaseException as error:
@@ -698,7 +706,12 @@ def _open_fallback_directories(
             path = _require_path(raw_path, f"fallback {kind} directory {index}")
             descriptor = _open_directory_path(path, f"fallback {kind} directory {index}")
             opened.append((path, descriptor))
-            status = os.fstat(descriptor)
+            try:
+                status = os.fstat(descriptor)
+            except OSError as error:
+                raise UnsafeCatalogPathError(
+                    f"unable to inspect fallback {kind} directory {index} safely"
+                ) from error
             identity = (status.st_dev, status.st_ino)
             if identity in identities:
                 raise DuplicateCatalogDefinitionError(

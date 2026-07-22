@@ -175,6 +175,32 @@ def test_strict_python_rejects_coercions_bools_and_hostile_subclasses() -> None:
         EvaluationStage.model_validate({"name": HostileStr("stage"), "evaluations": 1})
 
 
+def test_container_subclasses_cannot_hide_hostile_scalar_subclasses() -> None:
+    class HostileInt(int):
+        def __index__(self) -> int:
+            raise AssertionError("must not dispatch")
+
+    class CustomDict(dict[str, object]):
+        pass
+
+    class CustomTuple(tuple[object, ...]):
+        pass
+
+    with pytest.raises(ValidationError):
+        EvaluationStage.model_validate(
+            CustomDict(name="stage", evaluations=HostileInt(1))
+        )
+    with pytest.raises(ValidationError):
+        EvaluationBudget.model_validate(
+            {
+                "total": 1,
+                "stages": CustomTuple(
+                    (CustomDict(name="stage", evaluations=HostileInt(1)),)
+                ),
+            }
+        )
+
+
 def test_json_arrays_are_accepted_for_tuple_fields_but_python_lists_are_not() -> None:
     parsed = EvaluationBudget.model_validate_json(
         b'{"total":3,"stages":[{"name":"only","evaluations":3}]}'

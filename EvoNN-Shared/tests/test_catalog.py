@@ -1456,6 +1456,55 @@ def test_intermediate_descriptor_close_failure_is_never_retried(
         pass
 
 
+@pytest.mark.parametrize(
+    "target",
+    ["root", "catalog", "fallback", "fallback_identity"],
+)
+def test_directory_fstat_failures_use_stable_catalog_error(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    target: str,
+) -> None:
+    root = empty_root(tmp_path / "root")
+    fallback = tmp_path / "fallback"
+    fallback.mkdir()
+    target_path = {
+        "root": root,
+        "catalog": root / "catalog",
+        "fallback": fallback,
+        "fallback_identity": fallback,
+    }[target]
+    target_identity = (target_path.stat().st_dev, target_path.stat().st_ino)
+    real_fstat = catalog.os.fstat
+    target_calls = 0
+
+    def failing_fstat(descriptor: int) -> os.stat_result:
+        nonlocal target_calls
+        status = real_fstat(descriptor)
+        if (status.st_dev, status.st_ino) == target_identity:
+            target_calls += 1
+            if target != "fallback_identity" or target_calls == 2:
+                raise OSError("injected directory fstat failure")
+        return status
+
+    monkeypatch.setattr(catalog.os, "fstat", failing_fstat)
+
+    def action() -> None:
+        if target in {"fallback", "fallback_identity"}:
+            list_benchmarks(
+                shared_root=root,
+                fallback_catalog_dirs=(fallback,),
+            )
+        else:
+            list_benchmarks(shared_root=root)
+
+    assert_catalog_error(
+        UnsafeCatalogPathError,
+        "unsafe_catalog_path",
+        action,
+    )
+
+
 def test_fallback_cleanup_closes_every_descriptor_once_after_close_failure(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

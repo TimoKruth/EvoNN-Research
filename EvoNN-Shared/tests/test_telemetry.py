@@ -193,6 +193,25 @@ def test_timing_json_uses_rfc3339_z_and_accepts_it() -> None:
     assert timing.model_dump_json().count("Z") == 2
 
 
+@pytest.mark.parametrize(
+    "timestamp",
+    [
+        "2026-01-01 00:00:00+00:00",
+        "20260101T000000+00:00",
+        "2026-01-01T00:00:00+0000",
+    ],
+)
+def test_timing_json_rejects_non_rfc3339_datetime_spellings(timestamp: str) -> None:
+    payload = (
+        '{"started_at":"2026-01-01T00:00:00Z","ended_at":"'
+        + timestamp
+        + '","latest_checkpoint_at":null,"elapsed_seconds":0.0}'
+    )
+
+    with pytest.raises(ValidationError):
+        RunTiming.model_validate_json(payload)
+
+
 @pytest.mark.parametrize("changes", [{"worker_count": 0}, {"process_count": 0}, {"threads_per_worker": 0}, {"worker_count": 1, "process_count": 2}])
 def test_worker_topology_requires_positive_consistent_counts(changes: dict[str, int]) -> None:
     data = {"worker_count": 2, "process_count": 1, "threads_per_worker": 4} | changes
