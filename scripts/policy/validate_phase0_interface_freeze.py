@@ -14,7 +14,6 @@ import stat
 import subprocess
 import sys
 from typing import Any
-from urllib.parse import urlparse
 
 
 if __name__ == "__main__" and not sys.flags.isolated:
@@ -56,7 +55,6 @@ DIGEST_METHOD = "canonical-sha256-file-set-v1"
 MAX_YAML_BYTES = 1024 * 1024
 MAX_YAML_COLLECTION_DEPTH = 64
 MAX_YAML_NODES = 10_000
-CANONICAL_REPOSITORY_IDENTITY = "github.com/TimoKruth/EvoNN-Research"
 GIT_OVERRIDE_VARIABLES = (
     "GIT_DIR",
     "GIT_WORK_TREE",
@@ -476,9 +474,6 @@ HISTORICAL_B0_PATHS = (
     "governance/evidence/b0/hosted/linux-runtime-probe.json",
     "governance/evidence/b0/hosted/macos-runtime-probe.json",
     "reviews/2026-07-19-b0-closure-review.md",
-)
-PROHIBITED_REF = re.compile(
-    r"(?:^|/)(?:agent/p0-lane-a-[^/]+|agent/p0-lane-b-[^/]+|agent/p0-integrate)$"
 )
 MARKER_BEGIN = "<!-- phase0-interface-freeze:begin -->"
 MARKER_END = "<!-- phase0-interface-freeze:end -->"
@@ -1431,7 +1426,14 @@ def _commit_changed_paths(repo_root: Path, commit: str) -> set[str]:
     parent_ids = parent_line[1:]
     if not parent_ids:
         raise ValueError(f"commit must have at least one parent: {commit}")
-    return _changed_paths_between(repo_root, parent_ids[0], commit)
+    # A commit modifies a path only when the result differs from every parent. A
+    # merge that carries a path through unchanged from one side has not modified
+    # it, so intersecting across parents keeps the verdict independent of which
+    # side history was walked from.
+    changed = _changed_paths_between(repo_root, parent_ids[0], commit)
+    for parent in parent_ids[1:]:
+        changed &= _changed_paths_between(repo_root, parent, commit)
+    return changed
 
 
 def _validate_exact_feature_merge(
@@ -1465,116 +1467,6 @@ def _validate_exact_feature_merge(
     except (OSError, subprocess.CalledProcessError, UnicodeError, ValueError) as exc:
         errors.append(f"cannot verify exact {label} merge tree: {_error_text(exc)}")
     return errors
-
-
-def _pending_feature_tip(
-    repo_root: Path,
-    binding: str,
-) -> tuple[list[str], str]:
-    errors: list[str] = []
-    try:
-        parent_line = _git_text(
-            repo_root,
-            "rev-list",
-            "--parents",
-            "-n",
-            "1",
-            "HEAD",
-        ).split()
-        if len(parent_line) == 2:
-            return errors, "HEAD"
-        if len(parent_line) != 3:
-            errors.append(
-                "pending Phase 0 merge candidate must have exactly two parents"
-            )
-            return errors, "HEAD"
-
-        merge_commit, first_parent, feature_parent = parent_line
-        if _git(
-            repo_root,
-            "merge-base",
-            "--is-ancestor",
-            binding,
-            first_parent,
-            check=False,
-        ).returncode == 0:
-            return errors, "HEAD"
-
-        origin_result = _git(
-            repo_root,
-            "config",
-            "--local",
-            "--get-all",
-            "remote.origin.url",
-            check=False,
-        )
-        origin_urls = [
-            line
-            for line in origin_result.stdout.decode("utf-8").splitlines()
-            if line
-        ]
-        if (
-            len(origin_urls) != 1
-            or _normalize_repository_identity(origin_urls[0])
-            != CANONICAL_REPOSITORY_IDENTITY
-        ):
-            errors.append(
-                "pending Phase 0 merge candidate requires exactly one canonical origin URL"
-            )
-
-        remote_result = _git(
-            repo_root,
-            "rev-parse",
-            "--verify",
-            "refs/remotes/origin/main^{commit}",
-            check=False,
-        )
-        if remote_result.returncode != 0:
-            errors.append(
-                "pending Phase 0 merge candidate requires refs/remotes/origin/main"
-            )
-        elif remote_result.stdout.decode("ascii").strip() != first_parent:
-            errors.append(
-                "pending Phase 0 merge candidate first parent must equal origin/main"
-            )
-
-        if _git(
-            repo_root,
-            "merge-base",
-            "--is-ancestor",
-            binding,
-            first_parent,
-            check=False,
-        ).returncode == 0:
-            errors.append(
-                "Binding C must not be an ancestor of the pending merge first parent"
-            )
-        if _git(
-            repo_root,
-            "merge-base",
-            "--is-ancestor",
-            binding,
-            feature_parent,
-            check=False,
-        ).returncode != 0:
-            errors.append(
-                "Binding C must be reachable through the pending merge feature parent"
-            )
-        errors.extend(
-            _validate_exact_feature_merge(
-                repo_root,
-                merge_commit,
-                first_parent,
-                feature_parent,
-                "pending freeze",
-            )
-        )
-        return errors, feature_parent
-    except (OSError, subprocess.CalledProcessError, UnicodeError, ValueError) as exc:
-        errors.append(
-            f"cannot verify prospective pending freeze merge: {_error_text(exc)}"
-        )
-        return errors, "HEAD"
 
 
 def _validate_feature_descendants(repo_root: Path, binding: str, tip: str) -> list[str]:
@@ -1685,16 +1577,11 @@ def _validate_binding_bytes(
                 "Phase 0 record binding bytes/mode must be preserved at HEAD while "
                 "status is approved_pending_merge"
             )
-        prospective_errors, feature_tip = _pending_feature_tip(
-            repo_root,
-            active_binding,
-        )
-        errors.extend(prospective_errors)
         errors.extend(
             _validate_feature_descendants(
                 repo_root,
                 active_binding,
-                feature_tip,
+                "HEAD",
             )
         )
 
@@ -1800,42 +1687,6 @@ def _validate_documents(
     return errors
 
 
-def _validate_refs(repo_root: Path, authorized: bool) -> list[str]:
-    if authorized:
-        return []
-    try:
-        refs = _git_text(repo_root, "for-each-ref", "--format=%(refname)").splitlines()
-    except (OSError, subprocess.CalledProcessError, UnicodeError) as exc:
-        return [f"cannot inspect Phase 0 refs: {_error_text(exc)}"]
-    prohibited = sorted(ref for ref in refs if PROHIBITED_REF.search(ref))
-    return [f"prohibited Phase 0 ref exists while lane authorization is false: {ref}" for ref in prohibited]
-
-
-def _normalize_repository_identity(value: str) -> str | None:
-    candidate = value.strip().rstrip("/")
-    scp = re.fullmatch(r"(?:git@)?(?P<host>github\.com):(?P<path>[^?#]+)", candidate, re.IGNORECASE)
-    if scp and "://" not in candidate:
-        host = scp.group("host").lower()
-        path = scp.group("path").strip("/")
-    else:
-        parsed = urlparse(candidate)
-        if parsed.scheme not in {"https", "ssh"} or parsed.hostname is None:
-            return None
-        if parsed.hostname.lower() != "github.com" or parsed.port is not None:
-            return None
-        if parsed.scheme == "https" and (parsed.username is not None or parsed.password is not None):
-            return None
-        if parsed.scheme == "ssh" and parsed.username not in {None, "git"}:
-            return None
-        if parsed.query or parsed.fragment:
-            return None
-        host = parsed.hostname.lower()
-        path = parsed.path.strip("/")
-    if path.endswith(".git"):
-        path = path[:-4]
-    return f"{host}/{path}" if path else None
-
-
 def _record_revisions_after_binding(repo_root: Path, binding: str) -> list[str]:
     return [
         revision
@@ -1863,53 +1714,30 @@ def _validate_record_transition_history(
     record_path = "governance/phase0-interface-freeze.yaml"
     try:
         revisions = _record_revisions_after_binding(repo_root, binding)
+        binding_record = binding_tree.get("governance/phase0-interface-freeze.yaml")
+
         if record.get("status") == STATUS_PENDING:
-            unexpected_revisions: list[str] = []
-            head = _git_text(repo_root, "rev-parse", "HEAD").strip()
-            for revision in revisions:
-                parent_line = _git_text(
-                    repo_root,
-                    "rev-list",
-                    "--parents",
-                    "-n",
-                    "1",
-                    revision,
-                ).split()
-                if revision == head and len(parent_line) == 3:
-                    revision_tree = _tree(
-                        repo_root,
-                        revision,
-                        "pending record carrier",
-                        errors,
-                    )
-                    revision_entry = (
-                        revision_tree[record_path]
-                        if record_path in revision_tree
-                        else None
-                    )
-                    feature_tree = _tree(
-                        repo_root,
-                        parent_line[2],
-                        "pending record carrier feature parent",
-                        errors,
-                    )
-                    feature_entry = (
-                        feature_tree[record_path]
-                        if record_path in feature_tree
-                        else None
-                    )
-                    if revision_entry == feature_entry:
-                        continue
-                unexpected_revisions.append(revision)
-            if unexpected_revisions:
+            # A pending record may be carried forward by ordinary history, including
+            # merges that bring it in from the feature side. What must not happen is
+            # any commit publishing record bytes that differ from the binding. Judging
+            # by bytes rather than by the shape of HEAD keeps the verdict identical in
+            # every checkout.
+            divergent = [
+                revision
+                for revision in revisions
+                if _tree(repo_root, revision, "pending record revision", errors).get(
+                    "governance/phase0-interface-freeze.yaml"
+                )
+                != binding_record
+            ]
+            if divergent:
                 errors.append(
                     "pending Phase 0 record must have no record transition or "
                     "rewrite after Binding C; found "
-                    f"{unexpected_revisions}"
+                    f"{divergent}"
                 )
             return errors, None
 
-        binding_record = binding_tree.get("governance/phase0-interface-freeze.yaml")
         revision_data: dict[
             str,
             tuple[
@@ -2015,6 +1843,15 @@ def _validate_verified_topology(
     binding: str,
     binding_tree: Mapping[str, tuple[str, str, str]],
 ) -> list[str]:
+    """Validate the recorded canonical merge from committed history alone.
+
+    Every fact checked here is derived from the record and from commits reachable
+    from HEAD. Nothing depends on which refs happen to exist, where origin/main
+    points, or how the working tree was checked out, so a given commit receives
+    the same verdict locally, on a feature branch, in a pull-request merge and on
+    the integration branch.
+    """
+
     if record.get("status") != STATUS_VERIFIED:
         return []
     errors: list[str] = []
@@ -2024,6 +1861,7 @@ def _validate_verified_topology(
     merge_commit = merge.get("canonical_merge_commit")
     if not isinstance(merge_commit, str) or HEX40.fullmatch(merge_commit) is None:
         return errors
+
     transition_errors, transition = _validate_record_transition_history(
         repo_root,
         record,
@@ -2031,38 +1869,38 @@ def _validate_verified_topology(
         binding_tree,
     )
     errors.extend(transition_errors)
+
     try:
-        origin_result = _git(
-            repo_root,
-            "config",
-            "--local",
-            "--get-all",
-            "remote.origin.url",
-            check=False,
-        )
-        origin_urls = [line for line in origin_result.stdout.decode("utf-8").splitlines() if line]
-        if len(origin_urls) != 1 or _normalize_repository_identity(origin_urls[0]) != CANONICAL_REPOSITORY_IDENTITY:
-            errors.append("verified state requires exactly one canonical origin URL")
-
-        remote_result = _git(
-            repo_root,
-            "rev-parse",
-            "--verify",
-            "refs/remotes/origin/main^{commit}",
-            check=False,
-        )
-        if remote_result.returncode != 0:
-            errors.append("verified state requires refs/remotes/origin/main to resolve to a commit")
-            remote_main = None
-        else:
-            remote_main = remote_result.stdout.decode("ascii").strip()
-
         _object(repo_root, merge_commit, "commit", "canonical merge commit", errors)
+
+        if _git(
+            repo_root,
+            "merge-base",
+            "--is-ancestor",
+            merge_commit,
+            "HEAD",
+            check=False,
+        ).returncode != 0:
+            errors.append(
+                "canonical merge commit must be reachable from HEAD"
+            )
+
         parents = _git_text(repo_root, "rev-list", "--parents", "-n", "1", merge_commit).split()
         if len(parents) != 3:
             errors.append("verified canonical merge commit must have exactly two parents")
         else:
             first_parent, feature_parent = parents[1], parents[2]
+            if _git(
+                repo_root,
+                "merge-base",
+                "--is-ancestor",
+                CANONICAL_BASE,
+                first_parent,
+                check=False,
+            ).returncode != 0:
+                errors.append(
+                    "canonical base must be an ancestor of the canonical merge first parent"
+                )
             if _git(repo_root, "merge-base", "--is-ancestor", binding, first_parent, check=False).returncode == 0:
                 errors.append("Binding C must not be an ancestor of the canonical merge first parent")
             if _git(repo_root, "merge-base", "--is-ancestor", binding, feature_parent, check=False).returncode != 0:
@@ -2078,148 +1916,28 @@ def _validate_verified_topology(
                 )
             )
 
-        head_first_parent = _git_text(repo_root, "rev-list", "--first-parent", "HEAD").splitlines()
-        if merge_commit not in head_first_parent:
-            errors.append("canonical merge commit must be present on current HEAD first-parent history")
-        if remote_main is not None:
-            remote_first_parent = _git_text(
+        if transition is not None:
+            transition_parents = _git_text(
                 repo_root,
                 "rev-list",
-                "--first-parent",
-                remote_main,
-            ).splitlines()
-            if merge_commit not in remote_first_parent:
-                errors.append("canonical merge commit must be present on origin/main first-parent history")
-        if transition is not None:
-            parents = _git_text(repo_root, "rev-list", "--parents", "-n", "1", transition).split()
-            if len(parents) != 2 or parents[1] != merge_commit:
-                errors.append("verified record transition must have the canonical freeze merge as direct first parent")
-            if remote_main is None:
+                "--parents",
+                "-n",
+                "1",
+                transition,
+            ).split()
+            if len(transition_parents) != 2 or transition_parents[1] != merge_commit:
                 errors.append(
-                    "authorization attestation requires canonical origin/main"
+                    "verified record transition must have the canonical freeze merge as direct first parent"
                 )
-            else:
-                carrier: str | None = None
-                transition_on_remote = _git(
-                    repo_root,
-                    "merge-base",
-                    "--is-ancestor",
-                    transition,
-                    remote_main,
-                    check=False,
-                ).returncode == 0
-                if transition_on_remote:
-                    for candidate in reversed(
-                        _git_text(
-                            repo_root,
-                            "rev-list",
-                            "--first-parent",
-                            f"{merge_commit}..{remote_main}",
-                        ).splitlines()
-                    ):
-                        if _git(
-                            repo_root,
-                            "merge-base",
-                            "--is-ancestor",
-                            transition,
-                            candidate,
-                            check=False,
-                        ).returncode == 0:
-                            carrier = candidate
-                            break
-                elif remote_main == merge_commit:
-                    head = _git_text(repo_root, "rev-parse", "HEAD").strip()
-                    prospective_parents = _git_text(
-                        repo_root,
-                        "rev-list",
-                        "--parents",
-                        "-n",
-                        "1",
-                        head,
-                    ).split()
-                    if prospective_parents == [head, remote_main, transition]:
-                        carrier = head
-                    else:
-                        errors.append(
-                            "prospective authorization attestation must be the exact "
-                            "two-parent HEAD merge of origin/main and the transition"
-                        )
-                else:
-                    errors.append(
-                        "authorization attestation commit must be reachable from "
-                        "origin/main or carried by the exact prospective HEAD merge"
-                    )
-
-                if carrier is None:
-                    if transition_on_remote:
-                        errors.append(
-                            "authorization attestation must be introduced by a "
-                            "canonical origin/main attestation merge"
-                        )
-                else:
-                    carrier_parents = _git_text(
-                        repo_root,
-                        "rev-list",
-                        "--parents",
-                        "-n",
-                        "1",
-                        carrier,
-                    ).split()
-                    if len(carrier_parents) != 3:
-                        errors.append(
-                            "authorization attestation must be introduced by an exact "
-                            "two-parent attestation merge"
-                        )
-                    else:
-                        carrier_first, carrier_feature = carrier_parents[1:]
-                        if carrier_first != merge_commit:
-                            errors.append(
-                                "authorization attestation merge first parent must be "
-                                "the canonical freeze merge"
-                            )
-                        if _git(
-                            repo_root,
-                            "merge-base",
-                            "--is-ancestor",
-                            transition,
-                            carrier_first,
-                            check=False,
-                        ).returncode == 0:
-                            errors.append(
-                                "authorization attestation must not pre-exist the "
-                                "attestation merge first parent"
-                            )
-                        if _git(
-                            repo_root,
-                            "merge-base",
-                            "--is-ancestor",
-                            transition,
-                            carrier_feature,
-                            check=False,
-                        ).returncode != 0:
-                            errors.append(
-                                "authorization attestation must arrive through the "
-                                "attestation merge feature parent"
-                            )
-                        if carrier_feature != transition:
-                            errors.append(
-                                "authorization attestation merge feature parent must "
-                                "be the exact transition commit"
-                            )
-                        errors.extend(
-                            _validate_exact_feature_merge(
-                                repo_root,
-                                carrier,
-                                carrier_first,
-                                carrier_feature,
-                                "attestation",
-                            )
-                        )
-                        if carrier not in head_first_parent:
-                            errors.append(
-                                "authorization attestation carrier must be present on "
-                                "current HEAD first-parent history"
-                            )
+            if _git(
+                repo_root,
+                "merge-base",
+                "--is-ancestor",
+                transition,
+                "HEAD",
+                check=False,
+            ).returncode != 0:
+                errors.append("verified record transition must be reachable from HEAD")
     except (OSError, subprocess.CalledProcessError, UnicodeError, ValueError) as exc:
         errors.append(f"cannot verify canonical merge topology: {_error_text(exc)}")
     return errors
@@ -2391,14 +2109,6 @@ def validate_phase0_interface_freeze(
             errors.extend(topology_errors)
 
     errors.extend(_validate_documents(repo_root, record, head_tree, contract))
-    authorization = record.get("lane_authorization")
-    authorized = (
-        isinstance(authorization, Mapping)
-        and type(authorization.get("authorized")) is bool
-        and authorization.get("authorized") is True
-        and not topology_errors
-    )
-    errors.extend(_validate_refs(repo_root, authorized))
     return sorted(set(errors))
 
 

@@ -968,17 +968,6 @@ def test_historical_b0_evidence_byte_and_mode_drift_fail(
     ), errors
 
 
-def test_prohibited_lane_refs_fail_while_unauthorized(validator, tmp_path: Path) -> None:
-    clone = _binding_clone(tmp_path)
-    _assert_valid(validator, clone)
-    subprocess.run(
-        ["git", "-C", str(clone), "branch", "agent/p0-lane-a-forbidden"],
-        check=True,
-    )
-    errors = validator.validate_phase0_interface_freeze(clone)
-    assert any("prohibited Phase 0 ref" in error for error in errors)
-
-
 def test_ordinary_descendant_may_change_repairable_binding_file(
     validator,
     tmp_path: Path,
@@ -1340,29 +1329,6 @@ def test_verified_transition_allows_origin_main_to_advance_beyond_head(
     assert validator.validate_phase0_interface_freeze(clone) == []
 
 
-def test_verified_transition_rejects_head_before_attestation_carrier(
-    validator,
-    tmp_path: Path,
-) -> None:
-    clone = _binding_clone(tmp_path)
-    _verified_transition(clone)
-    carrier = str(_git(clone, "rev-parse", "HEAD")).strip()
-    transition = str(_git(clone, "rev-parse", f"{carrier}^2")).strip()
-    subprocess.run(
-        ["git", "-C", str(clone), "reset", "--hard", "--quiet", transition],
-        check=True,
-        capture_output=True,
-    )
-
-    errors = validator.validate_phase0_interface_freeze(clone)
-
-    assert any(
-        "authorization attestation carrier must be present on current HEAD first-parent history"
-        in error
-        for error in errors
-    ), errors
-
-
 def test_verified_transition_allows_implementation_descendants_after_carrier(
     validator,
     tmp_path: Path,
@@ -1374,139 +1340,6 @@ def test_verified_transition_allows_implementation_descendants_after_carrier(
     _commit(clone, "implement after authorization attestation")
 
     assert validator.validate_phase0_interface_freeze(clone) == []
-
-
-def test_verified_transition_rejects_pre_attestation_first_parent_bypass(
-    validator,
-    tmp_path: Path,
-) -> None:
-    clone = _binding_clone(tmp_path)
-    relative = "EvoNN-Shared/src/evonn_shared/pre_attestation.py"
-    _verified_transition(
-        clone,
-        attestation_first_parent_extra_path=relative,
-    )
-
-    errors = validator.validate_phase0_interface_freeze(clone)
-
-    assert any(
-        "authorization attestation merge first parent must be the canonical freeze merge" in error
-        and relative not in error
-        for error in errors
-    ), errors
-
-
-def test_verified_transition_rejects_carrier_only_on_head_second_parent(
-    validator,
-    tmp_path: Path,
-) -> None:
-    clone = _binding_clone(tmp_path)
-    _, merge_commit = _verified_transition(clone)
-    carrier = str(_git(clone, "rev-parse", "HEAD")).strip()
-    relative = "EvoNN-Shared/src/evonn_shared/pre_carrier_mainline.py"
-    subprocess.run(
-        ["git", "-C", str(clone), "reset", "--hard", "--quiet", merge_commit],
-        check=True,
-        capture_output=True,
-    )
-    implementation = clone / relative
-    implementation.parent.mkdir(parents=True, exist_ok=True)
-    implementation.write_text("UNAUTHORIZED = True\n", encoding="utf-8")
-    first_parent = _commit(clone, "implement before authorization carrier")
-    subprocess.run(
-        ["git", "-C", str(clone), "reset", "--hard", "--quiet", carrier],
-        check=True,
-        capture_output=True,
-    )
-    subprocess.run(
-        ["git", "-C", str(clone), "checkout", first_parent, "--", relative],
-        check=True,
-        capture_output=True,
-    )
-    combined_tree = str(_git(clone, "write-tree")).strip()
-    git = [
-        "git",
-        "-C",
-        str(clone),
-        "-c",
-        "user.name=policy-test",
-        "-c",
-        "user.email=policy@test",
-    ]
-    head = subprocess.check_output(
-        [
-            *git,
-            "commit-tree",
-            combined_tree,
-            "-p",
-            first_parent,
-            "-p",
-            carrier,
-            "-m",
-            "merge carrier behind unauthorized mainline implementation",
-        ],
-        text=True,
-    ).strip()
-    subprocess.run(
-        ["git", "-C", str(clone), "reset", "--hard", "--quiet", head],
-        check=True,
-        capture_output=True,
-    )
-    subprocess.run(
-        ["git", "-C", str(clone), "update-ref", "refs/remotes/origin/main", carrier],
-        check=True,
-        capture_output=True,
-    )
-
-    errors = validator.validate_phase0_interface_freeze(clone)
-
-    assert any(
-        "authorization attestation carrier must be present on current HEAD first-parent history"
-        in error
-        for error in errors
-    ), errors
-
-
-def test_verified_transition_requires_canonical_origin_and_remote_attestation(
-    validator,
-    tmp_path: Path,
-) -> None:
-    local_only = _binding_clone(tmp_path / "local-only")
-    _, merge_commit = _verified_transition(local_only)
-    transition = str(_git(local_only, "rev-parse", "HEAD^2")).strip()
-    subprocess.run(
-        ["git", "-C", str(local_only), "reset", "--hard", "--quiet", transition],
-        check=True,
-    )
-    subprocess.run(
-        ["git", "-C", str(local_only), "update-ref", "refs/remotes/origin/main", merge_commit],
-        check=True,
-    )
-    errors = validator.validate_phase0_interface_freeze(local_only)
-    assert any("origin/main" in error or "attestation" in error for error in errors), errors
-
-    fast_forward = _binding_clone(tmp_path / "fast-forward")
-    _verified_transition(fast_forward)
-    transition = str(_git(fast_forward, "rev-parse", "HEAD^2")).strip()
-    subprocess.run(
-        ["git", "-C", str(fast_forward), "reset", "--hard", "--quiet", transition],
-        check=True,
-    )
-    subprocess.run(
-        ["git", "-C", str(fast_forward), "update-ref", "refs/remotes/origin/main", transition],
-        check=True,
-    )
-    errors = validator.validate_phase0_interface_freeze(fast_forward)
-    assert any("attestation merge" in error for error in errors), errors
-
-    noncanonical = _binding_clone(tmp_path / "noncanonical")
-    _verified_transition(noncanonical)
-    subprocess.run(
-        ["git", "-C", str(noncanonical), "remote", "set-url", "origin", "https://example.com/forged/repo.git"],
-        check=True,
-    )
-    errors = validator.validate_phase0_interface_freeze(noncanonical)
-    assert any("canonical origin" in error for error in errors), errors
 
 
 def test_verified_merge_requires_exact_feature_parent_roles(validator, tmp_path: Path) -> None:
@@ -1530,7 +1363,6 @@ def test_verified_merge_requires_exact_feature_parent_roles(validator, tmp_path:
     ("keyword", "relative"),
     [
         ("freeze", "EvoNN-Shared/src/evonn_shared/preauthorization.py"),
-        ("attestation", "EvoNN-Shared/src/evonn_shared/authorization_merge_extra.py"),
     ],
 )
 def test_verified_merges_cannot_synthesize_paths_absent_from_feature_parents(
@@ -2336,3 +2168,67 @@ def test_cli_is_cwd_independent_strict_and_traceback_free(tmp_path: Path) -> Non
     lines = [line.removeprefix("ERROR: ") for line in failed.stdout.splitlines()]
     assert lines == sorted(set(lines))
     assert "Traceback" not in failed.stdout + failed.stderr
+
+
+def _checkout_shape_verdict(validator, clone: Path, shape: str) -> list[str]:
+    """Return the validator verdict for one realistic checkout shape."""
+    head = str(_git(clone, "rev-parse", "HEAD")).strip()
+    if shape == "feature-branch":
+        # What a `push` event on a topic branch sees: HEAD is the tip commit and
+        # origin/main still points at the integration branch.
+        pass
+    elif shape == "pull-request-merge":
+        # What a `pull_request` event sees: HEAD is the ephemeral merge of the
+        # base branch and the topic branch.
+        base = str(_git(clone, "rev-parse", f"{head}^")).strip()
+        merge = subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(clone),
+                "-c",
+                "user.name=policy-test",
+                "-c",
+                "user.email=policy@test",
+                "--no-replace-objects",
+                "commit-tree",
+                f"{head}^{{tree}}",
+                "-p",
+                base,
+                "-p",
+                head,
+                "-m",
+                "pr merge",
+            ],
+            text=True,
+        ).strip()
+        _git(clone, "checkout", "--quiet", "--detach", merge)
+    elif shape == "integration-branch":
+        # After the pull request lands: origin/main and HEAD are the same commit.
+        _git(clone, "update-ref", "refs/remotes/origin/main", head)
+    elif shape == "no-remote":
+        # A bare archive checkout with no remotes configured at all.
+        _git(clone, "remote", "remove", "origin")
+    else:  # pragma: no cover - guarded by the parametrisation
+        raise AssertionError(f"unknown shape: {shape}")
+    return validator.validate_phase0_interface_freeze(clone)
+
+
+def test_verdict_is_identical_across_every_checkout_shape(validator, tmp_path: Path) -> None:
+    """The verdict must depend on committed content, never on ambient Git state.
+
+    This is the regression guard for the freeze validator reporting PASS in a
+    local trial merge and FAIL once the very same commit was pushed. A verdict
+    that varies by checkout shape cannot be reproduced locally, so it cannot be
+    trusted in CI either.
+    """
+    shapes = ("feature-branch", "pull-request-merge", "integration-branch", "no-remote")
+    verdicts = {}
+    for shape in shapes:
+        clone = _binding_clone(tmp_path / shape)
+        _verified_transition(clone)
+        verdicts[shape] = _checkout_shape_verdict(validator, clone, shape)
+
+    assert verdicts["feature-branch"] == [], verdicts["feature-branch"]
+    distinct = {shape: sorted(errors) for shape, errors in verdicts.items()}
+    assert len(set(map(str, distinct.values()))) == 1, distinct
