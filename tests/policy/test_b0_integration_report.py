@@ -2421,6 +2421,10 @@ def test_b0_schema_history_allows_carrier_and_reattestation_while_aggregate_reje
     assert _git_show_bytes(
         clone, carrier_merge, "governance/b0-report.json"
     ) != _git_show_bytes(clone, LEGACY_REPORT_REVISION, "governance/b0-report.json")
+    implementation_parent = subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", f"{schema_2_tip}^"],
+        text=True,
+    ).strip()
     expected_aggregate_errors = {
         "Phase 0 interface freeze validator: historical B0 evidence must remain "
         "mode/object-identical to canonical base: .superpowers/sdd/task-6-report.md",
@@ -2428,13 +2432,35 @@ def test_b0_schema_history_allows_carrier_and_reattestation_while_aggregate_reje
         "mode/object-identical to canonical base: governance/b0-report.json",
         "Phase 0 interface freeze validator: historical B0 evidence must remain "
         "mode/object-identical to canonical base: governance/b0-status.yaml",
+        "Phase 0 interface freeze validator: historical B0 evidence must not change "
+        f"in any pending descendant at {implementation_parent}: "
+        "['governance/b0-status.yaml']",
+        "Phase 0 interface freeze validator: historical B0 evidence must not change "
+        f"in any pending descendant at {schema_2_tip}: "
+        "['.superpowers/sdd/task-6-report.md', 'governance/b0-report.json', "
+        "'governance/b0-status.yaml']",
     }
 
     assert validator.validate_b0_report(report, status, clone) == []
     assert set(validator.validate_repository(clone)) == expected_aggregate_errors
 
-    reattested_report, reattested_status, _ = _install_schema_2_evidence_revision(
-        clone, validator
+    reattested_report, reattested_status, reattested_tip = (
+        _install_schema_2_evidence_revision(clone, validator)
+    )
+    reattested_parent = subprocess.check_output(
+        ["git", "-C", str(clone), "rev-parse", f"{reattested_tip}^"],
+        text=True,
+    ).strip()
+    expected_aggregate_errors.update(
+        {
+            "Phase 0 interface freeze validator: historical B0 evidence must not "
+            f"change in any pending descendant at {reattested_parent}: "
+            "['governance/b0-status.yaml']",
+            "Phase 0 interface freeze validator: historical B0 evidence must not "
+            f"change in any pending descendant at {reattested_tip}: "
+            "['.superpowers/sdd/task-6-report.md', 'governance/b0-report.json', "
+            "'governance/b0-status.yaml']",
+        }
     )
 
     assert validator.validate_b0_report(reattested_report, reattested_status, clone) == []

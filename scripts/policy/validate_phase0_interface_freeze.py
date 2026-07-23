@@ -739,7 +739,7 @@ def _contract_for_record(
     if not isinstance(freeze_id, str):
         errors.append("Phase 0 record freeze_id must select a supported contract")
         return None
-    contract = CONTRACTS.get(freeze_id)
+    contract = CONTRACTS[freeze_id] if freeze_id in CONTRACTS else None
     if contract is None:
         errors.append(f"Phase 0 record freeze_id is unsupported: {freeze_id}")
         return None
@@ -1290,7 +1290,10 @@ def _same_freeze_contract(
 ) -> bool:
     transition_fields = {"status", "merge_verification", "lane_authorization"}
     return all(
-        _deep_exact_equal(pending_record.get(field), current_record.get(field))
+        _deep_exact_equal(
+            pending_record[field] if field in pending_record else None,
+            current_record[field] if field in current_record else None,
+        )
         for field in TOP_LEVEL_FIELDS
         if field not in transition_fields
     )
@@ -1327,20 +1330,26 @@ def _active_binding_commit(
             if len(parent_line) != 2:
                 continue
             parent = parent_line[1]
-            parent_entry = _tree(
+            parent_tree = _tree(
                 repo_root,
                 parent,
                 "candidate active binding parent",
                 errors,
-            ).get(record_path)
+            )
+            parent_entry = (
+                parent_tree[record_path] if record_path in parent_tree else None
+            )
             if parent_entry != historical_record:
                 continue
-            revision_entry = _tree(
+            revision_tree = _tree(
                 repo_root,
                 revision,
                 "candidate active binding",
                 errors,
-            ).get(record_path)
+            )
+            revision_entry = (
+                revision_tree[record_path] if record_path in revision_tree else None
+            )
             if revision_entry is None or revision_entry[:2] != ("100644", "blob"):
                 continue
             try:
@@ -1620,8 +1629,12 @@ def _validate_binding_bytes(
     errors: list[str] = []
     for relative in sorted(BINDING_PATHS):
         expected_mode = BINDING_MODES[relative]
-        historical_entry = historical_binding_tree.get(relative)
-        head_entry = head_tree.get(relative)
+        historical_entry = (
+            historical_binding_tree[relative]
+            if relative in historical_binding_tree
+            else None
+        )
+        head_entry = head_tree[relative] if relative in head_tree else None
         if historical_entry is None or historical_entry[:2] != (
             expected_mode,
             "blob",
@@ -1636,23 +1649,37 @@ def _validate_binding_bytes(
 
     for review in V1_CONTRACT.reviews:
         relative = review["evidence_path"]
-        if head_tree.get(relative) != historical_binding_tree.get(relative):
+        historical_review = (
+            historical_binding_tree[relative]
+            if relative in historical_binding_tree
+            else None
+        )
+        head_review = head_tree[relative] if relative in head_tree else None
+        if head_review != historical_review:
             errors.append(
                 "historical reciprocal review evidence must remain "
                 f"mode/object-identical to Binding C: {relative}"
             )
 
     record_path = "governance/phase0-interface-freeze.yaml"
-    historical_record = historical_binding_tree.get(record_path)
+    historical_record = (
+        historical_binding_tree[record_path]
+        if record_path in historical_binding_tree
+        else None
+    )
     if historical_record != ("100644", "blob", BINDING_RECORD_OBJECT):
         errors.append(
             "Phase 0 Binding C must contain the exact canonical pending record blob"
         )
-    active_record = active_binding_tree.get(record_path)
+    active_record = (
+        active_binding_tree[record_path]
+        if record_path in active_binding_tree
+        else None
+    )
     if active_record is None or active_record[:2] != ("100644", "blob"):
         errors.append("active Phase 0 binding must contain a 100644 record blob")
     if status != STATUS_VERIFIED:
-        head_entry = head_tree.get(record_path)
+        head_entry = head_tree[record_path] if record_path in head_tree else None
         if active_record is not None and head_entry != active_record:
             errors.append(
                 "Phase 0 record binding bytes/mode must be preserved at HEAD while "
@@ -1849,18 +1876,28 @@ def _validate_record_transition_history(
                     revision,
                 ).split()
                 if revision == head and len(parent_line) == 3:
-                    revision_entry = _tree(
+                    revision_tree = _tree(
                         repo_root,
                         revision,
                         "pending record carrier",
                         errors,
-                    ).get(record_path)
-                    feature_entry = _tree(
+                    )
+                    revision_entry = (
+                        revision_tree[record_path]
+                        if record_path in revision_tree
+                        else None
+                    )
+                    feature_tree = _tree(
                         repo_root,
                         parent_line[2],
                         "pending record carrier feature parent",
                         errors,
-                    ).get(record_path)
+                    )
+                    feature_entry = (
+                        feature_tree[record_path]
+                        if record_path in feature_tree
+                        else None
+                    )
                     if revision_entry == feature_entry:
                         continue
                 unexpected_revisions.append(revision)

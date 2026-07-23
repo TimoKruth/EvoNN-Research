@@ -22,6 +22,7 @@ CANONICAL_BASE = "b22316d3dea7e0f01ee8aa359f4786897b0680ba"
 CANONICAL_ORIGIN = "git@github.com:TimoKruth/EvoNN-Research.git"
 A_DOUBLE_PRIME = "25352a4bd7c33b73077d9f9be231b2bb1b48109f"
 A_DOUBLE_PRIME_TREE = "78a72f1a2229d9e94cd78512be0585f08b2a5895"
+PRE_V2_TIP = "3d430e03c346b8bfc10c3c984b57259469a4e280"
 V2_DIGESTS = {
     "canonical_digest_rng": "1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc",
     "export_models": "f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72",
@@ -171,6 +172,36 @@ def _binding_clone(tmp_path: Path, *, omit_path: str | None = None) -> Path:
         destination.chmod(0o755 if BINDING_MODES[relative] == "100755" else 0o644)
     binding = _commit(clone, "synthetic Phase 0 binding")
     assert str(_git(clone, "rev-parse", f"{binding}^")).strip() == APRIME
+
+    repaired_documents = []
+    for relative in ("CONSOLIDATED_PLAN.md", "PARALLEL_WORK_GUIDE.md"):
+        if relative == omit_path:
+            continue
+        destination = clone / relative
+        content = _git(REPO_ROOT, "show", f"{PRE_V2_TIP}:{relative}", text=False)
+        if destination.read_bytes() == content:
+            continue
+        destination.write_bytes(content)
+        destination.chmod(0o644)
+        repaired_documents.append(relative)
+    if repaired_documents:
+        repair = _commit(clone, "install pending Phase 0 authorization prose")
+        assert str(_git(clone, "rev-parse", f"{repair}^")).strip() == binding
+        assert {
+            relative
+            for relative in str(
+                _git(
+                    clone,
+                    "diff-tree",
+                    "--no-commit-id",
+                    "--name-only",
+                    "-r",
+                    repair,
+                )
+            ).splitlines()
+            if relative
+        } == set(repaired_documents)
+
     subprocess.run(
         ["git", "-C", str(clone), "remote", "set-url", "origin", CANONICAL_ORIGIN],
         check=True,
@@ -187,7 +218,15 @@ def _current_clone(tmp_path: Path) -> Path:
         capture_output=True,
     )
     subprocess.run(
-        ["git", "-C", str(clone), "checkout", "--quiet", "--detach", "HEAD"],
+        [
+            "git",
+            "-C",
+            str(clone),
+            "checkout",
+            "--quiet",
+            "--detach",
+            PRE_V2_TIP,
+        ],
         check=True,
         capture_output=True,
     )
