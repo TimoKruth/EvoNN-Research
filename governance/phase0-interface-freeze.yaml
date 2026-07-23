@@ -1,0 +1,268 @@
+schema_version: "1.0.0"
+document_kind: phase_interface_freeze
+phase: 0
+freeze_id: phase0-interface-freeze-v2
+status: approved_pending_merge
+supersedes: phase0-interface-freeze-v1
+canonical_base_commit: b22316d3dea7e0f01ee8aa359f4786897b0680ba
+approved_commit: 25352a4bd7c33b73077d9f9be231b2bb1b48109f
+approved_tree: 78a72f1a2229d9e94cd78512be0585f08b2a5895
+digest_method: canonical-sha256-file-set-v1
+frozen_surfaces:
+  - surface_id: canonical_digest_rng
+    version_id: "1.0.0"
+    direction: lane_a_to_lane_b
+    source_documents:
+      - claude-spec/04-telemetry-and-artifacts.md
+      - CONSOLIDATED_PLAN.md
+      - tests/contracts/test_phase0_shared_interfaces.py
+    public_modules:
+      - module: evonn_shared.canonical
+        schema_version: null
+        public_symbols:
+          - AbsolutePathError
+          - CANONICAL_ENCODING
+          - CanonicalIdentityError
+          - CanonicalScalar
+          - CanonicalValue
+          - IntegerOutOfRangeError
+          - InvalidBytePayloadError
+          - InvalidDigestFieldError
+          - InvalidMappingKeyError
+          - InvalidSchemaVersionError
+          - InvalidUnicodeError
+          - NonFiniteFloatError
+          - NormalizedKeyCollisionError
+          - UnsupportedCanonicalTypeError
+          - VolatileFieldError
+          - canonical_bytes
+          - canonical_sha256
+          - sha256_bytes
+        callable_signatures:
+          - 'canonical_bytes(value: CanonicalValue, *, schema_version: str) -> bytes'
+          - 'canonical_sha256(value: CanonicalValue, *, schema_version: str, digest_field: str | None = "digest") -> str'
+          - 'sha256_bytes(payload: bytes | bytearray | memoryview) -> str'
+      - module: evonn_shared.rng
+        schema_version: null
+        public_symbols:
+          - InvalidRootSeedError
+          - InvalidStreamNameError
+          - StreamName
+          - derive_stream
+        callable_signatures:
+          - 'derive_stream(root_seed: int, name: StreamName) -> int'
+    frozen_paths:
+      - EvoNN-Shared/src/evonn_shared/canonical.py
+      - EvoNN-Shared/src/evonn_shared/rng.py
+      - EvoNN-Shared/tests/golden/canonical-v1.json
+      - EvoNN-Shared/tests/test_canonical.py
+      - EvoNN-Shared/tests/test_rng.py
+      - tests/contracts/test_phase0_shared_interfaces.py
+    sha256: 1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc
+  - surface_id: export_models
+    version_id: "1.0.0"
+    direction: lane_a_to_lane_b
+    source_documents:
+      - claude-spec/03-budget-and-fairness.md
+      - claude-spec/04-telemetry-and-artifacts.md
+      - CONSOLIDATED_PLAN.md
+      - tests/contracts/test_phase0_shared_interfaces.py
+    public_modules:
+      - module: evonn_shared.budgets
+        schema_version: null
+        public_symbols:
+          - BenchmarkSurfaceBudget
+          - BudgetAccounting
+          - BudgetDeclaration
+          - ContractModel
+          - EvaluationBudget
+          - EvaluationStage
+          - FidelityBudget
+          - FidelityStage
+          - HardwareEnvelope
+          - LadderTier
+          - ModelArtifactBudget
+          - TrainingBudget
+          - WallClockBudget
+        callable_signatures: []
+      - module: evonn_shared.telemetry
+        schema_version: null
+        public_symbols:
+          - AggregateMetric
+          - ArtifactReference
+          - BackendClass
+          - BenchmarkResult
+          - BestResult
+          - Coverage
+          - FairnessFlag
+          - FairnessSeverity
+          - FloatMeasurement
+          - IntegerMeasurement
+          - MeasurementProvenance
+          - MetricDirection
+          - MetricValue
+          - ResultStatus
+          - RuntimeMetadata
+          - SeedCostAccounting
+          - SeedingLadder
+          - SeedingMetadata
+          - SeedOverlapPolicy
+          - SystemId
+          - TaskKind
+          - RunTiming
+          - WorkerTopology
+        callable_signatures: []
+      - module: evonn_shared.exports
+        schema_version: "1.0.0"
+        public_symbols:
+          - EXPORT_SCHEMA_VERSION
+          - MANIFEST_FILENAME
+          - RESULTS_FILENAME
+          - SUMMARY_FILENAME
+          - ExportDigests
+          - Manifest
+          - Results
+          - RunClass
+          - RunStatus
+          - RunSummary
+          - write_export
+        callable_signatures:
+          - 'write_export(directory: Path, manifest: Manifest, results: Results, summary: RunSummary) -> ExportDigests'
+    frozen_paths:
+      - EvoNN-Shared/src/evonn_shared/budgets.py
+      - EvoNN-Shared/src/evonn_shared/exports.py
+      - EvoNN-Shared/src/evonn_shared/telemetry.py
+      - EvoNN-Shared/tests/fixtures/invalid/b0-capability.json
+      - EvoNN-Shared/tests/fixtures/invalid/product-evaluation.json
+      - EvoNN-Shared/tests/fixtures/invalid/wrong-schema.json
+      - EvoNN-Shared/tests/fixtures/valid/manifest.json
+      - EvoNN-Shared/tests/fixtures/valid/results.json
+      - EvoNN-Shared/tests/fixtures/valid/summary.json
+      - EvoNN-Shared/tests/golden/exports/manifest.json
+      - EvoNN-Shared/tests/golden/exports/results.json
+      - EvoNN-Shared/tests/golden/exports/summary.json
+      - EvoNN-Shared/tests/test_budgets.py
+      - EvoNN-Shared/tests/test_exports.py
+      - EvoNN-Shared/tests/test_telemetry.py
+      - tests/contracts/test_phase0_shared_interfaces.py
+    sha256: f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72
+  - surface_id: catalog_loaders
+    version_id: "1.0.0"
+    direction: lane_b_to_lane_a
+    source_documents:
+      - claude-spec/02-shared-benchmarks.md
+      - CONSOLIDATED_PLAN.md
+      - tests/contracts/test_phase0_shared_interfaces.py
+    public_modules:
+      - module: evonn_shared.catalog
+        schema_version: "1.0.0"
+        public_symbols:
+          - CATALOG_SCHEMA_VERSION
+          - BenchmarkStatus
+          - InputModality
+          - CeilingTiePolicy
+          - PrimaryMetric
+          - MetricCeiling
+          - BenchmarkSpec
+          - CanonicalIdEntry
+          - CanonicalIdRegistry
+          - PackBudgetPolicy
+          - BenchmarkPack
+          - LadderTier
+          - TaskKind
+          - MetricDirection
+          - SystemId
+          - CatalogError
+          - InvalidCatalogIdentifierError
+          - UnsafeCatalogPathError
+          - DuplicateCatalogDefinitionError
+          - InvalidCatalogYamlError
+          - InvalidCatalogModelError
+          - CatalogRegistryMismatchError
+          - BenchmarkNotFoundError
+          - PackNotFoundError
+          - UnknownPackBenchmarkError
+          - get_benchmark
+          - list_benchmarks
+          - resolve_pack_path
+          - load_parity_pack
+        callable_signatures:
+          - 'get_benchmark(benchmark_id: str, *, shared_root: Path | None = None, fallback_catalog_dirs: Sequence[Path] = ()) -> BenchmarkSpec'
+          - 'list_benchmarks(*, shared_root: Path | None = None, fallback_catalog_dirs: Sequence[Path] = ()) -> tuple[BenchmarkSpec, ...]'
+          - 'resolve_pack_path(pack_name: str, *, shared_root: Path | None = None, fallback_pack_dirs: Sequence[Path] = ()) -> Path'
+          - 'load_parity_pack(pack_name: str, *, shared_root: Path | None = None, fallback_pack_dirs: Sequence[Path] = (), fallback_catalog_dirs: Sequence[Path] = ()) -> BenchmarkPack'
+    frozen_paths:
+      - EvoNN-Shared/src/evonn_shared/benchmarks.py
+      - EvoNN-Shared/src/evonn_shared/catalog.py
+      - EvoNN-Shared/tests/fixtures/catalog/canonical/catalog/canonical_ids.yaml
+      - EvoNN-Shared/tests/fixtures/catalog/canonical/catalog/contract_alpha_classification.yaml
+      - EvoNN-Shared/tests/fixtures/catalog/canonical/catalog/contract_beta_regression.yaml
+      - EvoNN-Shared/tests/fixtures/catalog/canonical/suites/parity/contract_parity_pack.yaml
+      - EvoNN-Shared/tests/fixtures/catalog/fallback-a/contract_fallback_sequence.yaml
+      - EvoNN-Shared/tests/fixtures/catalog/fallback-packs/contract_fallback_pack.yaml
+      - EvoNN-Shared/tests/fixtures/catalog/invalid/duplicate_nested.yaml
+      - EvoNN-Shared/tests/fixtures/catalog/invalid/duplicate_top.yaml
+      - EvoNN-Shared/tests/fixtures/catalog/invalid/registry-mismatch/catalog/canonical_ids.yaml
+      - EvoNN-Shared/tests/fixtures/catalog/invalid/registry-mismatch/catalog/contract_registry_mismatch.yaml
+      - EvoNN-Shared/tests/fixtures/catalog/invalid/unknown_field.yaml
+      - EvoNN-Shared/tests/test_catalog.py
+      - shared-benchmarks/catalog/canonical_ids.yaml
+      - tests/contracts/test_phase0_shared_interfaces.py
+    sha256: 3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc
+reviews:
+  - lane: lane_a
+    role: lane_a_contract_owner
+    reviewer: phase0-lane-a-producer-a2-reviewer-20260723
+    subject: phase0-frozen-surface-a-double-prime-lane-a-producer-review
+    reviewed_commit: 25352a4bd7c33b73077d9f9be231b2bb1b48109f
+    reviewed_tree: 78a72f1a2229d9e94cd78512be0585f08b2a5895
+    reviewed_digests:
+      canonical_digest_rng: 1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc
+      export_models: f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72
+      catalog_loaders: 3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc
+    evidence_path: reviews/2026-07-23-phase0-lane-a-producer-a2-review.md
+    evidence_sha256: e546bb678bddbec18a705e6484f54de11fcfcece3b099b9f18b095c540cb741d
+    independent_review: true
+    decision: approved
+    findings:
+      critical: 0
+      important: 0
+      specification: 0
+      frozen_correctness: 0
+      minor: 0
+  - lane: lane_b
+    role: lane_b_contract_owner
+    reviewer: phase0-lane-b-consumer-a2-reviewer-20260723
+    subject: phase0-frozen-surface-a-double-prime-lane-b-consumer-review
+    reviewed_commit: 25352a4bd7c33b73077d9f9be231b2bb1b48109f
+    reviewed_tree: 78a72f1a2229d9e94cd78512be0585f08b2a5895
+    reviewed_digests:
+      canonical_digest_rng: 1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc
+      export_models: f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72
+      catalog_loaders: 3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc
+    evidence_path: reviews/2026-07-23-phase0-lane-b-consumer-a2-review.md
+    evidence_sha256: 171ff311c5a6f61e1f71bbd2d913f6c221bf4657ec169400117113a1c16039af
+    independent_review: true
+    decision: approved
+    findings:
+      critical: 0
+      important: 0
+      specification: 0
+      frozen_correctness: 0
+      minor: 0
+amendment_rule:
+  frozen_byte_or_mode_change_invalidates_current_freeze: true
+  requires_new_freeze_version: true
+  next_record_must_supersede: phase0-interface-freeze-v1
+  requires_fresh_lane_a_review: true
+  requires_fresh_lane_b_review: true
+  requires_joint_mini_review: true
+  replacement_freeze_must_be_merged_before_lane_creation: true
+merge_verification:
+  target_branch: main
+  status: pending
+  canonical_merge_commit: null
+  verified_at: null
+lane_authorization:
+  authorized: false
+  reason: freeze_pull_request_not_merged_and_canonical_merge_not_verified

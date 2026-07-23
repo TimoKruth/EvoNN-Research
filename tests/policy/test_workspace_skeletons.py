@@ -11,14 +11,14 @@ from pathlib import Path
 import pytest
 
 from evonn_shared.backend_contract import EXPECTED_MANIFESTS, PACKAGE_CONTRACTS
+from evonn_shared.workspace_contract import WORKSPACE_DEPENDENCY_BY_DIRECTORY
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PACKAGES = {
     package.directory: (package.distribution, package.module, package.system)
     for package in PACKAGE_CONTRACTS
 }
-PACKAGE_CONTRACT_BY_DIRECTORY = {package.directory: package for package in PACKAGE_CONTRACTS}
-CHECK_SCRIPTS = {
+B0_PACKAGE_CHECK_SCRIPTS = {
     "shared-checks.sh",
     "benchmarks-checks.sh",
     "contenders-checks.sh",
@@ -28,7 +28,9 @@ CHECK_SCRIPTS = {
     "stratograph-checks.sh",
     "primordia-checks.sh",
 }
-ALL_CHECK_SCRIPTS = CHECK_SCRIPTS | {"b0-policy-checks.sh"}
+PHASE0_CONTRACT_CHECK_SCRIPTS = {"phase0-contract-checks.sh"}
+CURRENT_CHECK_SCRIPTS = B0_PACKAGE_CHECK_SCRIPTS | PHASE0_CONTRACT_CHECK_SCRIPTS
+ALL_CHECK_SCRIPTS = CURRENT_CHECK_SCRIPTS | {"b0-policy-checks.sh"}
 
 
 def load_toml(path: Path) -> dict:
@@ -57,8 +59,8 @@ def test_package_metadata_and_installed_import_identity(directory: str, package:
     assert metadata["project"]["name"] == distribution
     assert metadata["project"]["requires-python"] == ">=3.13"
     assert metadata["build-system"]["build-backend"]
-    contract = PACKAGE_CONTRACT_BY_DIRECTORY[directory]
-    assert metadata["project"]["dependencies"] == list(contract.dependencies)
+    dependency_contract = WORKSPACE_DEPENDENCY_BY_DIRECTORY[directory]
+    assert metadata["project"]["dependencies"] == list(dependency_contract.dependencies)
     if distribution != "evonn-shared":
         assert metadata["tool"]["uv"]["sources"]["evonn-shared"] == {"workspace": True}
 
@@ -128,7 +130,7 @@ def test_all_named_check_scripts_execute_real_locked_checks_from_another_directo
 
     environment = os.environ.copy()
     environment["UV_PYTHON"] = sys.executable
-    for name in sorted(CHECK_SCRIPTS):
+    for name in sorted(CURRENT_CHECK_SCRIPTS):
         script = scripts[name]
         assert os.access(script, os.X_OK), f"{name} must be executable"
         result = subprocess.run(

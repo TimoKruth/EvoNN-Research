@@ -1,0 +1,12 @@
+schema_version: 1.0.0
+pack_name: contract_parity_pack
+ladder_tier: A
+benchmarks: [contract_beta_regression, contract_alpha_classification]
+budget_policy:
+  evaluation_count: 4
+symmetry: symmetric
+modalities: [tabular]
+expected_local_runtime_class: medium
+minimum_contenders: [linear_contender, tree_contender]
+suitability: daily
+full_fidelity_local_safe: true

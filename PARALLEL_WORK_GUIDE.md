@@ -41,14 +41,34 @@ Gate B0 is closed. The authoritative repository is pinned, the Linux/NumPy and
 macOS/MLX hosted bootstrap probes are preserved and validated offline, and the
 joint B0 integration record is checked in.
 
-Closure does not itself authorize immediate parallel implementation. The first
-safe parallel point remains Phase 0, and no Phase 0 lane branch may begin before
-both lanes jointly freeze and record:
+The reviewed A-double-prime Phase 0 interfaces are co-signed and durably
+recorded by freeze v2, which supersedes the immutable historical v1 record. This
+does not authorize immediate parallel implementation. The freeze remains
+merge-gated: no Phase 0 lane branch exists, and no lane or integration branch
+may be created until the protected freeze PR is merged, the actual canonical
+merge is verified, and a later attestation records that verification.
 
-- the canonical-encoding/digest API;
-- the export model shapes;
-- the catalog-loader signatures.
+<!-- phase0-interface-freeze:begin -->
+```yaml
+freeze_id: phase0-interface-freeze-v2
+governance_record: governance/phase0-interface-freeze.yaml
+approved_commit: 25352a4bd7c33b73077d9f9be231b2bb1b48109f
+approved_tree: 78a72f1a2229d9e94cd78512be0585f08b2a5895
+digests:
+  canonical_digest_rng: 1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc
+  export_models: f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72
+  catalog_loaders: 3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc
+reviews:
+  - reviews/2026-07-23-phase0-lane-a-producer-a2-review.md
+  - reviews/2026-07-23-phase0-lane-b-consumer-a2-review.md
+status: approved_pending_merge
+lane_authorization: false
+lane_branches: none
+next_sequence: protected PR merge → verify canonical merge → attestation → only then create lane/integration branches
+joint_boundary: WP-0.10 and the Phase 0 exit remain joint
+```
+<!-- phase0-interface-freeze:end -->
 
-After that freeze, Phase 0 may split exactly as recorded above. Lane A owns
-WP-0.2 through WP-0.5; Lane B owns WP-0.1 and WP-0.6 through WP-0.9; WP-0.10 and
-the phase exit remain joint.
+After authorization is separately attested, Phase 0 may split exactly as
+recorded above. Lane A owns WP-0.2 through WP-0.5; Lane B owns WP-0.1 and WP-0.6
+through WP-0.9; WP-0.10 and the Phase 0 exit remain joint.

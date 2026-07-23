@@ -6,8 +6,11 @@ from __future__ import annotations
 import hashlib
 import ipaddress
 import json
+import os
 from pathlib import Path
 import re
+import shutil
+import stat
 import subprocess
 import sys
 from typing import Any, Dict, Iterable, List, Mapping, Sequence, Set, Tuple
@@ -20,6 +23,24 @@ ALLOWED_ROOT_PLAN_FILENAMES: Set[str] = {"CONSOLIDATED_PLAN.md"}
 REQUIRED_B0_ITEM_IDS: Tuple[str, ...] = ("B0.1", "B0.2", "B0.3", "B0.4", "B0.5", "B0.6")
 EXCLUDED_PROSE_SCAN_TREES: Set[str] = {"archive", "claude-spec", "claudex-spec"}
 IGNORED_INTERNAL_TREES: Set[str] = {".git", ".claude", ".superpowers", ".pytest_cache"}
+PHASE0_STANDALONE_VALIDATOR_SHA256 = (
+    "bdc2459f02df4ea550629555fd1dbffe83104bb9be001fa0a23b70cfb778fb1d"
+)
+GIT_EXECUTABLE = shutil.which("git", path=os.defpath)
+PHASE0_GIT_OVERRIDE_VARIABLES: Set[str] = {
+    "GIT_DIR",
+    "GIT_WORK_TREE",
+    "GIT_COMMON_DIR",
+    "GIT_OBJECT_DIRECTORY",
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    "GIT_NAMESPACE",
+    "GIT_INDEX_FILE",
+    "GIT_GRAFT_FILE",
+    "GIT_SHALLOW_FILE",
+    "GIT_REPLACE_REF_BASE",
+    "GIT_CEILING_DIRECTORIES",
+    "GIT_DISCOVERY_ACROSS_FILESYSTEM",
+}
 RESEARCH_LOG_DIRECTORIES: Set[str] = {"research", "research-log", "research-logs", "research_log", "research_logs"}
 RESEARCH_LOG_NAME = re.compile(r"(?:^|[_-])(?:OBSERVATIONS?|RESEARCH[_-]LOG|EXPERIMENT[_-]LOG)$", re.I)
 PINNED_SOURCE_COMMIT = "2c622528ac31f9e86d3fd9e03fab3279b3819d72"
@@ -569,19 +590,34 @@ def validate_archived_plans(root: Path) -> List[str]:
     return errors
 
 
+def _git_environment() -> Dict[str, str]:
+    return {
+        "GIT_NO_REPLACE_OBJECTS": "1",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_CONFIG_GLOBAL": os.devnull,
+        "LANG": "C",
+        "LC_ALL": "C",
+    }
+
+
 def _git(repo_root: Path, *args: str) -> bytes:
-    return subprocess.check_output(["git", "-C", str(repo_root), *args], stderr=subprocess.STDOUT)
+    if GIT_EXECUTABLE is None:
+        raise OSError("trusted Git executable is unavailable")
+    return subprocess.check_output(
+        [GIT_EXECUTABLE, "-C", str(repo_root), *args],
+        env=_git_environment(),
+        stderr=subprocess.STDOUT,
+    )
 
 
 def _validate_no_git_grafts(repo_root: Path) -> List[str]:
     try:
-        result = subprocess.run(
-            ["git", "-C", str(repo_root), "rev-parse", "--git-path", "info/grafts"],
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        raw_path = result.stdout.decode("utf-8").strip()
+        raw_path = _git(
+            repo_root,
+            "rev-parse",
+            "--git-path",
+            "info/grafts",
+        ).decode("utf-8").strip()
         grafts_path = Path(raw_path)
         if not grafts_path.is_absolute():
             grafts_path = repo_root / grafts_path
@@ -2279,6 +2315,182 @@ def _load_json(path: Path) -> Dict[str, Any]:
     return data
 
 
+def _path_exists(path: Path) -> bool:
+    try:
+        path.lstat()
+    except OSError:
+        return False
+    return True
+
+
+def _phase0_binding_introduced(repo_root: Path) -> bool:
+    revisions = _git(
+        repo_root,
+        "--no-replace-objects",
+        "log",
+        "--diff-filter=A",
+        "--format=%H",
+        "HEAD",
+        "--",
+        "governance/phase0-interface-freeze.yaml",
+    )
+    return bool(revisions.strip())
+
+
+def _phase0_validator_integrity(repo_root: Path, relative: str) -> List[str]:
+    errors: List[str] = []
+    try:
+        raw_entry = _git(
+            repo_root,
+            "--no-replace-objects",
+            "ls-tree",
+            "-z",
+            "HEAD",
+            "--",
+            relative,
+        )
+        records = [record for record in raw_entry.split(b"\0") if record]
+        if len(records) != 1:
+            return [f"Phase 0 standalone validator must be present as one HEAD tree entry: {relative}"]
+        metadata, separator, raw_path = records[0].partition(b"\t")
+        mode, object_type, object_id = metadata.decode("ascii").split()
+        if (
+            not separator
+            or raw_path.decode("utf-8") != relative
+            or mode != "100644"
+            or object_type != "blob"
+        ):
+            return [f"Phase 0 standalone validator must be a HEAD 100644 regular blob: {relative}"]
+
+        raw_index = _git(repo_root, "ls-files", "--stage", "-z", "--", relative)
+        index_records = [record for record in raw_index.split(b"\0") if record]
+        expected_index = f"100644 {object_id} 0\t{relative}".encode()
+        if index_records != [expected_index]:
+            errors.append(
+                f"Phase 0 standalone validator index must exactly match HEAD stage 0: {relative}"
+            )
+
+        expected_content = _git(
+            repo_root,
+            "--no-replace-objects",
+            "cat-file",
+            "blob",
+            object_id,
+        )
+        if _sha256(expected_content) != PHASE0_STANDALONE_VALIDATOR_SHA256:
+            return [
+                "Phase 0 standalone validator HEAD blob SHA-256 does not match the pinned validator: "
+                f"{relative}"
+            ]
+        path = repo_root / relative
+        status = path.lstat()
+        if (
+            not stat.S_ISREG(status.st_mode)
+            or stat.S_ISLNK(status.st_mode)
+            or status.st_mode & 0o111
+            or path.read_bytes() != expected_content
+        ):
+            errors.append(
+                f"Phase 0 standalone validator worktree must be regular, non-symlink, non-executable, and byte-equal to HEAD: {relative}"
+            )
+    except (OSError, subprocess.CalledProcessError, UnicodeError, ValueError) as exc:
+        errors.append(f"cannot verify Phase 0 standalone validator integrity: {exc}")
+    return errors
+
+
+def _decoded_child_output(value: Any) -> str:
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value if isinstance(value, str) else ""
+
+
+def _sanitized_child_detail(result: subprocess.CompletedProcess[Any]) -> str:
+    streams = (
+        _decoded_child_output(result.stdout),
+        _decoded_child_output(result.stderr),
+    )
+    combined = "\n".join(
+        stream for stream in streams if stream and "traceback" not in stream.lower()
+    )
+    clean_lines = []
+    for raw_line in combined.replace("\x00", "�").splitlines():
+        line = "".join(character if character.isprintable() else " " for character in raw_line)
+        line = " ".join(line.split())
+        if line:
+            clean_lines.append(line)
+    detail = " | ".join(clean_lines)[:900]
+    return detail or f"exit {result.returncode}"
+
+
+def _phase0_child_environment() -> Dict[str, str]:
+    environment = os.environ.copy()
+    environment.pop("PYTHONPATH", None)
+    environment.pop("PYTHONHOME", None)
+    return environment
+
+
+def _validate_phase0_interface_freeze(repo_root: Path) -> List[str]:
+    supplied = sorted(
+        key
+        for key in os.environ
+        if key in PHASE0_GIT_OVERRIDE_VARIABLES or key.startswith("GIT_CONFIG_")
+    )
+    if supplied:
+        return [f"Phase 0 Git override environment is forbidden: {', '.join(supplied)}"]
+
+    validator_relative = "scripts/policy/validate_phase0_interface_freeze.py"
+    record_relative = "governance/phase0-interface-freeze.yaml"
+    validator_path = repo_root / validator_relative
+    record_path = repo_root / record_relative
+    try:
+        introduced = _phase0_binding_introduced(repo_root)
+    except (OSError, subprocess.CalledProcessError, UnicodeError) as exc:
+        return [f"cannot determine whether the Phase 0 binding was introduced: {exc}"]
+
+    validator_exists = _path_exists(validator_path)
+    record_exists = _path_exists(record_path)
+    if not introduced and not validator_exists and not record_exists:
+        return []
+
+    errors: List[str] = []
+    if not validator_exists:
+        errors.append(f"Phase 0 standalone validator is missing: {validator_relative}")
+    if not record_exists:
+        errors.append(f"Phase 0 governance record is missing: {record_relative}")
+    if errors:
+        return errors
+
+    errors.extend(_phase0_validator_integrity(repo_root, validator_relative))
+    if errors:
+        return errors
+
+    try:
+        result = subprocess.run(
+            [sys.executable, "-I", str(validator_path)],
+            cwd=repo_root,
+            env=_phase0_child_environment(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+    except OSError as exc:
+        return [f"cannot validate Phase 0 interface freeze: {exc}"]
+    if result.returncode == 0:
+        return []
+    stdout = _decoded_child_output(result.stdout)
+    diagnostics = [
+        f"Phase 0 interface freeze validator: {line.removeprefix('ERROR: ')}"
+        for line in stdout.splitlines()
+        if line.startswith("ERROR: ")
+    ]
+    if diagnostics:
+        return diagnostics
+    return [
+        "Phase 0 interface freeze validator failed: "
+        f"{_sanitized_child_detail(result)} (exit {result.returncode})"
+    ]
+
+
 def validate_repository(repo_root: Path) -> List[str]:
     errors = _validate_no_git_grafts(repo_root)
     if errors:
@@ -2333,6 +2545,7 @@ def validate_repository(repo_root: Path) -> List[str]:
     for required_doc in ("SPEC_UPGRADE_PROCESS.md", "SPEC_TRACEABILITY.md"):
         if not (repo_root / "governance" / required_doc).is_file():
             errors.append(f"governance/{required_doc} is missing")
+    errors.extend(_validate_phase0_interface_freeze(repo_root))
     return errors
 
 

@@ -25,6 +25,8 @@ jobs:
         run: uv python install 3.13
       - name: Synchronize locked workspace
         run: uv sync --all-packages --group dev --locked
+      - name: Run Phase 0 shared contract checks
+        run: scripts/ci/phase0-contract-checks.sh
       - name: Prove MLX is absent on Linux
         run: |
           if uv pip show mlx >/dev/null 2>&1; then

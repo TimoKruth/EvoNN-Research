@@ -39,6 +39,7 @@ ALLOWED_INTERNAL_TARGETS = {
 SCRIPT_ALLOWED_INTERNAL_TARGETS = {
     "policy/validate_import_boundaries.py": {"evonn-shared"},
     "policy/validate_backend_capabilities.py": {"evonn-shared"},
+    "policy/validate_workspace_dependencies.py": {"evonn-shared"},
     "ci/runtime_probe.py": {spec.distribution for spec in PACKAGE_SPECS},
 }
 _REQUIREMENT_NAME = re.compile(r"^\s*([A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?)")

@@ -1,0 +1,3 @@
+schema_version: 1.0.0
+id: contract_invalid_unknown
+unknown_field: forbidden
