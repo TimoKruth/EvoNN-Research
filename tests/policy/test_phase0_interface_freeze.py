@@ -148,6 +148,29 @@ def _historical_binding(repository: Path = REPO_ROOT) -> str:
     return binding
 
 
+def _strip_inherited_refs(clone: Path) -> None:
+    """Drop every ref a clone inherited from the surrounding repository.
+
+    This fixture pins a historical record whose lane authorization is false, and
+    the validator of that era decided partly from local refs. Cloning carries the
+    developer's and the runner's branch names in, so an ordinary lane branch named
+    exactly as the plan prescribes would otherwise decide the fixture's verdict.
+    HEAD is already detached at the commit the fixture builds on, which keeps every
+    object it needs reachable without keeping any ref.
+    """
+
+    refs = [
+        ref
+        for ref in str(
+            _git(clone, "for-each-ref", "--format=%(refname)", "refs/heads", "refs/remotes", "refs/tags")
+        ).splitlines()
+        if ref
+    ]
+    for ref in refs:
+        _git(clone, "update-ref", "--no-deref", "-d", ref)
+    assert not str(_git(clone, "for-each-ref", "--format=%(refname)")).strip()
+
+
 def _binding_clone(tmp_path: Path, *, omit_path: str | None = None) -> Path:
     binding_source = _historical_binding()
     clone = tmp_path / "binding-clone"
@@ -161,6 +184,7 @@ def _binding_clone(tmp_path: Path, *, omit_path: str | None = None) -> Path:
         check=True,
         capture_output=True,
     )
+    _strip_inherited_refs(clone)
     for relative in ALLOWED_BINDING_PATHS:
         if relative == omit_path:
             continue
@@ -689,6 +713,20 @@ def test_checked_in_record_and_synthetic_binding_are_valid(validator, tmp_path: 
     assert list(record) == list(validator.TOP_LEVEL_FIELDS)
     assert [surface["surface_id"] for surface in record["frozen_surfaces"]] == list(DIGESTS)
     assert [surface["sha256"] for surface in record["frozen_surfaces"]] == list(DIGESTS.values())
+
+
+def test_the_binding_fixture_inherits_no_ref_from_its_source(tmp_path: Path) -> None:
+    """The fixture must carry in no branch name from the repository it clones.
+
+    Without this the surrounding checkout decides the verdict: creating the lane
+    branch the plan itself prescribes, `agent/p0-lane-b-<slug>`, was enough to
+    fail a fixture that is supposed to judge committed content alone.
+    """
+
+    clone = _binding_clone(tmp_path)
+
+    assert str(_git(clone, "for-each-ref", "--format=%(refname)")).strip() == ""
+    assert str(_git(clone, "rev-parse", "--is-shallow-repository")).strip() == "false"
 
 
 def test_review_transcriptions_are_byte_exact() -> None:
