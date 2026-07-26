@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 document_kind: phase_interface_freeze
 phase: 0
 freeze_id: phase0-interface-freeze-v2
-status: approved_pending_merge
+status: merged_verified
 supersedes: phase0-interface-freeze-v1
 canonical_base_commit: b22316d3dea7e0f01ee8aa359f4786897b0680ba
 approved_commit: 25352a4bd7c33b73077d9f9be231b2bb1b48109f
@@ -260,9 +260,9 @@ amendment_rule:
   replacement_freeze_must_be_merged_before_lane_creation: true
 merge_verification:
   target_branch: main
-  status: pending
-  canonical_merge_commit: null
-  verified_at: null
+  status: verified
+  canonical_merge_commit: 5a98d9d45c4f2a7bc35bc75f93141473d0769e94
+  verified_at: "2026-07-23T07:27:10Z"
 lane_authorization:
-  authorized: false
-  reason: freeze_pull_request_not_merged_and_canonical_merge_not_verified
+  authorized: true
+  reason: freeze_pull_request_merged_and_canonical_merge_verified

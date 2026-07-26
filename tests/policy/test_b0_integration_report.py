@@ -388,10 +388,11 @@ def test_parallel_work_guide_is_non_authoritative_and_records_exact_lane_model()
     ):
         assert required in text
     assert "Gate B0 is closed" in text
-    assert "status: approved_pending_merge" in text
-    assert "lane_authorization: false" in text
-    assert "no Phase 0 lane branch exists" in text
-    assert "protected PR merge → verify canonical merge → attestation" in text
+    assert "status: merged_verified" in text
+    assert "lane_authorization: true" in text
+    assert "lane_branch_creation: authorized" in text
+    assert "No Phase 0 lane or integration branch exists yet" in text
+    assert "canonical merge has been verified" in text
     assert "WP-0.10 and the Phase 0 exit remain joint" in text
     assert "no Phase 0 lane branch may begin before" not in text
     for row in EXPECTED_LANE_ROWS:
@@ -415,19 +416,19 @@ def test_consolidated_plan_records_closed_b0_and_exact_next_actions() -> None:
     assert "29658842318" in b0_section
     assert "legacy open record until Commit B" not in b0_section
     assert "jointly freeze and record the Phase 0 interfaces" not in b0_section
-    assert "approved_pending_merge" in b0_section
+    assert "merged_verified" in b0_section
     assert "protected freeze PR" in b0_section
-    assert "separate authorization attestation" in b0_section
+    assert "authorization attestation" in b0_section
 
     phase0_section = text.split("## Phase 0", 1)[1].split("## Phase 1", 1)[0]
     for item in ("WP-0.1", "WP-0.2", "WP-0.3", "WP-0.4", "WP-0.5", "WP-0.6", "WP-0.7", "WP-0.8", "WP-0.9", "WP-0.10"):
         assert f"- [ ] **{item}" in phase0_section
 
     next_actions = text.split("## Immediate Next Actions", 1)[1]
-    assert "status: approved_pending_merge" in next_actions
-    assert "lane_authorization: false" in next_actions
-    assert "protected PR merge → verify canonical merge → attestation" in next_actions
-    assert "only then create the Phase 0 lane and integration branches" in next_actions
+    assert "status: merged_verified" in next_actions
+    assert "lane_authorization: true" in next_actions
+    assert "canonical merge is verified" in next_actions
+    assert "Phase 0 lane and integration branches may be created" in next_actions
     assert "WP-0.10 and the Phase 0 exit remain joint" in next_actions
     assert "Jointly freeze the Phase 0 interfaces" not in next_actions
     assert "Record the co-signed interface freeze" not in next_actions

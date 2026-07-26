@@ -209,10 +209,11 @@ the shared ground both lanes stand on).
 **Exit (contract evidence):** Gate B0 is closed by the anchored schema-2
 report and closed status evidence. Historical Binding C remains immutable and
 records the v1 pending freeze. The ordinary Binding D supersession records the
-reviewed A-double-prime v2 freeze in `approved_pending_merge` state. Lane and
-integration work remain unauthorized until the protected freeze PR merge is
-verified on canonical `origin/main` and a separate authorization attestation is
-merged.
+reviewed A-double-prime v2 freeze, now in `merged_verified` state. The
+protected freeze PR merged as `5a98d9d45c4f2a7bc35bc75f93141473d0769e94` on
+canonical `main` and that merge has been verified against the recorded topology
+and digests. This authorization attestation records the verification; lane and
+integration work become authorized once the attestation is merged.
 
 ---
 
@@ -227,8 +228,9 @@ telemetry models, identity + RNG). **B:** WP-0.1, 0.6, 0.7, 0.8, 0.9
 **Joint:** WP-0.10 integrity gate (consumes both lanes) + phase exit.
 *Interface freeze:* canonical-encoding/digest API (A→B for checkpoint
 checksums), export model shapes (A→B for RunWorkspace fixtures), catalog
-loader signatures (B→A for validators). The co-signed freeze is approved and
-recorded, but lane creation remains merge-gated.
+loader signatures (B→A for validators). The co-signed freeze is recorded and its
+canonical merge is verified; lane creation is authorized once this attestation
+is merged.
 
 *Joint amendment mini-review:* A-double-prime changes six frozen implementation
 and contract-test paths to close strict container validation, canonical UTC
@@ -251,10 +253,12 @@ digests:
 reviews:
   - reviews/2026-07-23-phase0-lane-a-producer-a2-review.md
   - reviews/2026-07-23-phase0-lane-b-consumer-a2-review.md
-status: approved_pending_merge
-lane_authorization: false
-lane_branches: none
-next_sequence: protected PR merge → verify canonical merge → attestation → only then create lane/integration branches
+status: merged_verified
+lane_authorization: true
+canonical_merge_commit: 5a98d9d45c4f2a7bc35bc75f93141473d0769e94
+verified_at: 2026-07-23T07:27:10Z
+lane_branch_creation: authorized
+authorization_effective_after: separate authorization attestation is merged
 joint_boundary: WP-0.10 and the Phase 0 exit remain joint
 ```
 <!-- phase0-interface-freeze:end -->
@@ -781,7 +785,10 @@ provenance-envelope schema (A→B, co-signed before fixture work starts).
 ## Immediate Next Actions
 
 The durable governance record is `governance/phase0-interface-freeze.yaml` with
-`status: approved_pending_merge` and `lane_authorization: false`. No Phase 0
-lane or integration branch exists. The required sequence is
-protected PR merge → verify canonical merge → attestation → only then create the Phase 0 lane and integration branches. WP-0.10 and the Phase 0 exit remain joint. No Phase 0
-implementation work is authorized before that sequence completes.
+`status: merged_verified` and `lane_authorization: true`. The protected freeze
+PR merged as `5a98d9d45c4f2a7bc35bc75f93141473d0769e94` and that
+canonical merge is verified. No Phase 0 lane or integration branch exists yet.
+
+Once this attestation is merged, the
+Phase 0 lane and integration branches may be created and Phase 0 implementation
+work may begin. WP-0.10 and the Phase 0 exit remain joint.

@@ -42,11 +42,17 @@ macOS/MLX hosted bootstrap probes are preserved and validated offline, and the
 joint B0 integration record is checked in.
 
 The reviewed A-double-prime Phase 0 interfaces are co-signed and durably
-recorded by freeze v2, which supersedes the immutable historical v1 record. This
-does not authorize immediate parallel implementation. The freeze remains
-merge-gated: no Phase 0 lane branch exists, and no lane or integration branch
-may be created until the protected freeze PR is merged, the actual canonical
-merge is verified, and a later attestation records that verification.
+recorded by freeze v2, which supersedes the immutable historical v1 record. The
+protected freeze pull request merged into canonical `main` as merge commit
+`5a98d9d45c4f2a7bc35bc75f93141473d0769e94`, and that
+canonical merge has been verified: it is an exact two-parent merge whose first
+parent is the recorded canonical base and whose sole feature parent carries the
+reviewed freeze, and the merged tree reproduces all three frozen surface
+digests.
+
+This attestation records that verification and authorizes lane branch creation.
+Authorization becomes effective once this attestation is itself merged into
+canonical `main`. No Phase 0 lane or integration branch exists yet.
 
 <!-- phase0-interface-freeze:begin -->
 ```yaml
@@ -61,14 +67,16 @@ digests:
 reviews:
   - reviews/2026-07-23-phase0-lane-a-producer-a2-review.md
   - reviews/2026-07-23-phase0-lane-b-consumer-a2-review.md
-status: approved_pending_merge
-lane_authorization: false
-lane_branches: none
-next_sequence: protected PR merge → verify canonical merge → attestation → only then create lane/integration branches
+status: merged_verified
+lane_authorization: true
+canonical_merge_commit: 5a98d9d45c4f2a7bc35bc75f93141473d0769e94
+verified_at: 2026-07-23T07:27:10Z
+lane_branch_creation: authorized
+authorization_effective_after: separate authorization attestation is merged
 joint_boundary: WP-0.10 and the Phase 0 exit remain joint
 ```
 <!-- phase0-interface-freeze:end -->
 
-After authorization is separately attested, Phase 0 may split exactly as
-recorded above. Lane A owns WP-0.2 through WP-0.5; Lane B owns WP-0.1 and WP-0.6
-through WP-0.9; WP-0.10 and the Phase 0 exit remain joint.
+Once this attestation is merged, Phase 0 may split exactly as recorded above.
+Lane A owns WP-0.2 through WP-0.5; Lane B owns WP-0.1 and WP-0.6 through WP-0.9;
+WP-0.10 and the Phase 0 exit remain joint.
