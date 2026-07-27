@@ -22,6 +22,7 @@ WORKSPACE_DEPENDENCY_CONTRACTS = (
         "EvoNN-Shared",
         "evonn-shared",
         (
+            "duckdb>=1.1,<2",
             "pydantic>=2.11,<3",
             "PyYAML>=6.0.2,<7",
         ),
