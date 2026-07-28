@@ -1,8 +1,21 @@
 # Shared Benchmarks
 
-This B0 skeleton is the repository's data-only home for future benchmark catalog YAML, parity suites, language-model cache data, and migration notes. It is not a Python package and contains no implemented catalog schema or loader.
+This directory is the repository's data-only home for benchmark catalog YAML,
+parity suites, language-model cache data, and migration records. It is not a
+Python package. Frozen catalog models and descriptor-safe loaders live in
+`evonn_shared.catalog`; runtime path resolution and layout validation live in
+`evonn_shared.benchmarks`.
 
-Runtime resolution and B0 layout validation live in `evonn_shared.benchmarks`.
+The Phase 0 catalog contains eight immutable Tier A identities and three parity
+packs: `tier1_core`, `tier1_core_smoke`, and `tier_a_contract`. Every production
+definition is intentionally `planned` and tagged `catalog_only`: this repository
+does not yet implement the dataset loaders or training runtime needed to claim
+that a benchmark is executable. Pack validation proves catalog integrity only,
+not benchmark results or scientific evidence.
+
+Migration provenance and field mappings are recorded under `migration/`. The
+canonical registry binds each definition to its frozen-model digest; it must be
+updated through the catalog identity algorithm rather than a raw file hash.
 
 ## LM cache manifests
 
