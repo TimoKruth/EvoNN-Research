@@ -153,18 +153,18 @@ def test_an_edited_evaluation_row_is_detected(tmp_path: Path) -> None:
     directory = _seeded(tmp_path)
     _raw(directory, "UPDATE evaluations SET metric_value = 0.99 WHERE sequence = 1")
 
-    with open_run_store(directory, RUN_ID) as store:
-        with pytest.raises(EvaluationChainError):
-            store.verify_evaluation_chain()
+    with pytest.raises(EvaluationChainError):
+        with open_run_store(directory, RUN_ID):
+            pytest.fail("corrupt evidence must be rejected before opening a writer")
 
 
 def test_a_deleted_evaluation_row_is_detected(tmp_path: Path) -> None:
     directory = _seeded(tmp_path)
     _raw(directory, "DELETE FROM evaluations WHERE sequence = 1")
 
-    with open_run_store(directory, RUN_ID) as store:
-        with pytest.raises(EvaluationChainError):
-            store.verify_evaluation_chain()
+    with pytest.raises(EvaluationChainError):
+        with open_run_store(directory, RUN_ID):
+            pytest.fail("corrupt evidence must be rejected before opening a writer")
 
 
 def test_a_truncated_tail_of_evaluations_is_detected(tmp_path: Path) -> None:
@@ -177,9 +177,9 @@ def test_a_truncated_tail_of_evaluations_is_detected(tmp_path: Path) -> None:
     directory = _seeded(tmp_path)
     _raw(directory, "DELETE FROM evaluations WHERE sequence = 2")
 
-    with open_run_store(directory, RUN_ID) as store:
-        with pytest.raises(EvaluationChainError):
-            store.verify_evaluation_chain()
+    with pytest.raises(EvaluationChainError):
+        with open_run_store(directory, RUN_ID):
+            pytest.fail("corrupt evidence must be rejected before opening a writer")
 
 
 def test_an_appended_row_the_run_record_does_not_know_about_is_detected(tmp_path: Path) -> None:
@@ -195,9 +195,9 @@ def test_an_appended_row_the_run_record_does_not_know_about_is_detected(tmp_path
         + "')",
     )
 
-    with open_run_store(directory, RUN_ID) as store:
-        with pytest.raises(EvaluationChainError):
-            store.verify_evaluation_chain()
+    with pytest.raises(EvaluationChainError):
+        with open_run_store(directory, RUN_ID):
+            pytest.fail("corrupt evidence must be rejected before opening a writer")
 
 
 def test_the_run_record_tracks_the_evaluation_tip(tmp_path: Path) -> None:
@@ -216,18 +216,18 @@ def test_a_relabelled_evaluation_row_is_detected(tmp_path: Path) -> None:
     directory = _seeded(tmp_path)
     _raw(directory, "UPDATE evaluations SET contender_id = 'other_engine' WHERE sequence = 0")
 
-    with open_run_store(directory, RUN_ID) as store:
-        with pytest.raises(EvaluationChainError):
-            store.verify_evaluation_chain()
+    with pytest.raises(EvaluationChainError):
+        with open_run_store(directory, RUN_ID):
+            pytest.fail("corrupt evidence must be rejected before opening a writer")
 
 
 def test_a_reordered_chain_is_detected(tmp_path: Path) -> None:
     directory = _seeded(tmp_path)
     _raw(directory, "UPDATE evaluations SET previous_sha256 = '" + DIGEST + "' WHERE sequence = 2")
 
-    with open_run_store(directory, RUN_ID) as store:
-        with pytest.raises(EvaluationChainError):
-            store.verify_evaluation_chain()
+    with pytest.raises(EvaluationChainError):
+        with open_run_store(directory, RUN_ID):
+            pytest.fail("corrupt evidence must be rejected before opening a writer")
 
 
 def test_metric_values_must_be_exact_floats(tmp_path: Path) -> None:

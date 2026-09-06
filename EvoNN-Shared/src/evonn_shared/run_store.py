@@ -22,7 +22,6 @@ import fcntl
 import os
 from pathlib import Path
 import socket
-import stat
 import sys
 from typing import Any, Final, Literal
 import uuid
@@ -32,6 +31,7 @@ from pydantic import Field, field_validator
 
 from .budgets import ContractModel, _canonical_id, _human_text, _run_id
 from .canonical import canonical_sha256
+from ._run_io import open_directory, open_regular_at, relative_parts, require_regular, validate_optional_file, write_all
 
 RUN_STORE_SCHEMA_VERSION: Final = "1.0.0"
 STORE_FILENAME: Final = "metrics.duckdb"
@@ -140,8 +140,7 @@ class ArtifactRow(ContractModel):
     @field_validator("path")
     @classmethod
     def _validate_path(cls, value: str) -> str:
-        if value.startswith("/") or ".." in value.split("/") or not value:
-            raise ValueError("path must be a nonempty run-relative path")
+        relative_parts(value)
         return _human_text(value, "path")
 
     @field_validator("sha256")
@@ -246,26 +245,18 @@ class RunStore:
                 previous_sha256=previous_sha256,
             ),
         )
-        self._connection.execute(
-            "INSERT INTO evaluations VALUES (?, ?, ?, ?, ?, ?, ?)",
-            [
-                row.sequence,
-                row.benchmark_id,
-                row.contender_id,
-                row.metric_name,
-                row.metric_value,
-                row.previous_sha256,
-                row.row_sha256,
-            ],
-        )
-        # The tip lives outside the chain on purpose. A hash chain proves nobody
-        # edited, reordered or removed an interior row, but a truncated chain is
-        # still a valid chain, so the expected length and tip must be recorded
-        # somewhere the chain does not reach.
-        self._connection.execute(
-            "UPDATE runs SET evaluation_count = ?, evaluation_tip_sha256 = ?",
-            [sequence + 1, row.row_sha256],
-        )
+        # The observation and its external tip are one logical record. An
+        # exception or killed writer must leave both unchanged, or both committed.
+        with _transaction(self._connection):
+            self._connection.execute(
+                "INSERT INTO evaluations VALUES (?, ?, ?, ?, ?, ?, ?)",
+                [row.sequence, row.benchmark_id, row.contender_id, row.metric_name,
+                 row.metric_value, row.previous_sha256, row.row_sha256],
+            )
+            self._connection.execute(
+                "UPDATE runs SET evaluation_count = ?, evaluation_tip_sha256 = ?",
+                [sequence + 1, row.row_sha256],
+            )
         return row
 
     def evaluations(self) -> tuple[EvaluationRow, ...]:
@@ -383,17 +374,29 @@ _SCHEMA_STATEMENTS: Final = (
 )
 
 
-def _acquire_writer_lock(directory: Path) -> tuple[int, bool]:
+@contextmanager
+def _transaction(connection: duckdb.DuckDBPyConnection) -> Iterator[None]:
+    connection.execute("BEGIN TRANSACTION")
+    try:
+        yield
+        connection.execute("COMMIT")
+    except BaseException:
+        connection.execute("ROLLBACK")
+        raise
+
+
+def _acquire_writer_lock(directory_fd: int) -> tuple[int, bool]:
     """Take the exclusive writer lock, reporting whether it was stale.
 
     Returns the held descriptor. The caller owns it until release.
     """
 
-    lock_path = directory / LOCK_FILENAME
-    descriptor = os.open(lock_path, os.O_RDWR | os.O_CREAT | os.O_CLOEXEC, 0o600)
+    descriptor = os.open(
+        LOCK_FILENAME, os.O_RDWR | os.O_CREAT | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK,
+        0o600, dir_fd=directory_fd,
+    )
     try:
-        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
-            raise RunStoreError("run lock is not a regular file")
+        require_regular(os.fstat(descriptor), exclusive=True)
         try:
             fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError as error:
@@ -407,7 +410,7 @@ def _acquire_writer_lock(directory: Path) -> tuple[int, bool]:
         record = _local_owner().model_dump_json().encode("utf-8") + b"\n"
         os.ftruncate(descriptor, 0)
         os.lseek(descriptor, 0, os.SEEK_SET)
-        os.write(descriptor, record)
+        write_all(descriptor, record)
         os.fsync(descriptor)
         return descriptor, stale
     except BaseException:
@@ -435,10 +438,16 @@ def read_lock_owner(directory: Path) -> LockOwner | None:
 
     resolved = _require_path(directory, "run directory")
     try:
-        payload = (resolved / LOCK_FILENAME).read_bytes()
+        with open_directory(resolved) as directory_fd:
+            with open_regular_at(directory_fd, LOCK_FILENAME, exclusive=True) as descriptor:
+                if os.fstat(descriptor).st_size > _MAX_LOCK_RECORD_BYTES:
+                    raise RunStoreError("run lock record exceeds size limit")
+                payload = os.read(descriptor, _MAX_LOCK_RECORD_BYTES + 1)
+                if len(payload) > _MAX_LOCK_RECORD_BYTES:
+                    raise RunStoreError("run lock record exceeds size limit")
     except FileNotFoundError:
         return None
-    except OSError as error:
+    except (OSError, ValueError) as error:
         raise RunStoreError("unable to read the run lock record") from error
     if not payload:
         return None
@@ -468,26 +477,44 @@ def open_run_store(directory: Path, run_id: str, *, create: bool = False) -> Ite
 
     resolved = _require_path(directory, "run directory")
     identifier = _run_id(run_id)
-    if not resolved.is_dir():
-        raise RunStoreNotFoundError(f"run directory does not exist: {resolved}")
-    store_path = resolved / STORE_FILENAME
-    exists = store_path.exists()
-    if create and exists:
-        raise RunStoreExistsError(f"run store already exists: {store_path}")
-    if not create and not exists:
-        raise RunStoreNotFoundError(f"run store does not exist: {store_path}")
+    # Keep all path checks and lock acquisition anchored to this directory.
+    # DuckDB opens a pathname; run directories must remain application-owned
+    # (no concurrent hostile renames by another process with write access).
+    try:
+        with open_directory(resolved) as directory_fd:
+            with _open_locked_store(resolved.absolute(), directory_fd, identifier, create=create) as store:
+                yield store
+    except FileNotFoundError as error:
+        raise RunStoreNotFoundError(f"run path does not exist: {resolved}") from error
+    except OSError as error:
+        raise RunStoreError(f"unsafe or unreadable run storage: {resolved}") from error
 
-    descriptor, stale = _acquire_writer_lock(resolved)
+
+@contextmanager
+def _open_locked_store(directory: Path, directory_fd: int, identifier: str, *, create: bool) -> Iterator[RunStore]:
+    descriptor, stale = _acquire_writer_lock(directory_fd)
     connection: duckdb.DuckDBPyConnection | None = None
     try:
+        # Recheck after acquiring the lock: another creator may have finished
+        # between the original request and this writer taking ownership.
+        exists = validate_optional_file(directory_fd, STORE_FILENAME)
+        wal_exists = validate_optional_file(directory_fd, STORE_FILENAME + ".wal")
+        if create and exists:
+            raise RunStoreExistsError(f"run store already exists: {directory / STORE_FILENAME}")
+        if create and wal_exists:
+            raise RunStoreError("cannot create a run store over an orphan WAL")
+        if not create and not exists:
+            raise RunStoreNotFoundError(f"run store does not exist: {directory / STORE_FILENAME}")
+        store_path = directory / STORE_FILENAME
         connection = duckdb.connect(str(store_path))
         if create:
-            for statement in _SCHEMA_STATEMENTS:
-                connection.execute(statement)
-            connection.execute(
-                "INSERT INTO runs VALUES (?, ?, ?, ?)",
-                [RUN_STORE_SCHEMA_VERSION, identifier, 0, _GENESIS_DIGEST],
-            )
+            with _transaction(connection):
+                for statement in _SCHEMA_STATEMENTS:
+                    connection.execute(statement)
+                connection.execute(
+                    "INSERT INTO runs VALUES (?, ?, ?, ?)",
+                    [RUN_STORE_SCHEMA_VERSION, identifier, 0, _GENESIS_DIGEST],
+                )
         store = RunStore(connection, identifier, stale)
         recorded = store.run()
         if recorded.run_id != identifier:
@@ -499,11 +526,14 @@ def open_run_store(directory: Path, run_id: str, *, create: bool = False) -> Ite
                 f"run store schema version is {recorded.schema_version!r},"
                 f" expected {RUN_STORE_SCHEMA_VERSION!r}"
             )
+        store.verify_evaluation_chain()
         yield store
     finally:
-        if connection is not None:
-            connection.close()
-        _release_writer_lock(descriptor)
+        try:
+            if connection is not None:
+                connection.close()
+        finally:
+            _release_writer_lock(descriptor)
 
 
 __all__ = [
