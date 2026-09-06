@@ -255,6 +255,12 @@ unsafe paths mutate external files, or platform regressions remain.
   Local macOS verification on 2026-09-06: 682 Shared/benchmark/contract tests
   passed (including 25 new storage regressions), all eight package/data check
   scripts and the Phase 0 contract script passed, repository Ruff passed.
+  At local commit `31f57ba`, all five standalone policy validators passed;
+  `scripts/ci/b0-policy-checks.sh` finished with 628 passed and 2 intentionally
+  deselected script-selftest/matrix cases. Its pytest portion took 1109.82 s
+  (18 min 29 s), the local baseline for WP-0.1a's CI simplification. Hosted
+  Linux/macOS execution and review remain pending; these local results do not
+  close WP-0.7 or the Phase 0 gate.
 - [x] Document the filesystem trust boundary: the application owns run
   directories; DuckDB opens pathnames, so concurrent hostile replacement of
   directories by another process with the same filesystem privileges is not
