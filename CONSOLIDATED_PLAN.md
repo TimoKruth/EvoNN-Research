@@ -161,9 +161,35 @@ open; formal closure must include the appropriate reviewed gate transition.
 | WP-0.1 | Workspace, package scripts, full cross-host foundation coverage, consolidated CI triggers | Final evidence mapping; bounded CI/review follow-ups below. |
 | WP-0.2–0.5 | Strict export/budget/telemetry models, identities and RNG contracts | Map existing tests to every requirement; integrate regular export fixtures with the reference proof. |
 | WP-0.6–0.7 | Atomic checkpoints, transactional store/workspace, verified reader and diagnostic consistency | Include persistence and failure results in joint acceptance. |
-| WP-0.8 | Strict catalog and pack loaders | Production registry is empty; admit the specified benchmark definitions and packs after amendment. |
+| WP-0.8 | Strict catalog and pack loaders | Eight planned definitions and three packs are prepared with pinned source provenance; freeze replacement and runtime admission remain open. |
 | WP-0.9 | LM-cache existence/size/checksum validators | Record contract acceptance; real LM execution belongs to later phases. |
 | WP-0.10 | Real synthetic kill/resume proof, budget and protected-label tests, cross-host JSON evidence | Complete catalog/export integration and joint reference acceptance. Engine-specific hooks remain separately open. |
+
+### Requirement-to-test map for the pending Phase 0 acceptance
+
+These are concrete existing checks, not a declaration that their parent WP is
+accepted. The successor candidate's foundation selection passes 773 tests;
+its frozen catalog and interface selection passes 145 tests. The active v2
+validator still rejects the two intentional frozen changes.
+
+| Parent | Existing executable evidence | Remaining boundary |
+| --- | --- | --- |
+| WP-0.1 | `tests/policy/test_workspace_contract.py`, `test_workspace_dependencies.py`, `test_import_boundaries.py`, `test_b0_ci_bootstrap.py` | Both hosted lanes on the accepted successor; final gate transition. |
+| WP-0.2 | `EvoNN-Shared/tests/test_exports.py`: strict parsing, three-file echoes, fixtures, golden bytes, atomic publication | Reference-to-regular-export integration; explicit permitted system identity. |
+| WP-0.3 | `EvoNN-Shared/tests/test_budgets.py` and `test_reference_runner.py`: strict declaration/accounting, unsuccessful and resumed work | Carry this accounting into the regular reference export. |
+| WP-0.4 | `EvoNN-Shared/tests/test_telemetry.py`: envelope, seeding and measurement provenance | Joint acceptance with the export integration. |
+| WP-0.5 | `EvoNN-Shared/tests/test_canonical.py`, `test_rng.py`: canonical vectors and independent deterministic streams | Preserve frozen bytes and historical verdicts in the successor. |
+| WP-0.6 | `EvoNN-Shared/tests/test_checkpoints.py`, `test_atomic_publication.py`: publication, checksums and failure boundaries | Include existing results in the joint phase attestation. |
+| WP-0.7 | `EvoNN-Shared/tests/test_run_store.py`, `test_run_workspace.py`, `test_run_reader.py`, `test_storage_integrity.py` | Preserve read-only export and local POSIX limits in integration. |
+| WP-0.8 | `EvoNN-Shared/tests/test_catalog.py`, `shared-benchmarks/tests/test_catalog_inventory.py`: IDs, strict loading, pack membership/budgets and complete floor declarations | Reviewed freeze transition; these are catalog-only definitions, not executable datasets or demonstrated floors. |
+| WP-0.9 | `EvoNN-Shared/tests/test_lm_cache.py`: existence, size and checksums | Contract acceptance only; no real-LM claim. |
+| WP-0.10 | `EvoNN-Shared/tests/test_reference_runner.py`, `test_integrity_probe.py`: real kill/resume, read-only diagnostics and protected-label capability | Accepted catalog and regular-export integration; engine hooks activate only with each engine. |
+
+The historical dataset loader has a two-way train/validation split. Introducing
+a third protected split requires new IDs, explicit split provenance and tests;
+it must not silently redefine the eight historical identities. Independently,
+the synthetic reference remains a contract fixture and cannot borrow an engine
+identity to bypass the export model's `SystemId` restriction.
 
 ### WP-0.1a — Cross-host coverage and economical CI
 

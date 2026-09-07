@@ -214,3 +214,9 @@ This candidate keeps all definitions `planned` and `catalog_only`. Freeze v2
 still rejects its production registry and catalog-test changes. Independent
 producer/consumer reviews, the replacement validator/trust-anchor transition,
 protected merge and verified attestation are required before acceptance.
+
+Local candidate checks: foundation **773 passed** (25.50s); catalog/interface
+contracts **145 passed** (3.09s); inventory **5 passed**; Ruff and diff checks
+passed. The unchanged standalone freeze validator rejected exactly the two
+intentional frozen changes (`test_catalog.py`, `canonical_ids.yaml`). This is
+an expected draft blocker, not a waived policy failure.

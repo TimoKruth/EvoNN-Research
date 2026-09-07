@@ -27,7 +27,7 @@ hosted lanes passed. Exact commits and runs are recorded in project history.
 | Component | Implemented | Not yet implemented or accepted |
 | --- | --- | --- |
 | Shared | Canonical identities/RNG, strict budget/telemetry/export contracts, catalog/pack loaders, checkpoints, LM-cache validation, transactional per-run DuckDB, workspace/reporting and verified read-only access | Joint Phase 0 acceptance and catalog-backed reference integration |
-| Shared benchmarks | Data layout, schemas/loaders in Shared, immutable-ID validation | Production registry is empty; no admitted benchmark definitions or runnable packs |
+| Shared benchmarks | Data layout, schemas/loaders in Shared, immutable-ID validation | Eight planned definitions and three packs are proposed; freeze acceptance and runtime admission remain open |
 | Reference fixtures | Real kill/resume tests, failed/invalid budgets, seed/label binding, verified diagnostic export and cross-host JSON evidence | Production three-file export integration; engine/scientific qualification |
 | Contenders + Compare | Importable packages, check scripts and capability manifests | Baseline fitting, CLI orchestration, comparison and evidence reports |
 | Prism, Topograph, Stratograph, Primordia | Importable packages and runtime bootstrap dependencies/probes | Search/training engines, qualified backends and scientific results |
@@ -145,7 +145,7 @@ new file is visible; do not delete published evidence as a pretend rollback.
 
 ## Benchmark and LM-cache storage
 
-Benchmark definitions live in `shared-benchmarks/catalog/`; packs will live in
+Benchmark definitions live in `shared-benchmarks/catalog/`; packs live in
 `suites/parity/`. The current registry has no entries. Canonical IDs preserve
 data/split/metric meaning; admission and freeze changes follow WP-0.1b/0.8.
 
