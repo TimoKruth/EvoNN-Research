@@ -1,3 +1,5 @@
 # EvoNN Contenders
 
-B0 package skeleton for future portable contender baselines. No scikit-learn contender, fitting path, export producer, or qualification evidence is implemented.
+See the central [capability table](../README.md#current-capabilities) and
+[execution plan](../CONSOLIDATED_PLAN.md) for this package’s current scope.
+Run `scripts/ci/contenders-checks.sh` from the repository root.

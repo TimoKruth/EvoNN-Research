@@ -1,3 +1,5 @@
-# Future configuration area
+# Configuration area
 
-Configuration content is future and non-authoritative at Gate B0. No runnable or official-lane configuration exists here yet.
+No runnable official-lane configuration exists here yet. See the central
+[capability table](../../README.md#current-capabilities) and
+[execution plan](../../CONSOLIDATED_PLAN.md).

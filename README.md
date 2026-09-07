@@ -1,60 +1,100 @@
 # EvoNN Research Lab
 
 Research workspace for four independent evolutionary neural-search engines,
-portable contender baselines, and a file-based comparison/evidence layer.
-This repository is the foundation rebuild; the predecessor is
+portable contender baselines and a file-based comparison/evidence layer.
+This repository is the foundation rebuild; its predecessor is
 `TimoKruth/EvoNN` (locally `../Evo Neural Nets`).
+
+## Read these three documents
+
+| Document | Purpose |
+| --- | --- |
+| **[README.md](README.md)** | What works, package boundaries, installation, verification and operating constraints. |
+| **[CONSOLIDATED_PLAN.md](CONSOLIDATED_PLAN.md)** | The sole execution plan: priorities, dependencies, work packages and acceptance criteria. |
+| **[PROJECT_HISTORY.md](PROJECT_HISTORY.md)** | Completed work, durable decisions, review outcomes and exact evidence references. |
+
+Update these files in place. Historical specifications and proof records are
+reference material; their role and locations are indexed in project history.
+Package READMEs are short navigation links, not separate status reports or plans.
 
 ## Current capabilities
 
-As of 2026-09-06, Gate B0 is closed and Phase 0 is in progress.
-`EvoNN-Shared` implements canonical identities, deterministic RNG streams,
-budget/telemetry/export contracts, catalog loading, checkpoint publication,
-LM-cache validation, and per-run DuckDB storage/reporting.
+**Verified baseline: 2026-09-07, main `646dde2`.** Gate B0 is closed; Phase 0
+is in progress. The #10–#20 maintenance series is integrated, GPL-3.0-only
+licensing (#21) and CodeRabbit configuration (#22) are present. Both final-main
+hosted lanes passed. Exact commits and runs are recorded in project history.
 
-Compare, Contenders, Prism, Topograph, Stratograph, and Primordia remain
-package skeletons. The production catalog on the base `main` revision is
-empty. There is no runnable training/search pipeline or scientific result in
-this rebuild. Passing bootstrap probes does not qualify an engine backend.
+| Component | Implemented | Not yet implemented or accepted |
+| --- | --- | --- |
+| Shared | Canonical identities/RNG, strict budget/telemetry/export contracts, catalog/pack loaders, checkpoints, LM-cache validation, transactional per-run DuckDB, workspace/reporting and verified read-only access | Joint Phase 0 acceptance and catalog-backed reference integration |
+| Shared benchmarks | Data layout, schemas/loaders in Shared, immutable-ID validation | Production registry is empty; no admitted benchmark definitions or runnable packs |
+| Reference fixtures | Real kill/resume tests, failed/invalid budgets, seed/label binding, verified diagnostic export and cross-host JSON evidence | Production three-file export integration; engine/scientific qualification |
+| Contenders + Compare | Importable packages, check scripts and capability manifests | Baseline fitting, CLI orchestration, comparison and evidence reports |
+| Prism, Topograph, Stratograph, Primordia | Importable packages and runtime bootstrap dependencies/probes | Search/training engines, qualified backends and scientific results |
 
-[`CONSOLIDATED_PLAN.md`](CONSOLIDATED_PLAN.md) is the only active execution
-plan. Its dated maintenance section distinguishes implemented work, local
-verification, and outstanding hosted/review acceptance. The pinned
-[`claude-spec/`](claude-spec/README.md) governs the Lab;
-[`PROGRAM_CHARTER.md`](PROGRAM_CHARTER.md) describes the separate Product and
-interop tracks. Product specifications here do not imply Product code exists.
+The next acceptance milestone is Phase 0 completion; its ordered work and
+failure conditions are in the consolidated plan. A green bootstrap or synthetic
+probe does not establish engine capability or scientific performance.
 
-## Local verification
+## Architecture and authority
 
-Use Python 3.13 and the repository's CI-pinned uv version (`0.5.13`).
-Linux and macOS are the supported workspace platforms; MLX is installed only
-on Apple Silicon macOS.
+The seven uv workspace packages are Shared, Contenders, Compare, Prism,
+Topograph, Stratograph and Primordia. `shared-benchmarks/` is data only;
+`evonn_shared.catalog` and `evonn_shared.benchmarks` implement its resolution.
+Engines remain independent. Compare will invoke engine CLIs and consume file
+exports; Shared contains infrastructure rather than an engine core.
+
+The pinned [Lab specification](claude-spec/README.md) is normative;
+[PROGRAM_CHARTER.md](PROGRAM_CHARTER.md) defines Lab/Product boundaries.
+[Product specifications](claudex-spec/README.md) are reference requirements for
+the separate Product, not evidence that Product code exists here. Real Lab
+artifacts may influence Product only after Lab I1 and Product I2 pass.
+Source changes follow [SPEC_UPGRADE_PROCESS](governance/SPEC_UPGRADE_PROCESS.md);
+[traceability](governance/SPEC_TRACEABILITY.md) identifies the authority roles.
+
+## Installation and local verification
+
+Use Python 3.13 and CI-pinned uv `0.5.13`. Supported workspace platforms are
+Linux and macOS; MLX installs only on Apple Silicon macOS. From the repo root:
 
 ```sh
 uv sync --all-packages --group dev --locked
-uv run --locked --all-packages --group dev pytest -q EvoNN-Shared/tests shared-benchmarks/tests tests/contracts
-uv run --locked --all-packages --group dev ruff check .
+scripts/ci/foundation-checks.sh
+scripts/ci/benchmarks-checks.sh
 ```
 
-Each package has an independently invocable `scripts/ci/*-checks.sh` script.
-`scripts/ci/foundation-checks.sh` is the shared Linux/macOS entry point: it
-checks the full Shared package and root contract consumer in one selection,
-with a lock check, Ruff and installed package identity verification.
-`scripts/ci/b0-policy-checks.sh` checks governance, dependency/import boundaries,
-capability claims, and their integration tests; it needs full Git history and
-takes longer than the focused suite. The complete `pytest` run additionally
-tests the check scripts themselves, including a nested policy run.
+The foundation entry point checks the complete Shared package and root
+contracts once, plus lock consistency, Ruff and installed package identity.
+For a focused reference check:
 
-Both hosted lanes run the complete foundation suite, including all persistence
-and synthetic reference tests, followed by their platform-specific package
-checks. Required job names remain stable. Full lanes run for every PR, main
-push and manual dispatch; unopened feature branches need manual dispatch.
+```sh
+uv run --locked --all-packages --group dev pytest -q EvoNN-Shared/tests/test_reference_runner.py
+```
+
+For repository policy and freeze verification:
+
+```sh
+scripts/ci/b0-policy-checks.sh
+```
+
+This checks authority, freeze, import/dependency and capability rules plus
+integration tests. Use a full-history clone with canonical `origin`; an archive
+or shallow checkout cannot verify the historical Git evidence. The standalone
+freeze validator also rejects Git worktrees: it requires a real repository-root
+`.git` directory. Plan/guide validation binds committed bytes, so commit documentation candidates before
+running the final governance check. The B0 integration suite takes substantially
+longer than focused tests; measured timings are in project history.
+
+Each package also has an independently callable `scripts/ci/*-checks.sh`.
+Run the scripts relevant to the change; both hosted jobs run the full foundation
+suite and their platform-specific checks. A full `pytest` invocation additionally
+runs recursive script self-tests and the complete local script matrix.
 
 ## Synthetic integrity evidence
 
-The Phase-0 preparation includes a test-only persistence consumer, not a search
-engine or production benchmark. To generate a comparison of eight real
-SIGKILL/resume cases (failed and invalid attempts at four durable boundaries):
+The test-only reference runner uses real persistence and checkpoints. Generate
+and validate a fresh report of eight SIGKILL/resume cases (failed and invalid
+attempts at four durable boundaries):
 
 ```sh
 uv run --locked --all-packages --group dev python EvoNN-Shared/tests/integrity_probe.py \
@@ -64,64 +104,87 @@ uv run --locked --all-packages --group dev python EvoNN-Shared/tests/integrity_p
   --validate .artifacts/reference-integrity/report.json
 ```
 
-Generation requires fresh work/output paths; it never overwrites prior evidence.
+Work/output paths must be fresh; existing evidence is never overwritten.
 The report compares row/checkpoint hashes, fresh/inherited accounting, selector
-traces and source digests before/after read-only export. It records host metadata
-and `synthetic_contract_preparation`. Validation checks internal consistency,
-not authenticity. The GitHub run and head commit provide hosted provenance;
-download `b0-linux-synthetic-integrity` or `b0-macos-synthetic-integrity` from
-the corresponding run. Each contains only the report, not raw run directories.
+traces and source digests around read-only export. It records host metadata and
+`synthetic_contract_preparation`. Validation proves internal consistency, not
+authenticity. Hosted provenance comes from the GitHub run and tested commit.
+Each hosted lane uploads only the report as `b0-linux-synthetic-integrity` or
+`b0-macos-synthetic-integrity`, with missing-file failure enabled.
 
-This does not admit the production catalog, qualify an engine, establish
-scientific performance or close Phase 0. Kills before durable row commit and
-general engine failure recovery remain outside this proof. Dependent PRs must
-merge in order with normal review; retarget each child to `main` and revalidate
-after its parent lands. The series does not imply its changes are on `main`.
+This does not admit catalog entries, qualify an engine, close Phase 0 or prove
+scientific performance. Kills before durable row commit and general engine
+failure recovery are outside this proof. The diagnostic JSON is not the regular
+`manifest.json` / `results.json` / `summary.json` export contract.
 
 ## Run-directory assumptions
 
-Use application-owned directories on a local filesystem with functioning
-POSIX advisory locks and atomic rename/fsync semantics. Run-directory paths
-must not traverse symbolic links (including system aliases such as `/tmp`
-on macOS; use the actual directory path). Windows/network-filesystem behavior
-is not qualified by these checks.
+Use application-owned local directories with working POSIX advisory locks and
+atomic rename/fsync semantics. Paths must not traverse symlinks, including
+macOS aliases such as `/tmp`; resolve the actual directory. Windows and network
+filesystems are not qualified.
 
-Evaluation inserts and their hash/count records commit in one transaction;
-existing evidence is verified before a writer is returned. File/lock/DB/WAL
-symlinks are refused, mutable storage hardlinks are refused, and report
-replacement is atomic. Verification reads already-opened artifact descriptors.
+Evaluation rows and their hash/count tip commit in one transaction. Existing
+records are verified before returning a writer. File/lock/DB/WAL symlinks and
+mutable-storage hardlinks are rejected; artifact reads use opened descriptors.
+Reports replace atomically; new evidence publication refuses overwrites.
 
-`open_run_reader(directory, run_id)` provides verified read-only access to a
-clean store. It holds a shared lock and a read-only transaction, exposes no
-writer methods, and leaves source files unchanged. It refuses missing lock/DB
-files and existing WALs; explicit writer recovery must happen before a reader
-can consume an interrupted store. Multiple readers may coexist, not a writer.
+`open_run_reader(directory, run_id)` holds a shared lock and read-only
+transaction, verifies identity/schema/row chain, exposes no writer operations,
+and preserves source bytes. It rejects missing lock/DB files and existing WALs;
+explicit writer recovery precedes reading an interrupted store. Readers may
+coexist with readers, not a writer. Corrupt evidence is never silently repaired.
 
-DuckDB opens a pathname, not a caller-supplied descriptor. These controls
-therefore do not sandbox another process with the same filesystem permissions
-that replaces run directories concurrently. A hash chain and its tip in the
-same database detect inconsistent edits, not a coordinated rewrite of both;
-independent evidence anchoring belongs to the later evidence-registry work.
-Do not automatically repair damaged evidence on open. Failed schema creation
-can leave an empty database file; preserve it for diagnosis and use a fresh run
-directory. A post-publication report directory-fsync failure is reported as
-uncertain durability, even though the new report is already visible.
+DuckDB opens pathnames, so these controls do not sandbox a process with equal
+filesystem privileges replacing directories concurrently. A hash chain and tip
+inside one database detect inconsistent edits, not a coordinated rewrite.
+Independent anchoring belongs to the future evidence registry. Failed schema
+creation may leave an empty database; preserve it for diagnosis. A directory
+fsync failure after publication means uncertain durability even when a complete
+new file is visible; do not delete published evidence as a pretend rollback.
 
-## Development
+## Benchmark and LM-cache storage
 
-Work on feature branches and merge through reviewed pull requests. Frozen
-contract changes follow the existing amendment process. The next functional
-milestone is the Phase 0 reference-runner integrity proof, followed by
-Contenders and Compare after joint Phase 0 acceptance.
+Benchmark definitions live in `shared-benchmarks/catalog/`; packs will live in
+`suites/parity/`. The current registry has no entries. Canonical IDs preserve
+data/split/metric meaning; admission and freeze changes follow WP-0.1b/0.8.
+
+`shared-benchmarks/lm_cache/` holds versioned `<cache_id>.yaml` manifests;
+payload bytes are warmed locally and are not committed. Shared validates file
+existence, size and SHA-256 before use. Manifest artifact paths are relative,
+UTF-8 sorted and unique. `EVONN_LM_CACHE_DIR` overrides the payload root. Example
+shape only, not an admitted cache or valid content digest:
+
+```yaml
+schema_version: "1.0.0"
+cache_id: tinystories_lm
+benchmark_ids: [tinystories_lm]
+artifacts:
+  - path: train.bin
+    size_bytes: 1280
+    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+```
+
+## Development workflow
+
+Work on feature branches and use reviewed PRs. GitHub currently requires **zero
+approving reviews**, with last-push approval disabled. Linux/macOS checks,
+up-to-date branches, resolved review conversations and admin enforcement remain
+required; force pushes/deletion of main stay disabled. Substantive review and
+the separate frozen-interface amendment evidence remain part of development.
+
+For stacked PRs, merge a parent, retarget its child to main, synchronize and
+validate the exact new head before merging. A successful CodeRabbit status can
+represent a skipped review: inspect selected files, actionable threads and
+summary warnings. Docstring coverage is distinct from code findings.
+The plan owns lane assignments and phase acceptance; no second workflow plan
+is needed. Stage explicit paths and preserve unrelated local work.
 
 ## License
 
 Copyright (C) 2026 Timo Kruth and contributors.
 
-Unless otherwise indicated, this project's original code and documentation are
-licensed under the GNU General Public License, version 3 only
-(`GPL-3.0-only`). See [LICENSE](LICENSE) for the full terms.
-
-This software is distributed without any warranty; see the license for details.
-Third-party dependencies, datasets, and model weights retain their own licenses.
-Each workspace package includes a copy of the license for standalone distribution.
+Unless otherwise indicated, original code and documentation are licensed under
+GNU GPL version 3 only (`GPL-3.0-only`); see [LICENSE](LICENSE). Each workspace
+package carries its own copy for distribution. The software comes without
+warranty. Dependencies, datasets and model weights retain their own licenses.

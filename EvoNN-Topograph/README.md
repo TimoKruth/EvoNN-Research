@@ -1,3 +1,5 @@
 # EvoNN Topograph
 
-B0 package skeleton preserving Topograph as an independent engine boundary. No search engine, MLX backend, NumPy fallback, compiler, or scientific capability is implemented.
+See the central [capability table](../README.md#current-capabilities) and
+[execution plan](../CONSOLIDATED_PLAN.md) for this package’s current scope.
+Run `scripts/ci/topograph-checks.sh` from the repository root.
