@@ -5,6 +5,7 @@ import json
 
 from evonn_shared.canonical import canonical_sha256
 from evonn_shared.catalog import load_parity_pack
+from evonn_shared.engine_evidence import validate_engine_bundle
 from evonn_shared.export_reader import ExportBundle, read_document
 
 
@@ -50,7 +51,11 @@ def evaluate_case(case: Case, bundles: list[ExportBundle], *, failures: list[dic
             blockers.append(f"case identity mismatch: {manifest.run_id}")
         if manifest.status.value != "completed" or manifest.accounting.partial_run:
             blockers.append(f"incomplete run: {manifest.run_id}")
-        if manifest.accounting.actual_evaluations != case.budget:
+        try:
+            validate_engine_bundle(bundle, verify_cache=True)
+        except (ValueError, OSError, KeyError, TypeError) as error:
+            blockers.append(f"{manifest.run_id}: invalid engine evidence: {error}")
+        if manifest.accounting.actual_evaluations + manifest.accounting.cached_evaluations != case.budget:
             blockers.append(f"evaluation accounting drift: {manifest.run_id}")
         if bundle.results.coverage.failed or bundle.results.coverage.unsupported:
             blockers.append(f"failed or unsupported outcomes: {manifest.run_id}")
@@ -62,6 +67,9 @@ def evaluate_case(case: Case, bundles: list[ExportBundle], *, failures: list[dic
         blockers.append("declared budget envelopes differ; inspect all seven dimensions")
     if seed_regimes and any(value != seed_regimes[0] for value in seed_regimes[1:]):
         blockers.append("seeding regimes or prior provenance differ; compare as explicit separate cohorts")
+    engine_backends = {b.manifest.runtime.backend.value for b in bundles if b.manifest.system.value != "contenders"}
+    if len(engine_backends) > 1:
+        blockers.append("mixed engine backends require separate native and portability cases")
     engine_only = no_contenders or "contenders" not in systems
     if no_contenders and "contenders" in systems:
         blockers.append("no-contenders case contains contenders")

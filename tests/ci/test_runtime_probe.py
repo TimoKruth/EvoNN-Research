@@ -14,7 +14,7 @@ from evonn_shared.backend_contract import PACKAGE_BY_SYSTEM
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PROBE_PATH = REPO_ROOT / "scripts/ci/runtime_probe.py"
 sys.path.insert(0, str(REPO_ROOT))
-MANIFEST = Path(PACKAGE_BY_SYSTEM["prism"].manifest_path)
+MANIFEST = Path(PACKAGE_BY_SYSTEM["stratograph"].manifest_path)
 TIMESTAMPS = ("2026-07-18T12:00:00Z", "2026-07-18T12:00:01Z")
 RUNTIME = {
     "os_name": "Darwin",
@@ -41,7 +41,7 @@ def _write_probe(tmp_path: Path, **overrides: object) -> Path:
         "output_path": output,
         "repo_root": REPO_ROOT,
         "backend": "numpy",
-        "system": "prism",
+        "system": "stratograph",
         "manifest_path": MANIFEST,
         "execution_mode": "local",
         "environment": {},
@@ -118,8 +118,8 @@ def test_probe_write_is_deterministic_complete_atomic_and_hostname_safe(tmp_path
     assert data["host"]["logical_cpu_count"] == 10
     assert data["python"] == {"implementation": "CPython", "version": "3.13.5"}
     assert data["uv_version"] == "0.5.13"
-    assert data["package_under_test"] == "evonn-prism"
-    assert data["system_under_test"] == "prism"
+    assert data["package_under_test"] == "evonn-stratograph"
+    assert data["system_under_test"] == "stratograph"
     assert data["backend"] == {"class": "numpy_fallback", "distribution": "numpy", "version": "2.3.1"}
     assert data["device_class"] == "cpu"
     assert data["precision_mode"] == "float64"

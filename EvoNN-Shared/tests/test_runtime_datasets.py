@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from evonn_contenders.datasets import load_dataset, shared_root
+from evonn_shared.datasets import load_dataset, shared_root
 
 
 @pytest.mark.parametrize("benchmark", ["iris_classification", "wine_classification", "breast_cancer",
@@ -42,7 +42,7 @@ def test_seed_changes_split_without_changing_canonical_definition(tmp_path):
 
 @pytest.mark.parametrize("name", ["moons_classification", "friedman1_regression"])
 def test_generated_intermediates_may_differ_only_when_consumed_bytes_are_identical(tmp_path, monkeypatch, name):
-    from evonn_contenders import datasets
+    from evonn_shared import datasets
     original = datasets._raw_data
     reference = datasets.load_dataset(name, seed=42, cache_root=tmp_path / "reference")
     def intermediate(binding, seed):

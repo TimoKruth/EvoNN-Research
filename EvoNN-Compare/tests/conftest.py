@@ -53,3 +53,16 @@ def export_factory():
         (root / "report.md").write_bytes(report)
         return read_export(root)
     return make
+
+
+@pytest.fixture
+def assume_engine_runtime_checked(monkeypatch):
+    """Isolate comparison algebra from runtime acceptance for synthetic fixtures.
+
+    Real runtime validation and rejection are exercised by Phase-2 integration
+    tests. This fixture is deliberately opt-in, never an application bypass.
+    """
+    from evonn_compare import cases
+    def accepted_fixture(bundle, **kwargs):
+        assert json.loads((bundle.root / "config.yaml").read_text()) == {"fixture_only": True}
+    monkeypatch.setattr(cases, "validate_engine_bundle", accepted_fixture)

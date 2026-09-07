@@ -3,6 +3,7 @@ from pathlib import Path
 
 from evonn_shared.export_reader import read_document, read_export, validate_canonical_results
 from evonn_shared.exports import Manifest, Results
+from evonn_shared.engine_evidence import validate_engine_bundle
 
 
 def classify(root: Path, *, propagated: bool = False) -> dict:
@@ -20,6 +21,10 @@ def classify(root: Path, *, propagated: bool = False) -> dict:
     except (ValueError, OSError) as error:
         result["gaps"].append(str(error))
         return result
+    try:
+        validate_engine_bundle(bundle)
+    except (ValueError, KeyError, TypeError) as error:
+        result["gaps"].append(str(error))
     if manifest.timing.elapsed_seconds <= 0:
         result["gaps"].append("positive elapsed time required for throughput")
     if not propagated:

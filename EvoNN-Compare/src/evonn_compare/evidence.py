@@ -9,13 +9,25 @@ from evonn_shared.canonical import canonical_sha256
 from .audit import artifact_json
 
 
+def protocol_fingerprint(bundle):
+    """Bind repeated runs to runtime identity and seed-independent engine policy."""
+    runtime = bundle.manifest.runtime.model_dump(mode="json")
+    policy = {}
+    if bundle.manifest.system.value in {"prism", "topograph"}:
+        config = artifact_json(bundle, bundle.manifest.config_snapshot.path)
+        keys = ("source_sha256", "epochs", "population_size", "fit_timeout", "benchmark_pooling", "novelty_weight")
+        policy = {key: config[key] for key in keys if key in config}
+    return canonical_sha256({"system": bundle.manifest.system.value, "runtime": runtime, "policy": policy},
+                            schema_version="evonn-comparison-protocol/v1", digest_field=None)
+
+
 def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
     manifest = bundle.manifest
     elapsed = manifest.timing.elapsed_seconds
     successes = bundle.results.coverage.ok
     rows = []
     attempts = {}
-    if manifest.system.value == "contenders":
+    if manifest.system.value in {"contenders", "prism", "topograph"}:
         try:
             ledger = artifact_json(bundle, "attempts.json")
             attempts = {(item["benchmark_id"], item["outcome_id"]): item for item in ledger["attempts"] if "outcome_id" in item}
@@ -52,6 +64,22 @@ def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
             "train_seconds": result.train_seconds.value, "model_bytes": result.model_bytes.value,
             "parameter_count": result.parameter_count.value, "peak_memory_bytes": result.peak_memory_bytes.value,
             "seeding": manifest.seeding.model_dump(mode="json"), "started_at": manifest.timing.started_at.isoformat()})
+    if manifest.system.value in {"prism", "topograph"}:
+        protocol = protocol_fingerprint(bundle)
+        active = artifact_json(bundle, "state.json")["elapsed"] if any(ref.path == "state.json" for ref in bundle.summary.artifact_digests) else None
+        for row in rows:
+            key = (row["benchmark"], row["outcome_id"])
+            attempt = attempts[key] if key in attempts else {}
+            row["protocol_fingerprint"] = protocol
+            row["backend_version"] = manifest.runtime.backend_version
+            row["active_run_seconds"] = active
+            row["wall_clock_note"] = "timestamp span includes resume pauses; active_run_seconds is the consumed execution budget"
+            row["inheritance"] = attempt["inheritance"] if "inheritance" in attempt else None
+            row["latency_seconds"] = attempt["latency_seconds"] if "latency_seconds" in attempt else None
+            row["packed_bytes_estimate"] = attempt["packed_bytes_estimate"] if "packed_bytes_estimate" in attempt else None
+            row["allocated_epochs"] = attempt["allocated_epochs"] if "allocated_epochs" in attempt else None
+            row["model_family"] = attempt["genome"].get("family", "dag") if "genome" in attempt else None
+            row["evidence_class"] = "portability_only" if manifest.runtime.backend.value == "numpy_fallback" else "native_runtime"
     return rows
 
 
@@ -91,6 +119,7 @@ def winners(rows: list[dict], *, projects_only: bool = False) -> list[dict]:
             "winners": [row["engine"] for row in chosen], "tie": tied, "ceiling_tie": ceiling,
             "comparison_available": len(ok) >= 2,
             "case_win": len(ok) >= 2 and not tied and all(row["accounting_state"] == "complete" and row["operating_state"] not in ("exploratory", "reference") for row in ok),
+            "backend_classes": sorted({row["backend"] for row in values}), "portability_only": any(row["backend"] == "numpy_fallback" for row in values),
             "superiority_evidence": False, "pack": values[0]["pack"], "budget": values[0]["budget"],
             "failures_or_missing": [{"engine": row["engine"], "status": row["status"], "reason": row["reason"]}
                                     for row in values if row["status"] != "ok"]})
@@ -102,7 +131,7 @@ def aggregates(rows: list[dict]) -> dict:
     groups = defaultdict(list)
     for row in best:
         groups[(row["cohort"], row["pack"], row["budget"], row["benchmark"], row["engine"], row["backend"], row["device"], row["precision"],
-                row["operating_state"], row["accounting_state"], json.dumps(row["seeding"], sort_keys=True), row["envelope_sha256"])].append(row)
+                row["operating_state"], row["accounting_state"], json.dumps(row["seeding"], sort_keys=True), row["envelope_sha256"], row["host_fingerprint"], row.get("backend_version", "legacy"), row.get("protocol_fingerprint", "legacy"))].append(row)
     spread = []
     for key, values in sorted(groups.items()):
         by_seed = defaultdict(list)
@@ -113,7 +142,7 @@ def aggregates(rows: list[dict]) -> dict:
         mean = statistics.mean(samples) if samples else None
         # Explicit descriptive normal approximation; no inferential confidence at n<3.
         error = 1.96 * statistics.stdev(samples) / math.sqrt(len(samples)) if len(samples) >= 3 else None
-        spread.append({**dict(zip(("cohort", "pack", "budget", "benchmark", "engine", "backend", "device", "precision", "operating_state", "accounting_state", "seeding_regime", "envelope_sha256"), key, strict=True)),
+        spread.append({**dict(zip(("cohort", "pack", "budget", "benchmark", "engine", "backend", "device", "precision", "operating_state", "accounting_state", "seeding_regime", "envelope_sha256", "host_fingerprint", "backend_version", "protocol_fingerprint"), key, strict=True)),
             "task_kind": values[0]["task_kind"], "family": values[0]["family"], "seeds": sorted(by_seed), "n": len(samples), "mean": mean,
             "min": min(samples) if samples else None, "max": max(samples) if samples else None,
             "ci95": [mean-error, mean+error] if error is not None else None,
@@ -131,9 +160,9 @@ def aggregates(rows: list[dict]) -> dict:
                 if left >= right:
                     continue
                 a, b = engines[left], engines[right]
-                if a["seeding"] != b["seeding"]:
+                if a["seeding"] != b["seeding"] or (left != "contenders" and right != "contenders" and a["backend"] != b["backend"]):
                     continue
                 pairs.append({"cohort": key[0], "case_id": key[1], "benchmark": key[2], "seed": key[3],
-                    "left": left, "right": right, "raw_delta": a["value"]-b["value"],
+                    "left": left, "right": right, "left_backend": a["backend"], "right_backend": b["backend"], "portability_only": "numpy_fallback" in (a["backend"], b["backend"]), "raw_delta": a["value"]-b["value"],
                     "advantage_left": (a["value"]-b["value"]) * (1 if a["direction"] == "max" else -1)})
     return {"spread": spread, "pairwise_seed_deltas": pairs, "per_seed": best}

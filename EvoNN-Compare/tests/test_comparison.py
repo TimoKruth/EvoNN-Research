@@ -10,10 +10,12 @@ from evonn_compare.quality import classify
 from evonn_shared.telemetry import SeedOverlapPolicy
 
 
-def test_direction_ceiling_ties_projects_recompute_and_no_superiority(tmp_path, export_factory):
-    a = export_factory(tmp_path / "a", system="contenders", score=1.)
-    b = export_factory(tmp_path / "b", system="prism", score=.9)
-    c = export_factory(tmp_path / "c", system="topograph", score=1.)
+def test_direction_ceiling_ties_projects_recompute_and_no_superiority(
+    tmp_path, export_factory, assume_engine_runtime_checked
+):
+    a = export_factory(tmp_path / "a", system="contenders", score=1.0)
+    b = export_factory(tmp_path / "b", system="prism", score=0.9)
+    c = export_factory(tmp_path / "c", system="topograph", score=1.0)
     acceptance = evaluate_case(Case("tier1_core", 64, 42), [a, b, c])
     rows = [r for bundle in (a, b, c) for r in trend_rows(bundle, "case", acceptance)]
     all_winners = winners(rows)
@@ -24,14 +26,20 @@ def test_direction_ceiling_ties_projects_recompute_and_no_superiority(tmp_path, 
     assert all(r["case_win"] for r in winners(rows, projects_only=True))
 
 
-def test_case_mismatch_engine_only_and_all_operating_states(tmp_path, export_factory):
+def test_case_mismatch_engine_only_and_all_operating_states(tmp_path, export_factory, assume_engine_runtime_checked):
     a = export_factory(tmp_path / "a", system="prism")
     case = Case("tier1_core", 64, 42)
     state = evaluate_case(case, [a], no_contenders=True)
     assert state["engine_only"] and not state["external_floor_claim"]
-    audit = {"scope": "decision_grade", "status": "passed", "repeatability": "low_and_mid_repeated",
-             "pack": "tier1_core", "clean_runs": [{"run_id": "fixture_contenders_42", "budget": 64, "seed": 42}],
-             "extended_coverage_complete": True, "admitted_run_ids": ["fixture_contenders_42"]}
+    audit = {
+        "scope": "decision_grade",
+        "status": "passed",
+        "repeatability": "low_and_mid_repeated",
+        "pack": "tier1_core",
+        "clean_runs": [{"run_id": "fixture_contenders_42", "budget": 64, "seed": 42}],
+        "extended_coverage_complete": True,
+        "admitted_run_ids": ["fixture_contenders_42"],
+    }
     assert apply_admission(state, audit)["operating_state"] == "contract-fair"
     b = export_factory(tmp_path / "b")
     full = evaluate_case(case, [a, b])
@@ -43,7 +51,13 @@ def test_case_mismatch_engine_only_and_all_operating_states(tmp_path, export_fac
     assert apply_admission(full, wrong_audit)["operating_state"] == "contract-fair"
     assert evaluate_case(case, [b], cohort="reference")["operating_state"] == "reference"
     assert evaluate_case(Case("tier1_core", 64, 43), [b])["operating_state"] == "exploratory"
-    changed = b.manifest.model_copy(update={"seeding": b.manifest.seeding.model_copy(update={"seed_overlap_policy": SeedOverlapPolicy.BENCHMARK_DISJOINT})})
+    changed = b.manifest.model_copy(
+        update={
+            "seeding": b.manifest.seeding.model_copy(
+                update={"seed_overlap_policy": SeedOverlapPolicy.BENCHMARK_DISJOINT}
+            )
+        }
+    )
     with_seed_difference = type(b)(b.root, changed, b.results, b.summary)
     assert any("seeding regimes" in reason for reason in evaluate_case(case, [a, with_seed_difference])["blockers"])
 
@@ -52,11 +66,11 @@ def test_seed_statistics_keep_duplicates_regimes_and_blocked_runs_separate(tmp_p
     a = export_factory(tmp_path / "a")
     acceptance = evaluate_case(Case("tier1_core", 64, 42), [a])
     row = trend_rows(a, "case", acceptance)[0]
-    repeated = {**row, "case_id": "repeat", "run_id": "repeat", "value": .9}
+    repeated = {**row, "case_id": "repeat", "run_id": "repeat", "value": 0.9}
     seeded = deepcopy(row)
     seeded.update(case_id="seeded", run_id="seeded")
     seeded["seeding"]["seeding_ladder"] = "direct"
-    blocked = {**row, "case_id": "blocked", "run_id": "blocked", "accounting_state": "blocked", "value": 100.}
+    blocked = {**row, "case_id": "blocked", "run_id": "blocked", "accounting_state": "blocked", "value": 100.0}
     stats = aggregates([row, repeated, seeded, blocked])
     assert len(stats["spread"]) == 3
     assert all(item["n"] <= 1 and item["ci95"] is None for item in stats["spread"])
@@ -83,9 +97,18 @@ def test_case_rejects_fractional_and_indivisible_budgets():
 
 def test_explicit_exporter_blocker_and_evaluation_semantics_propagate(tmp_path, export_factory):
     from evonn_shared.telemetry import FairnessFlag
+
     bundle = export_factory(tmp_path / "export")
-    flag = FairnessFlag.model_validate_json(json.dumps({"code": "invalid_surface", "severity": "blocker",
-        "benchmark_ids": [], "message": "unverified data reduction"}))
+    flag = FairnessFlag.model_validate_json(
+        json.dumps(
+            {
+                "code": "invalid_surface",
+                "severity": "blocker",
+                "benchmark_ids": [],
+                "message": "unverified data reduction",
+            }
+        )
+    )
     summary = bundle.summary.model_copy(update={"fairness_flags": (flag,)})
     changed = type(bundle)(bundle.root, bundle.manifest, bundle.results, summary)
     acceptance = evaluate_case(Case("tier1_core", 64, 42), [changed])
@@ -102,16 +125,38 @@ def test_audit_requires_exact_unique_attempt_projection(tmp_path, export_factory
     from evonn_shared.benchmarks import resolve_data_root
     from evonn_shared.canonical import canonical_sha256
     from evonn_shared.rng import derive_stream, StreamName
+
     versions = json.loads((resolve_data_root() / "runtime/tier1_core_v1.json").read_text())["versions"]
     bundle = export_factory(tmp_path / "export", budget=8)
-    attempts = [{"benchmark_id": record.benchmark_id, "outcome_id": record.outcome_id,
-                 "contender_id": "extra_trees", "family": "extra_trees", "parameters": {},
-                 "status": "ok", "reason": None, "score": record.metric.value, "charged": 1, "invalid": 0}
-                for record in bundle.results.records]
+    attempts = [
+        {
+            "benchmark_id": record.benchmark_id,
+            "outcome_id": record.outcome_id,
+            "contender_id": "extra_trees",
+            "family": "extra_trees",
+            "parameters": {},
+            "status": "ok",
+            "reason": None,
+            "score": record.metric.value,
+            "charged": 1,
+            "invalid": 0,
+        }
+        for record in bundle.results.records
+    ]
     for attempt in attempts:
         attempt["backend"] = {"package": "scikit-learn", "version": versions["scikit-learn"], "device": "cpu"}
-        attempt["model_seed"] = int(canonical_sha256({"stream": str(derive_stream(bundle.manifest.seed, StreamName.INIT)),
-            "benchmark": attempt["benchmark_id"], "outcome": attempt["outcome_id"]}, schema_version="evonn-contender-init-v1", digest_field=None)[:8], 16)
+        attempt["model_seed"] = int(
+            canonical_sha256(
+                {
+                    "stream": str(derive_stream(bundle.manifest.seed, StreamName.INIT)),
+                    "benchmark": attempt["benchmark_id"],
+                    "outcome": attempt["outcome_id"],
+                },
+                schema_version="evonn-contender-init-v1",
+                digest_field=None,
+            )[:8],
+            16,
+        )
     if mutation == "duplicate":
         attempts[-1] = dict(attempts[0])
     elif mutation == "missing":
@@ -119,14 +164,24 @@ def test_audit_requires_exact_unique_attempt_projection(tmp_path, export_factory
     elif mutation == "status":
         attempts[0]["status"] = "skipped"
     documents = {
-        "config.yaml": {"dataset_versions": versions, "git_commit": bundle.manifest.git_commit, "seed": bundle.manifest.seed, "code_dirty": False,
-                        "pools": {"models": {"extra_trees": {"model": "extra_trees", "parameters": {}}}}},
+        "config.yaml": {
+            "dataset_versions": versions,
+            "git_commit": bundle.manifest.git_commit,
+            "seed": bundle.manifest.seed,
+            "code_dirty": False,
+            "pools": {"models": {"extra_trees": {"model": "extra_trees", "parameters": {}}}},
+        },
         "attempts.json": {"accounting": bundle.manifest.accounting.model_dump(mode="json"), "attempts": attempts},
         "dataset_provenance.json": [],
     }
     monkeypatch.setattr(audit, "artifact_json", lambda b, name: documents[name])
     result = audit.benchmark_audit("tier1_core", [bundle])
-    expected = {"duplicate": "duplicate attempt", "missing": "every exported outcome", "status": "status/reason/charge", "datasets": "complete checked dataset"}[mutation]
+    expected = {
+        "duplicate": "duplicate attempt",
+        "missing": "every exported outcome",
+        "status": "status/reason/charge",
+        "datasets": "complete checked dataset",
+    }[mutation]
     assert any(expected in reason for reason in result["blockers"])
     assert result["clean_runs"] == []
     assert all(not item["successful"] and not item["cache_verified"] for item in result["benchmarks"])
@@ -135,7 +190,9 @@ def test_audit_requires_exact_unique_attempt_projection(tmp_path, export_factory
 def test_seed_groups_keep_full_budget_envelopes_separate(tmp_path, export_factory):
     a = export_factory(tmp_path / "a")
     b = export_factory(tmp_path / "b", seed=43)
-    changed_budget = b.manifest.budget.model_copy(update={"wall_clock": b.manifest.budget.wall_clock.model_copy(update={"target_seconds": 123.0})})
+    changed_budget = b.manifest.budget.model_copy(
+        update={"wall_clock": b.manifest.budget.wall_clock.model_copy(update={"target_seconds": 123.0})}
+    )
     changed = type(b)(b.root, b.manifest.model_copy(update={"budget": changed_budget}), b.results, b.summary)
     rows = trend_rows(a, "a", evaluate_case(Case("tier1_core", 64, 42), [a]))
     rows += trend_rows(changed, "b", evaluate_case(Case("tier1_core", 64, 43), [changed]))
@@ -146,8 +203,11 @@ def test_seed_groups_keep_full_budget_envelopes_separate(tmp_path, export_factor
 def test_runtime_presets_require_exact_unique_evidence_bindings(monkeypatch):
     from evonn_compare import cases
     import json
-    receipt = {"runtime_presets": {"local": {"pack": "tier1_core", "budget": 64, "run_ids": ["present", "missing"]}},
-               "runs": [{"run_id": "present", "pack": "tier1_core", "budget": 64, "status": "completed"}] * 2}
+
+    receipt = {
+        "runtime_presets": {"local": {"pack": "tier1_core", "budget": 64, "run_ids": ["present", "missing"]}},
+        "runs": [{"run_id": "present", "pack": "tier1_core", "budget": 64, "status": "completed"}] * 2,
+    }
     monkeypatch.setattr(cases, "read_document", lambda *a: json.dumps(receipt).encode())
     with pytest.raises(ValueError, match="unique"):
         cases.resolve_preset("local")
@@ -156,3 +216,35 @@ def test_runtime_presets_require_exact_unique_evidence_bindings(monkeypatch):
         cases.resolve_preset("local")
     receipt["runtime_presets"]["local"]["run_ids"] = ["present"]
     assert cases.resolve_preset("local") == ("tier1_core", 64)
+
+
+@pytest.mark.parametrize("field", ["host_fingerprint", "backend_version", "protocol_fingerprint"])
+def test_seed_statistics_separate_engine_execution_protocols(tmp_path, export_factory, field):
+    bundle = export_factory(tmp_path / "export")
+    acceptance = evaluate_case(Case("tier1_core", 64, 42), [bundle])
+    original = trend_rows(bundle, "case", acceptance)[0]
+    rows = [
+        {
+            **original,
+            "engine": "prism",
+            "case_id": str(i),
+            "run_id": str(i),
+            "seed": 42 + i,
+            "host_fingerprint": "host",
+            "backend_version": "1",
+            "protocol_fingerprint": "protocol",
+            field: str(i),
+        }
+        for i in range(3)
+    ]
+    spread = aggregates(rows)["spread"]
+    assert len(spread) == 3
+    assert all(group["n"] == 1 and group["ci95"] is None for group in spread)
+
+
+def test_synthetic_engine_export_cannot_pass_runtime_acceptance(tmp_path, export_factory):
+    bundle = export_factory(tmp_path / "export", system="prism")
+    acceptance = evaluate_case(Case("tier1_core", 64, 42), [bundle], no_contenders=True)
+    assert acceptance["operating_state"] == "exploratory"
+    assert any("invalid engine evidence" in value for value in acceptance["blockers"])
+    assert classify(bundle.root, propagated=True)["level"] != "L3"

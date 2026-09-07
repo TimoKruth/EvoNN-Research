@@ -492,14 +492,14 @@ name = "evonn-prism"
 version = "0.0.0"
 source = { editable = "EvoNN-Prism" }
 dependencies = [
-    { name = "evonn-shared", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "evonn-shared", extra = ["datasets"], marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "mlx", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
     { name = "numpy", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "evonn-shared", editable = "EvoNN-Shared" },
+    { name = "evonn-shared", extras = ["datasets"], editable = "EvoNN-Shared" },
     { name = "mlx", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'", specifier = ">=0.25,<1" },
     { name = "numpy", specifier = ">=2.1,<3" },
 ]
@@ -510,15 +510,31 @@ version = "0.0.0"
 source = { editable = "EvoNN-Shared" }
 dependencies = [
     { name = "duckdb", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "numpy", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "pydantic", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "pyyaml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+]
+
+[package.optional-dependencies]
+datasets = [
+    { name = "numpy", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "openml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pandas", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "scikit-learn", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "scipy", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "duckdb", specifier = ">=1.1,<2" },
+    { name = "numpy", specifier = ">=2.1,<3" },
+    { name = "numpy", marker = "extra == 'datasets'", specifier = "==2.4.4" },
+    { name = "openml", marker = "extra == 'datasets'", specifier = "==0.15.1" },
+    { name = "pandas", marker = "extra == 'datasets'", specifier = "==3.0.2" },
     { name = "pydantic", specifier = ">=2.11,<3" },
     { name = "pyyaml", specifier = ">=6.0.2,<7" },
+    { name = "scikit-learn", marker = "extra == 'datasets'", specifier = "==1.8.0" },
+    { name = "scipy", marker = "extra == 'datasets'", specifier = "==1.17.1" },
 ]
 
 [[package]]
@@ -543,14 +559,14 @@ name = "evonn-topograph"
 version = "0.0.0"
 source = { editable = "EvoNN-Topograph" }
 dependencies = [
-    { name = "evonn-shared", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "evonn-shared", extra = ["datasets"], marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "mlx", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
     { name = "numpy", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "evonn-shared", editable = "EvoNN-Shared" },
+    { name = "evonn-shared", extras = ["datasets"], editable = "EvoNN-Shared" },
     { name = "mlx", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'", specifier = ">=0.25,<1" },
     { name = "numpy", specifier = ">=2.1,<3" },
 ]

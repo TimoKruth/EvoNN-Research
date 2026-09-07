@@ -14,6 +14,26 @@ Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
+## Phase 2 implementation review — 2026-09-07
+
+Prism and Topograph now have separate genome/compiler/training/search modules.
+Shared owns data preprocessing, cache and persistence infrastructure. The
+Contenders dataset loader moved without changing canonical manifest or split
+bytes; its original dataset tests moved with it. Current capability declarations
+advance independently of immutable B0 bootstrap receipts. The active bootstrap
+probe uses the still-unimplemented Stratograph declaration; real engine tests
+now execute separately on Linux NumPy and macOS MLX.
+
+Independent reviews caught and corrected normalization/replay, stable CE,
+function-preserving morphology, historical archive retention, champion loss,
+novelty/pooling failure handling, supervisor cleanup and export/accounting issues.
+Numerical review exercised all families on both backends; 128 independent
+morphism cases preserved logits within 4.92e-7. SIGKILL boundary tests cover
+worker, transaction, row and checkpoint publication. A separate evolution test
+covers reproduction and trained inheritance across resume. Final source-bound
+cohort and hosted acceptance are still pending; development outputs are not
+scientific qualification.
+
 ## Phase 1 runtime verification — 2026-09-07
 
 Five real CPU Contenders runs completed 336 fits at unchanged execution commit

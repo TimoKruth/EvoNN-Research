@@ -38,7 +38,10 @@ hosted checks govern integration of the reviewed implementation. The runtime
 receipt `governance/phase1-runtime-evidence.json` records 336 successful fits,
 three core@64 seeds plus core@128 and smoke@16; core audit passes with zero
 blockers and every run is L3. Next implementation: **Phase 2 Prism + Topograph**.
-Engine resume/speciation and scientific/backend qualification remain open.
+Phase 2 is in implementation: validated family/DAG compilers, real differentiated
+MLX/NumPy training and separate engine search cores are under independent review.
+Crash/resume, export propagation and the three-seed cohort remain acceptance gates;
+scientific/backend qualification is not inferred from implementation.
 Short validation and baseline runs up to 30 minutes are allowed. Stop before
 starting a multi-hour training campaign and report the exact proposed run.
 
@@ -512,6 +515,32 @@ checks.
 ---
 
 ## Phase 2 — Prism + Topograph
+
+**Execution expansion (2026-09-07, active branch):**
+
+- **WP-2.1a / 2.5a — Search objects:** validated, deeply immutable genomes;
+  content IDs; family compatibility and innovation-aligned graph operations.
+  Verify every family/operator with a real optimizer update on both backends,
+  plus invalid shapes, graph cycles, causal LM and STE gradient tests.
+- **WP-2.2a / 2.6a / 2.7a — Training:** package-local differentiated MLX and
+  NumPy models, AdamW, bounded epochs/time, train-only regression calibration,
+  measured serialized bytes versus estimated packed precision bytes. Shared
+  retains only numerical preprocessing and infrastructure. The optional Shared
+  dataset extra preserves the exact Phase-1 loader/split bytes.
+- **WP-2.3a / 2.8a — Selection and state:** family niches/Pareto and actual
+  reproduction-changing speciation; domain mutation, adaptive scheduling,
+  namespace-isolated inheritance. Serialize RNG, innovations, archives and
+  normalization buffers. A historical archive best must survive a worse refit.
+- **WP-2.4a / 2.9a — Run boundary:** engine-local coordinators, frozen Shared
+  RunWorkspace/DuckDB/checkpoints, durable worker result before row commit,
+  export snapshot ownership, idempotent recovery, source/config/data drift
+  rejection. Test real SIGKILL after worker/result/row/stage/payload/manifest;
+  earlier incomplete work must never be silently charged twice.
+- **WP-2.10a — Exit evidence:** obligatory engine telemetry, Compare ingestion,
+  report/model replay, explicit portability-only fallback, hosted Linux and
+  macOS tests, three-seed core@64 and Tier-A cohort. Keep this WP open until
+  exact source commits, run IDs and verified artifact digests are recorded.
+
 
 **Objective:** reference engine and first challenger at L3 on Tier A
 **and** `tier1_core@64`. Spec: claude-spec/07, /08 — scope claim: **ch. 08
