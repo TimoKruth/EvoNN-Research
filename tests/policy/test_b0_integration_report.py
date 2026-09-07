@@ -385,11 +385,11 @@ def test_parallel_guide_points_to_single_lane_model_and_preserves_authorization(
     assert "No Phase 0 lane or integration branch exists yet" not in guide
     record = yaml.safe_load((REPO_ROOT / "governance/phase0-interface-freeze.yaml").read_text())
     authorized = record["status"] == "merged_verified"
-    assert record["lane_authorization"] is authorized
+    assert record["lane_authorization"]["authorized"] is authorized
     for field in (
         f"status: {record['status']}",
         f"lane_authorization: {str(authorized).lower()}",
-        f"lane_branch_creation: {'authorized' if authorized else 'not authorized'}",
+        "lane_branch_creation: authorized" if authorized else "lane_branches: none",
     ):
         assert field in guide
     for required in (
