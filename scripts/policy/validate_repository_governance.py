@@ -26,7 +26,7 @@ REQUIRED_B0_ITEM_IDS: Tuple[str, ...] = ("B0.1", "B0.2", "B0.3", "B0.4", "B0.5",
 EXCLUDED_PROSE_SCAN_TREES: Set[str] = {"archive", "claude-spec", "claudex-spec"}
 IGNORED_INTERNAL_TREES: Set[str] = {".git", ".claude", ".superpowers", ".pytest_cache"}
 PHASE0_STANDALONE_VALIDATOR_SHA256 = (
-    "bf8c84d75b6714fd270babf93c7c46471d6278ff5092a9e8a30973c580072c4b"
+    "90c73f708994d0cf30c6e782a74386d13f846f2e37a20a33bb17ce085c90e932"
 )
 GIT_EXECUTABLE = shutil.which("git", path=os.defpath)
 PHASE0_GIT_OVERRIDE_VARIABLES: Set[str] = {

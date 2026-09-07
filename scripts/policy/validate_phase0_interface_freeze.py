@@ -2139,7 +2139,7 @@ def validate_phase0_interface_freeze(
         for previous in (V1_CONTRACT, V2_CONTRACT):
             for review in previous.reviews:
                 relative = review["evidence_path"]
-                entry = head_tree.get(relative)
+                entry = head_tree[relative] if relative in head_tree else None
                 if entry is None or entry[:2] != ("100644", "blob"):
                     errors.append(f"historical review must remain a committed 100644 blob: {relative}")
                 elif _sha256(_blob(repo_root, entry[2])) != review["evidence_sha256"]:
