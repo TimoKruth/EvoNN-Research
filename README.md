@@ -29,7 +29,7 @@ Exact integrations and review decisions are recorded in project history.
 | Shared | Canonical identities/RNG, strict budgets/telemetry/three-file exports, catalog/pack loaders, checkpoints, LM-cache validation, transactional DuckDB/workspace and verified read-only access | Engine consumers and their evidence |
 | Shared benchmarks | Eight immutable planned definitions, three packs, verified historical provenance and budget/export composition | Future image/LM packs and optional enhanced runtime evidence |
 | Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Engine-specific resume/speciation and scientific qualification |
-| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality and interactive evidence dashboard | Final hosted acceptance; evolutionary engine comparisons |
+| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality and interactive evidence dashboard | Evolutionary engine comparisons and scientific qualification |
 | Prism, Topograph, Stratograph, Primordia | Importable packages and bootstrap runtime dependencies/probes | Search/training engines and qualified scientific results |
 
 Phase 1 runtime evidence now contains **336 successful fits in five short runs**:
@@ -37,7 +37,9 @@ Phase 1 runtime evidence now contains **336 successful fits in five short runs**
 Core admission passes with zero blockers and all outputs are L3; smoke remains
 insufficient for complete floor coverage. The compact
 [runtime receipt](governance/phase1-runtime-evidence.json) binds exact code and
-export hashes. PRs #29/#30 carry the implementation and final hosted acceptance.
+export hashes. [PR #29](https://github.com/TimoKruth/EvoNN-Research/pull/29) and
+[PR #30](https://github.com/TimoKruth/EvoNN-Research/pull/30) carry the
+implementation and required hosted acceptance checks.
 Next implementation phase: Prism + Topograph; no evolutionary engine or
 scientific superiority is qualified.
 

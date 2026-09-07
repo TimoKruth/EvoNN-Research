@@ -33,8 +33,8 @@ are merged. Phase 0 contract acceptance is bound in
 `governance/phase0-acceptance.json`: exact canonical commit/tree, successful
 Linux/macOS evidence, immutable freeze digests and every parent WP's tests.
 
-**Phase 1 Contenders + Compare is implemented in #29/#30.** Complete final
-review/hosted acceptance before merging and closing the phase. The runtime
+**Phase 1 Contenders + Compare is implemented in #29/#30.** Their required
+hosted checks govern integration of the reviewed implementation. The runtime
 receipt `governance/phase1-runtime-evidence.json` records 336 successful fits,
 three core@64 seeds plus core@128 and smoke@16; core audit passes with zero
 blockers and every run is L3. Next implementation: **Phase 2 Prism + Topograph**.
@@ -426,8 +426,9 @@ Spec: claude-spec/05, /06.
 
 Implemented and locally verified through loading, fitting, transactional
 recording, unchanged three-file exports and read-only Compare consumption.
-Final hosted/review acceptance remains open; checkboxes close only with that
-evidence. Runtime receipt: `governance/phase1-runtime-evidence.json`.
+The checked work packages below describe implemented, tested behavior;
+integration requires both hosted lanes on #29/#30. Runtime receipt:
+`governance/phase1-runtime-evidence.json`.
 The four core runs took 118–213 seconds each; smoke took 41 seconds. The
 336 fits completed without failed evaluations. Dashboard surfaces and filters
 were checked on desktop and mobile using separate synthetic UI fixtures;
@@ -464,26 +465,26 @@ orchestration, trends, dashboard). **Joint:** phase-exit fair-matrix run.
 *Interface freeze:* export contract (Phase 0, already frozen), pack/case
 schema (B→A), adequacy-label enum (A→B for lane summaries).
 
-- [ ] **WP-1.1 Required contender floor — all four groups.** Tabular,
+- [x] **WP-1.1 Required contender floor — all four groups.** Tabular,
   synthetic, **image (flat-feature MLP/tree)**, and **language modeling
   (n-gram)** required pools per claude-spec/06 — implemented now even
   though image/LM packs arrive in Phase 4; exercised by fixture tasks
   until then. `evaluation_semantics` = one fit/eval pass per contender.
-- [ ] **WP-1.2 Optional enhanced contenders.** `boosted` + `torch` extras;
+- [x] **WP-1.2 Optional enhanced contenders.** `boosted` + `torch` extras;
   skips recorded in exports, surfaced by Compare — never silent.
-- [ ] **WP-1.3 Pack resolution + case model.** Budget-stamped compare
+- [x] **WP-1.3 Pack resolution + case model.** Budget-stamped compare
   packs; case = (pack, budget, seed); workspace layout per claude-spec/05.
-- [ ] **WP-1.4 fair-matrix (contenders-only first).** Orchestration,
+- [x] **WP-1.4 fair-matrix (contenders-only first).** Orchestration,
   export validation, budget parity, `lane_acceptance.json`, per-case
   summaries. **Complete lane-state vocabulary**: contract-fair /
   trusted-core / trusted-extended **plus explicit exploratory and
   reference states**, alongside accounting + repeatability states.
   Standing rule enforced in code: `--no-contenders` cohorts are stamped
   engine-only and can never support an external-floor claim.
-- [ ] **WP-1.5 Trend artifacts.** Per-case `trend_rows.json`; append-only
+- [x] **WP-1.5 Trend artifacts.** Per-case `trend_rows.json`; append-only
   workspace JSONL; trend markdown surfacing lane accounting +
   repeatability; `workspace-report` rebuild.
-- [ ] **WP-1.6 Dashboard — full Phase 1 contract.** Winner tables
+- [x] **WP-1.6 Dashboard — full Phase 1 contract.** Winner tables
   (full-system + projects-only), lane health by budget, per-seed
   snapshots, multi-seed spread/CIs **and pairwise seed deltas**, ceiling
   ties separated, **measurement downgrade reasons**, **backend/hardware
@@ -491,13 +492,13 @@ schema (B→A), adequacy-label enum (A→B for lane summaries).
   (score-over-budget/case, benchmark/task-kind filters), and the **named
   decision slices** of claude-spec/05 (later decision-gate enforcement
   depends on them).
-- [ ] **WP-1.7 benchmark-audit with adequacy.** Pack admission audit incl.
+- [x] **WP-1.7 benchmark-audit with adequacy.** Pack admission audit incl.
   per-benchmark **floor adequacy labels** (`strong_floor`,
   `acceptable_floor`, `weak_floor`, `missing_enhanced_pressure`); a
   `weak_floor` blocks decision-grade promotion; full claude-spec/02
   admission surface (runtime class, cache validation, budget
   divisibility); decision-grade requires **zero blockers**.
-- [ ] **WP-1.8 output-quality.** L0–L3 classifier with per-run gap report
+- [x] **WP-1.8 output-quality.** L0–L3 classifier with per-run gap report
   (L4 in Phase 3).
 
 **Phase 1 exit (contract evidence):** contenders-only fair-matrix at

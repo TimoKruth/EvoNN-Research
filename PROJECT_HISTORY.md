@@ -7,7 +7,8 @@ authoritative: false
 # EvoNN Project History
 
 **Updated:** 2026-09-07. Foundation acceptance is merged through #28;
-Phase 1 implementation/runtime evidence is under final review in #29/#30.
+Phase 1 implementation and runtime evidence are recorded in #29/#30, with
+required hosted checks attached to those revisions.
 This is the compact record of completed work, review decisions and verification.
 Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
@@ -32,6 +33,10 @@ true held-out model fixtures. Linux confirmed exact consumed reference arrays
 for both synthetic generators: platform-dependent discarded Float64
 intermediates are diagnostic; consumed arrays still require exact hashes.
 No frozen metadata, model strength or numeric tolerance was changed.
+Final local verification: 790 foundation/contract tests, 41 Contenders tests,
+18 Compare tests, Ruff, import boundaries and standalone governance/freeze
+validation passed. Actual dashboard rendering and benchmark filtering also
+passed; absent engines produce no fabricated wins or pairwise evidence.
 
 ## Durable decisions
 
