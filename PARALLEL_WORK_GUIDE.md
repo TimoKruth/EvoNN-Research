@@ -15,8 +15,8 @@ Gate B0 is closed. The v2 canonical merge has been verified; Phase 0 implementat
 has begun and its maintenance series is integrated. WP-0.10 and the Phase 0 exit
 remain joint. The exact authorization block below is retained because the
 standalone freeze validator requires this canonical path and matching marker.
-It records the active freeze status. The v3 successor stays unauthorized until
-its canonical merge and separate authorization attestation are verified.
+It records the active freeze status. The v3 canonical merge is verified below. Authorization becomes effective
+when this separate attestation is merged. Phase 0 acceptance remains separate.
 
 <!-- phase0-interface-freeze:begin -->
 ```yaml
@@ -31,10 +31,12 @@ digests:
 reviews:
   - reviews/2026-09-07-phase0-lane-a-producer-v3-review.md
   - reviews/2026-09-07-phase0-lane-b-consumer-v3-review.md
-status: approved_pending_merge
-lane_authorization: false
-lane_branches: none
-next_sequence: protected PR merge → verify canonical merge → attestation → only then create lane/integration branches
+status: merged_verified
+lane_authorization: true
+canonical_merge_commit: 322834900aa99a267b78b789a733e96ac205dd04
+verified_at: 2026-09-07T15:49:25Z
+lane_branch_creation: authorized
+authorization_effective_after: separate authorization attestation is merged
 joint_boundary: WP-0.10 and the Phase 0 exit remain joint
 ```
 <!-- phase0-interface-freeze:end -->
