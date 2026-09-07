@@ -364,8 +364,14 @@ or closes Phase 0. After parent merges, retarget and revalidate each child.
   partial writes, file/directory fsync failure and concurrent publishers.
   Post-publication directory-fsync failure reports uncertain durability;
   a complete output may already exist and is never removed as a rollback.
-- [ ] Hosted integrity evidence: execute and retain the synthetic probe on both
+- [x] Hosted integrity evidence: execute and retain the synthetic probe on both
   hosts, document evidence limits and merge order.
+  Both stable required jobs generate/validate the complete eight-case probe,
+  then upload only its explicit JSON file with missing-artifact errors enabled.
+  Workflow regressions forbid conditional/continue-on-error probe bypass and
+  bind upload ordering/path/pinned action. Local execution is not a substitute
+  for hosted results; each stacked PR records its own check state. This finishes
+  implementation of the bounded series, not any parent gate or review.
 
 #### WP-0.1b — Versioned contracts and maintainable internal helpers
 

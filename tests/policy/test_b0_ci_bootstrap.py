@@ -152,6 +152,7 @@ def test_linux_workflow_has_exact_trust_lane_contract() -> None:
         f"actions/checkout@{CHECKOUT_SHA}",
         f"astral-sh/setup-uv@{SETUP_UV_SHA}",
         f"actions/upload-artifact@{UPLOAD_SHA}",
+        f"actions/upload-artifact@{UPLOAD_SHA}",
     ]
     setup_uv = next(step for step in steps if str(step.get("uses", "")).startswith("astral-sh/setup-uv@"))
     assert setup_uv["with"]["version"] == UV_VERSION
@@ -189,6 +190,7 @@ def test_macos_workflow_has_exact_engine_lane_contract() -> None:
         f"actions/checkout@{CHECKOUT_SHA}",
         f"astral-sh/setup-uv@{SETUP_UV_SHA}",
         f"actions/upload-artifact@{UPLOAD_SHA}",
+        f"actions/upload-artifact@{UPLOAD_SHA}",
     ]
     setup_uv = next(step for step in steps if str(step.get("uses", "")).startswith("astral-sh/setup-uv@"))
     assert setup_uv["with"]["version"] == UV_VERSION
@@ -224,6 +226,35 @@ def test_macos_runs_the_shared_persistence_regressions() -> None:
     ]]
     assert ["uv", "lock", "--check"] in foundation
     assert ["verify_python_package_identity", "evonn-shared", "evonn_shared", "shared"] in foundation
+
+
+@pytest.mark.parametrize("name,job,lane", [
+    ("linux-trust.yml", "linux-trust", "linux"), ("macos-engines.yml", "macos-engines", "macos"),
+])
+def test_both_hosts_generate_validate_and_retain_only_the_synthetic_report(name, job, lane):
+    workflow, _ = _workflow(name)
+    steps = _steps(_job(workflow, job))
+    generation = next(step for step in steps if step["name"] == "Generate and validate synthetic integrity evidence")
+    assert set(generation) == {"name", "run"}  # No conditional or continue-on-error escape hatch.
+    prefix = ["uv", "run", "--locked", "--all-packages", "--group", "dev", "python",
+              "EvoNN-Shared/tests/integrity_probe.py"]
+    assert _logical_shell_commands(generation["run"]) == [
+        [*prefix, "--work-root", ".artifacts/reference-integrity/runs",
+         "--output", ".artifacts/reference-integrity/report.json"],
+        [*prefix, "--validate", ".artifacts/reference-integrity/report.json"],
+    ]
+    upload = next(step for step in steps if step["name"] == "Upload synthetic integrity evidence")
+    assert upload == {
+        "name": "Upload synthetic integrity evidence",
+        "uses": f"actions/upload-artifact@{UPLOAD_SHA}",
+        "with": {
+            "name": f"b0-{lane}-synthetic-integrity", "path": ".artifacts/reference-integrity/report.json",
+            "include-hidden-files": True, "if-no-files-found": "error",
+        },
+    }
+    foundation_index = next(i for i, step in enumerate(steps) if step.get("run") == FOUNDATION_SCRIPT)
+    policy_index = next(i for i, step in enumerate(steps) if step.get("run") == "scripts/ci/b0-policy-checks.sh")
+    assert foundation_index < steps.index(generation) < steps.index(upload) < policy_index
 
 
 @pytest.mark.parametrize("name", ["linux-trust.yml", "macos-engines.yml"])

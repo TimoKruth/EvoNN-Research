@@ -37,6 +37,20 @@ jobs:
           test "$(uname -m)" = "arm64"
           uv run --locked --all-packages --group dev python -c "import platform; assert platform.machine() == 'arm64'"
           uv pip show mlx
+      - name: Generate and validate synthetic integrity evidence
+        run: |
+          uv run --locked --all-packages --group dev python EvoNN-Shared/tests/integrity_probe.py \
+            --work-root .artifacts/reference-integrity/runs \
+            --output .artifacts/reference-integrity/report.json
+          uv run --locked --all-packages --group dev python EvoNN-Shared/tests/integrity_probe.py \
+            --validate .artifacts/reference-integrity/report.json
+      - name: Upload synthetic integrity evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: b0-macos-synthetic-integrity
+          path: .artifacts/reference-integrity/report.json
+          include-hidden-files: true
+          if-no-files-found: error
       - name: Run common B0 policies
         run: scripts/ci/b0-policy-checks.sh
       - name: Run macOS engine checks
