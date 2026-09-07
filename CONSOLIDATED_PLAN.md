@@ -339,8 +339,12 @@ or closes Phase 0. After parent merges, retarget and revalidate each child.
   transaction. Missing files and WALs are rejected, never created/recovered.
   Regression coverage includes corruption, concurrent readers/writers, aliased
   files, enforced read-only SQL, unchanged bytes and exception cleanup.
-- [ ] Diagnostic consistency: consume the verified reader and reject stale or
+- [x] Diagnostic consistency: consume the verified reader and reject stale or
   contradictory checkpoint/config/accounting evidence before export.
+  Row-chain and run identity verification precede checkpoint-tip/count/score,
+  declared configuration and fresh/resumed accounting checks. Invalid evidence
+  produces no output and is not repaired. The export remains synthetic, not
+  a production symbiosis envelope or externally anchored authenticity claim.
 - [ ] Resume inputs: bind seed and protected-label identity to checkpoint state.
 - [ ] Integrity probe: emit machine-readable killed/resumed comparison evidence.
 - [ ] Atomic artifact publication: no overwrite or partial visible export.

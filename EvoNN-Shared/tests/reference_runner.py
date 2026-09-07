@@ -21,12 +21,12 @@ import os
 from pathlib import Path
 import signal
 
-import duckdb
-
 from evonn_shared.budgets import BudgetAccounting
-from evonn_shared.checkpoints import CheckpointPublication, load_latest_checkpoint, publish_checkpoint
+from evonn_shared.checkpoints import (
+    CheckpointPublication, load_latest_checkpoint, publish_checkpoint, read_checkpoint_manifest,
+)
 from evonn_shared.rng import StreamName, derive_stream
-from evonn_shared.run_store import STORE_FILENAME, open_run_store
+from evonn_shared.run_store import open_run_reader, open_run_store
 from evonn_shared.run_workspace import create_run_workspace, open_run_workspace, write_report
 from evonn_shared.telemetry import IntegerMeasurement, MeasurementProvenance
 
@@ -182,26 +182,42 @@ def run(root, *, stop_after=None, crash_at=None, crash_step=3,
     return accounting
 
 
-def export_diagnostic(root, destination):
-    """Read a closed fixture through DuckDB's enforced read-only connection."""
-    if destination.resolve().is_relative_to(root.resolve()):
-        raise ValueError("diagnostic export must be outside the source workspace")
+def diagnostic_data(root):
+    """Verify a coherent closed synthetic fixture under shared ownership."""
     workspace = open_run_workspace(root)
     workspace.validate()
-    _, payload = load_latest_checkpoint(workspace.checkpoint_directory)
-    accounting = BudgetAccounting.model_validate_json(workspace.summary_path.read_bytes())
-    with duckdb.connect(str(root / STORE_FILENAME), read_only=True) as connection:
-        cursor = connection.execute(
-            "SELECT sequence, benchmark_id, contender_id, metric_name, metric_value, "
-            "previous_sha256, row_sha256 FROM evaluations ORDER BY sequence"
-        )
-        names = [column[0] for column in cursor.description]
-        evaluations = [dict(zip(names, row, strict=True)) for row in cursor.fetchall()]
+    with open_run_reader(root, workspace.run_id) as reader:
+        _, payload = load_latest_checkpoint(workspace.checkpoint_directory)
+        manifest = read_checkpoint_manifest(workspace.checkpoint_directory)
+        state = json.loads(payload)
+        config = json.loads(workspace.config_path.read_bytes())
+        accounting = BudgetAccounting.model_validate_json(workspace.summary_path.read_bytes())
+        evaluations = [row.model_dump() for row in reader.evaluations()]
+        record = reader.run()
+        if manifest is None or manifest.run_id != workspace.run_id or state["config"] != config:
+            raise ValueError("diagnostic configuration or checkpoint identity mismatch")
+        if (state["completed"] != len(evaluations) or state["tip"] != record.evaluation_tip_sha256
+                or state["score_sum"] != sum(row["metric_value"] for row in evaluations)):
+            raise ValueError("diagnostic checkpoint does not describe the complete row chain")
+        for row in evaluations:
+            if (row["benchmark_id"] != "synthetic_reference" or row["contender_id"] != "noop_reference"
+                    or row["metric_name"] not in ("agreement", "failed_attempt", "invalid_attempt")
+                    or row["metric_value"] not in ((0.0, 1.0) if row["metric_name"] == "agreement" else (0.0,))):
+                raise ValueError("diagnostic contains an unsupported synthetic observation")
+        fresh = evaluations[accounting.cached_evaluations:]
+        if (accounting.evaluation_count != config["budget"]
+                or accounting.actual_evaluations + accounting.cached_evaluations != len(evaluations)
+                or accounting.resumed_evaluations != accounting.cached_evaluations
+                or accounting.resumed_from_run_id not in (None, workspace.run_id)
+                or accounting.failed_evaluations != sum(row["metric_name"] == "failed_attempt" for row in fresh)
+                or accounting.invalid_evaluations != sum(row["metric_name"] == "invalid_attempt" for row in fresh)):
+            raise ValueError("diagnostic accounting does not describe persisted work")
+        source_bytes = sum(path.stat().st_size for path in root.rglob("*") if path.is_file())
     measured = IntegerMeasurement.model_validate({
-        "value": sum(path.stat().st_size for path in root.rglob("*") if path.is_file()),
+        "value": source_bytes,
         "provenance": MeasurementProvenance.MEASURED,
     })
-    diagnostic = {
+    return {
         "evidence_class": "synthetic_contract_preparation",
         "attempt_totals": {
             "success": sum(row["metric_name"] == "agreement" for row in evaluations),
@@ -209,11 +225,18 @@ def export_diagnostic(root, destination):
             "invalid": sum(row["metric_name"] == "invalid_attempt" for row in evaluations),
         },
         "checkpoint_sha256": hashlib.sha256(payload).hexdigest(),
-        "state": json.loads(payload),
+        "state": state,
         "accounting": accounting.model_dump(mode="json"),
         "evaluations": evaluations,
         "source_bytes": measured.model_dump(mode="json"),
     }
+
+
+def export_diagnostic(root, destination):
+    """Export only validated evidence; never automatically repair the source."""
+    if destination.resolve().is_relative_to(root.resolve()):
+        raise ValueError("diagnostic export must be outside the source workspace")
+    diagnostic = diagnostic_data(root)
     with destination.open("xb") as output:
         output.write(encode(diagnostic))
 
