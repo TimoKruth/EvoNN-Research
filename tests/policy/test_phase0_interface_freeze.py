@@ -2490,3 +2490,57 @@ def test_phase0_acceptance_rejects_unbound_evidence(acceptance_clone, validator,
         _git(clone, "-c", "user.name=policy-test", "-c", "user.email=policy@test", "merge", "--no-ff", sibling, "-m", "merge duplicate introductions")
     accepted, errors = _acceptance_verdict(validator, clone)
     assert not accepted and errors, (mutation, errors)
+
+
+@pytest.mark.parametrize("wrapper", [("```markdown", "```"), ("~~~~", "~~~~"), ("<!--", "-->"), ("> ", "")])
+def test_phase0_acceptance_ignores_hidden_or_quoted_parent_examples(acceptance_clone, validator, wrapper):
+    path = acceptance_clone / "CONSOLIDATED_PLAN.md"
+    original = path.read_text()
+    entries = "\n".join(f"- [x] **WP-0.{item} Example**" for item in range(1, 11))
+    prefix, suffix = wrapper
+    example = ("\n".join(prefix + line for line in entries.splitlines())
+               if prefix == "> " else prefix + "\n" + entries + "\n" + suffix)
+    with_example = original.replace("## Phase 1 —", example + "\n\n## Phase 1 —", 1)
+    path.write_text(with_example)
+    _commit(acceptance_clone, "show parent syntax as example")
+    tree = validator._tree(acceptance_clone, "HEAD", "test", [])
+    assert validator._validate_documents(acceptance_clone, _record(acceptance_clone), tree, validator.V3_CONTRACT) == []
+    # Removing the actual parent lines leaves only non-checklist examples.
+    lines = with_example.splitlines()
+    remaining = []
+    removed = 0
+    for line in lines:
+        if line.startswith("- [x] **WP-0.") and removed < 10:
+            removed += 1
+        else:
+            remaining.append(line)
+    assert removed == 10
+    path.write_text("\n".join(remaining) + "\n")
+    _commit(acceptance_clone, "leave only hidden parent examples")
+    tree = validator._tree(acceptance_clone, "HEAD", "test", [])
+    errors = validator._validate_documents(acceptance_clone, _record(acceptance_clone), tree, validator.V3_CONTRACT)
+    assert any("exact ordered acceptance state" in error for error in errors), errors
+
+
+@pytest.mark.parametrize("text", [
+    "````markdown\n```\n- [x] **WP-0.1 Fake**\n````",
+    "   ~~~~\n~~~\n- [x] **WP-0.1 Fake**\n   ~~~~",
+    "<!--\n```\n-->\n- [x] **WP-0.1 Real**",
+    "```\n<!--\n```\n- [x] **WP-0.1 Real**",
+    "<!-- unclosed\n- [x] **WP-0.1 Fake**",
+    "~~~ <!-- info\n- [x] **WP-0.1 Fake**\n~~~\n- [x] **WP-0.1 Real**",
+    "``` <!-- info\n- [x] **WP-0.1 Fake**\n```\n- [x] **WP-0.1 Real**",
+    "~~~\n- [x] **WP-0.1 Fake**",
+])
+def test_visible_checklist_respects_fence_and_comment_boundaries(validator, text):
+    visible = validator._visible_checklist_text(text)
+    assert "Fake" not in visible
+    if "Real" in text:
+        assert "- [x] **WP-0.1 Real**" in visible
+
+
+def test_visible_checklist_comments_cannot_join_parent_tokens(validator):
+    text = "- [x] **WP-0.<!-- hidden -->1 Fake**\n- [x] **WP-0.2 Real** <!-- note -->"
+    visible = validator._visible_checklist_text(text)
+    assert "WP-0.1 Fake" not in visible
+    assert "- [x] **WP-0.2 Real**" in visible

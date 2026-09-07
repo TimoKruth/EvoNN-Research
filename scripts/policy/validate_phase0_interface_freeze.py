@@ -1794,6 +1794,46 @@ def _phase0_acceptance(
     return not errors, errors
 
 
+def _visible_checklist_text(text: str) -> str:
+    """Exclude fenced examples and HTML comments from the parent checklist."""
+    visible: list[str] = []
+    fence: str | None = None
+    in_comment = False
+    for line in text.splitlines():
+        if fence is not None:
+            closing = re.fullmatch(r" {0,3}(`{3,}|~{3,})[ \t]*", line)
+            if closing and closing[1][0] == fence[0] and len(closing[1]) >= len(fence):
+                fence = None
+            continue
+        if not in_comment:
+            opening = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+            if opening and not (opening[1][0] == "`" and "`" in opening[2]):
+                fence = opening[1]
+                continue
+        fragments: list[str] = []
+        while line:
+            if in_comment:
+                end = line.find("-->")
+                if end == -1:
+                    break
+                fragments.append(" ")
+                line, in_comment = line[end + 3:], False
+            else:
+                start = line.find("<!--")
+                if start == -1:
+                    fragments.append(line)
+                    break
+                fragments.append(line[:start] + " ")
+                line, in_comment = line[start + 4:], True
+        line = "".join(fragments)
+        opening = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+        if opening and not (opening[1][0] == "`" and "`" in opening[2]):
+            fence = opening[1]
+        else:
+            visible.append(line)
+    return "\n".join(visible)
+
+
 def _validate_documents(
     repo_root: Path,
     record: Mapping[str, Any],
@@ -1844,7 +1884,7 @@ def _validate_documents(
                 if contract is V3_CONTRACT:
                     parents = re.findall(
                         r"^- \[([^\]\r\n]*)\][ \t]+\*\*WP-0\.(\d+)(?=[ \t]|\*\*)",
-                        phase0,
+                        _visible_checklist_text(phase0),
                         re.MULTILINE,
                     )
                     expected = [("x" if accepted else " ", str(item)) for item in range(1, 11)]
