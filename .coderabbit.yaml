@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# Install the CodeRabbit GitHub App for this repository to activate reviews.
+language: en-US
+early_access: false
+tone_instructions: >-
+  Be concise and specific. Prioritize actionable correctness and scientific
+  integrity issues. Explain the failure scenario and impact; distinguish
+  confirmed bugs from uncertainty. Avoid stylistic nitpicks already covered by Ruff.
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_in_walkthrough: true
+  collapse_walkthrough: true
+  poem: false
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    # Also review stacked PRs targeting feature/integration branches.
+    base_branches:
+      - ".*"
+  # Extend default exclusions for local generated artifacts. Explicitly include
+  # the workspace lockfile; keep specs, catalogs and textual test fixtures in scope.
+  path_filters:
+    - "uv.lock"
+    - "!.artifacts/**"
+    - "!**/.venv/**"
+    - "!**/__pycache__/**"
+    - "!**/.pytest_cache/**"
+    - "!**/.ruff_cache/**"
+  path_instructions:
+    - path: "**/*"
+      instructions: >-
+        This is the EvoNN research Lab monorepo. Consult the relevant
+        claude-spec chapters for normative requirements and CONSOLIDATED_PLAN.md
+        for current implementation scope. PROGRAM_CHARTER.md defines the Lab /
+        Product boundary; claudex-spec describes the separate Product and is not
+        an implementation mandate for Lab code. Report regressions introduced
+        by this PR, not unrelated future roadmap work. Preserve frozen contracts
+        unless the documented amendment process is followed. Do not treat
+        skeleton imports or smoke probes as evidence of working search engines
+        or qualified backends.
+    - path: "EvoNN-*/src/**/*.py"
+      instructions: >-
+        Check package dependency boundaries against claude-spec/01. Engines must
+        remain independent and exchange evidence through the defined contracts.
+        Check numerical edge cases, finite-value validation, deterministic RNG
+        stream derivation, budget accounting, and uninterrupted/resumed run
+        equivalence where applicable. Distinguish measured metrics from proxies.
+        Respect Python 3.13 and Linux/macOS support; MLX must not be required on
+        Linux or silently replaced with an allegedly equivalent backend.
+    - path: "EvoNN-Shared/src/**/*.py"
+      instructions: >-
+        Prioritize canonical IDs and serialization, immutable evaluation evidence,
+        transactional hash/count records, atomic checkpoint/report publication,
+        durability failure semantics, concurrent writers, and descriptor/path
+        validation. Corrupted evidence must fail closed, not be silently repaired.
+        Evaluate filesystem changes against the documented local POSIX and
+        application-owned-directory assumptions. Do not claim that a local hash
+        chain prevents coordinated tampering or that pathname-based DuckDB opens
+        sandbox hostile processes with the same filesystem permissions.
+    - path: "shared-benchmarks/**"
+      instructions: >-
+        Check canonical catalog identities, split provenance, leakage prevention,
+        comparable budgets, and reproducible benchmark definitions. Fixtures and
+        smoke suites must not be promoted as production scientific evidence.
+    - path: "**/tests/**"
+      instructions: >-
+        Prefer behavioral assertions and meaningful regression cases. Check that
+        failure paths, determinism, and resume/integrity guarantees are exercised
+        when affected. Treat golden files and invalid fixtures as intentional
+        contract evidence; do not normalize invalid fixtures into valid inputs
+        or update goldens merely to hide a behavior change.
+    - path: ".github/workflows/**"
+      instructions: >-
+        Check least-privilege permissions, untrusted PR input handling, pinned
+        tool versions, locked uv workspace installs, Linux/macOS coverage, and
+        stable required check names. Avoid exposing secrets to fork PR code or
+        letting skipped checks falsely satisfy backend qualification.
