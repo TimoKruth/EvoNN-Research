@@ -1,0 +1,18 @@
+schema_version: 1.0.0
+id: digits_image
+display_name: Digits Image Classification
+status: planned
+task_kind: classification
+input_modality: image
+input_shape: [8, 8]
+output_dim: 10
+primary_metric:
+  name: accuracy
+  direction: max
+ceiling:
+  value: 1.0
+  tie_policy: not_evidence
+budget_epochs: 20
+runtime_class: local
+required_contenders: [extra_trees, mlp_wide]
+tags: [catalog_only, image, offline, sklearn]

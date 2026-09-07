@@ -52,6 +52,26 @@ FALLBACK_FIXTURE = FIXTURES / "fallback-a"
 FALLBACK_PACK_FIXTURE = FIXTURES / "fallback-packs"
 INVALID_FIXTURE = FIXTURES / "invalid"
 PRODUCTION_ROOT = Path(__file__).parents[2] / "shared-benchmarks"
+PRODUCTION_BENCHMARK_IDS = (
+    "breast_cancer",
+    "credit_g_classification",
+    "diabetes_regression",
+    "digits_image",
+    "friedman1_regression",
+    "iris_classification",
+    "moons_classification",
+    "wine_classification",
+)
+PRODUCTION_PACK_BENCHMARKS = (
+    "iris_classification",
+    "wine_classification",
+    "breast_cancer",
+    "moons_classification",
+    "digits_image",
+    "diabetes_regression",
+    "friedman1_regression",
+    "credit_g_classification",
+)
 HOSTILE_CONSTRUCTOR_SCALARS = (
     "9" * 5_000,
     "2026-99-99",
@@ -552,7 +572,7 @@ def test_root_precedence_explicit_then_environment_then_repository_default(tmp_p
     assert [item.id for item in list_benchmarks(shared_root=explicit)] == ["contract_explicit"]
     assert [item.id for item in list_benchmarks()] == ["contract_environment"]
     monkeypatch.delenv("EVONN_SHARED_BENCHMARKS_DIR")
-    assert list_benchmarks() == ()
+    assert tuple(item.id for item in list_benchmarks()) == PRODUCTION_BENCHMARK_IDS
 
 
 def test_empty_environment_override_and_non_path_arguments_reject(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1565,12 +1585,19 @@ def test_resolve_pack_path_is_lexical_and_load_rechecks_replacement(tmp_path: Pa
     )
 
 
-def test_production_data_only_catalog_is_exactly_empty_and_no_pack_was_invented() -> None:
-    registry = PRODUCTION_ROOT / "catalog" / "canonical_ids.yaml"
-    assert registry.read_bytes() == b"schema_version: 1.0.0\nentries: []\n"
-    assert sorted(path.name for path in (PRODUCTION_ROOT / "catalog").iterdir()) == ["canonical_ids.yaml"]
-    assert list((PRODUCTION_ROOT / "suites" / "parity").glob("*.yaml")) == []
-    assert list_benchmarks(shared_root=PRODUCTION_ROOT) == ()
+def test_production_data_only_catalog_and_packs_are_exactly_admitted() -> None:
+    benchmarks = list_benchmarks(shared_root=PRODUCTION_ROOT)
+    assert tuple(item.id for item in benchmarks) == PRODUCTION_BENCHMARK_IDS
+    assert {item.status for item in benchmarks} == {BenchmarkStatus.PLANNED}
+    assert all("catalog_only" in item.tags for item in benchmarks)
+    assert sorted(path.stem for path in (PRODUCTION_ROOT / "suites" / "parity").glob("*.yaml")) == [
+        "tier1_core",
+        "tier1_core_smoke",
+        "tier_a_contract",
+    ]
+    for pack_name in ("tier1_core", "tier1_core_smoke", "tier_a_contract"):
+        pack = load_parity_pack(pack_name, shared_root=PRODUCTION_ROOT)
+        assert pack.benchmarks == PRODUCTION_PACK_BENCHMARKS
 
 
 def test_committed_registry_mismatch_fixture_fails_with_registry_code(tmp_path: Path) -> None:

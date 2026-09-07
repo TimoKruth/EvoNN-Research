@@ -1,0 +1,27 @@
+schema_version: 1.0.0
+pack_name: tier1_core_smoke
+ladder_tier: A
+benchmarks:
+  - iris_classification
+  - wine_classification
+  - breast_cancer
+  - moons_classification
+  - digits_image
+  - diabetes_regression
+  - friedman1_regression
+  - credit_g_classification
+budget_policy:
+  evaluation_count: 16
+symmetry: symmetric
+modalities: [image, tabular]
+expected_local_runtime_class: fast
+minimum_contenders:
+  - extra_trees
+  - hist_gb
+  - linear_svc
+  - mlp_wide
+  - ridge_or_linear
+  - svm_nystroem_rbf
+  - svr_or_nystroem_svr
+suitability: smoke
+full_fidelity_local_safe: true
