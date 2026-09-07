@@ -124,7 +124,7 @@ def _rebuild(root: Path, loaded=None):
             seed_groups[signature].add(document["case"]["seed"])
     for comparison_id, document, bundles, acceptance in loaded:
         rows = [row for bundle in bundles for row in trend_rows(bundle, comparison_id, acceptance)]
-        signature = (document["case"]["pack"], document["case"]["budget"], tuple(sorted(document["systems"])), tuple(acceptance["budget_fingerprints"]),
+        signature = None if acceptance["blockers"] else (document["case"]["pack"], document["case"]["budget"], tuple(sorted(document["systems"])), tuple(acceptance["budget_fingerprints"]),
                      tuple(sorted((bundle.manifest.system.value, protocol_fingerprint(bundle), json.dumps(bundle.manifest.seeding.model_dump(mode="json"), sort_keys=True)) for bundle in bundles)))
         observed_seeds = sorted(seed_groups[signature]) if signature in seed_groups else []
         acceptance = {**acceptance, "observed_seeds": observed_seeds,

@@ -65,8 +65,13 @@ def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
             "parameter_count": result.parameter_count.value, "peak_memory_bytes": result.peak_memory_bytes.value,
             "seeding": manifest.seeding.model_dump(mode="json"), "started_at": manifest.timing.started_at.isoformat()})
     if manifest.system.value in {"prism", "topograph"}:
-        protocol = protocol_fingerprint(bundle)
-        active = artifact_json(bundle, "state.json")["elapsed"] if any(ref.path == "state.json" for ref in bundle.summary.artifact_digests) else None
+        protocol, active = None, None
+        try:
+            protocol = protocol_fingerprint(bundle)
+            if any(ref.path == "state.json" for ref in bundle.summary.artifact_digests):
+                active = artifact_json(bundle, "state.json")["elapsed"]
+        except (ValueError, OSError, KeyError, TypeError):
+            protocol, active = None, None  # Invalid evidence remains diagnostic and blocked by admission.
         for row in rows:
             key = (row["benchmark"], row["outcome_id"])
             attempt = attempts[key] if key in attempts else {}
@@ -131,7 +136,7 @@ def aggregates(rows: list[dict]) -> dict:
     groups = defaultdict(list)
     for row in best:
         groups[(row["cohort"], row["pack"], row["budget"], row["benchmark"], row["engine"], row["backend"], row["device"], row["precision"],
-                row["operating_state"], row["accounting_state"], json.dumps(row["seeding"], sort_keys=True), row["envelope_sha256"], row["host_fingerprint"], row.get("backend_version", "legacy"), row.get("protocol_fingerprint", "legacy"))].append(row)
+                row["operating_state"], row["accounting_state"], json.dumps(row["seeding"], sort_keys=True), row["envelope_sha256"], row["host_fingerprint"], row.get("backend_version", "legacy"), (row.get("protocol_fingerprint") or "unavailable"))].append(row)
     spread = []
     for key, values in sorted(groups.items()):
         by_seed = defaultdict(list)

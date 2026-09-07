@@ -248,3 +248,13 @@ def test_synthetic_engine_export_cannot_pass_runtime_acceptance(tmp_path, export
     assert acceptance["operating_state"] == "exploratory"
     assert any("invalid engine evidence" in value for value in acceptance["blockers"])
     assert classify(bundle.root, propagated=True)["level"] != "L3"
+
+
+def test_invalid_engine_config_keeps_blocked_diagnostics(tmp_path, export_factory):
+    bundle = export_factory(tmp_path / "export", system="prism")
+    (bundle.root / "config.yaml").write_bytes(b"invalid config")
+    acceptance = evaluate_case(Case("tier1_core", 64, 42), [bundle], no_contenders=True)
+    rows = trend_rows(bundle, "invalid", acceptance)
+    assert acceptance["blockers"] and rows
+    assert all(row["protocol_fingerprint"] is None and row["active_run_seconds"] is None for row in rows)
+    assert all(group["n"] == 0 for group in aggregates(rows)["spread"])
