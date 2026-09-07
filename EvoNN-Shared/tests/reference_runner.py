@@ -59,9 +59,18 @@ def select_candidate(view):
     return (position + stream) % 2
 
 
-def initialize(root, *, budget, outcomes=None):
+def label_identity(protected_labels):
+    if (type(protected_labels) not in (tuple, list) or not protected_labels
+            or any(type(label) is not int or label not in (0, 1) for label in protected_labels)):
+        raise ValueError("protected labels must be a nonempty binary integer sequence")
+    return hashlib.sha256(encode(list(protected_labels))).hexdigest()
+
+
+def initialize(root, *, budget, outcomes=None, root_seed=19, protected_labels=(0, 1)):
     if type(budget) is not int or budget < 0:
         raise ValueError("budget must be a nonnegative integer")
+    derive_stream(root_seed, StreamName.SEARCH)  # Validate before filesystem changes.
+    labels_sha256 = label_identity(protected_labels)
     if outcomes is None:
         outcomes = ("success",) * budget
     if (type(outcomes) not in (tuple, list) or len(outcomes) != budget
@@ -69,7 +78,8 @@ def initialize(root, *, budget, outcomes=None):
         raise ValueError("outcomes must declare one known outcome per budget slot")
     workspace = create_run_workspace(root.parent, root.name)
     config = {
-        "budget": budget, "root_seed": 19, "outcomes": list(outcomes),
+        "budget": budget, "root_seed": root_seed, "outcomes": list(outcomes),
+        "protected_labels_sha256": labels_sha256,
         "attempt_policy": "all_candidates_charged_including_invalid_v1",
     }
     workspace.config_path.write_bytes(encode(config))  # JSON is also valid YAML.
@@ -99,8 +109,8 @@ def run(root, *, stop_after=None, crash_at=None, crash_step=3,
     target = budget if stop_after is None else stop_after
     if type(target) is not int or not state["completed"] <= target <= budget:
         raise ValueError("stop boundary lies outside the remaining budget")
-    if not protected_labels:
-        raise ValueError("the synthetic evaluator needs scoring labels")
+    if label_identity(protected_labels) != config["protected_labels_sha256"]:
+        raise ValueError("protected label identity differs from the authoritative checkpoint")
     stream = derive_stream(config["root_seed"], StreamName.SEARCH)
 
     with open_run_store(root, workspace.run_id) as store:
