@@ -82,3 +82,18 @@ def test_malformed_pool_yaml_has_controlled_cli_error(tmp_path, capsys):
     assert error.value.code == 2
     assert "invalid pool YAML" in capsys.readouterr().err
     assert not (tmp_path / "runs").exists()
+
+
+def test_ngram_rejects_smoothing_that_underflows_with_observed_counts():
+    model = NGram(order=2, vocabulary_size=2, alpha=np.nextafter(0.0, 1.0))
+    model.fit(np.array([[0], [0]]), np.array([0, 0]))
+    with pytest.raises(ValueError, match="not representable"):
+        model.perplexity(np.array([[0]]), np.array([1]))
+
+
+@pytest.mark.parametrize("parameter", ["data_random_seed", "data_seed", "feature_fraction_seed",
+    "bagging_seed", "bagging_fraction_seed", "extra_seed", "drop_seed", "objective_seed"])
+def test_lightgbm_specific_seed_controls_belong_to_run_protocol(parameter):
+    with pytest.raises(ValueError, match="controls are owned"):
+        build_model("lightgbm", task="classification", seed=42, input_shape=(4,), train_rows=20,
+                    output_dim=2, parameters={parameter: 999})
