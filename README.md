@@ -75,3 +75,15 @@ Work on feature branches and merge through reviewed pull requests. Frozen
 contract changes follow the existing amendment process. The next functional
 milestone is the Phase 0 reference-runner integrity proof, followed by
 Contenders and Compare after joint Phase 0 acceptance.
+
+## License
+
+Copyright (C) 2026 Timo Kruth and contributors.
+
+Unless otherwise indicated, this project's original code and documentation are
+licensed under the GNU General Public License, version 3 only
+(`GPL-3.0-only`). See [LICENSE](LICENSE) for the full terms.
+
+This software is distributed without any warranty; see the license for details.
+Third-party dependencies, datasets, and model weights retain their own licenses.
+Each workspace package includes a copy of the license for standalone distribution.
