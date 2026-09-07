@@ -289,8 +289,8 @@ renamed/bypassed, or cancellation prevents default-branch validation.
 
 - [x] Add the missing macOS persistence tests and cancel superseded PR runs
   (original storage matrix verified on both hosted lanes at PR #10 head
-  `d0db807`; the later synthetic reference-test addition still awaits hosted
-  execution).
+  `d0db807`; synthetic reference tests subsequently verified on both hosted
+  lanes at PR #11 head `41e8e09` on 2026-09-07).
 - [ ] Follow-up: consolidate duplicate contract/package tests and repeated
   lock checks behind one documented entry point; preserve independently
   invocable package scripts and all required checks. Measure before/after
@@ -303,8 +303,9 @@ renamed/bypassed, or cancellation prevents default-branch validation.
   regressions pass. The same 39 hosted-evidence/committed-file cases passed in
   108.10 s before and 45.87 s after on this local macOS checkout; the final
   import-policy-compatible implementation passed them again in 72.81 s.
-  These variable single samples are indicative, not a hosted speed guarantee. Canonical policy and
-  hosted follow-up verification remain pending. Repeated fixture cloning was
+  These variable single samples are indicative, not a hosted speed guarantee.
+  PR #11 head `41e8e09` subsequently passed both hosted lanes, including all
+  634 policy/CI tests (two recursive self-tests deselected). Repeated fixture cloning was
   also measured; no reliable improvement was demonstrated, so it is unchanged.
   A direct cached/uncached comparison of the same B0 report reduced Git
   subprocesses from 226 to 160 with identical successful verdicts. The overnight
@@ -420,6 +421,27 @@ evidence, placeholder hooks count as passing, or any parent WP is unaccepted.
   and joint acceptance remain open. The preparation is carried on
   `agent/p0-followup-preparation`, stacked on PR #10 until its protected merge;
   no production capability or completed Phase-0 gate is claimed.
+
+  **Follow-up: failed/invalid attempt lifecycle (2026-09-07).** Prepared on
+  `agent/p0-attempt-lifecycle`, stacked on PR #11 head `41e8e09`. Extend only
+  the synthetic fixture: checkpoint-bind a deterministic outcome schedule and
+  an explicit policy charging one slot to every candidate, including invalid
+  candidates rejected before full evaluation. Persist failed/invalid attempts
+  under distinct metric names, never as successful agreement scores. Fresh
+  failure/invalid counters are separate from inherited cached work; diagnostic
+  totals retain all persisted outcomes across repeated resumes. Catch only the
+  explicitly injected evaluation-failure type; unexpected exceptions propagate.
+  Tests cover mixed and unsuccessful-only budgets, invalid candidates avoiding
+  the evaluator, immutable schedules, and SIGKILL after each of the four durable
+  boundaries followed by exact row/checkpoint equivalence and no recharge.
+  This is not a general engine lifecycle or exactly-once claim for a kill before
+  the row commit. Synthetic artifacts are test fixtures, not a stable production
+  format; earlier test-fixture configuration formats are not migrated. Catalog
+  admission, production exports, native engine failure/recovery behavior and
+  joint Phase-0 acceptance remain open. Verify with
+  `scripts/ci/shared-checks.sh`, `scripts/ci/phase0-contract-checks.sh`, the
+  existing five policy validators and both hosted lanes; exact results belong
+  to the follow-up PR. No frozen public contract or authority pin is changed.
 - [ ] Jointly review the Phase 0 exit before advancing to Contenders/Compare.
 
 **Lane split & sync:** **A:** WP-0.2, 0.3, 0.4, 0.5 (contract/budget/
