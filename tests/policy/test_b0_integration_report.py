@@ -403,7 +403,7 @@ def test_parallel_guide_points_to_single_lane_model_and_preserves_authorization(
         assert row not in guide
 
 
-def test_consolidated_plan_records_closed_b0_and_exact_next_actions() -> None:
+def test_consolidated_plan_preserves_b0_evidence_and_receipt_handoff() -> None:
     text = PLAN_PATH.read_text(encoding="utf-8")
     b0_section = text.split("## Gate B0", 1)[1].split("## Phase 0", 1)[0]
 
@@ -420,21 +420,27 @@ def test_consolidated_plan_records_closed_b0_and_exact_next_actions() -> None:
     assert "29658842318" in b0_section
     assert "legacy open record until Commit B" not in b0_section
     assert "jointly freeze and record the Phase 0 interfaces" not in b0_section
-    assert "merged_verified" in b0_section
-    assert "protected freeze PR" in b0_section
-    assert "authorization attestation" in b0_section
-
+    # Active freeze/parent state is enforced by the committed-history validator
+    # and its mutation tests. Historical B0 closure must not pin Phase 0 open.
+    receipt_path = REPO_ROOT / "governance/phase0-acceptance.json"
+    assert receipt_path.is_file(), "Phase 0 acceptance receipt is required"
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["gate"] == "phase0" and receipt["status"] == "accepted"
+    assert set(receipt["work_packages"]) == {f"WP-0.{item}" for item in range(1, 11)}
     phase0_section = text.split("## Phase 0", 1)[1].split("## Phase 1", 1)[0]
-    for item in ("WP-0.1", "WP-0.2", "WP-0.3", "WP-0.4", "WP-0.5", "WP-0.6", "WP-0.7", "WP-0.8", "WP-0.9", "WP-0.10"):
-        assert f"- [ ] **{item}" in phase0_section
-
-    next_actions = text.split("## Immediate Next Actions", 1)[1].split("## Execution Rules", 1)[0]
-    for pending in ("WP-0.1b", "WP-0.8", "WP-0.10a", "Phase 1 Contenders + Compare"):
-        assert pending in next_actions
-    assert "Phase 0 remains open" in next_actions
-    assert "Jointly freeze the Phase 0 interfaces" not in next_actions
-    assert "Record the co-signed interface freeze" not in next_actions
-    assert "No Phase 0 lane or integration branch exists yet" not in text
+    assert "governance/phase0-acceptance.json" in phase0_section
+    # Historical test paths are verified at the evidence commit, so future
+    # meaningful refactors do not require obsolete checkout copies.
+    entries = subprocess.check_output(
+        ["git", "-C", str(REPO_ROOT), "--no-replace-objects", "ls-tree", "-r", "-z",
+         receipt["accepted_commit"]],
+    ).split(b"\0")
+    historical_files = {
+        entry.split(b"\t", 1)[1].decode("utf-8")
+        for entry in entries if entry.startswith(b"100644 blob ")
+    }
+    for paths in receipt["work_packages"].values():
+        assert paths and set(paths) <= historical_files
 
 
 def test_checked_in_b0_report_is_complete_and_valid() -> None:

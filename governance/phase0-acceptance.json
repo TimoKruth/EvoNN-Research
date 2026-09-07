@@ -1,0 +1,134 @@
+{
+  "schema_version": "1.0.0",
+  "gate": "phase0",
+  "status": "accepted",
+  "evidence_class": "contract",
+  "canonical_main_observed": "e5076d651bc7946839ceb4e03c77b8d508e281c5",
+  "accepted_commit": "e5076d651bc7946839ceb4e03c77b8d508e281c5",
+  "accepted_tree": "9a1253cdbff91db6fe92d1f60da80991d8cfcdea",
+  "freeze_id": "phase0-interface-freeze-v3",
+  "canonical_freeze_merge": "322834900aa99a267b78b789a733e96ac205dd04",
+  "digests": {
+    "canonical_digest_rng": "1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc",
+    "export_models": "f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72",
+    "catalog_loaders": "f123d29b3c29464aa947e271c0b26ed74278eb528322a5fb808b3679b4a86fe5"
+  },
+  "work_packages": {
+    "WP-0.1": [
+      "tests/policy/test_workspace_contract.py",
+      "tests/policy/test_workspace_dependencies.py",
+      "tests/policy/test_import_boundaries.py",
+      "tests/policy/test_b0_ci_bootstrap.py"
+    ],
+    "WP-0.2": [
+      "EvoNN-Shared/tests/test_exports.py",
+      "EvoNN-Shared/tests/test_catalog_export_integration.py"
+    ],
+    "WP-0.3": [
+      "EvoNN-Shared/tests/test_budgets.py",
+      "EvoNN-Shared/tests/test_reference_runner.py"
+    ],
+    "WP-0.4": [
+      "EvoNN-Shared/tests/test_telemetry.py"
+    ],
+    "WP-0.5": [
+      "EvoNN-Shared/tests/test_canonical.py",
+      "EvoNN-Shared/tests/test_rng.py"
+    ],
+    "WP-0.6": [
+      "EvoNN-Shared/tests/test_checkpoints.py",
+      "EvoNN-Shared/tests/test_atomic_publication.py"
+    ],
+    "WP-0.7": [
+      "EvoNN-Shared/tests/test_run_store.py",
+      "EvoNN-Shared/tests/test_run_workspace.py",
+      "EvoNN-Shared/tests/test_run_reader.py",
+      "EvoNN-Shared/tests/test_storage_integrity.py"
+    ],
+    "WP-0.8": [
+      "EvoNN-Shared/tests/test_catalog.py",
+      "shared-benchmarks/tests/test_catalog_inventory.py",
+      "EvoNN-Shared/tests/test_catalog_export_integration.py"
+    ],
+    "WP-0.9": [
+      "EvoNN-Shared/tests/test_lm_cache.py"
+    ],
+    "WP-0.10": [
+      "EvoNN-Shared/tests/test_reference_runner.py",
+      "EvoNN-Shared/tests/test_integrity_probe.py",
+      "tests/contracts/test_phase0_shared_interfaces.py"
+    ]
+  },
+  "hosted_runs": [
+    {
+      "name": "B0 Linux trust lane",
+      "run_id": "34140370229",
+      "attempt": 1,
+      "event": "pull_request",
+      "conclusion": "success",
+      "tested_commit": "1d8a2d83b31a17db4132f5e8842851378c9e1875",
+      "tested_tree": "9a1253cdbff91db6fe92d1f60da80991d8cfcdea",
+      "tested_parents": [
+        "322834900aa99a267b78b789a733e96ac205dd04",
+        "326a48b414c1921679099de51ff6ccd117e4d401"
+      ],
+      "relation_to_accepted_commit": "identical_tree_and_ordered_merge_parents",
+      "url": "https://github.com/TimoKruth/EvoNN-Research/actions/runs/34140370229",
+      "workflow_path": ".github/workflows/linux-trust.yml",
+      "checkout_evidence": {
+        "method": "actions/checkout default ref; checkout log git log -1 --format=%H agrees with hosted GITHUB_SHA",
+        "log_sha256": "b59681d22e14307451f0b09a1be1ffb3f912fe7c17f8d86c481e32431f88e17a"
+      },
+      "artifacts": [
+        {
+          "name": "b0-linux-runtime-probe",
+          "sha256": "de3ea87039b09dc46a271fe78bb7d915325f4b2c014fe3e69e1f0905b8a7264a"
+        },
+        {
+          "name": "b0-linux-synthetic-integrity",
+          "sha256": "ff489dc50b3ae14791f240f24790938a142bd4a97600ef7f609024029ee67a04"
+        }
+      ]
+    },
+    {
+      "name": "B0 macOS engine lane",
+      "run_id": "34140370206",
+      "attempt": 1,
+      "event": "pull_request",
+      "conclusion": "success",
+      "tested_commit": "1d8a2d83b31a17db4132f5e8842851378c9e1875",
+      "tested_tree": "9a1253cdbff91db6fe92d1f60da80991d8cfcdea",
+      "tested_parents": [
+        "322834900aa99a267b78b789a733e96ac205dd04",
+        "326a48b414c1921679099de51ff6ccd117e4d401"
+      ],
+      "relation_to_accepted_commit": "identical_tree_and_ordered_merge_parents",
+      "url": "https://github.com/TimoKruth/EvoNN-Research/actions/runs/34140370206",
+      "workflow_path": ".github/workflows/macos-engines.yml",
+      "checkout_evidence": {
+        "method": "actions/checkout default ref; checkout log git log -1 --format=%H agrees with hosted GITHUB_SHA",
+        "log_sha256": "571b4012c4214f3bbfc00e316dd8e207ee20129254f21dcb5d0e64c04fbfca5c"
+      },
+      "artifacts": [
+        {
+          "name": "b0-macos-runtime-probe",
+          "sha256": "9d03f9c02c48b1b23114c40253053f95b68471aeeba0a450d66fcd8fbd01d747"
+        },
+        {
+          "name": "b0-macos-synthetic-integrity",
+          "sha256": "f93116ec6e2d83db75534055de8bcc2c829bd9db88e66faebe6cad36d69f6aff"
+        }
+      ]
+    }
+  ],
+  "scope": {
+    "catalog_audit": "Structure, immutable IDs, metadata, pack floor declarations and budget/export fixture compatibility only; no dataset runtime or decision-grade promotion.",
+    "integrity": "Actual deterministic reference kill/resume, budget/label identity, immutable rows and read-only diagnostics; regular export fixtures are separate.",
+    "pending_engine_hooks": [
+      "Engine-specific resume proof for each engine",
+      "Topograph speciation/reproduction proof at WP-2.8"
+    ],
+    "scientific_claims": false,
+    "backend_qualification": false
+  }
+}

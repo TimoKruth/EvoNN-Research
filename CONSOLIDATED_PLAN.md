@@ -27,28 +27,23 @@ Product and interop; Product implementation is outside this repository's plan.
 
 ## Immediate Next Actions
 
-The integrated documentation baseline is `315fde5` (PRs #23 and #26).
-The reviewed #10–#20 series is integrated, #21 supplies GPL-3.0-only licensing,
-and #22 configures CodeRabbit. #9 was closed without catalog admission.
-Both main CI lanes passed. Gate B0 is closed; Phase 0 remains open. PR #25
-contains the independently reviewed v3 catalog binding and catalog/export
-composition tests and is merged at `322834900aa99a267b78b789a733e96ac205dd04`.
-The separate authorization attestation verifies that exact canonical merge;
-its authorization takes effect when the attestation PR is merged.
+Documentation consolidation (#23/#26), CodeRabbit selection (#24), the catalog
+freeze and fixture integration (#25), and its canonical authorization (#27)
+are merged. Phase 0 contract acceptance is bound in
+`governance/phase0-acceptance.json`: exact canonical commit/tree, successful
+Linux/macOS evidence, immutable freeze digests and every parent WP's tests.
 
-| Order | Deliverable | Completion condition |
-| --- | --- | --- |
-| 1 | WP-0.1b bounded catalog/freeze amendment | Explicit compatible-addition rules, preserved historical verdicts, reviewed replacement validator and trust-anchor transition. |
-| 2 | WP-0.8 canonical catalog and packs | Eight `tier1_core` benchmarks and the required smoke/Tier-A packs resolve reproducibly with immutable IDs and complete metadata. Load validation is not decision-grade admission. |
-| 3 | WP-0.10a reference integration and Phase 0 acceptance | Catalog/budget/export fixture compatibility, independent no-op integrity evidence and a matrix for every parent WP; both hosted lanes pass. |
-| 4 | Phase 1 Contenders + Compare | Begin with one benchmark through fit/evaluate/export/ingest/report, then complete the full Phase 1 scope and exit. |
+The next implementation is **Phase 1 Contenders + Compare**: start with one
+benchmark through fit/evaluate/export/ingest/report, then complete WP-1.1–1.8
+and the contenders-only `tier1_core@64` exit. Engine resume/speciation hooks and
+scientific/backend qualification remain open until their owning engine phases.
+Short validation and baseline runs up to 30 minutes are allowed. Stop before
+starting a multi-hour training campaign and report the exact proposed run.
 
-Supporting follow-ups belong to WP-0.1a: profile the B0 policy bottleneck before
-optimizing it; correct CodeRabbit's effective file selection and verify it on a
-real PR; decide a useful docstring policy for tests. PR #23 confirmed that all
-29 changed files were skipped by path filters. Its green bot status is not an
-in-content review. None of these items substitutes for catalog or integrity
-acceptance.
+Supporting work: CodeRabbit now reviews real content; measured policy validation
+is dominated by Git subprocesses. Optimize only with equivalent verdicts and
+comparable measurements. The evidence-retention proposal below is still a
+proposal; obsolete copies may be removed after its tested policy migration.
 
 ## Execution Rules And Evidence
 
@@ -146,8 +141,8 @@ proof, L-SCI, portfolio status and release governance remain joint decisions.
 Gate B0 is closed by its anchored schema-2 report and status record. Historical
 hosted evidence tests `f68856f0c2fdf0ebc73671264b5a3ab0cff3b224`: Linux
 `29658842317`, macOS `29658842318`. It is `bootstrap_probe_only`, not scientific
-evidence. The protected freeze PR and separate authorization attestation are
-merged; freeze v2 is `merged_verified`. History retains the exact B0 bindings,
+evidence. The catalog freeze PR and separate authorization attestation are
+merged; freeze v3 is `merged_verified`. History retains the exact B0 bindings,
 review records and probe paths. This state does not imply Phase 0 acceptance.
 
 ## Phase 0 — Workspace, Contracts, Integrity Foundation
@@ -155,40 +150,26 @@ review records and probe paths. This state does not imply Phase 0 acceptance.
 **Objective:** validated contracts, benchmark resolution and a permanent
 integrity gate proven against executable skeletons. Spec: claude-spec/01–04,
 /13, /18. All ten parent checkboxes below represent acceptance, not whether
-implementation exists. The current freeze validator requires them to remain
-open; formal closure must include the appropriate reviewed gate transition.
+implementation exists. The reviewed acceptance receipt closes these ten
+parents with contract evidence. It preserves the distinction between ordinary
+export fixtures, the actual no-op persistence proof, and future engine evidence.
 
-### Current acceptance matrix
+### Accepted requirement-to-test evidence
 
-| Parent | Implemented and verified | Remaining acceptance work |
-| --- | --- | --- |
-| WP-0.1 | Workspace, package scripts, full cross-host foundation coverage, consolidated CI triggers | Final evidence mapping; bounded CI/review follow-ups below. |
-| WP-0.2–0.5 | Strict export/budget/telemetry models, identities and RNG contracts | Map each requirement to regular export fixtures or the separate no-op integrity proof. |
-| WP-0.6–0.7 | Atomic checkpoints, transactional store/workspace, verified reader and diagnostic consistency | Include persistence and failure results in joint acceptance. |
-| WP-0.8 | Strict catalog and pack loaders | Eight planned definitions and three packs have independently verified provenance and contract composition; The v3 canonical merge is verified by the separate authorization attestation. Runtime admission is separate. |
-| WP-0.9 | LM-cache existence/size/checksum validators | Record contract acceptance; real LM execution belongs to later phases. |
-| WP-0.10 | Real synthetic kill/resume proof, budget and protected-label tests, cross-host JSON evidence | Catalog/budget/export composition now passes for all three packs; joint reference acceptance remains open. Engine-specific hooks remain separately open. |
+[`governance/phase0-acceptance.json`](governance/phase0-acceptance.json) is the
+single machine-readable matrix for WP-0.1–0.10. It binds the actual canonical
+attestation merge to both successful hosted workflows. Their tested PR merge
+has exactly the same tree and ordered parents as that canonical merge; the
+checkout logs and freshly downloaded runtime/integrity artifacts establish the
+mapping. These equivalent contract checkouts are identified separately, not
+reported as tests of an identical commit SHA or independent scientific repeats.
 
-### Requirement-to-test map for the pending Phase 0 acceptance
-
-These are concrete existing checks, not a declaration that their parent WP is
-accepted. The successor's foundation selection passes 776 tests, including
-three real-pack/unsupported-export composition cases. Both independent reviews
-recomputed the candidate digests and source provenance. The v3 validator verifies
-the canonical merge and its separate authorization attestation.
-
-| Parent | Existing executable evidence | Remaining boundary |
-| --- | --- | --- |
-| WP-0.1 | `tests/policy/test_workspace_contract.py`, `test_workspace_dependencies.py`, `test_import_boundaries.py`, `test_b0_ci_bootstrap.py` | Both hosted lanes on the accepted successor; final gate transition. |
-| WP-0.2 | `EvoNN-Shared/tests/test_exports.py`: strict parsing, three-file echoes, fixtures, golden bytes, atomic publication | All three packs now compose with the regular export fixtures in `test_catalog_export_integration.py`; the no-op remains a separate integrity consumer. |
-| WP-0.3 | `EvoNN-Shared/tests/test_budgets.py` and `test_reference_runner.py`: strict declaration/accounting, unsuccessful and resumed work | Include budget contracts and separately tested no-op accounting in the acceptance evidence. |
-| WP-0.4 | `EvoNN-Shared/tests/test_telemetry.py`: envelope, seeding and measurement provenance | Joint acceptance with catalog/export fixture compatibility. |
-| WP-0.5 | `EvoNN-Shared/tests/test_canonical.py`, `test_rng.py`: canonical vectors and independent deterministic streams | Preserve frozen bytes and historical verdicts in the successor. |
-| WP-0.6 | `EvoNN-Shared/tests/test_checkpoints.py`, `test_atomic_publication.py`: publication, checksums and failure boundaries | Include existing results in the joint phase attestation. |
-| WP-0.7 | `EvoNN-Shared/tests/test_run_store.py`, `test_run_workspace.py`, `test_run_reader.py`, `test_storage_integrity.py` | Preserve read-only export and local POSIX limits in integration. |
-| WP-0.8 | `EvoNN-Shared/tests/test_catalog.py`, `shared-benchmarks/tests/test_catalog_inventory.py`: IDs, strict loading, pack membership/budgets and complete floor declarations | Reviewed freeze transition; these are catalog-only definitions, not executable datasets or demonstrated floors. |
-| WP-0.9 | `EvoNN-Shared/tests/test_lm_cache.py`: existence, size and checksums | Contract acceptance only; no real-LM claim. |
-| WP-0.10 | `EvoNN-Shared/tests/test_reference_runner.py`, `test_integrity_probe.py`: real kill/resume, read-only diagnostics and protected-label capability | Accepted catalog contracts plus separate no-op integrity evidence; engine hooks activate only with each engine. |
+The hosted checks cover all 776 Shared foundation tests, the governance and
+import/dependency policies, catalog inventory, and platform package checks.
+Eight benchmarks and all three packs pass metadata and export composition.
+The reference reports demonstrate real kill/resume and label/budget integrity.
+No dataset execution, demonstrated contender adequacy or qualified engine
+backend is inferred from this acceptance.
 
 The historical dataset loader has a two-way train/validation split. A protected
 third split is required only by a protocol that declares it; it is not a general
@@ -239,7 +220,7 @@ publication and unchanged evidence on read/export failures.
 unsafe-path mutation, or unsupported filesystem guarantees being claimed.
 
 The bounded implementation and cross-host review series is complete. Parent
-WP-0.7 acceptance remains part of the phase evidence matrix. `_run_io` already
+WP-0.7 acceptance is bound in the phase evidence receipt. `_run_io` already
 centralizes no-follow descriptor I/O and atomic no-clobber publication.
 
 ### WP-0.1b — Bounded versioned-contract and catalog amendment
@@ -265,8 +246,8 @@ and behavior-preserving internal/test edits. Existing IDs never change meaning;
 new IDs require provenance, split/metric definitions, pack membership and
 contender expectations. The reviewed validator and trust-anchor update must be
 atomic. Follow [SPEC_UPGRADE_PROCESS](governance/SPEC_UPGRADE_PROCESS.md).
-Freeze v2 remains effective until the replacement is accepted. Closed PR #9
-admitted nothing; a successor must carry the complete amendment. Extraction of
+Freeze v3 is effective after #25 and #27. Closed PR #9 admitted nothing;
+its successor carried the complete reviewed amendment. Extraction of
 remaining private export/catalog parser helpers stays conditional on amendment
 and demonstrated value; keep seven package boundaries and avoid a framework.
 
@@ -313,8 +294,8 @@ budgets and failed/invalid accounting; read-only export; seed/label identity;
 selection cannot access protected labels; measured/proxy provenance.
 **Verify:** `scripts/ci/foundation-checks.sh`; catalog admission checks;
 `scripts/ci/b0-policy-checks.sh`; both hosted lanes.
-**Evidence:** existing eight-case synthetic reports plus the missing
-catalog/budget/export fixture compatibility and requirement-to-test acceptance matrix.
+**Evidence:** both hosted eight-case synthetic reports, all three
+catalog/budget/export fixtures and the immutable requirement-to-test receipt.
 **Failure conditions:** synthetic fixtures are called production/scientific
 proof, placeholder hooks count as passing, or any parent is unaccepted.
 
@@ -324,8 +305,8 @@ inherited work, and recover a durable row ahead of its checkpoint without
 reevaluation. Four kill boundaries cover failed and invalid attempts. Resume
 rejects changed seed/config/label identities; diagnostics validate the complete
 persisted state. These diagnostics are not the regular three-file export.
-All three catalog packs now pass budget/export fixture composition. Remaining
-work closes the reference gate with the full parent matrix and hosted evidence. The normative
+All three catalog packs pass budget/export fixture composition. The reference
+gate is accepted with the full parent matrix and hosted evidence. The normative
 requirements do not require a regular export from the no-op runner or a new
 system identity. It does not claim general
 exactly-once behavior before row commit. Engine resume hooks activate as engines
@@ -339,7 +320,7 @@ encoding/digests, export models and catalog-loader signatures. Freeze v3 adds
 the reviewed catalog inventory; its exact canonical merge is verified below.
 Supplemental consumer/inventory tests remain subject to normal reviewed CI,
 without automatically extending the byte-frozen surface. Phase 0 acceptance
-remains separate and all parent items remain open until its evidence is bound.
+is bound separately in the immutable receipt; its ten parent items are closed.
 
 <!-- phase0-interface-freeze:begin -->
 ```yaml
@@ -364,9 +345,9 @@ joint_boundary: WP-0.10 and the Phase 0 exit remain joint
 ```
 <!-- phase0-interface-freeze:end -->
 
-- [ ] **WP-0.1 Workspace tooling.** Root workspace config, ruff/pytest
+- [x] **WP-0.1 Workspace tooling.** Root workspace config, ruff/pytest
   config, `scripts/ci/*-checks.sh` per package wired into the B0 CI lanes.
-- [ ] **WP-0.2 Export contract — all three files.** Strict models +
+- [x] **WP-0.2 Export contract — all three files.** Strict models +
   round-trip writers/readers for `manifest.json`, `results.json`,
   `summary.json` with the complete claude-spec/04 surface (results incl.
   `task_kind`, memory, per-benchmark evaluation counts; manifest runtime
@@ -375,38 +356,38 @@ joint_boundary: WP-0.10 and the Phase 0 exit remain joint
   schema-version compatibility.
   *Interfaces:* `Manifest|Results|RunSummary.model_validate_json`,
   `write_export(dir, m, r, s) -> ExportDigests`.
-- [ ] **WP-0.3 Budget models.** `BudgetDeclaration` (7 contract fields) +
+- [x] **WP-0.3 Budget models.** `BudgetDeclaration` (7 contract fields) +
   `BudgetAccounting` (9 accounting fields incl. `resumed_evaluations`)
   with the corrected validators from Global Constraints.
-- [ ] **WP-0.4 Telemetry + seeding models.** Envelope floor; 9 seeding
+- [x] **WP-0.4 Telemetry + seeding models.** Envelope floor; 9 seeding
   fields with explicit-`unknown` semantics; ladder enum none|direct|staged.
-- [ ] **WP-0.5 Identity + RNG streams.** Content digests over a **defined
+- [x] **WP-0.5 Identity + RNG streams.** Content digests over a **defined
   canonical encoding** (documented map ordering, float formatting, Unicode
   normalization, no absolute paths/timestamps in hash domain, schema
   version bound into the hash; cross-process golden vectors);
   digest-field-omitted rule. `derive_stream(root_seed, name)` for the
   named streams (search, data, split, init, order, augmentation, mutation,
   benchmark_sampling, worker, stats) — deterministic, scheduling-independent.
-- [ ] **WP-0.6 Atomic checkpoints.** Stage → fsync payload → checksum →
+- [x] **WP-0.6 Atomic checkpoints.** Stage → fsync payload → checksum →
   atomic rename → **fsync containing directory** → atomic manifest update
   referencing previous checkpoint digest. Crash tests at every transition
   (after payload rename; before/after manifest replacement); previous
   checkpoint stays authoritative until manifest commit.
-- [ ] **WP-0.7 RunStore + RunWorkspace.** Per-run DuckDB schema (runs,
+- [x] **WP-0.7 RunStore + RunWorkspace.** Per-run DuckDB schema (runs,
   append-only evaluations, artifacts, metadata). Single-writer ownership
   via OS advisory lock + lock record (process start identity + host
   fingerprint), stale-lock recovery semantics, crash/restart tests — PID
   alone is not ownership. `RunWorkspace` creates/validates the full
   canonical run directory; end-to-end fixture builds one, rebuilds
   `report.md`, and verifies artifact references without mutating evidence.
-- [ ] **WP-0.8 Benchmark catalog + packs.** YAML schema per claude-spec/02
+- [x] **WP-0.8 Benchmark catalog + packs.** YAML schema per claude-spec/02
   (explicit direction, ceiling semantics, required contenders, runtime
   class); loaders; the 8 `tier1_core` benchmarks + smoke variants; packs
   `tier1_core`, `tier1_core_smoke`, `tier_a_contract`; append-only
   canonical ID registry.
-- [ ] **WP-0.9 LM cache validation.** Existence/size/checksum for
+- [x] **WP-0.9 LM cache validation.** Existence/size/checksum for
   byte-level LM caches (used from Phase 4).
-- [ ] **WP-0.10 Foundation Integrity Gate.** Permanent CI suite:
+- [x] **WP-0.10 Foundation Integrity Gate.** Permanent CI suite:
   `test_rng_streams_deterministic_and_independent`;
   `test_resume_equals_uninterrupted` — proven in Phase 0 against a
   **deterministic no-op reference resumable runner** (a minimal engine
