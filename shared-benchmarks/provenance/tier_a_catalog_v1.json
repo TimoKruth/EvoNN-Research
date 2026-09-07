@@ -66,9 +66,11 @@
   },
   "runtime_admission_blockers": [
     "No dataset loaders in this repository",
-    "Raw data and generated-cache checksums not yet bound",
-    "Protected test split absent from historical two-way split; new split semantics require new canonical IDs",
-    "No executed contender floors or benchmark-audit evidence"
+    "Raw data and generated-cache checksums not yet bound"
   ],
-  "definition_scope": "Planned metadata only; no runtime compatibility or decision-grade claim"
+  "definition_scope": "Planned metadata only; no runtime compatibility or decision-grade claim",
+  "split_limitation": "The historical loader has no protected third split. This blocks only protocols or claims requiring one, not Lab Phase 0/1 generally. Introducing a different split policy requires new canonical IDs.",
+  "decision_grade_blockers": [
+    "No executed contender floors or benchmark-audit evidence"
+  ]
 }

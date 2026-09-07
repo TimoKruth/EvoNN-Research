@@ -205,7 +205,8 @@ at `40b704b49bdec262e9bf60ff456f8eb94a8c0b91:shared-benchmarks/migration/2026-07
 
 The predecessor's contender loader uses a two-way train/validation split
 (default validation fraction 0.2, seed 42, target stratification for
-classification). It supplies no protected third test split. Data/cache hashes,
+classification). It supplies no protected third test split; that is a conditional protocol
+limitation, not a general Lab Phase 0/1 blocker. Data/cache hashes,
 runtime support and contender floors remain unproved. Introducing a protected
 third split changes benchmark meaning and must use new canonical IDs; those
 choices cannot be silently folded into the eight historical IDs.

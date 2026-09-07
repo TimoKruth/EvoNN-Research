@@ -36,7 +36,7 @@ Both main CI lanes passed. Gate B0 is closed; Phase 0 remains open.
 | --- | --- | --- |
 | 1 | WP-0.1b bounded catalog/freeze amendment | Explicit compatible-addition rules, preserved historical verdicts, reviewed replacement validator and trust-anchor transition. |
 | 2 | WP-0.8 canonical catalog and packs | Eight `tier1_core` benchmarks and the required smoke/Tier-A packs resolve reproducibly with immutable IDs and complete metadata. Load validation is not decision-grade admission. |
-| 3 | WP-0.10a reference integration and Phase 0 acceptance | Catalog-backed reference fixtures, regular export-contract coverage and an evidence matrix for every parent WP; both hosted lanes pass. |
+| 3 | WP-0.10a reference integration and Phase 0 acceptance | Catalog/budget/export fixture compatibility, independent no-op integrity evidence and a matrix for every parent WP; both hosted lanes pass. |
 | 4 | Phase 1 Contenders + Compare | Begin with one benchmark through fit/evaluate/export/ingest/report, then complete the full Phase 1 scope and exit. |
 
 Supporting follow-ups belong to WP-0.1a: profile the B0 policy bottleneck before
@@ -159,11 +159,11 @@ open; formal closure must include the appropriate reviewed gate transition.
 | Parent | Implemented and verified | Remaining acceptance work |
 | --- | --- | --- |
 | WP-0.1 | Workspace, package scripts, full cross-host foundation coverage, consolidated CI triggers | Final evidence mapping; bounded CI/review follow-ups below. |
-| WP-0.2–0.5 | Strict export/budget/telemetry models, identities and RNG contracts | Map existing tests to every requirement; integrate regular export fixtures with the reference proof. |
+| WP-0.2–0.5 | Strict export/budget/telemetry models, identities and RNG contracts | Map each requirement to regular export fixtures or the separate no-op integrity proof. |
 | WP-0.6–0.7 | Atomic checkpoints, transactional store/workspace, verified reader and diagnostic consistency | Include persistence and failure results in joint acceptance. |
 | WP-0.8 | Strict catalog and pack loaders | Eight planned definitions and three packs are prepared with pinned source provenance; freeze replacement and runtime admission remain open. |
 | WP-0.9 | LM-cache existence/size/checksum validators | Record contract acceptance; real LM execution belongs to later phases. |
-| WP-0.10 | Real synthetic kill/resume proof, budget and protected-label tests, cross-host JSON evidence | Complete catalog/export integration and joint reference acceptance. Engine-specific hooks remain separately open. |
+| WP-0.10 | Real synthetic kill/resume proof, budget and protected-label tests, cross-host JSON evidence | Complete catalog/budget/export fixture integration and joint reference acceptance. Engine-specific hooks remain separately open. |
 
 ### Requirement-to-test map for the pending Phase 0 acceptance
 
@@ -175,21 +175,22 @@ validator still rejects the two intentional frozen changes.
 | Parent | Existing executable evidence | Remaining boundary |
 | --- | --- | --- |
 | WP-0.1 | `tests/policy/test_workspace_contract.py`, `test_workspace_dependencies.py`, `test_import_boundaries.py`, `test_b0_ci_bootstrap.py` | Both hosted lanes on the accepted successor; final gate transition. |
-| WP-0.2 | `EvoNN-Shared/tests/test_exports.py`: strict parsing, three-file echoes, fixtures, golden bytes, atomic publication | Reference-to-regular-export integration; explicit permitted system identity. |
-| WP-0.3 | `EvoNN-Shared/tests/test_budgets.py` and `test_reference_runner.py`: strict declaration/accounting, unsuccessful and resumed work | Carry this accounting into the regular reference export. |
-| WP-0.4 | `EvoNN-Shared/tests/test_telemetry.py`: envelope, seeding and measurement provenance | Joint acceptance with the export integration. |
+| WP-0.2 | `EvoNN-Shared/tests/test_exports.py`: strict parsing, three-file echoes, fixtures, golden bytes, atomic publication | Resolve catalog metadata into regular export-contract fixtures; the no-op remains a separate integrity consumer. |
+| WP-0.3 | `EvoNN-Shared/tests/test_budgets.py` and `test_reference_runner.py`: strict declaration/accounting, unsuccessful and resumed work | Include budget contracts and separately tested no-op accounting in the acceptance evidence. |
+| WP-0.4 | `EvoNN-Shared/tests/test_telemetry.py`: envelope, seeding and measurement provenance | Joint acceptance with catalog/export fixture compatibility. |
 | WP-0.5 | `EvoNN-Shared/tests/test_canonical.py`, `test_rng.py`: canonical vectors and independent deterministic streams | Preserve frozen bytes and historical verdicts in the successor. |
 | WP-0.6 | `EvoNN-Shared/tests/test_checkpoints.py`, `test_atomic_publication.py`: publication, checksums and failure boundaries | Include existing results in the joint phase attestation. |
 | WP-0.7 | `EvoNN-Shared/tests/test_run_store.py`, `test_run_workspace.py`, `test_run_reader.py`, `test_storage_integrity.py` | Preserve read-only export and local POSIX limits in integration. |
 | WP-0.8 | `EvoNN-Shared/tests/test_catalog.py`, `shared-benchmarks/tests/test_catalog_inventory.py`: IDs, strict loading, pack membership/budgets and complete floor declarations | Reviewed freeze transition; these are catalog-only definitions, not executable datasets or demonstrated floors. |
 | WP-0.9 | `EvoNN-Shared/tests/test_lm_cache.py`: existence, size and checksums | Contract acceptance only; no real-LM claim. |
-| WP-0.10 | `EvoNN-Shared/tests/test_reference_runner.py`, `test_integrity_probe.py`: real kill/resume, read-only diagnostics and protected-label capability | Accepted catalog and regular-export integration; engine hooks activate only with each engine. |
+| WP-0.10 | `EvoNN-Shared/tests/test_reference_runner.py`, `test_integrity_probe.py`: real kill/resume, read-only diagnostics and protected-label capability | Accepted catalog contracts plus separate no-op integrity evidence; engine hooks activate only with each engine. |
 
-The historical dataset loader has a two-way train/validation split. Introducing
-a third protected split requires new IDs, explicit split provenance and tests;
-it must not silently redefine the eight historical identities. Independently,
-the synthetic reference remains a contract fixture and cannot borrow an engine
-identity to bypass the export model's `SystemId` restriction.
+The historical dataset loader has a two-way train/validation split. A protected
+third split is required only by a protocol that declares it; it is not a general
+Lab Phase 0/1 gate. Introducing one changes split semantics and requires new
+IDs and provenance. Regular export fixtures and the no-op integrity consumer
+provide separate contract evidence; no new SystemId or synthetic engine export
+is needed. Never relabel no-op agreement scores as real benchmark results.
 
 ### WP-0.1a — Cross-host coverage and economical CI
 
@@ -275,7 +276,7 @@ selection cannot access protected labels; measured/proxy provenance.
 **Verify:** `scripts/ci/foundation-checks.sh`; catalog admission checks;
 `scripts/ci/b0-policy-checks.sh`; both hosted lanes.
 **Evidence:** existing eight-case synthetic reports plus the missing
-catalog/export integration evidence and requirement-to-test acceptance matrix.
+catalog/budget/export fixture compatibility and requirement-to-test acceptance matrix.
 **Failure conditions:** synthetic fixtures are called production/scientific
 proof, placeholder hooks count as passing, or any parent is unaccepted.
 
@@ -285,9 +286,10 @@ inherited work, and recover a durable row ahead of its checkpoint without
 reevaluation. Four kill boundaries cover failed and invalid attempts. Resume
 rejects changed seed/config/label identities; diagnostics validate the complete
 persisted state. These diagnostics are not the regular three-file export.
-Remaining work integrates the accepted catalog and export contracts, names any
-necessary schema decision explicitly, and closes the reference gate with the
-full parent matrix. It does not invent an engine identity or claim general
+Remaining work checks accepted catalog metadata against budget/export fixtures
+and closes the reference gate with the full parent matrix. The normative
+requirements do not require a regular export from the no-op runner or a new
+system identity. It does not claim general
 exactly-once behavior before row commit. Engine resume hooks activate as engines
 land; speciation behavior activates with Topograph, not a placeholder.
 
