@@ -85,10 +85,11 @@ def test_malformed_pool_yaml_has_controlled_cli_error(tmp_path, capsys):
 
 
 def test_ngram_rejects_smoothing_that_underflows_with_observed_counts():
-    model = NGram(order=2, vocabulary_size=2, alpha=np.nextafter(0.0, 1.0))
+    with pytest.raises(ValueError, match="machine epsilon"):
+        NGram(order=2, vocabulary_size=2, alpha=np.nextafter(0.0, 1.0))
+    model = NGram(order=2, vocabulary_size=2, alpha=np.finfo(np.float64).eps)
     model.fit(np.array([[0], [0]]), np.array([0, 0]))
-    with pytest.raises(ValueError, match="not representable"):
-        model.perplexity(np.array([[0]]), np.array([1]))
+    assert np.isfinite(model.perplexity(np.array([[0]]), np.array([1])))
 
 
 @pytest.mark.parametrize("parameter", ["data_random_seed", "data_seed", "feature_fraction_seed",
