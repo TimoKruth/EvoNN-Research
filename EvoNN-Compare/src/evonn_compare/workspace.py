@@ -73,9 +73,9 @@ def load_cases(root: Path):
                     raise ValueError("run identity differs from recorded case")
                 bundles.append(bundle)
             except (OSError, ValueError) as error:
-                failures.append({"system": run["system"], "reason": f"invalid source export: {error}"})
+                failures.append({"system": run["system"], "run_id": run["run_id"], "reason": f"invalid source export: {error}"})
         acceptance = evaluate_case(case, bundles, failures=failures, cohort=document["cohort"], no_contenders=document["no_contenders"])
-        cases.append((path.name, document, bundles, acceptance))
+        cases.append((path.name, {**document, "failures": failures}, bundles, acceptance))
     return cases
 
 
@@ -146,7 +146,7 @@ def _rebuild(root: Path):
         all_rows.extend(rows)
         case_views.append(case_view)
         qualities.extend({**classify(bundle.root, propagated=True), "case_id": comparison_id} for bundle in bundles)
-        qualities.extend({"path": str(root / "runs" / comparison_id), "run_id": None, "case_id": comparison_id, "system": item["system"],
+        qualities.extend({"path": str(root / "runs" / comparison_id), "run_id": item["run_id"] if "run_id" in item else None, "case_id": comparison_id, "system": item["system"],
                           "level": "L0", "gaps": [item["reason"]], "next_level": "complete verified export required"}
                          for item in document["failures"])
     data = {"schema_version": "1.0.0", "cases": case_views, "rows": all_rows,

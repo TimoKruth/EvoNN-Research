@@ -34,6 +34,8 @@ def test_cli_orchestration_rebuild_is_read_only_and_accumulation_is_append_only(
     artifact.write_text("tampered")
     rebuilt = workspace.workspace_report(root)
     assert any(case["acceptance"]["blockers"] for case in rebuilt["cases"])
+    assert any(item["level"] == "L0" and item["run_id"] is not None for item in rebuilt["output_quality"])
+    assert any(case["failures"] for case in rebuilt["cases"])
 
 
 def test_interrupted_jsonl_final_record_is_rejected_without_repair(tmp_path):

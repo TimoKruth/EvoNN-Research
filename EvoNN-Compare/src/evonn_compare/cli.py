@@ -72,10 +72,15 @@ def main(argv=None):
             result = {"acceptance": acceptance, "all_systems": winners(rows), "projects_only": winners(rows, projects_only=True)}
         elif args.command == "benchmark-audit":
             data = workspace_report(args.workspace)
-            bundles = [bundle for _, _, values, _ in load_cases(args.workspace) for bundle in values]
+            loaded = load_cases(args.workspace)
+            bundles = [bundle for _, _, values, _ in loaded for bundle in values]
             result = benchmark_audit(args.pack, bundles, decision_grade=args.decision_grade,
                 dashboard_present=(args.workspace / "fair_matrix_dashboard.html").is_file(),
                 output_levels={item["run_id"]: item["level"] for item in data["output_quality"]})
+            source_blockers = [reason for _, document, _, acceptance in loaded if document["case"]["pack"] == args.pack for reason in acceptance["blockers"]]
+            result["blockers"] = sorted(set(result["blockers"] + source_blockers))
+            result["blocker_count"] = len(result["blockers"])
+            result["status"] = "blocked" if result["blockers"] else result["status"]
             print(json.dumps(result, indent=2, allow_nan=False))
             return int(result["blocker_count"] > 0)
         elif args.command == "output-quality" and (args.workspace / "manifest.json").is_file():
