@@ -1,12 +1,12 @@
 schema_version: "1.0.0"
 document_kind: phase_interface_freeze
 phase: 0
-freeze_id: phase0-interface-freeze-v2
-status: merged_verified
-supersedes: phase0-interface-freeze-v1
+freeze_id: phase0-interface-freeze-v3
+status: approved_pending_merge
+supersedes: phase0-interface-freeze-v2
 canonical_base_commit: b22316d3dea7e0f01ee8aa359f4786897b0680ba
-approved_commit: 25352a4bd7c33b73077d9f9be231b2bb1b48109f
-approved_tree: 78a72f1a2229d9e94cd78512be0585f08b2a5895
+approved_commit: 0ece535d8b68c8701a17e404baa25dd6b20be52e
+approved_tree: 1a65a5b343d43674025458718697dea923fb2d6e
 digest_method: canonical-sha256-file-set-v1
 frozen_surfaces:
   - surface_id: canonical_digest_rng
@@ -206,22 +206,34 @@ frozen_surfaces:
       - EvoNN-Shared/tests/fixtures/catalog/invalid/registry-mismatch/catalog/contract_registry_mismatch.yaml
       - EvoNN-Shared/tests/fixtures/catalog/invalid/unknown_field.yaml
       - EvoNN-Shared/tests/test_catalog.py
+      - shared-benchmarks/catalog/breast_cancer.yaml
       - shared-benchmarks/catalog/canonical_ids.yaml
+      - shared-benchmarks/catalog/credit_g_classification.yaml
+      - shared-benchmarks/catalog/diabetes_regression.yaml
+      - shared-benchmarks/catalog/digits_image.yaml
+      - shared-benchmarks/catalog/friedman1_regression.yaml
+      - shared-benchmarks/catalog/iris_classification.yaml
+      - shared-benchmarks/catalog/moons_classification.yaml
+      - shared-benchmarks/catalog/wine_classification.yaml
+      - shared-benchmarks/provenance/tier_a_catalog_v1.json
+      - shared-benchmarks/suites/parity/tier1_core.yaml
+      - shared-benchmarks/suites/parity/tier1_core_smoke.yaml
+      - shared-benchmarks/suites/parity/tier_a_contract.yaml
       - tests/contracts/test_phase0_shared_interfaces.py
-    sha256: 3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc
+    sha256: f123d29b3c29464aa947e271c0b26ed74278eb528322a5fb808b3679b4a86fe5
 reviews:
   - lane: lane_a
     role: lane_a_contract_owner
-    reviewer: phase0-lane-a-producer-a2-reviewer-20260723
-    subject: phase0-frozen-surface-a-double-prime-lane-a-producer-review
-    reviewed_commit: 25352a4bd7c33b73077d9f9be231b2bb1b48109f
-    reviewed_tree: 78a72f1a2229d9e94cd78512be0585f08b2a5895
+    reviewer: phase0-lane-a-producer-reviewer-20260907
+    subject: phase0-catalog-v3-lane-a-producer-review
+    evidence_path: reviews/2026-09-07-phase0-lane-a-producer-v3-review.md
+    evidence_sha256: 3beef583fa880eb23766345f6c49c58d43cf5f391c808447561d6f267d962ab3
+    reviewed_commit: 0ece535d8b68c8701a17e404baa25dd6b20be52e
+    reviewed_tree: 1a65a5b343d43674025458718697dea923fb2d6e
     reviewed_digests:
       canonical_digest_rng: 1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc
       export_models: f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72
-      catalog_loaders: 3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc
-    evidence_path: reviews/2026-07-23-phase0-lane-a-producer-a2-review.md
-    evidence_sha256: e546bb678bddbec18a705e6484f54de11fcfcece3b099b9f18b095c540cb741d
+      catalog_loaders: f123d29b3c29464aa947e271c0b26ed74278eb528322a5fb808b3679b4a86fe5
     independent_review: true
     decision: approved
     findings:
@@ -232,16 +244,16 @@ reviews:
       minor: 0
   - lane: lane_b
     role: lane_b_contract_owner
-    reviewer: phase0-lane-b-consumer-a2-reviewer-20260723
-    subject: phase0-frozen-surface-a-double-prime-lane-b-consumer-review
-    reviewed_commit: 25352a4bd7c33b73077d9f9be231b2bb1b48109f
-    reviewed_tree: 78a72f1a2229d9e94cd78512be0585f08b2a5895
+    reviewer: phase0-lane-b-consumer-reviewer-20260907
+    subject: phase0-catalog-v3-lane-b-consumer-review
+    evidence_path: reviews/2026-09-07-phase0-lane-b-consumer-v3-review.md
+    evidence_sha256: 136d8b1016e113c03f7858c51e05782df3eb4c4849748fac076174a59dc060b3
+    reviewed_commit: 0ece535d8b68c8701a17e404baa25dd6b20be52e
+    reviewed_tree: 1a65a5b343d43674025458718697dea923fb2d6e
     reviewed_digests:
       canonical_digest_rng: 1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc
       export_models: f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72
-      catalog_loaders: 3b804f54e14749e3f0ae1bcb06b0b8415f5954a312c3eaf9057001ea4832f2cc
-    evidence_path: reviews/2026-07-23-phase0-lane-b-consumer-a2-review.md
-    evidence_sha256: 171ff311c5a6f61e1f71bbd2d913f6c221bf4657ec169400117113a1c16039af
+      catalog_loaders: f123d29b3c29464aa947e271c0b26ed74278eb528322a5fb808b3679b4a86fe5
     independent_review: true
     decision: approved
     findings:
@@ -253,16 +265,16 @@ reviews:
 amendment_rule:
   frozen_byte_or_mode_change_invalidates_current_freeze: true
   requires_new_freeze_version: true
-  next_record_must_supersede: phase0-interface-freeze-v1
+  next_record_must_supersede: phase0-interface-freeze-v3
   requires_fresh_lane_a_review: true
   requires_fresh_lane_b_review: true
   requires_joint_mini_review: true
   replacement_freeze_must_be_merged_before_lane_creation: true
 merge_verification:
   target_branch: main
-  status: verified
-  canonical_merge_commit: 5a98d9d45c4f2a7bc35bc75f93141473d0769e94
-  verified_at: "2026-07-23T07:27:10Z"
+  status: pending
+  canonical_merge_commit: null
+  verified_at: null
 lane_authorization:
-  authorized: true
-  reason: freeze_pull_request_merged_and_canonical_merge_verified
+  authorized: false
+  reason: freeze_pull_request_not_merged_and_canonical_merge_not_verified

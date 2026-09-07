@@ -337,6 +337,8 @@ class FreezeContract:
         "digests",
         "reviews",
         "amendment_rule",
+        "frozen_paths",
+        "predecessor_record_object",
         "_initialized",
     )
 
@@ -350,6 +352,8 @@ class FreezeContract:
         digests: Mapping[str, str],
         reviews: tuple[Mapping[str, str], ...],
         amendment_rule: Mapping[str, Any],
+        frozen_paths: Mapping[str, tuple[str, ...]] | None = None,
+        predecessor_record_object: str | None = None,
     ) -> None:
         object.__setattr__(self, "freeze_id", freeze_id)
         object.__setattr__(self, "supersedes", supersedes)
@@ -358,6 +362,8 @@ class FreezeContract:
         object.__setattr__(self, "digests", digests)
         object.__setattr__(self, "reviews", reviews)
         object.__setattr__(self, "amendment_rule", amendment_rule)
+        object.__setattr__(self, "frozen_paths", FROZEN_PATHS if frozen_paths is None else frozen_paths)
+        object.__setattr__(self, "predecessor_record_object", predecessor_record_object)
         object.__setattr__(self, "_initialized", True)
 
     def __setattr__(self, name: str, value: Any) -> None:
@@ -416,9 +422,86 @@ V2_CONTRACT = FreezeContract(
     reviews=V2_REVIEWS,
     amendment_rule=V2_AMENDMENT_RULE,
 )
+# Each reviewed version owns its inventory. Historical v1/v2 inventories stay exact.
+V3_FROZEN_PATHS = {'canonical_digest_rng': ('EvoNN-Shared/src/evonn_shared/canonical.py',
+                          'EvoNN-Shared/src/evonn_shared/rng.py',
+                          'EvoNN-Shared/tests/golden/canonical-v1.json',
+                          'EvoNN-Shared/tests/test_canonical.py',
+                          'EvoNN-Shared/tests/test_rng.py',
+                          'tests/contracts/test_phase0_shared_interfaces.py'),
+ 'export_models': ('EvoNN-Shared/src/evonn_shared/budgets.py',
+                   'EvoNN-Shared/src/evonn_shared/exports.py',
+                   'EvoNN-Shared/src/evonn_shared/telemetry.py',
+                   'EvoNN-Shared/tests/fixtures/invalid/b0-capability.json',
+                   'EvoNN-Shared/tests/fixtures/invalid/product-evaluation.json',
+                   'EvoNN-Shared/tests/fixtures/invalid/wrong-schema.json',
+                   'EvoNN-Shared/tests/fixtures/valid/manifest.json',
+                   'EvoNN-Shared/tests/fixtures/valid/results.json',
+                   'EvoNN-Shared/tests/fixtures/valid/summary.json',
+                   'EvoNN-Shared/tests/golden/exports/manifest.json',
+                   'EvoNN-Shared/tests/golden/exports/results.json',
+                   'EvoNN-Shared/tests/golden/exports/summary.json',
+                   'EvoNN-Shared/tests/test_budgets.py',
+                   'EvoNN-Shared/tests/test_exports.py',
+                   'EvoNN-Shared/tests/test_telemetry.py',
+                   'tests/contracts/test_phase0_shared_interfaces.py'),
+ 'catalog_loaders': ('EvoNN-Shared/src/evonn_shared/benchmarks.py',
+                     'EvoNN-Shared/src/evonn_shared/catalog.py',
+                     'EvoNN-Shared/tests/fixtures/catalog/canonical/catalog/canonical_ids.yaml',
+                     'EvoNN-Shared/tests/fixtures/catalog/canonical/catalog/contract_alpha_classification.yaml',
+                     'EvoNN-Shared/tests/fixtures/catalog/canonical/catalog/contract_beta_regression.yaml',
+                     'EvoNN-Shared/tests/fixtures/catalog/canonical/suites/parity/contract_parity_pack.yaml',
+                     'EvoNN-Shared/tests/fixtures/catalog/fallback-a/contract_fallback_sequence.yaml',
+                     'EvoNN-Shared/tests/fixtures/catalog/fallback-packs/contract_fallback_pack.yaml',
+                     'EvoNN-Shared/tests/fixtures/catalog/invalid/duplicate_nested.yaml',
+                     'EvoNN-Shared/tests/fixtures/catalog/invalid/duplicate_top.yaml',
+                     'EvoNN-Shared/tests/fixtures/catalog/invalid/registry-mismatch/catalog/canonical_ids.yaml',
+                     'EvoNN-Shared/tests/fixtures/catalog/invalid/registry-mismatch/catalog/contract_registry_mismatch.yaml',
+                     'EvoNN-Shared/tests/fixtures/catalog/invalid/unknown_field.yaml',
+                     'EvoNN-Shared/tests/test_catalog.py',
+                     'shared-benchmarks/catalog/breast_cancer.yaml',
+                     'shared-benchmarks/catalog/canonical_ids.yaml',
+                     'shared-benchmarks/catalog/credit_g_classification.yaml',
+                     'shared-benchmarks/catalog/diabetes_regression.yaml',
+                     'shared-benchmarks/catalog/digits_image.yaml',
+                     'shared-benchmarks/catalog/friedman1_regression.yaml',
+                     'shared-benchmarks/catalog/iris_classification.yaml',
+                     'shared-benchmarks/catalog/moons_classification.yaml',
+                     'shared-benchmarks/catalog/wine_classification.yaml',
+                     'shared-benchmarks/provenance/tier_a_catalog_v1.json',
+                     'shared-benchmarks/suites/parity/tier1_core.yaml',
+                     'shared-benchmarks/suites/parity/tier1_core_smoke.yaml',
+                     'shared-benchmarks/suites/parity/tier_a_contract.yaml',
+                     'tests/contracts/test_phase0_shared_interfaces.py')}
+V3_REVIEWS = ({'lane': 'lane_a',
+  'role': 'lane_a_contract_owner',
+  'reviewer': 'phase0-lane-a-producer-reviewer-20260907',
+  'subject': 'phase0-catalog-v3-lane-a-producer-review',
+  'evidence_path': 'reviews/2026-09-07-phase0-lane-a-producer-v3-review.md',
+  'evidence_sha256': '3beef583fa880eb23766345f6c49c58d43cf5f391c808447561d6f267d962ab3'},
+ {'lane': 'lane_b',
+  'role': 'lane_b_contract_owner',
+  'reviewer': 'phase0-lane-b-consumer-reviewer-20260907',
+  'subject': 'phase0-catalog-v3-lane-b-consumer-review',
+  'evidence_path': 'reviews/2026-09-07-phase0-lane-b-consumer-v3-review.md',
+  'evidence_sha256': '136d8b1016e113c03f7858c51e05782df3eb4c4849748fac076174a59dc060b3'})
+V3_CONTRACT = FreezeContract(
+    freeze_id="phase0-interface-freeze-v3",
+    supersedes=V2_CONTRACT.freeze_id,
+    approved_commit="0ece535d8b68c8701a17e404baa25dd6b20be52e",
+    approved_tree="1a65a5b343d43674025458718697dea923fb2d6e",
+    digests={'canonical_digest_rng': '1806b230d6d218154898f5db8eae4089ffda07bfdf8c395d3523946a2f9fb7bc',
+ 'export_models': 'f4199dccbab802edd8f6c671286dca8005434ef54b50a0f678e62399784a5c72',
+ 'catalog_loaders': 'f123d29b3c29464aa947e271c0b26ed74278eb528322a5fb808b3679b4a86fe5'},
+    reviews=V3_REVIEWS,
+    amendment_rule={**V2_AMENDMENT_RULE, "next_record_must_supersede": "phase0-interface-freeze-v3"},
+    frozen_paths=V3_FROZEN_PATHS,
+    predecessor_record_object="7e50d97143747bafe1b672fee187ed74971a34bf",
+)
 CONTRACTS = {
     V1_CONTRACT.freeze_id: V1_CONTRACT,
     V2_CONTRACT.freeze_id: V2_CONTRACT,
+    V3_CONTRACT.freeze_id: V3_CONTRACT,
 }
 
 
@@ -793,11 +876,11 @@ def _validate_record_schema(
         _exact_list(surface.get("source_documents"), SOURCE_DOCUMENTS[surface_id], f"Phase 0 surface {surface_id} source_documents", errors)
         frozen_paths = _exact_list(
             surface.get("frozen_paths"),
-            FROZEN_PATHS[surface_id],
+            contract.frozen_paths[surface_id],
             f"Phase 0 surface {surface_id} frozen_paths",
             errors,
         )
-        if frozen_paths != list(FROZEN_PATHS[surface_id]):
+        if frozen_paths != list(contract.frozen_paths[surface_id]):
             errors.append(f"Phase 0 surface {surface_id} canonical frozen_paths are invalid")
         if surface.get("sha256") != contract.digests[surface_id]:
             errors.append(f"Phase 0 surface {surface_id} sha256 must be {contract.digests[surface_id]}")
@@ -1113,7 +1196,7 @@ def _validate_frozen_paths(
     contract: FreezeContract,
 ) -> list[str]:
     errors: list[str] = []
-    for surface_id, paths in FROZEN_PATHS.items():
+    for surface_id, paths in contract.frozen_paths.items():
         manifest = bytearray()
         for relative in paths:
             approved_entry = approved_tree[relative] if relative in approved_tree else None
@@ -1219,7 +1302,9 @@ def _validate_reviews(
         if dict(metadata) != expected_frontmatter:
             errors.append(f"review {relative} frontmatter must match the exact approved identity and verdict")
         text = content.decode("utf-8", errors="replace").lower()
-        if not all(needle in text for needle in ("critical", "important", "minor", "specification", "frozen-correctness")):
+        # V3 authenticates exact reviewed bytes and structured zero-finding fields.
+        # A prose spelling (e.g. frozen correctness vs frozen-correctness) adds no proof.
+        if contract is not V3_CONTRACT and not all(needle in text for needle in ("critical", "important", "minor", "specification", "frozen-correctness")):
             errors.append(f"review {relative} must record zero-finding approved semantics")
     return errors
 
@@ -1311,7 +1396,7 @@ def _active_binding_commit(
         historical_record = (
             "100644",
             "blob",
-            BINDING_RECORD_OBJECT,
+            contract.predecessor_record_object or BINDING_RECORD_OBJECT,
         )
         for revision in revisions:
             parent_line = _git_text(
@@ -1325,6 +1410,10 @@ def _active_binding_commit(
             if len(parent_line) != 2:
                 continue
             parent = parent_line[1]
+            # V3 binds directly to the reviewed candidate. An intervening edit
+            # followed by restoration must not erase an invalid predecessor history.
+            if contract is V3_CONTRACT and parent != contract.approved_commit:
+                continue
             parent_tree = _tree(
                 repo_root,
                 parent,
@@ -1469,7 +1558,9 @@ def _validate_exact_feature_merge(
     return errors
 
 
-def _validate_feature_descendants(repo_root: Path, binding: str, tip: str) -> list[str]:
+def _validate_feature_descendants(
+    repo_root: Path, binding: str, tip: str, contract: FreezeContract = V1_CONTRACT,
+) -> list[str]:
     errors: list[str] = []
     try:
         commits = [
@@ -1486,7 +1577,7 @@ def _validate_feature_descendants(repo_root: Path, binding: str, tip: str) -> li
         historical_b0_paths = set(HISTORICAL_B0_PATHS)
         frozen_paths = {
             relative
-            for surface_paths in FROZEN_PATHS.values()
+            for surface_paths in contract.frozen_paths.values()
             for relative in surface_paths
         }
         immutable_freeze_paths = frozen_paths | set(REVIEW_PATHS)
@@ -1517,6 +1608,7 @@ def _validate_binding_bytes(
     active_binding_tree: Mapping[str, tuple[str, str, str]],
     head_tree: Mapping[str, tuple[str, str, str]],
     status: Any,
+    contract: FreezeContract = V1_CONTRACT,
 ) -> list[str]:
     errors: list[str] = []
     for relative in sorted(BINDING_PATHS):
@@ -1582,6 +1674,7 @@ def _validate_binding_bytes(
                 repo_root,
                 active_binding,
                 "HEAD",
+                contract,
             )
         )
 
@@ -1842,6 +1935,7 @@ def _validate_verified_topology(
     record: Mapping[str, Any],
     binding: str,
     binding_tree: Mapping[str, tuple[str, str, str]],
+    contract: FreezeContract = V1_CONTRACT,
 ) -> list[str]:
     """Validate the recorded canonical merge from committed history alone.
 
@@ -1905,7 +1999,7 @@ def _validate_verified_topology(
                 errors.append("Binding C must not be an ancestor of the canonical merge first parent")
             if _git(repo_root, "merge-base", "--is-ancestor", binding, feature_parent, check=False).returncode != 0:
                 errors.append("Binding C must be reachable through the sole feature parent")
-            errors.extend(_validate_feature_descendants(repo_root, binding, feature_parent))
+            errors.extend(_validate_feature_descendants(repo_root, binding, feature_parent, contract))
             errors.extend(
                 _validate_exact_feature_merge(
                     repo_root,
@@ -2041,6 +2135,18 @@ def validate_phase0_interface_freeze(
         _validate_frozen_paths(repo_root, approved_tree, head_tree, contract)
     )
     errors.extend(_validate_historical_b0(repo_root, head_tree, base_tree))
+    if contract is V3_CONTRACT:
+        for previous in (V1_CONTRACT, V2_CONTRACT):
+            for review in previous.reviews:
+                relative = review["evidence_path"]
+                entry = head_tree.get(relative)
+                if entry is None or entry[:2] != ("100644", "blob"):
+                    errors.append(f"historical review must remain a committed 100644 blob: {relative}")
+                elif _sha256(_blob(repo_root, entry[2])) != review["evidence_sha256"]:
+                    errors.append(f"historical review digest differs from its reviewed version: {relative}")
+                else:
+                    errors.extend(_validate_path_checkout(repo_root, relative, entry, "historical review"))
+
 
     topology_errors: list[str] = []
     historical_binding = _binding_commit(repo_root, errors)
@@ -2079,6 +2185,7 @@ def validate_phase0_interface_freeze(
                     active_binding_tree,
                     head_tree,
                     record.get("status"),
+                    contract,
                 )
             )
             errors.extend(
@@ -2104,6 +2211,7 @@ def validate_phase0_interface_freeze(
                         record,
                         active_binding,
                         active_binding_tree,
+                        contract,
                     )
                 )
             errors.extend(topology_errors)
