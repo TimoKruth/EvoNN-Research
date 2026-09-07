@@ -13,6 +13,7 @@ reviews:
   high_level_summary: true
   high_level_summary_in_walkthrough: true
   collapse_walkthrough: true
+  review_details: true
   poem: false
   auto_review:
     enabled: true
@@ -21,9 +22,10 @@ reviews:
     # Also review stacked PRs targeting feature/integration branches.
     base_branches:
       - ".*"
-  # Extend default exclusions for local generated artifacts. Explicitly include
-  # the workspace lockfile; keep specs, catalogs and textual test fixtures in scope.
+  # Include repository files as well as the normally ignored workspace lockfile.
+  # A lockfile-only positive pattern excludes all other files from review.
   path_filters:
+    - "**/*"
     - "uv.lock"
     - "!.artifacts/**"
     - "!**/.venv/**"
