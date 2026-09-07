@@ -429,8 +429,19 @@ def test_consolidated_plan_preserves_b0_evidence_and_receipt_handoff() -> None:
     assert set(receipt["work_packages"]) == {f"WP-0.{item}" for item in range(1, 11)}
     phase0_section = text.split("## Phase 0", 1)[1].split("## Phase 1", 1)[0]
     assert "governance/phase0-acceptance.json" in phase0_section
+    # Historical test paths are verified at the evidence commit, so future
+    # meaningful refactors do not require obsolete checkout copies.
+    entries = subprocess.check_output(
+        ["git", "-C", str(REPO_ROOT), "--no-replace-objects", "ls-tree", "-r", "-z",
+         receipt["accepted_commit"]],
+    ).split(b"\0")
+    historical_files = {
+        entry.split(b"\t", 1)[1].decode("utf-8")
+        for entry in entries if entry.startswith(b"100644 blob ")
+    }
     for paths in receipt["work_packages"].values():
-        assert paths and all((REPO_ROOT / path).is_file() for path in paths)
+        assert paths and set(paths) <= historical_files
+
 
 def test_checked_in_b0_report_is_complete_and_valid() -> None:
     validator = _validator()
