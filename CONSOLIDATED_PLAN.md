@@ -32,7 +32,9 @@ The reviewed #10–#20 series is integrated, #21 supplies GPL-3.0-only licensing
 and #22 configures CodeRabbit. #9 was closed without catalog admission.
 Both main CI lanes passed. Gate B0 is closed; Phase 0 remains open. PR #25
 contains the independently reviewed v3 catalog binding and catalog/export
-composition tests; its canonical merge and separate attestation are pending.
+composition tests and is merged at `322834900aa99a267b78b789a733e96ac205dd04`.
+The separate authorization attestation verifies that exact canonical merge;
+its authorization takes effect when the attestation PR is merged.
 
 | Order | Deliverable | Completion condition |
 | --- | --- | --- |
@@ -163,7 +165,7 @@ open; formal closure must include the appropriate reviewed gate transition.
 | WP-0.1 | Workspace, package scripts, full cross-host foundation coverage, consolidated CI triggers | Final evidence mapping; bounded CI/review follow-ups below. |
 | WP-0.2–0.5 | Strict export/budget/telemetry models, identities and RNG contracts | Map each requirement to regular export fixtures or the separate no-op integrity proof. |
 | WP-0.6–0.7 | Atomic checkpoints, transactional store/workspace, verified reader and diagnostic consistency | Include persistence and failure results in joint acceptance. |
-| WP-0.8 | Strict catalog and pack loaders | Eight planned definitions and three packs have independently verified provenance and contract composition; v3 merge/attestation remain open. Runtime admission is separate. |
+| WP-0.8 | Strict catalog and pack loaders | Eight planned definitions and three packs have independently verified provenance and contract composition; The v3 canonical merge is verified by the separate authorization attestation. Runtime admission is separate. |
 | WP-0.9 | LM-cache existence/size/checksum validators | Record contract acceptance; real LM execution belongs to later phases. |
 | WP-0.10 | Real synthetic kill/resume proof, budget and protected-label tests, cross-host JSON evidence | Catalog/budget/export composition now passes for all three packs; joint reference acceptance remains open. Engine-specific hooks remain separately open. |
 
@@ -172,8 +174,8 @@ open; formal closure must include the appropriate reviewed gate transition.
 These are concrete existing checks, not a declaration that their parent WP is
 accepted. The successor's foundation selection passes 776 tests, including
 three real-pack/unsupported-export composition cases. Both independent reviews
-recomputed the candidate digests and source provenance. The v3 validator accepts
-the pending binding while keeping lane authorization false until attestation.
+recomputed the candidate digests and source provenance. The v3 validator verifies
+the canonical merge and its separate authorization attestation.
 
 | Parent | Existing executable evidence | Remaining boundary |
 | --- | --- | --- |
@@ -212,11 +214,13 @@ policy verdicts or a speed claim without comparable measurements.
 Implemented: scoped immutable-Git-read caching; no duplicate feature push runs;
 a single foundation selection on both hosts; independently callable package
 scripts; required hosted synthetic report generation/validation/upload.
-Remaining: profile B0 policy tests and measure any bounded change against the
-same cases. Final main's macOS B0 step took 18m46s; foundation took 35s. These
-are observations from one run, not a stable benchmark. Investigate effective
-CodeRabbit path selection (all 29 files skipped on #23) and the optional
-docstring warning separately; verify actual reviewed files after any fix.
+Profiling found 246 Git subprocesses in one 4.36s local freeze validation;
+4.18s was spent inside Git calls. No optimization is claimed from this single
+measurement. Any bounded change must retain the same historical cases. Final main's macOS B0 step took 18m46s; foundation took 35s. These
+are observations from one run, not a stable benchmark. PR #24 corrected CodeRabbit
+selection; its in-content review and the 28 files processed on #25 verify the
+fix. Test docstrings should explain non-obvious contracts or invariants; no
+blanket docstring expansion is needed merely for a bot percentage.
 
 ### WP-0.7a — Transactional evidence and safe run-directory I/O
 
@@ -331,9 +335,11 @@ land; speciation behavior activates with Topograph, not a placeholder.
 
 **Lane split & sync:** A owns WP-0.2–0.5; B owns WP-0.1 and WP-0.6–0.9;
 WP-0.10 and the Phase 0 exit remain joint. Frozen interfaces are canonical
-encoding/digests, export models and catalog-loader signatures. Freeze v2 and
-its authorization are already merged and verified. This consolidation changes
-no freeze bytes, source pins or acceptance state.
+encoding/digests, export models and catalog-loader signatures. Freeze v3 adds
+the reviewed catalog inventory; its exact canonical merge is verified below.
+Supplemental consumer/inventory tests remain subject to normal reviewed CI,
+without automatically extending the byte-frozen surface. Phase 0 acceptance
+remains separate and all parent items remain open until its evidence is bound.
 
 <!-- phase0-interface-freeze:begin -->
 ```yaml
@@ -348,10 +354,12 @@ digests:
 reviews:
   - reviews/2026-09-07-phase0-lane-a-producer-v3-review.md
   - reviews/2026-09-07-phase0-lane-b-consumer-v3-review.md
-status: approved_pending_merge
-lane_authorization: false
-lane_branches: none
-next_sequence: protected PR merge → verify canonical merge → attestation → only then create lane/integration branches
+status: merged_verified
+lane_authorization: true
+canonical_merge_commit: 322834900aa99a267b78b789a733e96ac205dd04
+verified_at: 2026-09-07T15:49:25Z
+lane_branch_creation: authorized
+authorization_effective_after: separate authorization attestation is merged
 joint_boundary: WP-0.10 and the Phase 0 exit remain joint
 ```
 <!-- phase0-interface-freeze:end -->
