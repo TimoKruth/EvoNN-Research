@@ -4,6 +4,12 @@ This synthetic no-op is neither an engine nor an admitted benchmark. It uses
 real RunStore transactions and checkpoint publication, but its diagnostic
 JSON is deliberately not a production symbiosis export. The label boundary
 restricts the selector's supplied capabilities; it is not a Python sandbox.
+
+Every candidate, including an invalid one, consumes a budget slot under this
+fixture's explicit policy. Failed/invalid observations use distinct metric
+names, not fabricated successful scores. CLI ``evaluate:`` lines trace fresh
+candidate attempts, including those rejected before full evaluation. Recovery
+proves no recharge after a durable row; kills before that row are not covered.
 """
 
 from __future__ import annotations
@@ -38,16 +44,34 @@ class SearchView:
         self.features = features
 
 
+class SyntheticEvaluationFailure(Exception):
+    """Only this deliberately injected evaluator failure is a known outcome."""
+
+
+def evaluate_candidate(candidate, label, *, fail=False):
+    if fail:
+        raise SyntheticEvaluationFailure("injected synthetic evaluation failure")
+    return float(candidate == label)
+
+
 def select_candidate(view):
     position, stream = view.features
     return (position + stream) % 2
 
 
-def initialize(root, *, budget):
+def initialize(root, *, budget, outcomes=None):
     if type(budget) is not int or budget < 0:
         raise ValueError("budget must be a nonnegative integer")
+    if outcomes is None:
+        outcomes = ("success",) * budget
+    if (type(outcomes) not in (tuple, list) or len(outcomes) != budget
+            or any(type(value) is not str or value not in ("success", "failed", "invalid") for value in outcomes)):
+        raise ValueError("outcomes must declare one known outcome per budget slot")
     workspace = create_run_workspace(root.parent, root.name)
-    config = {"budget": budget, "root_seed": 19}
+    config = {
+        "budget": budget, "root_seed": 19, "outcomes": list(outcomes),
+        "attempt_policy": "all_candidates_charged_including_invalid_v1",
+    }
     workspace.config_path.write_bytes(encode(config))  # JSON is also valid YAML.
     state = {"config": config, "completed": 0, "score_sum": 0.0, "tip": "0" * 64}
     publish_checkpoint(workspace.checkpoint_directory, workspace.run_id, "step_0", encode(state))
@@ -93,15 +117,31 @@ def run(root, *, stop_after=None, crash_at=None, crash_step=3,
             raise ValueError("checkpoint does not describe the persisted prefix")
         if target < inherited:
             raise ValueError("stop boundary precedes already committed work")
-        actual = 0
+        actual = failed = invalid = 0
         for index in range(completed, target):
             step = index + 1
             if index < inherited:
                 row = persisted[index]
             else:
                 candidate = selector(SearchView((index, stream)))
-                score = float(candidate == protected_labels[index % len(protected_labels)])
-                row = store.append_evaluation("synthetic_reference", "noop_reference", "agreement", score)
+                outcome = config["outcomes"][index]
+                if outcome == "invalid":
+                    candidate = None  # Deliberately inject a pre-evaluation rejection.
+                if type(candidate) is not int or candidate not in (0, 1):
+                    metric, score = "invalid_attempt", 0.0
+                    invalid += 1
+                else:
+                    try:
+                        score = evaluate_candidate(
+                            candidate, protected_labels[index % len(protected_labels)], fail=outcome == "failed"
+                        )
+                        metric = "agreement"
+                    except SyntheticEvaluationFailure:
+                        metric, score = "failed_attempt", 0.0
+                        failed += 1
+                # All candidates cost one slot under this fixture's explicit
+                # policy. Failure/invalid rows are evidence, not valid scores.
+                row = store.append_evaluation("synthetic_reference", "noop_reference", metric, score)
                 actual += 1
             crash_if_requested("row", step, crash_at, crash_step)
             state = {
@@ -124,12 +164,15 @@ def run(root, *, stop_after=None, crash_at=None, crash_step=3,
             evaluation_count=budget,
             actual_evaluations=actual,
             cached_evaluations=inherited,
-            failed_evaluations=0,
-            invalid_evaluations=0,
+            failed_evaluations=failed,
+            invalid_evaluations=invalid,
             resumed_from_run_id=workspace.run_id if inherited else None,
             resumed_evaluations=inherited,
             partial_run=actual + inherited < budget,
-            evaluation_semantics="One synthetic no-op score; committed rows are reused on continuation.",
+            evaluation_semantics=(
+                "Each synthetic candidate costs one slot including failed/invalid attempts; "
+                "failure/invalid counters describe fresh work and prior attempts are cached on continuation."
+            ),
         )
         # These derived views are rebuilt after resume; the manifest and row
         # chain, not a possibly interrupted view write, establish authority.
@@ -160,6 +203,11 @@ def export_diagnostic(root, destination):
     })
     diagnostic = {
         "evidence_class": "synthetic_contract_preparation",
+        "attempt_totals": {
+            "success": sum(row["metric_name"] == "agreement" for row in evaluations),
+            "failed": sum(row["metric_name"] == "failed_attempt" for row in evaluations),
+            "invalid": sum(row["metric_name"] == "invalid_attempt" for row in evaluations),
+        },
         "checkpoint_sha256": hashlib.sha256(payload).hexdigest(),
         "state": json.loads(payload),
         "accounting": accounting.model_dump(mode="json"),
