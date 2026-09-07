@@ -2,6 +2,7 @@ name: B0 macOS engine lane
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 

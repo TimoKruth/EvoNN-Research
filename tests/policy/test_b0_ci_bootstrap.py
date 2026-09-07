@@ -236,6 +236,18 @@ def test_only_superseded_pr_runs_are_cancelled(name: str) -> None:
     }
 
 
+@pytest.mark.parametrize("name", ["linux-trust.yml", "macos-engines.yml"])
+def test_full_ci_runs_on_every_pr_and_main_without_duplicate_branch_push(name: str) -> None:
+    workflow, _ = _workflow(name)
+    # PyYAML's YAML 1.1 loader represents the GitHub 'on' key as True.
+    events = workflow[True]
+    assert set(events) == {"push", "pull_request", "workflow_dispatch"}
+    assert events["push"] == {"branches": ["main"]}
+    assert events["pull_request"] is None  # Includes PRs with stacked branch bases.
+    assert events["workflow_dispatch"] is None
+    assert workflow["permissions"] == {"contents": "read"}
+
+
 def test_engine_dependency_markers_are_exact_and_linux_safe() -> None:
     for directory in ENGINE_DIRECTORIES:
         with (REPO_ROOT / directory / "pyproject.toml").open("rb") as stream:

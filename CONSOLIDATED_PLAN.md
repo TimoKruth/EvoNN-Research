@@ -315,6 +315,30 @@ renamed/bypassed, or cancellation prevents default-branch validation.
   one-shot automation. Canonical verification and follow-up hosted evidence
   are tracked in the stacked PR; this does not imply approval of PR #10.
 
+**Bounded follow-up series (2026-09-07; WP-0.1a / WP-0.7a / WP-0.10a).**
+Each item has its own dependent PR; implementation checkboxes are not acceptance.
+Keep all frozen surfaces and required jobs intact. Full hosted verification and
+independent review remain required; synthetic evidence never admits a catalog
+or closes Phase 0. After parent merges, retarget and revalidate each child.
+
+- [x] CI events: run complete lanes on every PR (including stacked bases), main
+  pushes and manual dispatch, eliminating duplicate feature-branch push runs.
+  Unopened feature branches need manual dispatch for hosted checks. Regression
+  tests pin all three triggers and retain read-only workflow permissions and
+  PR-only cancellation. This halves lane starts for a normal pushed PR update;
+  no per-lane wall-clock speedup or test removal is claimed.
+- [ ] Foundation entry point: share complete Shared/root-contract coverage on
+  both hosts without duplicate contract selection; retain standalone scripts.
+- [ ] Read-only RunStore reader: shared lock, clean-store requirement, verified
+  identity/hash chain, no source writes or exposed writer operations.
+- [ ] Diagnostic consistency: consume the verified reader and reject stale or
+  contradictory checkpoint/config/accounting evidence before export.
+- [ ] Resume inputs: bind seed and protected-label identity to checkpoint state.
+- [ ] Integrity probe: emit machine-readable killed/resumed comparison evidence.
+- [ ] Atomic artifact publication: no overwrite or partial visible export.
+- [ ] Hosted integrity evidence: execute and retain the synthetic probe on both
+  hosts, document evidence limits and merge order.
+
 #### WP-0.1b — Versioned contracts and maintainable internal helpers
 
 **Requirements:** claude-spec/01 package boundaries; /02 canonical identities;
