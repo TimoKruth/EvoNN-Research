@@ -21,9 +21,10 @@ reviews:
     # Also review stacked PRs targeting feature/integration branches.
     base_branches:
       - ".*"
-  # Exclude local generated artifacts only. Keep specs, lockfiles, benchmark
-  # catalogs, test fixtures and golden data available for contract reviews.
+  # Extend default exclusions for local generated artifacts. Explicitly include
+  # the workspace lockfile; keep specs, catalogs and textual test fixtures in scope.
   path_filters:
+    - "uv.lock"
     - "!.artifacts/**"
     - "!**/.venv/**"
     - "!**/__pycache__/**"
