@@ -94,16 +94,16 @@ def test_missing_git_provenance_fails_before_workspace_creation(tmp_path, monkey
     assert not (tmp_path / "runs").exists()
 
 
-def test_unrepresentable_ngram_alpha_is_invalid_before_fit(tmp_path):
-    import numpy as np
+@pytest.mark.parametrize("alpha", [5e-324, 10**400, "bad", None, float("nan"), float("inf"), -float("inf")])
+def test_unrepresentable_ngram_alpha_is_invalid_before_fit(tmp_path, alpha):
     from evonn_contenders.datasets import load_dataset
     from evonn_contenders.worker import evaluate
     data = load_dataset("iris_classification", seed=42, cache_root=tmp_path / "cache")
     # Deliberately invalid construction must fail before touching LM fit inputs.
-    request = {"model": "bigram_lm", "parameters": {"alpha": np.nextafter(0.0, 1.0)}, "model_seed": 42,
+    request = {"model": "bigram_lm", "parameters": {"alpha": alpha}, "model_seed": 42,
                "task": "language_modeling", "input_shape": [4], "output_dim": 3,
                "data": data.provenance, "attempt_started": str(tmp_path / "started")}
     result = evaluate(request)
     assert result["status"] == "failed" and result["invalid"] == 1 and result["charged"] == 0
-    assert "machine epsilon" in result["reason"]
+    assert "n-gram" in result["reason"]
     assert not (tmp_path / "started").exists()
