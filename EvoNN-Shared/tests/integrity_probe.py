@@ -129,8 +129,7 @@ def generate(work_root, output):
                 "source_before": before, "source_after": after,
             })
     validate_report(report)
-    with output.open("xb") as stream:
-        stream.write(runner.encode(report))
+    runner.publish_new_file(output, runner.encode(report))
     return report
 
 

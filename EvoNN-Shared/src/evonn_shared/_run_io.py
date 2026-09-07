@@ -13,6 +13,7 @@ import errno
 import os
 from pathlib import Path
 import stat
+import uuid
 from collections.abc import Iterator
 
 
@@ -91,3 +92,42 @@ def write_all(descriptor: int, payload: bytes) -> None:
         if count <= 0:
             raise OSError("file write made no progress")
         remaining = remaining[count:]
+
+
+def publish_new_file(path: Path, payload: bytes) -> None:
+    """Publish complete bytes without replacing any existing destination.
+
+    Requires local POSIX hard-link/fsync semantics and an application-owned
+    directory. Stage and fsync first, then atomically link into the new name.
+    A final directory-fsync failure means uncertain durability: the complete
+    file is already visible. Never retry by overwriting or deleting that file.
+    """
+    if type(path) is not type(Path()) or type(payload) is not bytes:
+        raise TypeError("publication requires a concrete Path and bytes")
+    relative_parts(path.name)
+    with open_directory(path.parent) as directory_fd:
+        temporary = ".publish-" + uuid.uuid4().hex
+        descriptor = os.open(
+            temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC | os.O_NOFOLLOW,
+            0o600, dir_fd=directory_fd,
+        )
+        primary = None
+        try:
+            try:
+                write_all(descriptor, payload)
+                os.fsync(descriptor)
+            finally:
+                os.close(descriptor)
+            os.link(temporary, path.name, src_dir_fd=directory_fd, dst_dir_fd=directory_fd,
+                    follow_symlinks=False)
+        except BaseException as error:
+            primary = error
+            raise
+        finally:
+            try:
+                os.unlink(temporary, dir_fd=directory_fd)
+            except OSError as error:
+                if primary is None:
+                    raise
+                primary.add_note(f"publication staging cleanup failed: {error}")
+        os.fsync(directory_fd)
