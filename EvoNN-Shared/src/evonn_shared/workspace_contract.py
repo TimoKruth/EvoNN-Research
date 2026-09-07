@@ -28,7 +28,7 @@ WORKSPACE_DEPENDENCY_CONTRACTS = (
         ),
     ),
     WorkspaceDependencyContract("EvoNN-Compare", "evonn-compare", ("evonn-shared",)),
-    WorkspaceDependencyContract("EvoNN-Contenders", "evonn-contenders", ("evonn-shared", "numpy==2.4.4", "scipy==1.17.1", "scikit-learn==1.8.0", "pandas==3.0.2", "openml==0.15.1",)),
+    WorkspaceDependencyContract("EvoNN-Contenders", "evonn-contenders", ("evonn-shared", "numpy==2.4.4", "scipy==1.17.1", "scikit-learn==1.8.0", "pandas==3.0.2", "openml==0.15.1", "PyYAML>=6.0.2,<7", "threadpoolctl==3.6.0",)),
     WorkspaceDependencyContract("EvoNN-Prism", "evonn-prism", ENGINE_DEPENDENCIES),
     WorkspaceDependencyContract("EvoNN-Topograph", "evonn-topograph", ENGINE_DEPENDENCIES),
     WorkspaceDependencyContract("EvoNN-Stratograph", "evonn-stratograph", ENGINE_DEPENDENCIES),

@@ -10,7 +10,7 @@ license-files = ["LICENSE"]
 description = "Reproducible external contender floors for EvoNN"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["evonn-shared", "numpy==2.4.4", "scipy==1.17.1", "scikit-learn==1.8.0", "pandas==3.0.2", "openml==0.15.1"]
+dependencies = ["evonn-shared", "numpy==2.4.4", "scipy==1.17.1", "scikit-learn==1.8.0", "pandas==3.0.2", "openml==0.15.1", "PyYAML>=6.0.2,<7", "threadpoolctl==3.6.0"]
 
 [project.optional-dependencies]
 boosted = ["xgboost>=3,<4", "lightgbm>=4,<5", "catboost>=1.2,<2"]

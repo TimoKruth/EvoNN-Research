@@ -51,9 +51,11 @@ class NGram:
         probabilities = []
         for context in self._contexts(x):
             counts = self.counts[context] if context in self.counts else {}
-            row = np.full(self.vocabulary_size, self.alpha, dtype=np.float64)
+            # Scale before addition/summation to keep every finite alpha valid.
+            scale = max(self.alpha, max(counts.values(), default=1))
+            row = np.full(self.vocabulary_size, self.alpha / scale, dtype=np.float64)
             for token, count in counts.items():
-                row[token] += count
+                row[token] += count / scale
             probabilities.append(row / row.sum())
         return np.asarray(probabilities)
 
@@ -72,8 +74,8 @@ def build_model(name: str, *, task: str, seed: int, input_shape: tuple[int, ...]
     """Construct a model without inspecting any held-out values."""
     params = dict(parameters or {})
     if set(params) & {"random_state", "random_seed", "seed", "n_jobs", "thread_count", "nthread", "num_threads", "num_thread", "nthreads",
-                      "device", "device_type", "task_type", "gpu_id", "gpu_device_id", "predictor", "tree_method"}:
-        raise ValueError("seed, device and worker controls are owned by the run protocol")
+                      "device", "device_type", "task_type", "gpu_id", "gpu_device_id", "predictor", "tree_method", "allow_writing_files", "train_dir", "save_snapshot", "snapshot_file"}:
+        raise ValueError("seed, device, worker and file output controls are owned by the run protocol")
     regression = task == "regression"
     if name in ("unigram_lm", "bigram_lm", "trigram_lm"):
         if task != "language_modeling":

@@ -438,8 +438,10 @@ dependencies = [
     { name = "numpy", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "openml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "pandas", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "pyyaml", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "scikit-learn", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
     { name = "scipy", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "threadpoolctl", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 
 [package.optional-dependencies]
@@ -460,8 +462,10 @@ requires-dist = [
     { name = "numpy", specifier = "==2.4.4" },
     { name = "openml", specifier = "==0.15.1" },
     { name = "pandas", specifier = "==3.0.2" },
+    { name = "pyyaml", specifier = ">=6.0.2,<7" },
     { name = "scikit-learn", specifier = "==1.8.0" },
     { name = "scipy", specifier = "==1.17.1" },
+    { name = "threadpoolctl", specifier = "==3.6.0" },
     { name = "torch", marker = "extra == 'torch'", specifier = ">=2.7,<3" },
     { name = "xgboost", marker = "extra == 'boosted'", specifier = ">=3,<4" },
 ]

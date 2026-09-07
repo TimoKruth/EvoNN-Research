@@ -46,13 +46,20 @@ def validate_canonical_results(manifest: Manifest, results: Results, *, shared_r
             raise ValueError("canonical task or metric semantics changed")
 
 
-def read_export(root: Path, *, shared_root: Path | None = None) -> ExportBundle:
-    """Verify echoes, canonical semantics and every referenced byte; never execute models."""
+def read_export(root: Path, *, shared_root: Path | None = None,
+                max_artifacts: int = 1024, max_artifact_bytes: int = 1024 * 1024 * 1024) -> ExportBundle:
+    """Verify echoes and bytes with at most 1024 artifacts / 1 GiB total by default."""
+    if type(max_artifacts) is not int or max_artifacts < 0 or type(max_artifact_bytes) is not int or max_artifact_bytes < 0:
+        raise ValueError("bundle limits must be nonnegative integers")
     manifest = Manifest.model_validate_json(read_document(root, "manifest.json"))
     results = Results.model_validate_json(read_document(root, "results.json"))
     summary = RunSummary.model_validate_json(read_document(root, "summary.json"))
     _validate_cross_file(manifest, results, summary)
     validate_canonical_results(manifest, results, shared_root=shared_root)
+    if len(summary.artifact_digests) > max_artifacts:
+        raise ValueError("bundle artifact count exceeds limit")
+    remaining = max_artifact_bytes
     for reference in summary.artifact_digests:
-        read_verified_artifact(root, reference)
+        payload = read_verified_artifact(root, reference, max_bytes=min(256 * 1024 * 1024, remaining))
+        remaining -= len(payload)
     return ExportBundle(root.absolute(), manifest, results, summary)

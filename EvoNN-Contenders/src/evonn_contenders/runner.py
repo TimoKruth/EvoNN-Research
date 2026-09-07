@@ -103,8 +103,8 @@ def _prepare(request: dict, directory: Path, deadline: float) -> dict:
 def run_contenders(*, pack_name: str, budget: int | None, seed: int, output_parent: Path,
                    cache_root: Path, pools_path: Path | None = None, timeout: float = 1800.0,
                    fit_timeout: float = 180.0, enhanced: bool = False) -> Path:
-    if not math.isfinite(timeout) or not math.isfinite(fit_timeout) or timeout <= 0 or fit_timeout <= 0:
-        raise ValueError("run and fit time limits must be positive")
+    if not math.isfinite(timeout) or not math.isfinite(fit_timeout) or not 0 < timeout <= 1800 or not 0 < fit_timeout <= 1800:
+        raise ValueError("Phase 1 run and fit time limits must be in (0, 1800] seconds")
     root = shared_root()
     pack = load_parity_pack(pack_name, shared_root=root)
     total = pack.budget_policy.evaluation_count if budget is None else budget
@@ -115,6 +115,14 @@ def run_contenders(*, pack_name: str, budget: int | None, seed: int, output_pare
     config, pool_digest = load_pools(pools_path)
     definitions = [get_benchmark(name, shared_root=root) for name in pack.benchmarks]
     pools = {definition.id: resolve_pool(config, definition) for definition in definitions}
+    try:
+        git_root = str(Path(__file__).resolve().parents[3])
+        git_commit = subprocess.check_output(["git", "-C", git_root, "rev-parse", "HEAD"],
+                                             text=True, stderr=subprocess.PIPE).strip()
+        code_dirty = bool(subprocess.check_output(["git", "-C", git_root, "status", "--porcelain"],
+                                                 stderr=subprocess.PIPE).strip())
+    except (OSError, subprocess.SubprocessError) as error:
+        raise ValueError("Contenders requires an accessible Git checkout for exact code provenance") from error
     started, clock_start = _utc(), time.monotonic()
     deadline = clock_start + timeout
     identifier = "contenders_" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S") + "_" + uuid.uuid4().hex[:12]
@@ -140,15 +148,12 @@ def run_contenders(*, pack_name: str, budget: int | None, seed: int, output_pare
         "fidelity": {"regime": "full fixed-pool fits", "stages": [{"name": "full", "description": "historical full train/validation split"}],
                      "promotion_rule": "none; fixed pool cycles with explicit independent initialization seeds"},
     }
-    git_commit = subprocess.check_output(["git", "-C", str(Path(__file__).resolve().parents[3]),
-                                          "rev-parse", "HEAD"], text=True).strip()
     snapshot = {"schema_version": "1.0.0", "benchmark_pack": {"pack_name": pack_name}, "budget": declaration,
                 "seed": seed, "pool_sha256": pool_digest, "pools": config, "enhanced": enhanced,
                 "fit_timeout_seconds": fit_timeout, "runtime": runtime, "evaluation_semantics": SEMANTICS,
                 "initialization_stream": str(derive_stream(seed, StreamName.INIT)),
                 "dataset_versions": {name: importlib.metadata.version(name) for name in ("numpy", "scipy", "scikit-learn", "pandas", "openml")},
-                "git_commit": git_commit, "code_dirty": bool(subprocess.check_output(
-                    ["git", "-C", str(Path(__file__).resolve().parents[3]), "status", "--porcelain"]).strip())}
+                "git_commit": git_commit, "code_dirty": code_dirty}
     publish_artifact(workspace.config_path, json_bytes(snapshot))
     records, attempts, provenance = [], [], []
     retained_models = {}

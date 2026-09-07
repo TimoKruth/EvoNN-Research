@@ -19,7 +19,7 @@ EXPECTED_DEPENDENCY_CONTRACTS = (
         ),
     ),
     ("EvoNN-Compare", "evonn-compare", ("evonn-shared",)),
-    ("EvoNN-Contenders", "evonn-contenders", ("evonn-shared", "numpy==2.4.4", "scipy==1.17.1", "scikit-learn==1.8.0", "pandas==3.0.2", "openml==0.15.1",)),
+    ("EvoNN-Contenders", "evonn-contenders", ("evonn-shared", "numpy==2.4.4", "scipy==1.17.1", "scikit-learn==1.8.0", "pandas==3.0.2", "openml==0.15.1", "PyYAML>=6.0.2,<7", "threadpoolctl==3.6.0",)),
     (
         "EvoNN-Prism",
         "evonn-prism",
