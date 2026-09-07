@@ -423,15 +423,14 @@ def test_consolidated_plan_preserves_b0_evidence_and_receipt_handoff() -> None:
     # Active freeze/parent state is enforced by the committed-history validator
     # and its mutation tests. Historical B0 closure must not pin Phase 0 open.
     receipt_path = REPO_ROOT / "governance/phase0-acceptance.json"
-    if receipt_path.exists():
-        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-        assert receipt["gate"] == "phase0" and receipt["status"] == "accepted"
-        assert set(receipt["work_packages"]) == {f"WP-0.{item}" for item in range(1, 11)}
-        phase0_section = text.split("## Phase 0", 1)[1].split("## Phase 1", 1)[0]
-        assert "governance/phase0-acceptance.json" in phase0_section
-        for paths in receipt["work_packages"].values():
-            assert paths and all((REPO_ROOT / path).is_file() for path in paths)
-
+    assert receipt_path.is_file(), "Phase 0 acceptance receipt is required"
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["gate"] == "phase0" and receipt["status"] == "accepted"
+    assert set(receipt["work_packages"]) == {f"WP-0.{item}" for item in range(1, 11)}
+    phase0_section = text.split("## Phase 0", 1)[1].split("## Phase 1", 1)[0]
+    assert "governance/phase0-acceptance.json" in phase0_section
+    for paths in receipt["work_packages"].values():
+        assert paths and all((REPO_ROOT / path).is_file() for path in paths)
 
 def test_checked_in_b0_report_is_complete_and_valid() -> None:
     validator = _validator()
