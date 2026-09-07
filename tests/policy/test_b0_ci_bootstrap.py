@@ -208,6 +208,33 @@ def test_macos_workflow_has_exact_engine_lane_contract() -> None:
     assert "run: true" not in text and "run: echo" not in text and "run: print" not in text
 
 
+def test_macos_runs_the_shared_persistence_regressions() -> None:
+    workflow, _ = _workflow("macos-engines.yml")
+    commands = _logical_shell_commands(_run_text(_steps(_job(workflow, "macos-engines"))))
+    expected_paths = {
+        "EvoNN-Shared/tests/test_checkpoints.py",
+        "EvoNN-Shared/tests/test_run_store.py",
+        "EvoNN-Shared/tests/test_run_workspace.py",
+        "EvoNN-Shared/tests/test_storage_integrity.py",
+        "EvoNN-Shared/tests/test_lm_cache.py",
+    }
+    assert any(
+        command[:9] == ["uv", "run", "--locked", "--all-packages", "--group", "dev", "pytest", "-q",
+                        "EvoNN-Shared/tests/test_checkpoints.py"]
+        and expected_paths <= set(command)
+        for command in commands
+    )
+
+
+@pytest.mark.parametrize("name", ["linux-trust.yml", "macos-engines.yml"])
+def test_only_superseded_pr_runs_are_cancelled(name: str) -> None:
+    workflow, _ = _workflow(name)
+    assert workflow["concurrency"] == {
+        "group": "${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}",
+        "cancel-in-progress": "${{ github.event_name == 'pull_request' }}",
+    }
+
+
 def test_engine_dependency_markers_are_exact_and_linux_safe() -> None:
     for directory in ENGINE_DIRECTORIES:
         with (REPO_ROOT / directory / "pyproject.toml").open("rb") as stream:

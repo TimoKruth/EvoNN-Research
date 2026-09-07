@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   macos-engines:
     runs-on: macos-15
@@ -27,6 +31,15 @@ jobs:
         run: uv sync --all-packages --group dev --locked
       - name: Run Phase 0 shared contract checks
         run: scripts/ci/phase0-contract-checks.sh
+      - name: Run shared persistence checks on macOS
+        run: |
+          uv run --locked --all-packages --group dev ruff check EvoNN-Shared/src EvoNN-Shared/tests
+          uv run --locked --all-packages --group dev pytest -q \
+            EvoNN-Shared/tests/test_checkpoints.py \
+            EvoNN-Shared/tests/test_run_store.py \
+            EvoNN-Shared/tests/test_run_workspace.py \
+            EvoNN-Shared/tests/test_storage_integrity.py \
+            EvoNN-Shared/tests/test_lm_cache.py
       - name: Assert Apple Silicon host and MLX installation
         run: |
           test "$(uname -m)" = "arm64"

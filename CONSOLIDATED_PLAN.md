@@ -222,6 +222,126 @@ integration work become authorized once the attestation is merged.
 **Objective:** validated contracts, benchmark resolution, and the integrity
 gate proven against executable skeletons. Spec: claude-spec/01–04, /13, /18.
 
+### Maintenance integration — 2026-09-06
+
+This section integrates the repository review into the sole active plan.
+Implementation, verification, and gate acceptance are separate states: the
+unchecked parent WPs below remain unaccepted until their full evidence is
+reviewed. B0 is closed; export/budget/telemetry/identity/catalog interfaces,
+checkpoints, RunStore/RunWorkspace, and LM-cache validators are implemented.
+The production benchmark catalog on `main` remains empty. Compare, Contenders,
+and all four engines remain skeletons. Phase 0 and WP-0.10 are still open.
+
+#### WP-0.7a — Transactional evidence and safe run-directory I/O
+
+**Requirements:** claude-spec/01 storage boundary; /04 immutable evaluation
+records and canonical run directory; /18 Operational Safety Rules.
+**Depends on / Produces / Blocks:** WP-0.7; hardened RunStore/RunWorkspace and
+regressions in their existing test modules; blocks WP-0.10 resume proof.
+**Hosts/backends:** Linux and macOS; DuckDB, independent of engine backend.
+**Tests first:** interrupted INSERT/tip UPDATE rolls back; killed writer
+recovers the previous committed chain; corrupt chain rejected on reopen;
+symlink/hardlink lock and DB paths rejected before mutation; nested symlink
+artifacts rejected; report publication preserves prior bytes on failure.
+**Verify:** `scripts/ci/shared-checks.sh`; all seven package/data checks;
+`scripts/ci/phase0-contract-checks.sh`; `scripts/ci/b0-policy-checks.sh`.
+**Evidence:** local test results and hosted Linux/macOS job results in the PR;
+contract evidence only, no engine-resume or scientific claim.
+**Failure conditions:** an interrupted append leaves a partial logical record,
+unsafe paths mutate external files, or platform regressions remain.
+
+- [x] Implement and locally verify transactions, fail-closed reopen, bounded
+  lock reads, descriptor-relative artifact reads and atomic report writes.
+  Local macOS verification on 2026-09-06: 682 Shared/benchmark/contract tests
+  passed (including 25 new storage regressions), all eight package/data check
+  scripts and the Phase 0 contract script passed, repository Ruff passed.
+  At local commit `31f57ba`, all five standalone policy validators passed;
+  `scripts/ci/b0-policy-checks.sh` finished with 628 passed and 2 intentionally
+  deselected script-selftest/matrix cases. Its pytest portion took 1109.82 s
+  (18 min 29 s), the local baseline for WP-0.1a's CI simplification. Hosted
+  Linux/macOS execution and review remain pending; these local results do not
+  close WP-0.7 or the Phase 0 gate.
+- [x] Document the filesystem trust boundary: the application owns run
+  directories; DuckDB opens pathnames, so concurrent hostile replacement of
+  directories by another process with the same filesystem privileges is not
+  claimed to be sandboxed. Preserve OS writer locks.
+- [ ] Obtain hosted verification and normal PR review before acceptance.
+
+#### WP-0.1a — Cross-host persistence coverage and economical CI
+
+**Requirements:** claude-spec/13 portability checks; /18 Testing Expectations.
+**Depends on / Produces / Blocks:** WP-0.1, WP-0.7a; extended macOS persistence
+coverage and workflow regressions; blocks Phase 0 acceptance.
+**Hosts/backends:** Linux/NumPy and macOS/MLX, existing required check names.
+**Tests first:** workflow checks require checkpoint, RunStore, RunWorkspace,
+and LM-cache tests on macOS as well as the Linux shared package suite.
+**Verify:** `uv run --locked --all-packages --group dev pytest -q
+tests/policy/test_b0_ci_bootstrap.py -m 'not b0_policy_script_selftest'`;
+hosted workflows.
+**Evidence:** workflow tests and hosted job results; contract evidence.
+**Failure conditions:** storage checks absent on either host, required checks
+renamed/bypassed, or cancellation prevents default-branch validation.
+
+- [x] Add the missing macOS persistence tests and cancel superseded PR runs
+  (workflow implementation; hosted execution remains pending).
+- [ ] Follow-up: consolidate duplicate contract/package tests and repeated
+  lock checks behind one documented entry point; preserve independently
+  invocable package scripts and all required checks. Measure before/after
+  runtimes. Retain historical-policy coverage in a dedicated integration suite.
+
+#### WP-0.1b — Versioned contracts and maintainable internal helpers
+
+**Requirements:** claude-spec/01 package boundaries; /02 canonical identities;
+/04 export compatibility; /18 documentation and review policy.
+**Depends on / Produces / Blocks:** current freeze v2 and WP-0.7a; jointly
+reviewed governance amendment and internal I/O/parser module boundaries;
+precedes production catalog admission under revised rules.
+**Hosts/backends:** both hosted lanes; no engine-runtime dependency.
+**Tests first:** incompatible schema/API/canonical-byte changes and rewritten
+catalog identities fail; compatible catalog additions pass the proposed
+admission rules; all historical freeze attestations still validate.
+**Verify:** full policy/contract suites on both hosts plus independently
+recomputed historical digests under the documented upgrade process.
+**Evidence:** amendment rationale, fresh reciprocal review records, old/new
+validator comparison, and hosted results; contract evidence only.
+**Failure conditions:** historical evidence loses verifiability, a hash update
+substitutes for review, or a second active execution plan is introduced.
+
+- [ ] Separate versioned public contracts, immutable catalog identities, and
+  implementation/test bytes in a proposed governance model. Keep freeze v2
+  effective until its replacement is reviewed and accepted.
+- [ ] Extract small internal descriptor-I/O and strict-parser helpers;
+  migrate existing private imports from exports/catalog only with the required
+  freeze amendment and behavior-preserving regression coverage.
+  First step implemented: `_run_io` centralizes no-follow run-directory I/O
+  without editing the frozen export/catalog implementation.
+- [ ] Keep the seven package boundaries; do not build a generic framework.
+- [x] Add a root README and update Shared documentation with actual capability
+  state, local checks, filesystem assumptions, and this plan as the authority.
+
+#### WP-0.10a — Reference-runner integrity proof (next functional milestone)
+
+**Requirements:** claude-spec/03 budget accounting; /04 integrity and exports;
+/18 resumable lifecycle; WP-0.10's protected-label capability boundary.
+**Depends on / Produces / Blocks:** WP-0.7a, WP-0.1a, accepted WP-0.8 catalog;
+deterministic no-op reference runner and immutable acceptance fixtures;
+blocks Phase 0 exit and Phase 1 Contenders/Compare implementation.
+**Hosts/backends:** both hosted lanes; reference contract evidence only.
+**Tests first:** uninterrupted versus killed/resumed execution has identical
+evaluation records and final deterministic state; budget identities hold;
+export leaves source evidence unchanged; protected labels are inaccessible
+from search/selection; measurements and proxies remain distinguished.
+**Verify:** named WP-0.10 integrity tests, full package/contract/policy checks,
+and catalog admission checks in both hosted lanes.
+**Evidence:** machine-readable comparison of uninterrupted/resumed fixture
+digests and budgets, plus CI results. Engine resume/speciation hooks remain
+explicitly open until separately implemented and proven.
+**Failure conditions:** fixture success is presented as engine or scientific
+evidence, placeholder hooks count as passing, or any parent WP is unaccepted.
+
+- [ ] Implement the reference runner and interruption/export capability tests.
+- [ ] Jointly review the Phase 0 exit before advancing to Contenders/Compare.
+
 **Lane split & sync:** **A:** WP-0.2, 0.3, 0.4, 0.5 (contract/budget/
 telemetry models, identity + RNG). **B:** WP-0.1, 0.6, 0.7, 0.8, 0.9
 (tooling/CI, checkpoints, RunStore/RunWorkspace, benchmarks, LM cache).

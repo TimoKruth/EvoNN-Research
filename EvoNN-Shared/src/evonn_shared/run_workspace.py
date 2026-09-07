@@ -9,14 +9,17 @@ their bytes still match without writing anything at all.
 from __future__ import annotations
 
 import hashlib
+import errno
 import os
 from pathlib import Path
 import stat
 from typing import Final
 import unicodedata
+import uuid
 
 from .run_store import STORE_FILENAME, ArtifactRow, RunStore
 from .budgets import _run_id
+from ._run_io import open_directory, open_regular_at, validate_optional_file, write_all
 
 CONFIG_FILENAME: Final = "config.yaml"
 STATE_FILENAME: Final = "state.json"
@@ -97,28 +100,42 @@ class RunWorkspace:
         """Return deterministic (path, message) pairs for structural defects."""
 
         violations: list[tuple[str, str]] = []
-        if self._root.is_symlink():
-            return ((".", "run workspace root is a symbolic link"),)
-        if not self._root.is_dir():
-            return ((".", "run workspace root is not a directory"),)
-        for name in CANONICAL_DIRECTORIES:
-            path = self._root / name
-            if path.is_symlink():
-                violations.append((name, "canonical directory is a symbolic link"))
-            elif not path.is_dir():
-                violations.append((name, "canonical directory is missing"))
-        for name in CANONICAL_FILES:
-            path = self._root / name
-            if path.is_symlink():
-                violations.append((name, "canonical file is a symbolic link"))
-            elif path.exists() and not path.is_file():
-                violations.append((name, "canonical file is not a regular file"))
+        try:
+            with open_directory(self._root) as directory_fd:
+                for name in (*CANONICAL_DIRECTORIES, *CANONICAL_FILES):
+                    is_directory = name in CANONICAL_DIRECTORIES
+                    kind = "canonical directory" if is_directory else "canonical file"
+                    try:
+                        status = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+                    except FileNotFoundError:
+                        if is_directory:
+                            violations.append((name, f"{kind} is missing"))
+                        continue
+                    if stat.S_ISLNK(status.st_mode):
+                        violations.append((name, f"{kind} is a symbolic link"))
+                    elif is_directory and not stat.S_ISDIR(status.st_mode):
+                        violations.append((name, "canonical directory is missing"))
+                    elif not is_directory and not stat.S_ISREG(status.st_mode):
+                        violations.append((name, "canonical file is not a regular file"))
+        except (OSError, ValueError):
+            return ((".", "run workspace root is unsafe or unreadable"),)
         return tuple(sorted(violations, key=lambda item: (item[0].encode("utf-8"), item[1])))
 
     def missing_canonical_files(self) -> tuple[str, ...]:
         """Name the canonical files a complete run would have but this one lacks."""
 
-        return tuple(name for name in CANONICAL_FILES if not (self._root / name).is_file())
+        missing: list[str] = []
+        try:
+            with open_directory(self._root) as directory_fd:
+                for name in CANONICAL_FILES:
+                    try:
+                        with open_regular_at(directory_fd, name):
+                            pass
+                    except OSError:
+                        missing.append(name)
+        except (OSError, ValueError) as error:
+            raise InvalidRunWorkspaceError("run workspace root is unsafe or unreadable") from error
+        return tuple(missing)
 
     def validate(self) -> None:
         violations = self.find_violations()
@@ -132,17 +149,21 @@ def create_run_workspace(parent: Path, run_id: str) -> RunWorkspace:
 
     resolved = _require_path(parent, "run workspace parent")
     identifier = _run_id(run_id)
-    if not resolved.is_dir():
-        raise RunWorkspaceNotFoundError(f"run workspace parent does not exist: {resolved}")
     root = resolved / identifier
     try:
-        os.mkdir(root, 0o700)
+        with open_directory(resolved) as parent_fd:
+            os.mkdir(identifier, 0o700, dir_fd=parent_fd)
+            with open_directory(root) as directory_fd:
+                for name in CANONICAL_DIRECTORIES:
+                    os.mkdir(name, 0o700, dir_fd=directory_fd)
+                os.fsync(directory_fd)
+            os.fsync(parent_fd)
+    except FileNotFoundError as error:
+        raise RunWorkspaceNotFoundError(f"run workspace parent does not exist: {resolved}") from error
     except FileExistsError as error:
         raise RunWorkspaceExistsError(f"run workspace already exists: {root}") from error
-    except OSError as error:
+    except (OSError, ValueError) as error:
         raise RunWorkspaceError(f"unable to create run workspace: {root}") from error
-    for name in CANONICAL_DIRECTORIES:
-        os.mkdir(root / name, 0o700)
     return RunWorkspace(root, identifier)
 
 
@@ -221,23 +242,51 @@ def rebuild_report(store: RunStore) -> str:
 
 
 def write_report(workspace: RunWorkspace, store: RunStore) -> str:
-    """Rebuild the report and write it into the workspace."""
+    """Publish a rebuilt report atomically, without following destination links."""
 
+    if workspace.run_id != store.run_id:
+        raise RunWorkspaceError("report workspace and store belong to different runs")
     report = rebuild_report(store)
-    workspace.report_path.write_text(report, encoding="utf-8")
+    temporary_name = ".report-" + uuid.uuid4().hex + ".tmp"
+    try:
+        with open_directory(workspace.root) as directory_fd:
+            validate_optional_file(directory_fd, REPORT_FILENAME)
+            descriptor = os.open(
+                temporary_name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                0o600, dir_fd=directory_fd,
+            )
+            published = False
+            try:
+                try:
+                    write_all(descriptor, report.encode("utf-8"))
+                    os.fsync(descriptor)
+                finally:
+                    os.close(descriptor)
+                os.replace(temporary_name, REPORT_FILENAME, src_dir_fd=directory_fd, dst_dir_fd=directory_fd)
+                published = True
+                try:
+                    os.fsync(directory_fd)
+                except OSError as error:
+                    raise RunWorkspaceError("report published but directory durability is unconfirmed") from error
+            finally:
+                if not published:
+                    os.unlink(temporary_name, dir_fd=directory_fd)
+    except (OSError, ValueError) as error:
+        if isinstance(error, RunWorkspaceError):
+            raise
+        raise RunWorkspaceError("unable to publish report safely") from error
     return report
 
 
-def _digest_file(path: Path) -> tuple[str, int]:
+def _digest_file(descriptor: int, expected_size: int) -> tuple[str, int]:
     digest = hashlib.sha256()
     total = 0
-    with path.open("rb") as handle:
-        while True:
-            chunk = handle.read(_READ_CHUNK_BYTES)
-            if not chunk:
-                break
-            digest.update(chunk)
-            total += len(chunk)
+    while total <= expected_size:
+        chunk = os.read(descriptor, min(_READ_CHUNK_BYTES, expected_size + 1 - total))
+        if not chunk:
+            break
+        digest.update(chunk)
+        total += len(chunk)
     return digest.hexdigest(), total
 
 
@@ -252,35 +301,39 @@ def verify_artifact_references(
     """
 
     findings: list[tuple[str, str]] = []
-    for artifact in artifacts:
-        path = workspace.root / artifact.path
-        if path.is_symlink():
-            findings.append((artifact.path, "artifact is a symbolic link"))
-            continue
-        try:
-            status = path.lstat()
-        except FileNotFoundError:
-            findings.append((artifact.path, "artifact is missing"))
-            continue
-        except OSError:
-            findings.append((artifact.path, "artifact is unreadable"))
-            continue
-        if not stat.S_ISREG(status.st_mode):
-            findings.append((artifact.path, "artifact is not a regular file"))
-            continue
-        if status.st_size != artifact.size_bytes:
-            findings.append(
-                (artifact.path, f"artifact size is {status.st_size}, recorded {artifact.size_bytes}")
-            )
-            continue
-        observed, read_bytes = _digest_file(path)
-        if read_bytes != artifact.size_bytes:
-            findings.append(
-                (artifact.path, f"artifact size is {read_bytes}, recorded {artifact.size_bytes}")
-            )
-        elif observed != artifact.sha256:
-            findings.append((artifact.path, f"artifact digest is {observed}, recorded {artifact.sha256}"))
+    try:
+        with open_directory(workspace.root) as directory_fd:
+            for artifact in artifacts:
+                message = _verify_artifact_at(directory_fd, artifact)
+                if message is not None:
+                    findings.append((artifact.path, message))
+    except (OSError, ValueError):
+        findings = [(artifact.path, "run workspace root is unsafe or unreadable") for artifact in artifacts]
     return tuple(sorted(findings, key=lambda item: (item[0].encode("utf-8"), item[1])))
+
+
+def _verify_artifact_at(directory_fd: int, artifact: ArtifactRow) -> str | None:
+    try:
+        with open_regular_at(directory_fd, artifact.path) as descriptor:
+            status = os.fstat(descriptor)
+            if status.st_size != artifact.size_bytes:
+                return f"artifact size is {status.st_size}, recorded {artifact.size_bytes}"
+            observed, read_bytes = _digest_file(descriptor, artifact.size_bytes)
+            if read_bytes != artifact.size_bytes:
+                return f"artifact size is {read_bytes}, recorded {artifact.size_bytes}"
+            if observed != artifact.sha256:
+                return f"artifact digest is {observed}, recorded {artifact.sha256}"
+    except FileNotFoundError:
+        return "artifact is missing"
+    except OSError as error:
+        if error.errno == errno.ELOOP:
+            return "artifact is a symbolic link"
+        if error.errno == errno.EINVAL:
+            return "artifact is not a regular file"
+        return "artifact path is unsafe or unreadable"
+    except ValueError:
+        return "artifact path is unsafe or unreadable"
+    return None
 
 
 __all__ = [
