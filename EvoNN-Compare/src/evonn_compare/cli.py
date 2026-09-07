@@ -29,6 +29,8 @@ def main(argv=None):
     matrix.add_argument("--fit-timeout", type=float, default=180)
     matrix.add_argument("--cache", type=Path)
     matrix.add_argument("--enhanced", action="store_true")
+    matrix.add_argument("--engine-backend", choices=["numpy_fallback", "mlx_native"], default="numpy_fallback")
+    matrix.add_argument("--engine-epochs", type=int, default=12)
     view = matrix.add_mutually_exclusive_group()
     view.add_argument("--open", action="store_true")
     view.add_argument("--no-open", action="store_true")
@@ -56,7 +58,7 @@ def main(argv=None):
                 args.budgets = [budget]
             data = fair_matrix(workspace=args.workspace, pack=pack, budgets=args.budgets, seeds=args.seeds,
                 systems=args.systems, no_contenders=args.no_contenders, timeout=args.timeout, fit_timeout=args.fit_timeout,
-                cache=args.cache, enhanced=args.enhanced, cohort=args.cohort, reset_workspace=args.reset_workspace)
+                cache=args.cache, enhanced=args.enhanced, cohort=args.cohort, reset_workspace=args.reset_workspace, engine_backend=args.engine_backend, engine_epochs=args.engine_epochs)
             if args.open:
                 webbrowser.open((args.workspace / "fair_matrix_dashboard.html").absolute().as_uri())
             print(json.dumps({"workspace": str(args.workspace.absolute()), "cases": len(data["cases"]),

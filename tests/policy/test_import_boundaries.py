@@ -128,12 +128,12 @@ def test_workspace_dependencies_match_allowed_matrix(validator, repository_copy:
     text = manifest.read_text(encoding="utf-8")
     text = text.replace(
         '''dependencies = [
-    "evonn-shared",
+    "evonn-shared[datasets]",
     "numpy>=2.1,<3",
     "mlx>=0.25,<1; sys_platform == 'darwin' and platform_machine == 'arm64'",
 ]''',
         '''dependencies = [
-    "evonn-shared",
+    "evonn-shared[datasets]",
     "numpy>=2.1,<3",
     "mlx>=0.25,<1; sys_platform == 'darwin' and platform_machine == 'arm64'",
     "evonn-topograph[fast]>=1 ; python_version >= '3.13'",
@@ -158,7 +158,7 @@ def test_project_dependency_entries_are_strings_and_group_includes_are_scoped(
     manifest = repository_copy / "EvoNN-Prism/pyproject.toml"
     text = manifest.read_text(encoding="utf-8").replace(
         '''dependencies = [
-    "evonn-shared",
+    "evonn-shared[datasets]",
     "numpy>=2.1,<3",
     "mlx>=0.25,<1; sys_platform == 'darwin' and platform_machine == 'arm64'",
 ]''',
@@ -231,9 +231,9 @@ forbidden = ["EvoNN.Topograph>=1"]
 [dependency-groups]
 forbidden = ["evonn-contenders"]
 
-[project.scripts]
-forbidden-script = "evonn_primordia.cli:main"
 '''
+    assert "[project.scripts]" in text
+    text = text.replace("[project.scripts]", '[project.scripts]\nforbidden-script = "evonn_primordia.cli:main"')
     manifest.write_text(text, encoding="utf-8")
 
     diagnostics = _diagnostics(validator, repository_copy)

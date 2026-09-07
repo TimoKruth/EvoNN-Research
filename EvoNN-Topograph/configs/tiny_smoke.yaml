@@ -1,0 +1,10 @@
+schema_version: 1
+pack: tier1_core_smoke
+budget: 16
+seed: 42
+epochs: 2
+population_size: 2
+backend: numpy_fallback
+target_device: cpu
+timeout: 240
+fit_timeout: 20

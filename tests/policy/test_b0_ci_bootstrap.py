@@ -167,8 +167,8 @@ def test_linux_workflow_has_exact_trust_lane_contract() -> None:
         "primordia-checks.sh",
     ):
         assert f"scripts/ci/{script}" in commands
-    assert "prism-checks.sh" not in commands
-    assert "topograph-checks.sh" not in commands
+    assert "prism-checks.sh" in commands
+    assert "topograph-checks.sh" in commands
     assert "uv pip show mlx" in commands
     assert "--backend numpy" in commands
     assert "--execution-mode hosted" in commands

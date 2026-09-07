@@ -41,7 +41,7 @@ def export_factory():
         for document in (results, summary):
             document["coverage"] = {"benchmark_count": len(records), "result_count": len(records), "ok": len(records), "failed": 0, "skipped": 0, "unsupported": 0}
         summary.update(best_per_benchmark=best, aggregates=[], fairness_flags=[])
-        config, report = b'{"fixture_only":true}\n', b'Fixture only. No model was trained.\n'
+        config, report = b'{"fixture_only":true,"source_sha256":"fixture","epochs":12,"population_size":4,"fit_timeout":120}\n', b'Fixture only. No model was trained.\n'
         manifest["config_snapshot"] = {"path": "config.yaml", "sha256": hashlib.sha256(config).hexdigest()}
         manifest["report_markdown"] = {"path": "report.md", "sha256": hashlib.sha256(report).hexdigest()}
         manifest["artifacts"] = []
@@ -53,3 +53,16 @@ def export_factory():
         (root / "report.md").write_bytes(report)
         return read_export(root)
     return make
+
+
+@pytest.fixture
+def assume_engine_runtime_checked(monkeypatch):
+    """Isolate comparison algebra from runtime acceptance for synthetic fixtures.
+
+    Real runtime validation and rejection are exercised by Phase-2 integration
+    tests. This fixture is deliberately opt-in, never an application bypass.
+    """
+    from evonn_compare import cases
+    def accepted_fixture(bundle, **kwargs):
+        assert json.loads((bundle.root / "config.yaml").read_text()) ["fixture_only"] is True
+    monkeypatch.setattr(cases, "validate_engine_bundle", accepted_fixture)

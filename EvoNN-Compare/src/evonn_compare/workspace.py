@@ -18,7 +18,7 @@ from evonn_shared.telemetry import ArtifactReference
 
 from .audit import artifact_json, benchmark_audit
 from .cases import Case, evaluate_case, resolve_export_path
-from .evidence import aggregates, trend_rows, winners
+from .evidence import aggregates, trend_rows, winners, protocol_fingerprint
 from .quality import classify
 
 SYSTEMS = ("contenders", "prism", "topograph", "stratograph", "primordia")
@@ -118,14 +118,14 @@ def _rebuild(root: Path, loaded=None):
     for _, document, bundles, acceptance in loaded:
         if not acceptance["blockers"] and acceptance["cohort"] == "current":
             signature = (document["case"]["pack"], document["case"]["budget"], tuple(sorted(document["systems"])), tuple(acceptance["budget_fingerprints"]),
-                         tuple(json.dumps(bundle.manifest.seeding.model_dump(mode="json"), sort_keys=True) for bundle in bundles))
+                         tuple(sorted((bundle.manifest.system.value, protocol_fingerprint(bundle), json.dumps(bundle.manifest.seeding.model_dump(mode="json"), sort_keys=True)) for bundle in bundles)))
             if signature not in seed_groups:
                 seed_groups[signature] = set()
             seed_groups[signature].add(document["case"]["seed"])
     for comparison_id, document, bundles, acceptance in loaded:
         rows = [row for bundle in bundles for row in trend_rows(bundle, comparison_id, acceptance)]
-        signature = (document["case"]["pack"], document["case"]["budget"], tuple(sorted(document["systems"])), tuple(acceptance["budget_fingerprints"]),
-                     tuple(json.dumps(bundle.manifest.seeding.model_dump(mode="json"), sort_keys=True) for bundle in bundles))
+        signature = None if acceptance["blockers"] else (document["case"]["pack"], document["case"]["budget"], tuple(sorted(document["systems"])), tuple(acceptance["budget_fingerprints"]),
+                     tuple(sorted((bundle.manifest.system.value, protocol_fingerprint(bundle), json.dumps(bundle.manifest.seeding.model_dump(mode="json"), sort_keys=True)) for bundle in bundles)))
         observed_seeds = sorted(seed_groups[signature]) if signature in seed_groups else []
         acceptance = {**acceptance, "observed_seeds": observed_seeds,
                       "repeatability_state": "multi_seed_descriptive" if len(observed_seeds) >= 2 else "single_seed"}
@@ -196,7 +196,7 @@ def workspace_audit(root: Path, pack: str, *, decision_grade: bool = False):
 def fair_matrix(*, workspace: Path, pack: str = "tier1_core", budgets: list[int] | None = None,
                 seeds: list[int] | None = None, systems: list[str] | None = None,
                 no_contenders: bool = False, timeout: float = 1200, fit_timeout: float = 180,
-                cache: Path | None = None, enhanced: bool = False, cohort: str = "current", reset_workspace: bool = False):
+                cache: Path | None = None, enhanced: bool = False, cohort: str = "current", reset_workspace: bool = False, engine_backend: str = "numpy_fallback", engine_epochs: int = 12):
     if not math.isfinite(timeout) or timeout <= 0 or timeout > 1740:
         raise ValueError("each system run must have a time limit in (0, 1740] seconds")
     selected = list(SYSTEMS[:1] if systems is None else systems)
@@ -242,6 +242,8 @@ def fair_matrix(*, workspace: Path, pack: str = "tier1_core", budgets: list[int]
                 command = [f"evonn-{system}", "run", "--pack", case.pack, "--budget", str(case.budget),
                            "--seed", str(case.seed), "--output", str(output), "--cache", str(cache),
                            "--timeout", str(timeout), "--fit-timeout", str(fit_timeout)]
+                if system in {"prism", "topograph"}:
+                    command.extend(["--backend", engine_backend, "--epochs", str(engine_epochs)])
                 if system == "contenders" and enhanced:
                     command.append("--enhanced")
                 try:

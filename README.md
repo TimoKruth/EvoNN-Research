@@ -30,7 +30,8 @@ Exact integrations and review decisions are recorded in project history.
 | Shared benchmarks | Eight immutable planned definitions, three packs, verified historical provenance and budget/export composition | Future image/LM packs and optional enhanced runtime evidence |
 | Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Engine-specific resume/speciation and scientific qualification |
 | Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality and interactive evidence dashboard | Evolutionary engine comparisons and scientific qualification |
-| Prism, Topograph, Stratograph, Primordia | Importable packages and bootstrap runtime dependencies/probes | Search/training engines and qualified scientific results |
+| Prism + Topograph | Package-local MLX/NumPy models, bounded AdamW search, inheritance, atomic resume, portable model exports and Compare ingestion | Larger scientific campaigns; L4 statistics in Phase 3 |
+| Stratograph + Primordia | Importable packages and bootstrap runtime dependencies/probes | Search/training engines and qualified scientific results |
 
 Phase 1 runtime evidence now contains **336 successful fits in five short runs**:
 `tier1_core@64` at seeds 42/43/44, core@128 at seed 42, and smoke@16.
@@ -40,8 +41,21 @@ insufficient for complete floor coverage. The compact
 export hashes. [PR #29](https://github.com/TimoKruth/EvoNN-Research/pull/29) and
 [PR #30](https://github.com/TimoKruth/EvoNN-Research/pull/30) carry the
 implementation and required hosted acceptance checks.
-Next implementation phase: Prism + Topograph; no evolutionary engine or
-scientific superiority is qualified.
+Phase 2 engine runs accept at most **256 proposals** and **30 minutes** per run.
+Checkpoints retain full search/attempt snapshots, with a **128 MiB** serialization
+guard before publication and a **32 MiB** weight cache. This deliberately bounds
+local acceptance work; full-history snapshot writes still grow quadratically.
+Larger campaigns require an append-only attempt journal and separate qualification.
+
+Phase 2 acceptance records **896 actual fits in 13 short runs**, all L3:
+Contenders/Prism/Topograph on core@64 seeds 42/43/44 and Tier-A@64 seed 42,
+plus Contenders core@128. Each run took 100–280 seconds. The recorded verification consumer
+reproduces all 64 exported neural winners; core floor admission is `trusted-core`.
+The [Phase 2 receipt](governance/phase2-runtime-evidence.json) separates exact
+producer and consumer commits. [PR #31](https://github.com/TimoKruth/EvoNN-Research/pull/31)
+binds hosted qualification; both required lanes must pass before merge.
+Real SIGKILL/resume and delayed-worker tests cover failure recovery.
+These are contract and exploratory results; no scientific superiority is claimed.
 
 Run a verified short preset and rebuild its dashboard:
 
@@ -52,6 +66,40 @@ uv run evonn-compare workspace-report .artifacts/compare
 
 `--preset smoke` uses 16 fits; `local` uses 64. Runs accumulate. Each system
 run stays below 30 minutes; no overnight/weekend preset is admitted.
+
+## Bounded engine operation
+
+```sh
+uv run evonn-prism evolve --config EvoNN-Prism/configs/tiny_smoke.yaml
+uv run evonn-topograph evolve --config EvoNN-Topograph/configs/tiny_smoke.yaml
+uv run evonn-prism evolve --resume <run-directory>
+uv run evonn-prism replay <run-directory>
+uv run evonn-compare fair-matrix --workspace .artifacts/phase2-native \
+  --preset local --systems contenders prism topograph --seeds 42 43 44 \
+  --engine-backend mlx_native --engine-epochs 12 --timeout 1200 --fit-timeout 120
+```
+
+Both engines expose `evolve`/`run`, `inspect`, `report`, `replay`, `benchmarks`,
+`warm-cache` and `symbiosis-export`. Configurations and resumes reject option,
+source, dependency and data drift. The tiny presets perform real fits on all
+eight smoke benchmarks. NumPy executes the actual architecture and produces
+`portability_only` evidence; keep its cohorts separate from native MLX runs.
+The native command is a bounded acceptance cohort, not a long research campaign.
+Each engine invocation and individual fit have hard limits of at most 1,800 seconds.
+
+Exports bundle checksum-bound data, trained weights, normalization buffers,
+regression calibration, attempts and engine telemetry. `replay` reconstructs
+held-out metrics without the producer's cache path. Packed low-bit sizes are
+estimates; serialized weights and process memory are measured separately.
+Topograph's default hardware budget admits one simultaneous training worker;
+its runtime worker topology describes that fit worker. One additional pool
+supervisor performs no training. The configuration records training, supervisor
+and total evaluation process counts explicitly. Optional benchmark pooling uses
+within-benchmark quality ranks; novelty weight defaults to zero. MAP-Elites,
+full deployment objectives and statistical superiority remain later-phase work.
+Compare keeps immutable case evidence at `contract-fair`; a separate
+`benchmark-audit --decision-grade` result governs trusted floor admission. A
+green audit does not rewrite the original case labels or append-only rows.
 
 ## Architecture and authority
 

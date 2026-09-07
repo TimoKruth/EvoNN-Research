@@ -25,6 +25,7 @@ from evonn_shared.rng import StreamName, derive_stream
 from evonn_shared.run_store import STORE_FILENAME, open_run_reader, open_run_store
 from evonn_shared.run_workspace import create_run_workspace, write_report
 from evonn_shared.telemetry import ArtifactReference
+from evonn_shared.runtime_budget import execution_budget
 
 from .config import benchmark_group, load_pools, resolve_pool
 from .datasets import shared_root
@@ -134,20 +135,7 @@ def run_contenders(*, pack_name: str, budget: int | None, seed: int, output_pare
                "worker_topology": {"worker_count": 1, "process_count": 1, "threads_per_worker": 1},
                "host_fingerprint": hashlib.sha256(json_bytes({"host": platform.node(), "system": platform.system(),
                     "machine": platform.machine(), "processor": platform.processor()})).hexdigest()}
-    declaration = {
-        "evaluation": {"total": total, "stages": [{"name": "full", "evaluations": total}]},
-        "wall_clock": {"target_seconds": float(timeout)},
-        "training": {"unit": "bounded fit/eval passes; model-specific iteration limits in config and attempt telemetry",
-                     "per_candidate": 1.0, "total_cap": float(total)},
-        "hardware": {"device_class": device, "cpu_count": 1, "accelerator_type": None,
-                     "memory_ceiling_bytes": None, "worker_count": 1},
-        "model_artifact": {"parameter_cap": None, "model_bytes_cap": 256 * 1024 * 1024,
-                           "memory_target_bytes": None, "latency_target_seconds": None},
-        "benchmark_surface": {"pack_id": pack_name, "benchmark_count": len(definitions),
-                              "ladder_tier": pack.ladder_tier.value, "reductions": [], "subsets": []},
-        "fidelity": {"regime": "full fixed-pool fits", "stages": [{"name": "full", "description": "historical full train/validation split"}],
-                     "promotion_rule": "none; fixed pool cycles with explicit independent initialization seeds"},
-    }
+    declaration = execution_budget(pack, total, timeout, device)
     snapshot = {"schema_version": "1.0.0", "benchmark_pack": {"pack_name": pack_name}, "budget": declaration,
                 "seed": seed, "pool_sha256": pool_digest, "pools": config, "enhanced": enhanced,
                 "fit_timeout_seconds": fit_timeout, "runtime": runtime, "evaluation_semantics": SEMANTICS,

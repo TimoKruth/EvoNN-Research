@@ -40,7 +40,6 @@ reviews:
     - "!**/*.{zip,gz,bz2,xz,tar,7z,png,jpg,jpeg,gif,ico,svg,pdf,woff,woff2,ttf,otf}"
     - "!**/*.{mp3,mp4,wav,mov,avi,mkv,flac,ogg}"
     - "!**/*.{duckdb,db,npy,npz,pt,pth,safetensors,parquet}"
-    - "!**/!(uv).lock"
     - "!**/{package-lock.json,pnpm-lock.yaml,bun.lockb}"
   path_instructions:
     - path: "**/*"

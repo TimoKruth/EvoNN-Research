@@ -13,6 +13,7 @@ EXPECTED_DEPENDENCY_CONTRACTS = (
         "EvoNN-Shared",
         "evonn-shared",
         (
+            "numpy>=2.1,<3",
             "duckdb>=1.1,<2",
             "pydantic>=2.11,<3",
             "PyYAML>=6.0.2,<7",
@@ -24,7 +25,7 @@ EXPECTED_DEPENDENCY_CONTRACTS = (
         "EvoNN-Prism",
         "evonn-prism",
         (
-            "evonn-shared",
+            "evonn-shared[datasets]",
             "numpy>=2.1,<3",
             "mlx>=0.25,<1; sys_platform == 'darwin' and platform_machine == 'arm64'",
         ),
@@ -33,7 +34,7 @@ EXPECTED_DEPENDENCY_CONTRACTS = (
         "EvoNN-Topograph",
         "evonn-topograph",
         (
-            "evonn-shared",
+            "evonn-shared[datasets]",
             "numpy>=2.1,<3",
             "mlx>=0.25,<1; sys_platform == 'darwin' and platform_machine == 'arm64'",
         ),
@@ -67,7 +68,7 @@ def _contract():
 def test_workspace_dependency_contract_has_exact_version_and_ordered_mapping() -> None:
     contract = _contract()
 
-    assert contract.WORKSPACE_DEPENDENCY_CONTRACT_VERSION == "2.0.0"
+    assert contract.WORKSPACE_DEPENDENCY_CONTRACT_VERSION == "3.0.0"
     assert tuple(
         (package.directory, package.distribution, package.dependencies)
         for package in contract.WORKSPACE_DEPENDENCY_CONTRACTS
