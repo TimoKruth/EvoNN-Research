@@ -63,6 +63,12 @@ existing evidence is verified before a writer is returned. File/lock/DB/WAL
 symlinks are refused, mutable storage hardlinks are refused, and report
 replacement is atomic. Verification reads already-opened artifact descriptors.
 
+`open_run_reader(directory, run_id)` provides verified read-only access to a
+clean store. It holds a shared lock and a read-only transaction, exposes no
+writer methods, and leaves source files unchanged. It refuses missing lock/DB
+files and existing WALs; explicit writer recovery must happen before a reader
+can consume an interrupted store. Multiple readers may coexist, not a writer.
+
 DuckDB opens a pathname, not a caller-supplied descriptor. These controls
 therefore do not sandbox another process with the same filesystem permissions
 that replaces run directories concurrently. A hash chain and its tip in the

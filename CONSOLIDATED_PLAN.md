@@ -333,8 +333,12 @@ or closes Phase 0. After parent merges, retarget and revalidate each child.
   consumer once, plus Ruff and installed package identity. Both hosts use it;
   Linux no longer repeats Shared contract tests via two separate scripts, and
   macOS no longer depends on a manually maintained persistence file list.
-- [ ] Read-only RunStore reader: shared lock, clean-store requirement, verified
+- [x] Read-only RunStore reader: shared lock, clean-store requirement, verified
   identity/hash chain, no source writes or exposed writer operations.
+  `open_run_reader` holds shared advisory ownership and a read-only DuckDB
+  transaction. Missing files and WALs are rejected, never created/recovered.
+  Regression coverage includes corruption, concurrent readers/writers, aliased
+  files, enforced read-only SQL, unchanged bytes and exception cleanup.
 - [ ] Diagnostic consistency: consume the verified reader and reject stale or
   contradictory checkpoint/config/accounting evidence before export.
 - [ ] Resume inputs: bind seed and protected-label identity to checkpoint state.

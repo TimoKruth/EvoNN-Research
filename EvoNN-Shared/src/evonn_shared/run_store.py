@@ -352,6 +352,75 @@ class RunStore:
         )
 
 
+class RunReader:
+    """Verified read-only view, valid only inside ``open_run_reader``.
+
+    Writer methods are deliberately absent. DuckDB also enforces read-only
+    access; this Python interface is not a sandbox against introspection.
+    """
+
+    def __init__(self, store: RunStore) -> None:
+        self._store = store
+
+    @property
+    def run_id(self) -> str:
+        return self._store.run_id
+
+    def run(self) -> RunRecord:
+        return self._store.run()
+
+    def evaluations(self) -> tuple[EvaluationRow, ...]:
+        return self._store.evaluations()
+
+    def verify_evaluation_chain(self) -> int:
+        return self._store.verify_evaluation_chain()
+
+    def artifacts(self) -> tuple[ArtifactRow, ...]:
+        return self._store.artifacts()
+
+    def metadata(self) -> Mapping[str, str]:
+        return self._store.metadata()
+
+
+@contextmanager
+def open_run_reader(directory: Path, run_id: str) -> Iterator[RunReader]:
+    """Read a clean, closed store without creating locks, files or recovering WAL.
+
+    Shared advisory ownership excludes cooperating writers and permits other
+    readers. A read transaction fixes the verified snapshot for this context.
+    A WAL requires explicit writer recovery first; source evidence is never
+    automatically repaired. The writer's application-owned-path assumptions
+    also apply here: hostile concurrent pathname replacement is not sandboxed.
+    """
+    resolved = _require_path(directory, "run directory")
+    identifier = _run_id(run_id)
+    try:
+        with open_directory(resolved) as directory_fd:
+            with open_regular_at(directory_fd, LOCK_FILENAME, exclusive=True) as descriptor:
+                try:
+                    fcntl.flock(descriptor, fcntl.LOCK_SH | fcntl.LOCK_NB)
+                except OSError as error:
+                    raise RunStoreLockedError("a writer holds the run lock") from error
+                try:
+                    if not validate_optional_file(directory_fd, STORE_FILENAME):
+                        raise RunStoreNotFoundError("run store does not exist")
+                    if validate_optional_file(directory_fd, STORE_FILENAME + ".wal"):
+                        raise RunStoreError("read-only access requires writer recovery of the WAL first")
+                    with duckdb.connect(str(resolved.absolute() / STORE_FILENAME), read_only=True) as connection:
+                        connection.execute("BEGIN TRANSACTION")
+                        store = RunStore(connection, identifier, False)
+                        if store.run().run_id != identifier:
+                            raise RunIdentityError("run store identity does not match the requested run")
+                        store.verify_evaluation_chain()
+                        yield RunReader(store)
+                finally:
+                    fcntl.flock(descriptor, fcntl.LOCK_UN)
+    except FileNotFoundError as error:
+        raise RunStoreNotFoundError("run store or existing lock file is missing") from error
+    except OSError as error:
+        raise RunStoreError(f"unsafe or unreadable run storage: {resolved}") from error
+
+
 _SCHEMA_STATEMENTS: Final = (
     "CREATE TABLE runs ("
     " schema_version TEXT NOT NULL,"
@@ -546,11 +615,13 @@ __all__ = [
     "LockOwner",
     "RunIdentityError",
     "RunRecord",
+    "RunReader",
     "RunStore",
     "RunStoreError",
     "RunStoreExistsError",
     "RunStoreLockedError",
     "RunStoreNotFoundError",
     "open_run_store",
+    "open_run_reader",
     "read_lock_owner",
 ]
