@@ -46,8 +46,9 @@ exports; Shared contains infrastructure rather than an engine core.
 
 The pinned [Lab specification](claude-spec/README.md) is normative;
 [PROGRAM_CHARTER.md](PROGRAM_CHARTER.md) defines Lab/Product boundaries.
-[Product specifications](claudex-spec/README.md) are reference requirements for
-the separate Product, not evidence that Product code exists here. Real Lab
+[Product interop](claudex-spec/19-research-interop.md) is retained for the consumer
+boundary. The remaining Product specifications live in an exact historical
+[Git snapshot](claudex-spec/README.md), outside the Lab working documentation. Real Lab
 artifacts may influence Product only after Lab I1 and Product I2 pass.
 Source changes follow [SPEC_UPGRADE_PROCESS](governance/SPEC_UPGRADE_PROCESS.md);
 [traceability](governance/SPEC_TRACEABILITY.md) identifies the authority roles.
