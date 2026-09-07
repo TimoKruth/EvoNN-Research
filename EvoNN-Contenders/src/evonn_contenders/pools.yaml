@@ -1,0 +1,35 @@
+schema_version: 1.0.0
+# Fixed dependency-light floors retain the legacy baseline sizes. Overrides
+# are exported and require a new adequacy assessment; they never inherit trust.
+models:
+  extra_trees: {model: extra_trees, parameters: {}}
+  hist_gb: {model: hist_gb, parameters: {}}
+  linear_svc: {model: linear_svc, parameters: {}}
+  mlp_wide: {model: mlp_wide, parameters: {}}
+  logistic: {model: logistic, parameters: {}}
+  svm_nystroem_rbf: {model: svm_nystroem_rbf, parameters: {}}
+  random_forest: {model: random_forest, parameters: {}}
+  rbf_svm: {model: rbf_svm, parameters: {}}
+  ridge_or_linear: {model: ridge_or_linear, parameters: {}}
+  svr_or_nystroem_svr: {model: svr_or_nystroem_svr, parameters: {}}
+  hist_gb_leaf63: {model: hist_gb, parameters: {max_leaf_nodes: 63, learning_rate: 0.05}}
+  unigram_lm: {model: unigram_lm, parameters: {alpha: 1.0}}
+  bigram_lm: {model: bigram_lm, parameters: {alpha: 1.0}}
+  trigram_lm: {model: trigram_lm, parameters: {alpha: 1.0}}
+  xgboost: {model: xgboost, parameters: {}, extra: boosted}
+  lightgbm: {model: lightgbm, parameters: {}, extra: boosted}
+  catboost: {model: catboost, parameters: {}, extra: boosted}
+  cnn_small: {model: cnn_small, parameters: {epochs: 20}, extra: torch}
+  transformer_lm_tiny: {model: transformer_lm_tiny, parameters: {epochs: 20}, extra: torch}
+pools:
+  tabular_classification: [extra_trees, hist_gb, linear_svc, mlp_wide, logistic, svm_nystroem_rbf, random_forest, rbf_svm]
+  synthetic_classification: [extra_trees, hist_gb, svm_nystroem_rbf, mlp_wide, linear_svc, logistic, random_forest, rbf_svm]
+  tabular_regression: [extra_trees, hist_gb, ridge_or_linear, svr_or_nystroem_svr, mlp_wide, random_forest, rbf_svm, hist_gb_leaf63]
+  synthetic_regression: [extra_trees, hist_gb, ridge_or_linear, svr_or_nystroem_svr, mlp_wide, random_forest, rbf_svm, hist_gb_leaf63]
+  image_classification: [extra_trees, mlp_wide, hist_gb, linear_svc, logistic, random_forest, rbf_svm, svm_nystroem_rbf]
+  text_language_modeling: [unigram_lm, bigram_lm, trigram_lm]
+optional:
+  tabular: [xgboost, lightgbm, catboost]
+  synthetic: [xgboost, lightgbm, catboost]
+  image: [cnn_small]
+  text: [transformer_lm_tiny]

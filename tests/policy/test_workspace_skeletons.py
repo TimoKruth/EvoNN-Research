@@ -10,7 +10,8 @@ from pathlib import Path
 
 import pytest
 
-from evonn_shared.backend_contract import EXPECTED_MANIFESTS, PACKAGE_CONTRACTS
+from evonn_shared.backend_contract import PACKAGE_CONTRACTS
+from evonn_shared.current_capabilities import EXPECTED_MANIFESTS
 from evonn_shared.workspace_contract import WORKSPACE_DEPENDENCY_BY_DIRECTORY
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -95,7 +96,7 @@ def test_shared_benchmarks_rejects_python_package_markers(tmp_path: Path) -> Non
         validate_data_skeleton(data_root)
 
 
-def test_all_backend_manifests_match_the_exact_truthful_b0_contract() -> None:
+def test_all_backend_manifests_match_the_exact_truthful_current_contract() -> None:
     assert len(EXPECTED_MANIFESTS) == 8
     for relative_path, expected in EXPECTED_MANIFESTS.items():
         manifest = json.loads((REPO_ROOT / relative_path).read_text(encoding="utf-8"))

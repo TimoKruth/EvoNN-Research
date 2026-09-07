@@ -11,7 +11,7 @@ class WorkspaceDependencyContract(NamedTuple):
     dependencies: tuple[str, ...]
 
 
-WORKSPACE_DEPENDENCY_CONTRACT_VERSION = "1.0.0"
+WORKSPACE_DEPENDENCY_CONTRACT_VERSION = "2.0.0"
 ENGINE_DEPENDENCIES = (
     "evonn-shared",
     "numpy>=2.1,<3",
@@ -28,7 +28,7 @@ WORKSPACE_DEPENDENCY_CONTRACTS = (
         ),
     ),
     WorkspaceDependencyContract("EvoNN-Compare", "evonn-compare", ("evonn-shared",)),
-    WorkspaceDependencyContract("EvoNN-Contenders", "evonn-contenders", ("evonn-shared",)),
+    WorkspaceDependencyContract("EvoNN-Contenders", "evonn-contenders", ("evonn-shared", "numpy==2.4.4", "scipy==1.17.1", "scikit-learn==1.8.0", "pandas==3.0.2", "openml==0.15.1",)),
     WorkspaceDependencyContract("EvoNN-Prism", "evonn-prism", ENGINE_DEPENDENCIES),
     WorkspaceDependencyContract("EvoNN-Topograph", "evonn-topograph", ENGINE_DEPENDENCIES),
     WorkspaceDependencyContract("EvoNN-Stratograph", "evonn-stratograph", ENGINE_DEPENDENCIES),

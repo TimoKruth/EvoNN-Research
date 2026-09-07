@@ -7,10 +7,17 @@ name = "evonn-contenders"
 version = "0.0.0"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
-description = "B0 contender baseline skeleton for EvoNN"
+description = "Reproducible external contender floors for EvoNN"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["evonn-shared"]
+dependencies = ["evonn-shared", "numpy==2.4.4", "scipy==1.17.1", "scikit-learn==1.8.0", "pandas==3.0.2", "openml==0.15.1"]
+
+[project.optional-dependencies]
+boosted = ["xgboost>=3,<4", "lightgbm>=4,<5", "catboost>=1.2,<2"]
+torch = ["torch>=2.7,<3"]
+
+[project.scripts]
+evonn-contenders = "evonn_contenders.cli:main"
 
 [tool.uv.sources]
 evonn-shared = { workspace = true }

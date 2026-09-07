@@ -5,7 +5,8 @@ import shutil
 import sys
 from pathlib import Path
 
-from evonn_shared.backend_contract import EXPECTED_MANIFESTS, PACKAGE_CONTRACTS
+from evonn_shared.backend_contract import PACKAGE_CONTRACTS
+from evonn_shared.current_capabilities import EXPECTED_MANIFESTS
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR_PATH = REPO_ROOT / "scripts/policy/validate_backend_capabilities.py"
@@ -32,7 +33,7 @@ def _copy_contract_surface(target: Path) -> None:
         shutil.copy2(source, destination)
 
 
-def test_all_capability_manifests_match_exact_b0_contract() -> None:
+def test_all_capability_manifests_match_exact_current_contract() -> None:
     assert _validator().validate_repository(REPO_ROOT) == []
 
 

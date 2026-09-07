@@ -1,0 +1,29 @@
+"""Tiny optional fixtures exercise image and causal LM floors, never benchmark claims."""
+import numpy as np
+import pytest
+
+torch = pytest.importorskip("torch")
+from evonn_contenders.models import build_model  # noqa: E402
+
+
+def test_optional_image_and_lm_fit_heldout_and_invalid_targets():
+    prior_threads = torch.get_num_threads()
+    torch.set_num_threads(1)
+    try:
+        x = np.repeat(np.array([np.zeros(64), np.ones(64)], dtype=np.float32), 8, axis=0)
+        y = np.repeat(np.array([0, 1], dtype=np.int64), 8)
+        cnn = build_model("cnn_small", task="classification", seed=42, input_shape=(64,), train_rows=16,
+                          output_dim=2, parameters={"epochs": 3, "batch_size": 8})
+        cnn.fit(x, y)
+        assert cnn.mean == .5
+        assert (cnn.predict(x + .01) == y).mean() >= .9
+        contexts = np.array([[0, 1, 0], [1, 0, 1]] * 8, dtype=np.int64)
+        targets = contexts[:, -1].copy()
+        lm = build_model("transformer_lm_tiny", task="language_modeling", seed=42, input_shape=(3,), train_rows=16,
+                         output_dim=2, parameters={"epochs": 3, "batch_size": 8})
+        lm.fit(contexts, targets)
+        assert lm.perplexity(contexts[:4], targets[:4]) < 1.5
+        with pytest.raises(ValueError, match="held-out"):
+            lm.perplexity(contexts[:4], np.array([-1] * 4))
+    finally:
+        torch.set_num_threads(prior_threads)

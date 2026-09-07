@@ -1,0 +1,194 @@
+{
+  "schema_version": "1.0.0",
+  "evidence_class": "contract",
+  "source_repository": "https://github.com/TimoKruth/EvoNN",
+  "source_commit": "3652e0a32a907b51fb26a56fa9650ba258cb9054",
+  "scope": "Additive runtime evidence; frozen planned/catalog_only metadata is not rewritten. No scientific admission.",
+  "versions": {
+    "numpy": "2.4.4",
+    "scipy": "1.17.1",
+    "scikit-learn": "1.8.0",
+    "pandas": "3.0.2",
+    "openml": "0.15.1"
+  },
+  "split_policy": {
+    "algorithm": "sklearn.model_selection.train_test_split",
+    "validation_fraction": 0.2,
+    "random_state": "run seed",
+    "stratify": "classification target only",
+    "feature_dtype": "float32",
+    "classification_target_dtype": "int64",
+    "regression_target_dtype": "float32",
+    "third_protected_split": null
+  },
+  "reference_seed": 42,
+  "benchmarks": {
+    "breast_cancer": {
+      "definition_sha256": "162c12d71260365d05a02227c02e2ee83781cf675de1a82c728d8964cc1e813a",
+      "source_yaml": {
+        "path": "shared-benchmarks/catalog/breast_cancer.yaml",
+        "git_blob": "bd28ba6ade6adfdf6029fa764e07657d77577b35",
+        "sha256": "e8260f7afd4ddac33b90286dd14c6f918a779e49f5e4e6d649065c8aaf100fd4"
+      },
+      "loader": "load_breast_cancer",
+      "parameters": {},
+      "reference_raw_sha256": "95a40cbae392e683d4a4b50eaa659ef2c49599cf3204420fe6e0b75184a87f79",
+      "reference_split_sha256": "a25def6a0aaeee52429723107a20b2d4c0e58ba94c3d1b55c9b6b82663b26efd",
+      "raw_shape": [
+        569,
+        30
+      ],
+      "validation_shape": [
+        114,
+        30
+      ]
+    },
+    "credit_g_classification": {
+      "definition_sha256": "a598efc96b51e37e52e4a32d4f0925b2000c0e821b4d2128ce5aa5f861c8780b",
+      "source_yaml": {
+        "path": "shared-benchmarks/catalog/credit_g.yaml",
+        "git_blob": "9e488568a9ec7eab569ef659c54a8d3f718d3bbd",
+        "sha256": "d6192fbf4e67a19c34f3e3bd304a03bb906d7d66dafbfb13098039d3a3577174"
+      },
+      "loader": "openml_31",
+      "parameters": {},
+      "reference_raw_sha256": "0821116418ea787c01aba74d56d3bda9185edf790e0e48ff78940d59b9d0cbcf",
+      "reference_split_sha256": "8b3aea8f81524591f9033fffaa30d310f4ed5083f12d0b8e610bd83b5e1c1a0d",
+      "raw_shape": [
+        1000,
+        20
+      ],
+      "validation_shape": [
+        200,
+        20
+      ]
+    },
+    "diabetes_regression": {
+      "definition_sha256": "c6fd3fe71734efaf499eb4e0aabde99f341dba6f57300ce6b14ff0eff047bb34",
+      "source_yaml": {
+        "path": "shared-benchmarks/catalog/diabetes.yaml",
+        "git_blob": "3004eb83018247e728b057712684b8f103ca0b58",
+        "sha256": "ea9da25aea17aaa2c7c5d965fb0c099edf552de76402946933a713408f9c29ce"
+      },
+      "loader": "load_diabetes",
+      "parameters": {},
+      "reference_raw_sha256": "e862fb8ca6923afff2194aefef1122f2ef8c3af3b25f3afa6c5b90269c1fad62",
+      "reference_split_sha256": "ae5a2dabdebe7969645a35b1da29035dfd578ca153102b37425b0a82fd54346c",
+      "raw_shape": [
+        442,
+        10
+      ],
+      "validation_shape": [
+        89,
+        10
+      ]
+    },
+    "digits_image": {
+      "definition_sha256": "d26b2f81a3a7a8924c4aa8007c2769664d352be9917b7737e60c0acbf529fd81",
+      "source_yaml": {
+        "path": "shared-benchmarks/catalog/digits.yaml",
+        "git_blob": "d48afde3a3b47e659dad5c3be859e5391c5ab491",
+        "sha256": "ed2205fac8ed0e22291bb861a4d7547d86380139383ac765632714ecd27d7713"
+      },
+      "loader": "load_digits",
+      "parameters": {},
+      "reference_raw_sha256": "dbbf309418330b8483e54b966cba4373788a8cd2fe738fa834dceebefff478f8",
+      "reference_split_sha256": "88c8b29915fdc139831dd29fc5592b794068ff24add30dcccbb3361f1c77f396",
+      "raw_shape": [
+        1797,
+        64
+      ],
+      "validation_shape": [
+        360,
+        64
+      ]
+    },
+    "friedman1_regression": {
+      "definition_sha256": "48b70b2fc32aff862905f24c7a0023aff3c0f3a58ee5be9e281dea598d60ec8c",
+      "source_yaml": {
+        "path": "shared-benchmarks/catalog/friedman1.yaml",
+        "git_blob": "6705d133626d1071efb1837ab116e8db4f3ea97c",
+        "sha256": "34c981d89afbe9b322fcb445b81d721edd6db6bb086bb827ce3186a33a7a23ca"
+      },
+      "loader": "make_friedman1",
+      "parameters": {
+        "n_samples": 1000,
+        "noise": 1.0,
+        "n_features": 10
+      },
+      "reference_raw_sha256": "50160590610d736ce6e932806de0962faa65798c0db731e4c88a9bd74b09bea1",
+      "reference_split_sha256": "d2b88318bc9f182df2c43d25f8c3215a8ab852c85b9ed7a17b5358b87bfc0e78",
+      "raw_shape": [
+        1000,
+        10
+      ],
+      "validation_shape": [
+        200,
+        10
+      ]
+    },
+    "iris_classification": {
+      "definition_sha256": "4de1515adfa5ba732932049914c565d71949ce0cbd4eb7a292028e8c98657c04",
+      "source_yaml": {
+        "path": "shared-benchmarks/catalog/iris.yaml",
+        "git_blob": "04d134b6c791d9e082fd27e8af5c191084ea85e7",
+        "sha256": "c25b50b924ada0d9026bc7049a41510ed909eb3045f87571d52970c97380ae36"
+      },
+      "loader": "load_iris",
+      "parameters": {},
+      "reference_raw_sha256": "24ed3d66b2cb12a33eeb1d097eee5c5eeaba2c45721bafcfa595d1bee2c21aba",
+      "reference_split_sha256": "9307825ece797d70590e2ef70092b593a4c2e1e787eae533d33f3641d5f16856",
+      "raw_shape": [
+        150,
+        4
+      ],
+      "validation_shape": [
+        30,
+        4
+      ]
+    },
+    "moons_classification": {
+      "definition_sha256": "36ca0afe8cabab108dca0e348bbcb5edaa2e69e38c1a887e0d5b2d756ad1975f",
+      "source_yaml": {
+        "path": "shared-benchmarks/catalog/moons.yaml",
+        "git_blob": "2f2c88c4390fe8cad4c103e67a7667115594e7f8",
+        "sha256": "c0c1f59765d6cc77a7087c3a39aef98b66796e468aa003ff4316b332eae6803b"
+      },
+      "loader": "make_moons",
+      "parameters": {
+        "n_samples": 1000,
+        "noise": 0.2
+      },
+      "reference_raw_sha256": "270fd0c448d6ed50cee0402371a614140d6092d9971fdc2d8da5d42264a96a27",
+      "reference_split_sha256": "d6863f6203eda1044d1f5806dcbfcefc96c89afa35afcbf8f81a497a5d1b2a5c",
+      "raw_shape": [
+        1000,
+        2
+      ],
+      "validation_shape": [
+        200,
+        2
+      ]
+    },
+    "wine_classification": {
+      "definition_sha256": "0b2490803aeb325d77977c0167e8b270e872fcffe32f7e6f0982f0f98a1e3d3f",
+      "source_yaml": {
+        "path": "shared-benchmarks/catalog/wine.yaml",
+        "git_blob": "84ac9099cbea97f3eed7939f4ff84c753e4e5aaf",
+        "sha256": "d73f239a5b3ee59912e0683fd7f8f88732c03566b9f6c1edc99bf3955bb1e637"
+      },
+      "loader": "load_wine",
+      "parameters": {},
+      "reference_raw_sha256": "305ccff1187aef5c59310025166bb04d761b7b3a58dd1b81f3a9269fbab7d136",
+      "reference_split_sha256": "9d0dc8353d3fb372b5105ff444c0c426f3c2685ff880205f58b30358454f5cb1",
+      "raw_shape": [
+        178,
+        13
+      ],
+      "validation_shape": [
+        36,
+        13
+      ]
+    }
+  }
+}

@@ -420,6 +420,36 @@ engine proves them — a placeholder can never represent engine integrity.
 **Objective:** the trust layer works before any evolutionary engine exists.
 Spec: claude-spec/05, /06.
 
+### Active Phase 1 implementation and verification
+
+The implementation starts with one real benchmark through loading, fitting,
+transactional recording, the unchanged three-file export and read-only Compare
+consumption. Then complete all parent requirements below before phase exit.
+
+- **Data/runtime:** retain all eight canonical IDs, legacy source parameters,
+  split/dtype semantics and frozen metadata. An additive pinned runtime manifest
+  binds source and reference-array hashes; Shared verifies actual consumed
+  cache bytes. Tests cover legacy equality, altered bytes/versions, immutable
+  cache reuse and seed-specific splits.
+- **Contenders:** configurable dependency-light pools for all four groups,
+  optional boosted/torch models with visible skips, isolated bounded fits,
+  actual training telemetry and failed/invalid accounting. Test learning,
+  train-only preprocessing, missing extras, timeout/failure counting and exports.
+- **Compare:** file-only ingestion, exact case/budget/seed checks, honest lane
+  states, required-floor audit, L0–L3 quality, append-only trends and complete
+  dashboard surfaces. Test mismatches, missing data, ties/directions, cohort
+  separation, rebuilding without reruns and interactive filters.
+- **Verification/exit:** focused package and policy tests, both hosted lanes,
+  real contenders-only `tier1_core@64`, low/mid repeat evidence as required by
+  audit, complete dashboard and explained quality gaps. Individual checks/runs
+  stay within 30 minutes; no multi-hour training campaign is started.
+
+A reviewed metadata snapshot can remain `planned`/`catalog_only` while separate
+runtime evidence proves loading. This does not silently promote the frozen
+catalog. The smoke envelope @16 cannot fit all 25 minimum contenders and must
+show incomplete floor coverage. No engine or scientific qualification follows
+from the Phase 1 contract exit.
+
 **Lane split & sync:** **A:** WP-1.1, 1.2 (Contenders package) + WP-1.7,
 1.8 (Compare's read-only analyzers `audit.py`/`quality.py` — disjoint
 modules from B's orchestration). **B:** WP-1.3, 1.4, 1.5, 1.6 (Compare

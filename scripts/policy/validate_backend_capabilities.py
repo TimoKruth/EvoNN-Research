@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate backend capability manifests against the immutable B0 contract."""
+"""Validate backend capability manifests against the current runtime contract."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from pathlib import Path
 import sys
 from typing import Any
 
-from evonn_shared.backend_contract import EXPECTED_MANIFESTS
+from evonn_shared.current_capabilities import EXPECTED_MANIFESTS
 
 
 def _load_json(path: Path) -> Any:
@@ -30,7 +30,7 @@ def validate_repository(repo_root: Path) -> list[str]:
             diagnostics.append(f"{relative_path}: cannot load backend capability manifest: {exc}")
             continue
         if actual != expected:
-            diagnostics.append(f"{relative_path}: manifest does not match the exact B0 backend capability contract")
+            diagnostics.append(f"{relative_path}: manifest does not match the exact current backend capability contract")
 
     return sorted(set(diagnostics), key=lambda item: item.encode("utf-8"))
 
