@@ -130,3 +130,25 @@ def test_read_export_validates_actual_portable_bytes(tmp_path, mutation):
         with pytest.raises((ValueError, OSError)):
             read_export(root)
     assert before == {str(path): path.read_bytes() for path in root.rglob("*") if path.is_file()}
+
+
+def test_export_bundle_bounds_reference_count_before_reads_and_total_bytes(tmp_path, monkeypatch):
+    from evonn_shared import export_reader
+    test_read_export_validates_actual_portable_bytes(tmp_path, "none")
+    root = tmp_path / "export"
+    bundle = export_reader.read_export(root)
+    count = len(bundle.summary.artifact_digests)
+    total = sum((root / item.path).stat().st_size for item in bundle.summary.artifact_digests)
+    assert count > 1
+    original, calls = export_reader.read_verified_artifact, []
+    def counted(*args, **kwargs):
+        calls.append(kwargs["max_bytes"])
+        return original(*args, **kwargs)
+    monkeypatch.setattr(export_reader, "read_verified_artifact", counted)
+    with pytest.raises(ValueError, match="artifact count"):
+        export_reader.read_export(root, max_artifacts=count - 1)
+    assert calls == []
+    export_reader.read_export(root, max_artifacts=count, max_artifact_bytes=total)
+    assert calls[-1] < calls[0]
+    with pytest.raises(ValueError, match="limit"):
+        export_reader.read_export(root, max_artifact_bytes=total - 1)

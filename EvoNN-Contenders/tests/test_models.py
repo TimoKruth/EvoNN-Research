@@ -54,3 +54,31 @@ def test_optional_device_and_thread_controls_belong_to_cpu_protocol(parameter):
     with pytest.raises(ValueError, match="controls are owned"):
         build_model("xgboost", task="classification", seed=42, input_shape=(4,), train_rows=20,
                     output_dim=2, parameters={parameter: "cuda"})
+
+
+def test_ngram_extreme_finite_smoothing_preserves_probability_mass():
+    model = NGram(order=2, vocabulary_size=8, alpha=np.finfo(np.float64).max)
+    model.fit(np.array([[0]]), np.array([1]))
+    with np.errstate(over="raise", invalid="raise"):
+        probabilities = model.predict_proba(np.array([[0], [7]]))
+    assert np.allclose(probabilities, 1 / 8)
+    assert np.allclose(probabilities.sum(axis=1), 1)
+
+
+@pytest.mark.parametrize("parameter", ["allow_writing_files", "train_dir", "save_snapshot", "snapshot_file"])
+def test_catboost_cannot_enable_out_of_protocol_file_output(parameter):
+    with pytest.raises(ValueError, match="file output controls"):
+        build_model("catboost", task="classification", seed=42, input_shape=(4,), train_rows=20,
+                    output_dim=2, parameters={parameter: True})
+
+
+def test_malformed_pool_yaml_has_controlled_cli_error(tmp_path, capsys):
+    from evonn_contenders.cli import main
+    pools = tmp_path / "broken.yaml"
+    pools.write_text("models: [unterminated")
+    with pytest.raises(SystemExit) as error:
+        main(["run", "--pack", "tier1_core", "--pools", str(pools),
+              "--output", str(tmp_path / "runs"), "--cache", str(tmp_path / "cache")])
+    assert error.value.code == 2
+    assert "invalid pool YAML" in capsys.readouterr().err
+    assert not (tmp_path / "runs").exists()

@@ -16,7 +16,10 @@ def load_pools(path: Path | None = None) -> tuple[dict, str]:
     payload = (path if path is not None else DEFAULT_POOLS).read_bytes()
     if len(payload) > 256 * 1024:
         raise ValueError("pool configuration exceeds limit")
-    config = yaml.safe_load(payload)
+    try:
+        config = yaml.safe_load(payload)
+    except yaml.YAMLError as error:
+        raise ValueError(f"invalid pool YAML: {error}") from error
     if not isinstance(config, dict) or set(config) != {"schema_version", "models", "pools", "optional"} or config["schema_version"] != "1.0.0":
         raise ValueError("invalid pool configuration schema")
     if not all(isinstance(config[key], dict) for key in ("models", "pools", "optional")):

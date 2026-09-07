@@ -50,7 +50,7 @@ def test_worker_timeout_charges_only_started_fit(tmp_path, monkeypatch, started,
     assert (tmp_path / "worker.log").read_bytes() == b"diagnostic"
 
 
-@pytest.mark.parametrize("timeout", [float("inf"), float("nan"), -1])
+@pytest.mark.parametrize("timeout", [float("inf"), float("nan"), -1, 1800.01])
 def test_nonfinite_or_nonpositive_limits_fail_before_creating_run(tmp_path, timeout):
     with pytest.raises(ValueError, match="time limits"):
         runner.run_contenders(pack_name="tier1_core", budget=64, seed=42,
@@ -81,3 +81,14 @@ def test_invalid_sklearn_parameters_do_not_start_or_charge_fit(tmp_path):
     assert result["status"] == "failed" and result["invalid"] == 1 and result["charged"] == 0
     assert not (tmp_path / "started").exists()
     assert backend_provenance("extra_trees") == {"package": "scikit-learn", "version": "1.8.0", "device": "cpu"}
+
+
+@pytest.mark.parametrize("error", [FileNotFoundError("git"), subprocess.CalledProcessError(128, "git")])
+def test_missing_git_provenance_fails_before_workspace_creation(tmp_path, monkeypatch, error):
+    def unavailable(*args, **kwargs):
+        raise error
+    monkeypatch.setattr(runner.subprocess, "check_output", unavailable)
+    with pytest.raises(ValueError, match="Git checkout"):
+        runner.run_contenders(pack_name="tier1_core", budget=64, seed=42,
+            output_parent=tmp_path / "runs", cache_root=tmp_path / "cache")
+    assert not (tmp_path / "runs").exists()
