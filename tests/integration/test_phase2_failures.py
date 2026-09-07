@@ -141,3 +141,34 @@ def test_malformed_yaml_reports_without_traceback(tmp_path, module):
         [sys.executable, "-m", module, "run", "--config", str(config)], capture_output=True, text=True, timeout=20
     )
     assert result.returncode == 1 and "invalid config YAML" in result.stderr and "Traceback" not in result.stderr
+
+
+@pytest.mark.parametrize("previous", [None, [], {}, {"training": None}, {"training": {}}])
+def test_pending_request_without_training_reports_drift(tmp_path, previous):
+    from evonn_shared.runtime_io import _process
+
+    (tmp_path / "request.json").write_text(json.dumps(previous))
+    with pytest.raises(ValueError, match="pending worker request differs"):
+        _process("prism", "_worker", {"training": {"timeout": 1}}, tmp_path, 1)
+    assert not (tmp_path / "started").exists()
+
+
+@pytest.mark.parametrize("published", [True, False])
+def test_timeout_preserves_durable_result_and_recovery(tmp_path, monkeypatch, published):
+    from evonn_shared import runtime_io
+    import subprocess
+
+    result = {"status": "ok", "charged": 1, "invalid": 0, "score": 0.7}
+
+    def expired(*args, **kwargs):
+        (tmp_path / "started").write_bytes(b"fit\n")
+        if published:
+            (tmp_path / "result.json").write_text(json.dumps(result))
+        raise subprocess.TimeoutExpired("worker", 1)
+
+    monkeypatch.setattr(runtime_io.subprocess, "run", expired)
+    first = runtime_io._process("prism", "_worker", {}, tmp_path, 1)
+    assert first["charged"] == 1 and first["invalid"] == 0
+    assert first["status"] == ("ok" if published else "failed")
+    monkeypatch.setattr(runtime_io.subprocess, "run", lambda *a, **k: pytest.fail("recovery must not dispatch again"))
+    assert runtime_io._process("prism", "_worker", {}, tmp_path, 1) == first

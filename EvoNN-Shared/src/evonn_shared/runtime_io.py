@@ -124,8 +124,10 @@ def _process(system, verb, request, directory, timeout):
     request_path = directory / "request.json"
     if request_path.exists():
         previous = json.loads(read_document(directory, request_path.name, limit=128 * 1024**2))
+        if not isinstance(previous, dict):
+            raise ValueError("pending worker request differs from checkpoint-derived plan")
         expected = json.loads(encode(request))
-        if "training" in expected:
+        if "training" in expected and isinstance(previous.get("training"), dict) and "timeout" in previous["training"]:
             expected["training"]["timeout"] = previous["training"]["timeout"]
         if previous != expected:
             raise ValueError("pending worker request differs from checkpoint-derived plan")
@@ -169,12 +171,7 @@ def _process(system, verb, request, directory, timeout):
         return json.loads(read_document(directory, "result.json"))
     except subprocess.TimeoutExpired as error:
         derived(directory / "worker.log", (error.stdout or b"") + (error.stderr or b""))
-        return {
-            "status": "failed",
-            "reason": "isolated worker wall-clock cap exceeded",
-            "charged": int((directory / "started").is_file()),
-            "invalid": 0,
-        }
+        return terminal_worker_failure(directory, "isolated worker wall-clock cap exceeded", 0)
 
 
 def prepare_worker(request, output):

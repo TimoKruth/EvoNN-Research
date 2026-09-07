@@ -36,7 +36,7 @@ covers reproduction and trained inheritance across resume.
 The final cohort completed 13 runs / 896 real fits, each 100–280 seconds: all three
 systems on core@64 seeds 42/43/44 and Tier-A@64 seed 42, plus Contenders core@128.
 All 13 exports reach L3; core floor admission passes and 64 exported neural winners
-replay with the current consumer. The [receipt](governance/phase2-runtime-evidence.json)
+replay with the recorded verification consumer. The [receipt](governance/phase2-runtime-evidence.json)
 binds producer 1828b28 separately from consumer 7ece4af. Required Linux/macOS checks
 on #31 govern the final merged revision; the runs do not establish superiority.
 

@@ -49,7 +49,7 @@ Larger campaigns require an append-only attempt journal and separate qualificati
 
 Phase 2 acceptance records **896 actual fits in 13 short runs**, all L3:
 Contenders/Prism/Topograph on core@64 seeds 42/43/44 and Tier-A@64 seed 42,
-plus Contenders core@128. Each run took 100–280 seconds. The current consumer
+plus Contenders core@128. Each run took 100–280 seconds. The recorded verification consumer
 reproduces all 64 exported neural winners; core floor admission is `trusted-core`.
 The [Phase 2 receipt](governance/phase2-runtime-evidence.json) separates exact
 producer and consumer commits. [PR #31](https://github.com/TimoKruth/EvoNN-Research/pull/31)

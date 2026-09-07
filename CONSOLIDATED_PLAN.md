@@ -42,7 +42,7 @@ blockers and every run is L3.
 **Phase 2 Prism + Topograph is implemented in #31.** The compact
 `governance/phase2-runtime-evidence.json` binds 13 real runs / 896 fits, three
 core@64 seeds, Tier-A@64 and the Contenders core@128 floor. All 13 exports
-reach L3; the current consumer replays 64 neural winners and core admission
+reach L3; the recorded verification consumer replays 64 neural winners and core admission
 passes as `trusted-core`. Independent reviews and real process-death tests
 cover both engines; both required hosted lanes gate merge of the final revision.
 

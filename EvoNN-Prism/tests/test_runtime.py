@@ -106,6 +106,13 @@ def test_real_causal_language_model_training_reports_perplexity(backend):
     result = fit(model, x, y, x, y, task="language_modeling", config=TrainConfig(epochs=2, batch_size=4), seed=4)
     assert result["weights_changed"] and result["updates"] == 2
     assert np.isfinite(result["score"]) and result["score"] <= -1
+    from prism.run import perplexity_from_logits
+
+    b = model.backend
+    predicted = b.numpy(model.forward({k: b.array(v) for k, v in model.weights.items()}, b.array(x)))
+    observed = perplexity_from_logits(predicted, y, b)
+    assert observed == pytest.approx(-result["score"], rel=1e-6)
+    assert observed >= 1
 
 
 def test_language_model_variation_never_introduces_batchnorm():

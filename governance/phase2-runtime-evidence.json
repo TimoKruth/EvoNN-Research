@@ -83,7 +83,8 @@
     "Three core seeds are descriptive evidence, not a superiority test. L4 statistics and decision support remain Phase 3.",
     "Each engine run is limited to 256 proposals and 1800 seconds; checkpoint/transaction serialization is capped at 128 MiB and weight snapshots at 32 MiB. Full-history writes remain quadratic; larger per-run budgets need a separately qualified journal.",
     "Portable artifacts are retained locally; receipt digests bind but do not replace the export files. NumPy CI runs establish portability, not MLX-equivalent scientific performance.",
-    "Trusted-core is the separately audited Contenders floor admission. Immutable base-case trend rows remain contract-fair. No multi-hour campaign was started."
+    "Trusted-core is the separately audited Contenders floor admission. Immutable base-case trend rows remain contract-fair. No multi-hour campaign was started.",
+    "Follow-up pending-request and timeout-result guards, plus Prism LM replay metrics, were added after consumer7ece4af; that recorded consumer identity is historical, while required CI qualifies the final source."
   ],
   "producer": {
     "commit": "1828b2813292048197836ac32033e9604690aba7",

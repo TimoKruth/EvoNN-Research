@@ -103,3 +103,8 @@ def test_champion_survives_crossover_and_pooling_keeps_failure_and_novelty():
     search.observe(benchmark, champion, {"status": "ok", "score": 100})
     search.observe(benchmark, wider, {"status": "ok", "score": 0})
     assert search.candidate(benchmark).genome_id == champion.genome_id
+
+
+def test_language_modeling_is_explicitly_outside_topograph_compiler_domain():
+    with pytest.raises(ValueError, match="support"):
+        compile_genome(seed_genome(Innovations()), (4,), 5, task="language_modeling", modality="text")
