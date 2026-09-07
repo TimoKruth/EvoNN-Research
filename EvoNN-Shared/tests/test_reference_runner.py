@@ -152,7 +152,7 @@ def test_selection_is_unchanged_when_only_protected_labels_change(tmp_path, runn
     traces = []
     results = []
     for name, labels in [("left", (0, 1)), ("right", (1, 0))]:
-        root = runner.initialize(tmp_path / name, budget=2)
+        root = runner.initialize(tmp_path / name, budget=2, protected_labels=labels)
         trace = []
 
         def select(view):
@@ -376,3 +376,41 @@ def test_diagnostic_refuses_committed_row_ahead_of_checkpoint(tmp_path, runner):
     with pytest.raises(ValueError, match="checkpoint"):
         runner.export_diagnostic(root, tmp_path / "rejected.json")
     assert tree_bytes(root) == before
+
+
+def test_changed_labels_cannot_silently_change_a_resumed_run(tmp_path, runner):
+    root = runner.initialize(tmp_path / "bound_labels", budget=3)
+    runner.run(root, stop_after=1)
+    before = tree_bytes(root)
+    with pytest.raises(ValueError, match="label identity"):
+        runner.run(root, protected_labels=(1, 0))
+    assert tree_bytes(root) == before
+    assert runner.run(root).actual_evaluations == 2
+
+
+@pytest.mark.parametrize("labels", [(), [True], [0.0], [2], "01"])
+def test_invalid_labels_are_rejected_before_workspace_creation(tmp_path, runner, labels):
+    root = tmp_path / "bad_labels"
+    with pytest.raises(ValueError, match="protected labels"):
+        runner.initialize(root, budget=1, protected_labels=labels)
+    assert not root.exists()
+
+
+@pytest.mark.parametrize("seed", [-1, True, 2**256, "19"])
+def test_invalid_seed_is_rejected_before_workspace_creation(tmp_path, runner, seed):
+    root = tmp_path / "bad_seed"
+    with pytest.raises(ValueError):
+        runner.initialize(root, budget=1, root_seed=seed)
+    assert not root.exists()
+
+
+@pytest.mark.parametrize("seed", [0, 2**256 - 1])
+def test_persisted_seed_boundaries_resume_deterministically(tmp_path, runner, seed):
+    baseline = runner.initialize(tmp_path / "baseline", budget=3, root_seed=seed)
+    resumed = runner.initialize(tmp_path / "resumed", budget=3, root_seed=seed)
+    runner.run(baseline)
+    runner.run(resumed, stop_after=1)
+    runner.run(resumed)
+    assert rows(baseline) == rows(resumed)
+    assert load_latest_checkpoint(baseline / "checkpoints")[1] == load_latest_checkpoint(resumed / "checkpoints")[1]
+    assert json.loads((resumed / "config.yaml").read_bytes())["root_seed"] == seed
