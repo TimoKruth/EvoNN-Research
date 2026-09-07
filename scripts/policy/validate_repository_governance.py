@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+from contextvars import ContextVar, copy_context
 import hashlib
 import ipaddress
 import json
@@ -600,14 +602,57 @@ def _git_environment() -> Dict[str, str]:
     }
 
 
+_IMMUTABLE_GIT_READS: ContextVar[dict | None] = ContextVar("immutable_git_reads", default=None)
+
+
+def _current_git_read_cache() -> dict | None:
+    context = copy_context()
+    return context[_IMMUTABLE_GIT_READS] if _IMMUTABLE_GIT_READS in context else None
+
+
+@contextmanager
+def _immutable_git_read_scope():
+    """Share successful object reads within one validation, never across calls.
+
+    Nested validators share the enclosing scope. Mutable repository state and
+    validation verdicts are never cached; the next validation reads Git again.
+    """
+    if _current_git_read_cache() is not None:
+        yield
+        return
+    token = _IMMUTABLE_GIT_READS.set({})
+    try:
+        yield
+    finally:
+        _IMMUTABLE_GIT_READS.reset(token)
+
+
+def _is_immutable_git_read(args: tuple[str, ...]) -> bool:
+    # Deliberately narrow: no HEAD, refs, abbreviated IDs, ancestry queries,
+    # index, config, worktree reads, or caller-controlled Git options.
+    if len(args) == 4 and args[:3] == ("--no-replace-objects", "cat-file", "blob"):
+        return re.fullmatch(r"[0-9a-f]{40}(?::[^\x00]+)?", args[3]) is not None
+    if len(args) == 6 and args[:3] == ("--no-replace-objects", "ls-tree", "-z"):
+        return re.fullmatch(r"[0-9a-f]{40}", args[3]) is not None and args[4] == "--"
+    return False
+
+
 def _git(repo_root: Path, *args: str) -> bytes:
     if GIT_EXECUTABLE is None:
         raise OSError("trusted Git executable is unavailable")
-    return subprocess.check_output(
+    environment = _git_environment()
+    cache = _current_git_read_cache() if _is_immutable_git_read(args) else None
+    key = (str(repo_root.absolute()), GIT_EXECUTABLE, tuple(sorted(environment.items())), args)
+    if cache is not None and key in cache:
+        return cache[key]
+    result = subprocess.check_output(
         [GIT_EXECUTABLE, "-C", str(repo_root), *args],
-        env=_git_environment(),
+        env=environment,
         stderr=subprocess.STDOUT,
     )
+    if cache is not None:
+        cache[key] = result
+    return result
 
 
 def _validate_no_git_grafts(repo_root: Path) -> List[str]:
@@ -1374,6 +1419,7 @@ def _validate_hosted_probe_report_schema(entries: Any) -> List[str]:
     return errors
 
 
+@_immutable_git_read_scope()
 def validate_hosted_probe_evidence(
     entries: Any,
     repo_root: Path,
@@ -1931,6 +1977,7 @@ def _validate_b0_schema_history(
     return []
 
 
+@_immutable_git_read_scope()
 def validate_b0_report(report: Mapping[str, Any], status: Mapping[str, Any], repo_root: Path) -> List[str]:
     errors: List[str] = []
     schema_version = report.get("schema_version") if isinstance(report, Mapping) else None
@@ -2491,6 +2538,7 @@ def _validate_phase0_interface_freeze(repo_root: Path) -> List[str]:
     ]
 
 
+@_immutable_git_read_scope()
 def validate_repository(repo_root: Path) -> List[str]:
     errors = _validate_no_git_grafts(repo_root)
     if errors:
