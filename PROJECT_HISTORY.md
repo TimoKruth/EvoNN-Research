@@ -27,6 +27,24 @@ Historical success is scoped to its recorded revision and evidence class.
 | GitHub approval count zero (2026-09-07) | The owner removed the redundant multi-account approval step. CI, branch freshness, conversation resolution and substantive review remain; historical amendment evidence is preserved. |
 | GPL-3.0-only (2026-09-07, #21) | Root and seven package license files support repository and standalone distribution. Third-party asset licenses remain separate. |
 
+## Specification comparison — July 2026 assessment
+
+The former HTML comparison contrasted a researcher-operated Lab (four engines,
+canonical packs, comparative fairness, file exports and MLX scientific runs)
+with a practitioner-facing Product (automatic portfolio, user-data/split
+controls, isolated evaluators/workers, qualified runtime profiles, Web UX and
+verified deployment bundles). Both specifications share explicit accounting,
+independent engine lineages, typed artifacts, contender floors and visible
+failure/unsupported states. This describes specification scope, not implemented
+capability or a measured implementation-cost ratio.
+
+The useful cross-cutting findings became the Lab integrity requirements:
+deterministic RNG, resumed/uninterrupted equivalence, atomic checkpoints,
+measured/proxy labeling, read-only exports, protected-label boundaries and real
+speciation before NEAT claims. The report's old “core and shell” composition
+proposal is superseded by the program charter's independent Lab/Product tracks
+and versioned artifact boundary; it does not authorize sharing runtime code.
+
 ## Bootstrap and interface history — July 2026
 
 The initial plan critique identified missing accounting, reproducibility,
@@ -134,7 +152,8 @@ are the remaining functional dependency, as recorded in the plan.
 
 ## Document consolidation and retained references
 
-Seven completed archive documents were synthesized here; their complete bytes
+Seven completed archive documents and the HTML specification comparison were
+synthesized here; their complete bytes
 remain available at the exact pre-consolidation commit linked below. Their
 historical instructions and superseded status statements are not current work.
 The plan's completed September narrative and local PR-review analysis were also
@@ -143,6 +162,7 @@ the sole execution plan.
 
 | Consolidated source | Durable material retained here or in the plan | Exact original |
 | --- | --- | --- |
+| July 17 specification comparison | Lab/Product differences, shared integrity findings and the superseded core/shell proposal | [Full HTML analysis](https://github.com/TimoKruth/EvoNN-Research/blob/646dde2270d540877c7d9165718eb01a5b05b84c/spec-comparison.html) |
 | July 17 Lab-plan critique | Gate/accounting corrections, evidence classes, complete contender/statistical/transfer/interop scope | [Full critique](https://github.com/TimoKruth/EvoNN-Research/blob/646dde2270d540877c7d9165718eb01a5b05b84c/archive/2026-07-17-LAB_PLAN_CRITIQUE.md) |
 | B0 task 2 provenance report | Pinned authority, single plan and traceability | [Full report](https://github.com/TimoKruth/EvoNN-Research/blob/646dde2270d540877c7d9165718eb01a5b05b84c/archive/2026-07-17-gate-b0-task-2-provenance-controls-report.md) |
 | B0 task 3 workspace report | Seven-package/data-only model and standalone checks | [Full report](https://github.com/TimoKruth/EvoNN-Research/blob/646dde2270d540877c7d9165718eb01a5b05b84c/archive/2026-07-18-gate-b0-task-3-workspace-skeletons-report.md) |
@@ -152,7 +172,8 @@ the sole execution plan.
 | B0 closure implementation plan | Completed closure sequence; later actions supersede its historical branch/merge instructions | [Full procedure](https://github.com/TimoKruth/EvoNN-Research/blob/646dde2270d540877c7d9165718eb01a5b05b84c/archive/2026-07-19-b0-closure-implementation-plan.md) |
 
 In a full clone, `git show 646dde2:archive/<original-filename>` retrieves each
-original without network access. No Git history is rewritten.
+archived original without network access; `git show 646dde2:spec-comparison.html`
+retrieves the HTML comparison. No Git history is rewritten.
 
 These reference/evidence files intentionally retain their canonical paths:
 
