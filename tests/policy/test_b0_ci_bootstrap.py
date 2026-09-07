@@ -21,6 +21,7 @@ UV_VERSION = "0.5.13"
 B0_POLICY_SELFTEST_TIMEOUT_SECONDS = 2400
 ENGINE_DIRECTORIES = tuple(engine.directory for engine in ENGINE_CONTRACTS)
 PHASE0_CONTRACT_SCRIPT = "scripts/ci/phase0-contract-checks.sh"
+FOUNDATION_SCRIPT = "scripts/ci/foundation-checks.sh"
 ROOT_CONTRACT_PATH = "tests/contracts/test_phase0_shared_interfaces.py"
 FROZEN_SHARED_SOURCE_PATHS = (
     "EvoNN-Shared/src/evonn_shared/canonical.py",
@@ -109,7 +110,7 @@ def test_hosted_workflows_fetch_full_git_history(workflow_name: str, job_name: s
         ("macos-engines.yml", "macos-engines", "Execute and validate MLX runtime probe"),
     ),
 )
-def test_hosted_workflows_run_exact_phase0_contract_step_between_sync_and_probe(
+def test_hosted_workflows_run_complete_foundation_once_between_sync_and_probe(
     workflow_name: str,
     job_name: str,
     runtime_step_name: str,
@@ -117,13 +118,15 @@ def test_hosted_workflows_run_exact_phase0_contract_step_between_sync_and_probe(
     workflow, _ = _workflow(workflow_name)
     steps = _steps(_job(workflow, job_name))
     expected_step = {
-        "name": "Run Phase 0 shared contract checks",
-        "run": PHASE0_CONTRACT_SCRIPT,
+        "name": "Run complete Shared foundation checks",
+        "run": FOUNDATION_SCRIPT,
     }
 
     assert [step for step in steps if step.get("name") == expected_step["name"]] == [expected_step]
-    assert [step for step in steps if step.get("run") == PHASE0_CONTRACT_SCRIPT] == [expected_step]
-    assert _run_text(steps).count(PHASE0_CONTRACT_SCRIPT) == 1
+    assert [step for step in steps if step.get("run") == FOUNDATION_SCRIPT] == [expected_step]
+    assert _run_text(steps).count(FOUNDATION_SCRIPT) == 1
+    assert PHASE0_CONTRACT_SCRIPT not in _run_text(steps)
+    assert "scripts/ci/shared-checks.sh" not in _run_text(steps)
 
     sync_index = next(
         index
@@ -156,7 +159,6 @@ def test_linux_workflow_has_exact_trust_lane_contract() -> None:
     assert "uv sync --all-packages --group dev --locked" in commands
     assert "scripts/ci/b0-policy-checks.sh" in commands
     for script in (
-        "shared-checks.sh",
         "benchmarks-checks.sh",
         "compare-checks.sh",
         "contenders-checks.sh",
@@ -211,20 +213,17 @@ def test_macos_workflow_has_exact_engine_lane_contract() -> None:
 def test_macos_runs_the_shared_persistence_regressions() -> None:
     workflow, _ = _workflow("macos-engines.yml")
     commands = _logical_shell_commands(_run_text(_steps(_job(workflow, "macos-engines"))))
-    expected_paths = {
-        "EvoNN-Shared/tests/test_checkpoints.py",
-        "EvoNN-Shared/tests/test_run_store.py",
-        "EvoNN-Shared/tests/test_run_workspace.py",
-        "EvoNN-Shared/tests/test_storage_integrity.py",
-        "EvoNN-Shared/tests/test_reference_runner.py",
-        "EvoNN-Shared/tests/test_lm_cache.py",
-    }
-    assert any(
-        command[:9] == ["uv", "run", "--locked", "--all-packages", "--group", "dev", "pytest", "-q",
-                        "EvoNN-Shared/tests/test_checkpoints.py"]
-        and expected_paths <= set(command)
-        for command in commands
-    )
+    assert [FOUNDATION_SCRIPT] in commands
+    script = REPO_ROOT / FOUNDATION_SCRIPT
+    assert os.access(script, os.X_OK)
+    foundation = _logical_shell_commands(script.read_text())
+    pytest_commands = [command for command in foundation if "pytest" in command]
+    assert pytest_commands == [[
+        "uv", "run", "--locked", "--all-packages", "--group", "dev", "pytest", "-q",
+        "EvoNN-Shared/tests", ROOT_CONTRACT_PATH,
+    ]]
+    assert ["uv", "lock", "--check"] in foundation
+    assert ["verify_python_package_identity", "evonn-shared", "evonn_shared", "shared"] in foundation
 
 
 @pytest.mark.parametrize("name", ["linux-trust.yml", "macos-engines.yml"])
