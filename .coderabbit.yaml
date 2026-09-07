@@ -32,6 +32,15 @@ reviews:
     - "!**/__pycache__/**"
     - "!**/.pytest_cache/**"
     - "!**/.ruff_cache/**"
+    # Broad inclusion overrides default ignores; keep generated/binary output out.
+    - "!**/{build,dist,node_modules,.cache,.mypy_cache,.tox,.nox,htmlcov}/**"
+    - "!**/*.egg-info/**"
+    - "!**/{generated,__generated__,_generated}/**"
+    - "!**/*.{pyc,pyo,so,dylib,dll,exe,o,bin,whl}"
+    - "!**/*.{zip,gz,bz2,xz,tar,7z,png,jpg,jpeg,gif,ico,pdf,woff,woff2,ttf,otf}"
+    - "!**/*.{mp3,mp4,wav,mov,avi,mkv,flac,ogg}"
+    - "!**/*.{duckdb,db,npy,npz,pt,pth,safetensors}"
+    - "!**/{package-lock.json,yarn.lock,pnpm-lock.yaml,bun.lockb,poetry.lock,Pipfile.lock}"
   path_instructions:
     - path: "**/*"
       instructions: >-
