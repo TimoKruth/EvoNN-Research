@@ -30,7 +30,7 @@ Exact integrations and review decisions are recorded in project history.
 | Shared benchmarks | Eight immutable planned definitions, three packs, verified historical provenance and budget/export composition | Future image/LM packs and optional enhanced runtime evidence |
 | Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Engine-specific resume/speciation and scientific qualification |
 | Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality and interactive evidence dashboard | Evolutionary engine comparisons and scientific qualification |
-| Prism + Topograph | Package-local MLX/NumPy models, bounded AdamW search, inheritance, atomic resume, portable model exports and Compare ingestion | Phase 2 acceptance cohort and hosted qualification |
+| Prism + Topograph | Package-local MLX/NumPy models, bounded AdamW search, inheritance, atomic resume, portable model exports and Compare ingestion | Larger scientific campaigns; L4 statistics in Phase 3 |
 | Stratograph + Primordia | Importable packages and bootstrap runtime dependencies/probes | Search/training engines and qualified scientific results |
 
 Phase 1 runtime evidence now contains **336 successful fits in five short runs**:
@@ -47,9 +47,15 @@ guard before publication and a **32 MiB** weight cache. This deliberately bounds
 local acceptance work; full-history snapshot writes still grow quadratically.
 Larger campaigns require an append-only attempt journal and separate qualification.
 
-Phase 2 implementation is under review. Local numerical, model-replay and real
-SIGKILL tests exercise both engines. The full Phase 2 exit remains open until
-the source-bound cohort and hosted checks pass; no scientific superiority is claimed.
+Phase 2 acceptance records **896 actual fits in 13 short runs**, all L3:
+Contenders/Prism/Topograph on core@64 seeds 42/43/44 and Tier-A@64 seed 42,
+plus Contenders core@128. Each run took 100–280 seconds. The current consumer
+reproduces all 64 exported neural winners; core floor admission is `trusted-core`.
+The [Phase 2 receipt](governance/phase2-runtime-evidence.json) separates exact
+producer and consumer commits. [PR #31](https://github.com/TimoKruth/EvoNN-Research/pull/31)
+binds hosted qualification; both required lanes must pass before merge.
+Real SIGKILL/resume and delayed-worker tests cover failure recovery.
+These are contract and exploratory results; no scientific superiority is claimed.
 
 Run a verified short preset and rebuild its dashboard:
 

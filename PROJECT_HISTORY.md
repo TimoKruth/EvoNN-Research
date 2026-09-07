@@ -6,15 +6,16 @@ authoritative: false
 
 # EvoNN Project History
 
-**Updated:** 2026-09-07. Foundation acceptance is merged through #28;
+**Updated:** 2026-09-08. Foundation acceptance is merged through #28;
 Phase 1 implementation and runtime evidence are recorded in #29/#30, with
-required hosted checks attached to those revisions.
+required hosted checks attached to those revisions. Phase2 implementation and
+its source-bound acceptance cohort are recorded in #31.
 This is the compact record of completed work, review decisions and verification.
 Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
-## Phase 2 implementation review — 2026-09-07
+## Phase 2 implementation and acceptance — 2026-09-07
 
 Prism and Topograph now have separate genome/compiler/training/search modules.
 Shared owns data preprocessing, cache and persistence infrastructure. The
@@ -30,9 +31,24 @@ novelty/pooling failure handling, supervisor cleanup and export/accounting issue
 Numerical review exercised all families on both backends; 128 independent
 morphism cases preserved logits within 4.92e-7. SIGKILL boundary tests cover
 worker, transaction, row and checkpoint publication. A separate evolution test
-covers reproduction and trained inheritance across resume. Final source-bound
-cohort and hosted acceptance are still pending; development outputs are not
-scientific qualification.
+covers reproduction and trained inheritance across resume.
+
+The final cohort completed 13 runs / 896 real fits, each 100–280 seconds: all three
+systems on core@64 seeds 42/43/44 and Tier-A@64 seed 42, plus Contenders core@128.
+All 13 exports reach L3; core floor admission passes and 64 exported neural winners
+replay with the current consumer. The [receipt](governance/phase2-runtime-evidence.json)
+binds producer 1828b28 separately from consumer 7ece4af. Required Linux/macOS checks
+on #31 govern the final merged revision; the runs do not establish superiority.
+
+CodeRabbit and independent reviews also corrected invalid-candidate accounting,
+malformed YAML/default-cache handling, causal-LM variation and RoPE dimensions,
+and comparison groups across runtime/host/training policies. A terminal worker
+result under the worker lock fences delayed children after a real supervisor
+SIGKILL. Current focused tests pass 113 cases, Shared passes 804, and the native
+resume suite passes 4 integration cases. Full snapshots remain deliberately
+bounded to 256 proposals / 128 MiB; incremental cache accounting avoids repeatedly
+serializing the entire 32 MiB cache. A larger per-run budget requires a separately
+qualified append-only journal.
 
 ## Phase 1 runtime verification — 2026-09-07
 

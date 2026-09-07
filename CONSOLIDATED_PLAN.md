@@ -37,11 +37,21 @@ Linux/macOS evidence, immutable freeze digests and every parent WP's tests.
 hosted checks govern integration of the reviewed implementation. The runtime
 receipt `governance/phase1-runtime-evidence.json` records 336 successful fits,
 three core@64 seeds plus core@128 and smoke@16; core audit passes with zero
-blockers and every run is L3. Next implementation: **Phase 2 Prism + Topograph**.
-Phase 2 is in implementation: validated family/DAG compilers, real differentiated
-MLX/NumPy training and separate engine search cores are under independent review.
-Crash/resume, export propagation and the three-seed cohort remain acceptance gates;
-scientific/backend qualification is not inferred from implementation.
+blockers and every run is L3.
+
+**Phase 2 Prism + Topograph is implemented in #31.** The compact
+`governance/phase2-runtime-evidence.json` binds 13 real runs / 896 fits, three
+core@64 seeds, Tier-A@64 and the Contenders core@128 floor. All 13 exports
+reach L3; the current consumer replays 64 neural winners and core admission
+passes as `trusted-core`. Independent reviews and real process-death tests
+cover both engines; both required hosted lanes gate merge of the final revision.
+
+Further Phase-2 model-quality conclusions require new controlled experiments.
+The next research step is a larger seed/budget campaign, kept outside this task's
+multi-hour-run boundary. Phase 3 registry/statistics remains separate non-training
+implementation work; it is not claimed to be blocked by training. Engine runs
+currently cap 256 proposals / 1800 seconds; higher per-run budgets first need an
+append-only attempt journal and separate resume/transport qualification.
 Short validation and baseline runs up to 30 minutes are allowed. Stop before
 starting a multi-hour training campaign and report the exact proposed run.
 
@@ -516,7 +526,7 @@ checks.
 
 ## Phase 2 — Prism + Topograph
 
-**Execution expansion (2026-09-07, active branch):**
+**Implemented and locally accepted (2026-09-07, #31; hosted checks gate merge):**
 
 - **WP-2.1a / 2.5a — Search objects:** validated, deeply immutable genomes;
   content IDs; family compatibility and innovation-aligned graph operations.
@@ -538,8 +548,8 @@ checks.
   earlier incomplete work must never be silently charged twice.
 - **WP-2.10a — Exit evidence:** obligatory engine telemetry, Compare ingestion,
   report/model replay, explicit portability-only fallback, hosted Linux and
-  macOS tests, three-seed core@64 and Tier-A cohort. Keep this WP open until
-  exact source commits, run IDs and verified artifact digests are recorded.
+  macOS tests, three-seed core@64 and Tier-A cohort. Exact source commits, run IDs and verified artifact digests are recorded in
+  `governance/phase2-runtime-evidence.json`.
 
 
 **Objective:** reference engine and first challenger at L3 on Tier A
@@ -555,34 +565,34 @@ engines rule makes the lanes fully independent. *Interface freeze:*
 export contract + budget accounting (Phase 0), Compare case orchestration
 (Phase 1); no A↔B interfaces exist by design.
 
-- [ ] **WP-2.1 [epic] Prism genome + families + compiler.** Split at
+- [x] **WP-2.1 [epic] Prism genome + families + compiler.** Split at
   expansion ≥: (a) frozen `ModelGenome` + content-addressed ID +
   mutation/crossover unit tests; (b) family registry + compatibility
   matrix; (c) compiler + per-family compile tests.
-- [ ] **WP-2.2 Prism training runtime.** AdamW, cosine/constant + warmup,
+- [x] **WP-2.2 Prism training runtime.** AdamW, cosine/constant + warmup,
   clipping, early stopping, wall-time caps, NaN detection, multi-fidelity,
   weight-inheritance cache (parent → family fallback → checkpoint;
   cross-family groups), regression scaling/calibration from shared.
-- [ ] **WP-2.3 [epic] Prism pipeline.** Split ≥: (a) seeding with family
+- [x] **WP-2.3 [epic] Prism pipeline.** Split ≥: (a) seeding with family
   diversity + benchmark selection (undercovered bias); (b) archives
   (elites, Pareto, family niches); (c) reproduction (tournament, splice +
   uniform crossover, adaptive rate, domain-aware mutation incl. morphs);
   (d) resume + persistence + engine-specific
   `test_resume_equals_uninterrupted`.
-- [ ] **WP-2.4 Prism run boundary + CLI.** RunWorkspace-conformant
+- [x] **WP-2.4 Prism run boundary + CLI.** RunWorkspace-conformant
   directories; verbs evolve/inspect/report/benchmarks/warm-cache/
   symbiosis-export; tiny-smoke e2e test.
-- [ ] **WP-2.5 Topograph genome.** Layer/Connection (+Conv, expert,
+- [x] **WP-2.5 Topograph genome.** Layer/Connection (+Conv, expert,
   GateConfig) genes, innovation numbers, operator vocabulary, per-layer
   precision fields.
-- [ ] **WP-2.6 Topograph precision modules.** BitLinear (ternary/STE),
+- [x] **WP-2.6 Topograph precision modules.** BitLinear (ternary/STE),
   QuantizedLinear (INT4/8); target-layer precision inheritance;
   measured-vs-estimated byte accounting.
-- [ ] **WP-2.7 Topograph compiler + training.** Graph-driven EvolvedModel,
+- [x] **WP-2.7 Topograph compiler + training.** Graph-driven EvolvedModel,
   LayerNorm, Kaiming, AdamW + warmup-cosine + clip, Lamarckian
   WeightCache (exact/partial/none, 0.3/0.6 ratios, savings visible in
   accounting).
-- [ ] **WP-2.8 [epic] Topograph evolution loop.** Split ≥: (a) speciation
+- [x] **WP-2.8 [epic] Topograph evolution loop.** Split ≥: (a) speciation
   by compatibility distance **materially affecting reproduction**
   (activates the integrity-gate speciation test — NEAT vocabulary allowed
   only after green); (b) phase scheduler explore/refine/polish + EMA
@@ -591,11 +601,11 @@ export contract + budget accounting (Phase 0), Compare case orchestration
   is Phase 6); (d) per-benchmark elites + benchmark pooling; (e)
   memory-aware process-pool evaluator; (f) atomic scheduler-state
   checkpointing + engine resume test.
-- [ ] **WP-2.9 Topograph run boundary + CLI + hardware basics.** Verb set
+- [x] **WP-2.9 Topograph run boundary + CLI + hardware basics.** Verb set
   incl. `target_device` config surface and measured latency/bytes fields
   in exports (full deployment objectives + atlas: Phase 6); tiny-smoke
   e2e.
-- [ ] **WP-2.10 Integration, telemetry conformance, portability.** Both
+- [x] **WP-2.10 Integration, telemetry conformance, portability.** Both
   engines in fair-matrix; **telemetry conformance matrix** with golden
   tests per claude-spec/04 (Prism: family distribution/archive occupancy/
   inheritance usage; Topograph: topology size/novelty metrics/operator
@@ -609,7 +619,14 @@ export contract + budget accounting (Phase 0), Compare case orchestration
 `trusted-core` cohort at `tier1_core@64`; **all systems L3 on Tier A and
 `tier1_core@64`** (`output-quality` green on both lanes); integrity suite
 incl. both engines' resume tests and the speciation test green; fallback
-lanes green on Linux CI.
+lanes green on Linux CI. Required hosted checks on #31 enforce these gates.
+
+The recorded cohort provides all three core seeds and Tier-A L3 coverage.
+Tier A currently reuses the core benchmark surface; it adds contract evidence,
+not independent dataset breadth. Producer 1828b28 and consumer 7ece4af remain
+separately bound. Current failure-path fixes have explicit regression evidence.
+Snapshots retain full history within 256 proposals, with 128 MiB write guards;
+this bounds acceptance work but does not claim scalable long-run persistence.
 
 ---
 

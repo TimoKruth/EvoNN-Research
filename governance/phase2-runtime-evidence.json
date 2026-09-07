@@ -1,0 +1,658 @@
+{
+  "admitted_cases": [
+    {
+      "accounting_state": "complete",
+      "blockers": [],
+      "case": {
+        "budget": 128,
+        "pack": "tier1_core",
+        "seed": 42
+      },
+      "operating_state": "trusted-core",
+      "repeatability_state": "low_and_mid_repeated"
+    },
+    {
+      "accounting_state": "complete",
+      "blockers": [],
+      "case": {
+        "budget": 64,
+        "pack": "tier1_core",
+        "seed": 42
+      },
+      "operating_state": "trusted-core",
+      "repeatability_state": "low_and_mid_repeated"
+    },
+    {
+      "accounting_state": "complete",
+      "blockers": [],
+      "case": {
+        "budget": 64,
+        "pack": "tier1_core",
+        "seed": 43
+      },
+      "operating_state": "trusted-core",
+      "repeatability_state": "low_and_mid_repeated"
+    },
+    {
+      "accounting_state": "complete",
+      "blockers": [],
+      "case": {
+        "budget": 64,
+        "pack": "tier1_core",
+        "seed": 44
+      },
+      "operating_state": "trusted-core",
+      "repeatability_state": "low_and_mid_repeated"
+    }
+  ],
+  "audits": [
+    {
+      "admitted_run_ids": [
+        "contenders_20260907T211155_84a32ed3a865",
+        "contenders_20260907T212137_b696f9fbcbcd",
+        "contenders_20260907T213004_12d7f279efba",
+        "contenders_20260907T214704_81decf47cb93"
+      ],
+      "blockers": [],
+      "pack": "tier1_core",
+      "repeatability": "low_and_mid_repeated",
+      "scientific_qualification": false,
+      "scope": "decision_grade",
+      "status": "passed"
+    },
+    {
+      "admitted_run_ids": [],
+      "blockers": [],
+      "pack": "tier_a_contract",
+      "repeatability": "incomplete",
+      "scientific_qualification": false,
+      "scope": "phase1_contract",
+      "status": "passed"
+    }
+  ],
+  "consumer": {
+    "commit": "7ece4afbd73db40e07cfc3f3badce6af5fc418ff",
+    "dashboard_sha256": "1755109823f5fcbcc3375d59dfddf7d0858f54ed0a9420ff147aef49167ef0b5",
+    "source_sha256": "70538d1761891e0628d00e02c907d0d5d6deded3e451c0a016a9c90093cb2ab8",
+    "workspace": "/Users/timokruth/Projekte/EvoNN-phase2-20260907/.artifacts/phase2-acceptance/current-consumer"
+  },
+  "evidence_class": "phase2_contract_and_exploratory_runtime",
+  "limits": [
+    "Training cohort belongs to producer 1828b28; later consumer 7ece4af revalidates artifacts and reproduces all 64 exported neural winners. Failure-path, LM-domain and bounded-history fixes are covered by current tests; no same-final-head training claim.",
+    "Tier A and core currently share the same eight benchmarks; Tier-A results prove contract coverage, not independent breadth.",
+    "Three core seeds are descriptive evidence, not a superiority test. L4 statistics and decision support remain Phase 3.",
+    "Each engine run is limited to 256 proposals and 1800 seconds; checkpoint/transaction serialization is capped at 128 MiB and weight snapshots at 32 MiB. Full-history writes remain quadratic; larger per-run budgets need a separately qualified journal.",
+    "Portable artifacts are retained locally; receipt digests bind but do not replace the export files. NumPy CI runs establish portability, not MLX-equivalent scientific performance.",
+    "Trusted-core is the separately audited Contenders floor admission. Immutable base-case trend rows remain contract-fair. No multi-hour campaign was started."
+  ],
+  "producer": {
+    "commit": "1828b2813292048197836ac32033e9604690aba7",
+    "dirty": false,
+    "tree": "0dc55401063990cf5ad0cb32b96dca6e02af0547",
+    "workspace": "/Users/timokruth/Projekte/EvoNN-phase2-validation-20260907/.artifacts/phase2-acceptance/native"
+  },
+  "recorded_on": "2026-09-08",
+  "runs": [
+    {
+      "accounting": {
+        "actual_evaluations": 128,
+        "cached_evaluations": 0,
+        "evaluation_count": 128,
+        "evaluation_semantics": "one contender fit/eval attempt; failed started fits count, invalid pre-fit configurations and optional skips do not",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": null,
+      "budget": 128,
+      "documents": {
+        "manifest.json": "118817d8f5fbc13476d2273c16dcec0b6361a8b822c2f053f56b8c5da02b295b",
+        "results.json": "3240ce1afdf48c6e60d3ffcd8bc990c3f490117c3438a9623c4dd9b0a53897b7",
+        "summary.json": "25937b32ff3cdba2781c5eee967077b6889e7d9393df9a9053c55d843f0e97c0"
+      },
+      "elapsed_seconds": 223.418638,
+      "export": "runs/tier1_core_b128_s42_20260907T214703_04eb5774/contenders_20260907T214704_81decf47cb93/symbiosis",
+      "inheritance_uses": null,
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "replay": null,
+      "run_id": "contenders_20260907T214704_81decf47cb93",
+      "runtime": {
+        "backend": "sklearn_contender",
+        "backend_version": "1.8.0; CPU fixed-pool orchestration; per-attempt backend versions in attempts.json",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "f8b8c0d3091e2d2ad85ab1e49660f0949dfdba88f3fe50b20ef6e06be27a68aa",
+        "precision_mode": "float32 inputs; estimator-native arithmetic"
+      },
+      "seed": 42,
+      "source_sha256": null,
+      "status": "completed",
+      "system": "contenders"
+    },
+    {
+      "accounting": {
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "evaluation_count": 64,
+        "evaluation_semantics": "one contender fit/eval attempt; failed started fits count, invalid pre-fit configurations and optional skips do not",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": null,
+      "budget": 64,
+      "documents": {
+        "manifest.json": "2a256a287aa4394d526618ab472105f54492d285d38d446f12a81a871eb6748c",
+        "results.json": "f86a290f385c2e2751863654a1d046b3f2d5feb7c23849f385c25fa74e6df1be",
+        "summary.json": "db0be08e1ee7dc3d2739be244f22971c7ead58077421db9d47f7f63034e1b7be"
+      },
+      "elapsed_seconds": 130.802218,
+      "export": "runs/tier1_core_b64_s42_20260907T211116_3ea2ee6d/contenders_20260907T211155_84a32ed3a865/symbiosis",
+      "inheritance_uses": null,
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "replay": null,
+      "run_id": "contenders_20260907T211155_84a32ed3a865",
+      "runtime": {
+        "backend": "sklearn_contender",
+        "backend_version": "1.8.0; CPU fixed-pool orchestration; per-attempt backend versions in attempts.json",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "f8b8c0d3091e2d2ad85ab1e49660f0949dfdba88f3fe50b20ef6e06be27a68aa",
+        "precision_mode": "float32 inputs; estimator-native arithmetic"
+      },
+      "seed": 42,
+      "source_sha256": null,
+      "status": "completed",
+      "system": "contenders"
+    },
+    {
+      "accounting": {
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "evaluation_count": 64,
+        "evaluation_semantics": "one started architecture fit/eval; failed started fits charged; invalid pre-fit proposals uncharged; committed prior work is resumed, inheritance still charges its new fit",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": 102.09897971199825,
+      "budget": 64,
+      "documents": {
+        "manifest.json": "3016e43782cbf673f087aa47be311c1ab62511e6c73961c2ae616951494b1ba7",
+        "results.json": "fc98b0804fa808123ad5d3b69ca439f56dafd59f2f5e374a5fb44848b885b863",
+        "summary.json": "d3bfe31f00d003fef3dc413cf8684ae3204c499d730fedfba4174e1063bc2b9f"
+      },
+      "elapsed_seconds": 104.093193,
+      "export": "runs/tier1_core_b64_s42_20260907T211116_3ea2ee6d/prism_20260907T211410_4c1b93750a/symbiosis",
+      "inheritance_uses": 55,
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "replay": {
+        "maximum_absolute_metric_error": 0.0,
+        "models": 8,
+        "status": "passed"
+      },
+      "run_id": "prism_20260907T211410_4c1b93750a",
+      "runtime": {
+        "backend": "mlx_native",
+        "backend_version": "0.32.0",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "dc07e701949165af2a59a7e9902c8eef370c91c3ca27d702715af80302499b22",
+        "precision_mode": "float32"
+      },
+      "seed": 42,
+      "source_sha256": "ea592efbf068085442a554d2784c9bc058e2f39eb4b8c6a37693be5735c7a17c",
+      "status": "completed",
+      "system": "prism"
+    },
+    {
+      "accounting": {
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "evaluation_count": 64,
+        "evaluation_semantics": "one started architecture fit/eval; failed started fits charged; invalid pre-fit proposals uncharged; committed prior work is resumed, inheritance still charges its new fit",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": 277.3482059984235,
+      "budget": 64,
+      "documents": {
+        "manifest.json": "e6d693f17b3c6f7024f94e7d809ffef05dc20093acafda01bae1896bc92a9877",
+        "results.json": "76b3c4747a005a5c0207223c64e5dc5476b308fdf2ecd67e5c5faba0f330d6b6",
+        "summary.json": "19c52e0f81dd0b8575f24881b93aa4267309fc61a2d763f953663a12867a2771"
+      },
+      "elapsed_seconds": 279.679031,
+      "export": "runs/tier1_core_b64_s42_20260907T211116_3ea2ee6d/topograph_20260907T211556_5b44c89ed0/symbiosis",
+      "inheritance_uses": 52,
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "replay": {
+        "maximum_absolute_metric_error": 8.881784197001252e-16,
+        "models": 8,
+        "status": "passed"
+      },
+      "run_id": "topograph_20260907T211556_5b44c89ed0",
+      "runtime": {
+        "backend": "mlx_native",
+        "backend_version": "0.32.0",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "dc07e701949165af2a59a7e9902c8eef370c91c3ca27d702715af80302499b22",
+        "precision_mode": "float32 latent; per-layer QAT in genome"
+      },
+      "seed": 42,
+      "source_sha256": "ea592efbf068085442a554d2784c9bc058e2f39eb4b8c6a37693be5735c7a17c",
+      "status": "completed",
+      "system": "topograph"
+    },
+    {
+      "accounting": {
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "evaluation_count": 64,
+        "evaluation_semantics": "one contender fit/eval attempt; failed started fits count, invalid pre-fit configurations and optional skips do not",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": null,
+      "budget": 64,
+      "documents": {
+        "manifest.json": "10175abd6a93fdac1192eeec7598dc30a977399c1ac65570d7fc89b516d5e0a7",
+        "results.json": "adac76221e938d0d8421c24551cab415e9ffc5e47d40d27775bfa98ecfa5c7db",
+        "summary.json": "e0fc1e8085b8f0fe12c547778d58de2b4777ac26ed4ee1f5eca516bee961ace5"
+      },
+      "elapsed_seconds": 112.962167,
+      "export": "runs/tier1_core_b64_s43_20260907T212135_31a39458/contenders_20260907T212137_b696f9fbcbcd/symbiosis",
+      "inheritance_uses": null,
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "replay": null,
+      "run_id": "contenders_20260907T212137_b696f9fbcbcd",
+      "runtime": {
+        "backend": "sklearn_contender",
+        "backend_version": "1.8.0; CPU fixed-pool orchestration; per-attempt backend versions in attempts.json",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "f8b8c0d3091e2d2ad85ab1e49660f0949dfdba88f3fe50b20ef6e06be27a68aa",
+        "precision_mode": "float32 inputs; estimator-native arithmetic"
+      },
+      "seed": 43,
+      "source_sha256": null,
+      "status": "completed",
+      "system": "contenders"
+    },
+    {
+      "accounting": {
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "evaluation_count": 64,
+        "evaluation_semantics": "one started architecture fit/eval; failed started fits charged; invalid pre-fit proposals uncharged; committed prior work is resumed, inheritance still charges its new fit",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": 105.71503708546516,
+      "budget": 64,
+      "documents": {
+        "manifest.json": "71dd91aa19572444828b4a907ce5402ff47b458d1d8eaf3adb7c971e3415ca22",
+        "results.json": "c8d0a4bdede8725a3234d50adc2b0832bd8a38b89efbe23b61a91ee53641d8ec",
+        "summary.json": "fe0bcb22b8ebdaa98c4e4f44a112a6084b343bcac1850510ccbacc8e793b200a"
+      },
+      "elapsed_seconds": 107.855069,
+      "export": "runs/tier1_core_b64_s43_20260907T212135_31a39458/prism_20260907T212332_044814ff05/symbiosis",
+      "inheritance_uses": 55,
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "replay": {
+        "maximum_absolute_metric_error": 8.881784197001252e-16,
+        "models": 8,
+        "status": "passed"
+      },
+      "run_id": "prism_20260907T212332_044814ff05",
+      "runtime": {
+        "backend": "mlx_native",
+        "backend_version": "0.32.0",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "dc07e701949165af2a59a7e9902c8eef370c91c3ca27d702715af80302499b22",
+        "precision_mode": "float32"
+      },
+      "seed": 43,
+      "source_sha256": "ea592efbf068085442a554d2784c9bc058e2f39eb4b8c6a37693be5735c7a17c",
+      "status": "completed",
+      "system": "prism"
+    },
+    {
+      "accounting": {
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "evaluation_count": 64,
+        "evaluation_semantics": "one started architecture fit/eval; failed started fits charged; invalid pre-fit proposals uncharged; committed prior work is resumed, inheritance still charges its new fit",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": 277.2986335440073,
+      "budget": 64,
+      "documents": {
+        "manifest.json": "8d5870cfa2f80b58ca2e3bcad45106cd1aef864169d66fe8fd20a0210c7885d9",
+        "results.json": "1baeda55257c1c9afc358f15d4ca6bd9dd9302b5d2eedaf544a5e4189f52835c",
+        "summary.json": "af70ecff630151b8838ae09dc288456755e56bf3af4caf09fc2453a5bc23c90b"
+      },
+      "elapsed_seconds": 279.550081,
+      "export": "runs/tier1_core_b64_s43_20260907T212135_31a39458/topograph_20260907T212522_e4ac119121/symbiosis",
+      "inheritance_uses": 54,
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "replay": {
+        "maximum_absolute_metric_error": 4.547473508864641e-13,
+        "models": 8,
+        "status": "passed"
+      },
+      "run_id": "topograph_20260907T212522_e4ac119121",
+      "runtime": {
+        "backend": "mlx_native",
+        "backend_version": "0.32.0",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "dc07e701949165af2a59a7e9902c8eef370c91c3ca27d702715af80302499b22",
+        "precision_mode": "float32 latent; per-layer QAT in genome"
+      },
+      "seed": 43,
+      "source_sha256": "ea592efbf068085442a554d2784c9bc058e2f39eb4b8c6a37693be5735c7a17c",
+      "status": "completed",
+      "system": "topograph"
+    },
+    {
+      "accounting": {
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "evaluation_count": 64,
+        "evaluation_semantics": "one contender fit/eval attempt; failed started fits count, invalid pre-fit configurations and optional skips do not",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": null,
+      "budget": 64,
+      "documents": {
+        "manifest.json": "4c6bc23fdd8b63402c37905937a16bc0a74d4e16a28f91ab91e0ca510b7265cd",
+        "results.json": "b8a407d495bb6d62d4fcb858c2113022386e9cd897acc8961885e37832305c2d",
+        "summary.json": "a8890f95ab8b9039b20a0557305a6773593dabf532b9f1a3e35532222a261ee1"
+      },
+      "elapsed_seconds": 108.690146,
+      "export": "runs/tier1_core_b64_s44_20260907T213002_6030a27b/contenders_20260907T213004_12d7f279efba/symbiosis",
+      "inheritance_uses": null,
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "replay": null,
+      "run_id": "contenders_20260907T213004_12d7f279efba",
+      "runtime": {
+        "backend": "sklearn_contender",
+        "backend_version": "1.8.0; CPU fixed-pool orchestration; per-attempt backend versions in attempts.json",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "f8b8c0d3091e2d2ad85ab1e49660f0949dfdba88f3fe50b20ef6e06be27a68aa",
+        "precision_mode": "float32 inputs; estimator-native arithmetic"
+      },
+      "seed": 44,
+      "source_sha256": null,
+      "status": "completed",
+      "system": "contenders"
+    },
+    {
+      "accounting": {
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "evaluation_count": 64,
+        "evaluation_semantics": "one started architecture fit/eval; failed started fits charged; invalid pre-fit proposals uncharged; committed prior work is resumed, inheritance still charges its new fit",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": 100.41818508284632,
+      "budget": 64,
+      "documents": {
+        "manifest.json": "32b17f387d53e454fccde893d0ca8c86adb1f756a33ac204462e195c01cf870d",
+        "results.json": "5c68a5daf66d2f587cb49950332d49e26ed26d2d48a8ea9fd1c43a1148c8c1ef",
+        "summary.json": "55a6b3291a71ad5ec4fef2dc3765dd1328a19a5de0d808690bfd0ec1d95f6b0c"
+      },
+      "elapsed_seconds": 102.419713,
+      "export": "runs/tier1_core_b64_s44_20260907T213002_6030a27b/prism_20260907T213154_5ee44a7194/symbiosis",
+      "inheritance_uses": 55,
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "replay": {
+        "maximum_absolute_metric_error": 0.0,
+        "models": 8,
+        "status": "passed"
+      },
+      "run_id": "prism_20260907T213154_5ee44a7194",
+      "runtime": {
+        "backend": "mlx_native",
+        "backend_version": "0.32.0",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "dc07e701949165af2a59a7e9902c8eef370c91c3ca27d702715af80302499b22",
+        "precision_mode": "float32"
+      },
+      "seed": 44,
+      "source_sha256": "ea592efbf068085442a554d2784c9bc058e2f39eb4b8c6a37693be5735c7a17c",
+      "status": "completed",
+      "system": "prism"
+    },
+    {
+      "accounting": {
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "evaluation_count": 64,
+        "evaluation_semantics": "one started architecture fit/eval; failed started fits charged; invalid pre-fit proposals uncharged; committed prior work is resumed, inheritance still charges its new fit",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": 265.3204798362567,
+      "budget": 64,
+      "documents": {
+        "manifest.json": "721d56fe2297884d13ad697733fd745947c6602adbbfd85f57f820557831c6de",
+        "results.json": "3bbd596470cc6ed9b3bc2d697bef3dc9b26afd0b0cc1f5158fff5ad76eada0e4",
+        "summary.json": "6de1ce1fdad7484989336b91ee98a064cf0458356a6e6d36f1f12b3bec6d7f07"
+      },
+      "elapsed_seconds": 267.623417,
+      "export": "runs/tier1_core_b64_s44_20260907T213002_6030a27b/topograph_20260907T213339_e1410df3a9/symbiosis",
+      "inheritance_uses": 50,
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "replay": {
+        "maximum_absolute_metric_error": 1.7763568394002505e-15,
+        "models": 8,
+        "status": "passed"
+      },
+      "run_id": "topograph_20260907T213339_e1410df3a9",
+      "runtime": {
+        "backend": "mlx_native",
+        "backend_version": "0.32.0",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "dc07e701949165af2a59a7e9902c8eef370c91c3ca27d702715af80302499b22",
+        "precision_mode": "float32 latent; per-layer QAT in genome"
+      },
+      "seed": 44,
+      "source_sha256": "ea592efbf068085442a554d2784c9bc058e2f39eb4b8c6a37693be5735c7a17c",
+      "status": "completed",
+      "system": "topograph"
+    },
+    {
+      "accounting": {
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "evaluation_count": 64,
+        "evaluation_semantics": "one contender fit/eval attempt; failed started fits count, invalid pre-fit configurations and optional skips do not",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": null,
+      "budget": 64,
+      "documents": {
+        "manifest.json": "77c8657701bffb19f5079bff5ba18ed09cfec756fdee027895b459264ce9064d",
+        "results.json": "13ffcbe741f562eff3779cf6cf8909e581911f116b2f575680b04a160b4c38fb",
+        "summary.json": "3c78b1f1577e9f78e6f6b252005c01daa0abcd93aab2999437a68052f00f76f0"
+      },
+      "elapsed_seconds": 107.777417,
+      "export": "runs/tier_a_contract_b64_s42_20260907T213828_7f4d5e61/contenders_20260907T213830_3d2c5bc97b41/symbiosis",
+      "inheritance_uses": null,
+      "output_quality": "L3",
+      "pack": "tier_a_contract",
+      "replay": null,
+      "run_id": "contenders_20260907T213830_3d2c5bc97b41",
+      "runtime": {
+        "backend": "sklearn_contender",
+        "backend_version": "1.8.0; CPU fixed-pool orchestration; per-attempt backend versions in attempts.json",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "f8b8c0d3091e2d2ad85ab1e49660f0949dfdba88f3fe50b20ef6e06be27a68aa",
+        "precision_mode": "float32 inputs; estimator-native arithmetic"
+      },
+      "seed": 42,
+      "source_sha256": null,
+      "status": "completed",
+      "system": "contenders"
+    },
+    {
+      "accounting": {
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "evaluation_count": 64,
+        "evaluation_semantics": "one started architecture fit/eval; failed started fits charged; invalid pre-fit proposals uncharged; committed prior work is resumed, inheritance still charges its new fit",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": 98.60367375158239,
+      "budget": 64,
+      "documents": {
+        "manifest.json": "32044137786fca453b980453a75843b8f4af4af39f5d59177f601b6e3ef7206d",
+        "results.json": "387b59fc9581768383c76f8516bac0def511be875ee789af0ae517594b1053c4",
+        "summary.json": "d37bf49ff8c39d8b4accd6354d3639ece667d113de055c878095f24f3bd1f606"
+      },
+      "elapsed_seconds": 100.54976,
+      "export": "runs/tier_a_contract_b64_s42_20260907T213828_7f4d5e61/prism_20260907T214020_75e5334d44/symbiosis",
+      "inheritance_uses": 55,
+      "output_quality": "L3",
+      "pack": "tier_a_contract",
+      "replay": {
+        "maximum_absolute_metric_error": 0.0,
+        "models": 8,
+        "status": "passed"
+      },
+      "run_id": "prism_20260907T214020_75e5334d44",
+      "runtime": {
+        "backend": "mlx_native",
+        "backend_version": "0.32.0",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "dc07e701949165af2a59a7e9902c8eef370c91c3ca27d702715af80302499b22",
+        "precision_mode": "float32"
+      },
+      "seed": 42,
+      "source_sha256": "ea592efbf068085442a554d2784c9bc058e2f39eb4b8c6a37693be5735c7a17c",
+      "status": "completed",
+      "system": "prism"
+    },
+    {
+      "accounting": {
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "evaluation_count": 64,
+        "evaluation_semantics": "one started architecture fit/eval; failed started fits charged; invalid pre-fit proposals uncharged; committed prior work is resumed, inheritance still charges its new fit",
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "partial_run": false,
+        "resumed_evaluations": 0,
+        "resumed_from_run_id": null
+      },
+      "active_seconds": 268.7163723349222,
+      "budget": 64,
+      "documents": {
+        "manifest.json": "6481d63ddeb0dac739f7d8c87584a28ad8314c149b858ef3163ec6457ffc3cf7",
+        "results.json": "60e7226910226f12655708f122dbbd849aa2136fc3fc9c276e74308241b8b909",
+        "summary.json": "ec2f13ef5da31839fa2456db64d7ad8abdc697d6eec8e1af40314577c6dd1605"
+      },
+      "elapsed_seconds": 271.05101,
+      "export": "runs/tier_a_contract_b64_s42_20260907T213828_7f4d5e61/topograph_20260907T214202_c56145449c/symbiosis",
+      "inheritance_uses": 52,
+      "output_quality": "L3",
+      "pack": "tier_a_contract",
+      "replay": {
+        "maximum_absolute_metric_error": 8.881784197001252e-16,
+        "models": 8,
+        "status": "passed"
+      },
+      "run_id": "topograph_20260907T214202_c56145449c",
+      "runtime": {
+        "backend": "mlx_native",
+        "backend_version": "0.32.0",
+        "device_class": "darwin_arm64_cpu",
+        "host_fingerprint": "dc07e701949165af2a59a7e9902c8eef370c91c3ca27d702715af80302499b22",
+        "precision_mode": "float32 latent; per-layer QAT in genome"
+      },
+      "seed": 42,
+      "source_sha256": "ea592efbf068085442a554d2784c9bc058e2f39eb4b8c6a37693be5735c7a17c",
+      "status": "completed",
+      "system": "topograph"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "scientific_qualification": false,
+  "totals": {
+    "actual_fits": 896,
+    "maximum_run_seconds": 279.679031,
+    "replayed_models": 64,
+    "runs": 13
+  },
+  "verification": {
+    "dashboard_browser_filters": "passed",
+    "focused_engine_compare_failure_tests": 113,
+    "hosted_merge_requirement": "both required lanes must pass on the final PR head",
+    "independent_reviews": [
+      "Prism numerical/compiler/morphism/inheritance and failure accounting",
+      "Topograph speciation/pooling/precision, process lifecycle and comparison separation"
+    ],
+    "model_replay_status": "passed",
+    "native_resume_boundaries": [
+      "worker",
+      "transaction",
+      "row",
+      "stage",
+      "payload",
+      "manifest"
+    ],
+    "native_resume_seconds": 474.46,
+    "native_resume_tests": 4,
+    "pull_request": "https://github.com/TimoKruth/EvoNN-Research/pull/31",
+    "real_supervisor_sigkill_fence": "passed",
+    "required_ci_lanes": [
+      "linux-trust",
+      "macos-engines"
+    ],
+    "shared_tests": 804
+  }
+}
