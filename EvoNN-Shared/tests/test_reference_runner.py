@@ -182,7 +182,7 @@ def test_export_is_read_only(tmp_path, runner, monkeypatch):
             connection.execute("DELETE FROM evaluations")
         return connection
 
-    monkeypatch.setattr(runner.duckdb, "connect", read_only)
+    monkeypatch.setattr(duckdb, "connect", read_only)
     destination = tmp_path / "diagnostic.json"
     runner.export_diagnostic(root, destination)
     assert opens == [{"read_only": True}]
@@ -322,3 +322,57 @@ def test_unsuccessful_only_run_exhausts_budget_without_free_retries(tmp_path, ru
     assert not accounting.partial_run
     assert runner.run(root).actual_evaluations == 0
     assert len(rows(root)) == 3
+
+
+@pytest.mark.parametrize("mutation", ["rows", "summary", "config", "checkpoint", "identity"])
+def test_diagnostic_rejects_incoherent_evidence_before_creating_output(tmp_path, runner, mutation):
+    root = runner.initialize(tmp_path / "incoherent", budget=3)
+    runner.run(root)
+    if mutation == "rows":
+        with duckdb.connect(str(root / "metrics.duckdb")) as connection:
+            connection.execute("UPDATE evaluations SET metric_value=42 WHERE sequence=0")
+    elif mutation == "identity":
+        with duckdb.connect(str(root / "metrics.duckdb")) as connection:
+            connection.execute("UPDATE runs SET run_id='other'")
+    elif mutation == "summary":
+        summary = json.loads((root / "summary.json").read_bytes())
+        summary["actual_evaluations"] = 2
+        summary["partial_run"] = True
+        (root / "summary.json").write_bytes(runner.encode(summary))
+    elif mutation == "config":
+        config = json.loads((root / "config.yaml").read_bytes())
+        config["root_seed"] += 1
+        (root / "config.yaml").write_bytes(runner.encode(config))
+    else:
+        state = json.loads(load_latest_checkpoint(root / "checkpoints")[1])
+        state["score_sum"] += 1
+        runner.publish_checkpoint(root / "checkpoints", root.name, "altered", runner.encode(state))
+    before = tree_bytes(root)
+    destination = tmp_path / "rejected.json"
+    with pytest.raises(ValueError):
+        runner.export_diagnostic(root, destination)
+    assert not destination.exists()
+    assert tree_bytes(root) == before
+
+
+def test_diagnostic_refuses_active_writer(tmp_path, runner):
+    from evonn_shared.run_store import RunStoreLockedError
+
+    root = runner.initialize(tmp_path / "active", budget=1)
+    runner.run(root)
+    destination = tmp_path / "rejected.json"
+    with open_run_store(root, root.name):
+        with pytest.raises(RunStoreLockedError):
+            runner.export_diagnostic(root, destination)
+    assert not destination.exists()
+
+
+def test_diagnostic_refuses_committed_row_ahead_of_checkpoint(tmp_path, runner):
+    root = runner.initialize(tmp_path / "ahead", budget=3)
+    runner.run(root, stop_after=1)
+    with open_run_store(root, root.name) as store:
+        store.append_evaluation("synthetic_reference", "noop_reference", "agreement", 1.0)
+    before = tree_bytes(root)
+    with pytest.raises(ValueError, match="checkpoint"):
+        runner.export_diagnostic(root, tmp_path / "rejected.json")
+    assert tree_bytes(root) == before
