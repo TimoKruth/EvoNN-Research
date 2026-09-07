@@ -27,10 +27,12 @@ Product and interop; Product implementation is outside this repository's plan.
 
 ## Immediate Next Actions
 
-The technical baseline is `646dde2270d540877c7d9165718eb01a5b05b84c`.
+The integrated documentation baseline is `315fde5` (PRs #23 and #26).
 The reviewed #10–#20 series is integrated, #21 supplies GPL-3.0-only licensing,
 and #22 configures CodeRabbit. #9 was closed without catalog admission.
-Both main CI lanes passed. Gate B0 is closed; Phase 0 remains open.
+Both main CI lanes passed. Gate B0 is closed; Phase 0 remains open. PR #25
+contains the independently reviewed v3 catalog binding and catalog/export
+composition tests; its canonical merge and separate attestation are pending.
 
 | Order | Deliverable | Completion condition |
 | --- | --- | --- |
@@ -161,21 +163,22 @@ open; formal closure must include the appropriate reviewed gate transition.
 | WP-0.1 | Workspace, package scripts, full cross-host foundation coverage, consolidated CI triggers | Final evidence mapping; bounded CI/review follow-ups below. |
 | WP-0.2–0.5 | Strict export/budget/telemetry models, identities and RNG contracts | Map each requirement to regular export fixtures or the separate no-op integrity proof. |
 | WP-0.6–0.7 | Atomic checkpoints, transactional store/workspace, verified reader and diagnostic consistency | Include persistence and failure results in joint acceptance. |
-| WP-0.8 | Strict catalog and pack loaders | Eight planned definitions and three packs are prepared with pinned source provenance; freeze replacement and runtime admission remain open. |
+| WP-0.8 | Strict catalog and pack loaders | Eight planned definitions and three packs have independently verified provenance and contract composition; v3 merge/attestation remain open. Runtime admission is separate. |
 | WP-0.9 | LM-cache existence/size/checksum validators | Record contract acceptance; real LM execution belongs to later phases. |
-| WP-0.10 | Real synthetic kill/resume proof, budget and protected-label tests, cross-host JSON evidence | Complete catalog/budget/export fixture integration and joint reference acceptance. Engine-specific hooks remain separately open. |
+| WP-0.10 | Real synthetic kill/resume proof, budget and protected-label tests, cross-host JSON evidence | Catalog/budget/export composition now passes for all three packs; joint reference acceptance remains open. Engine-specific hooks remain separately open. |
 
 ### Requirement-to-test map for the pending Phase 0 acceptance
 
 These are concrete existing checks, not a declaration that their parent WP is
-accepted. The successor candidate's foundation selection passes 773 tests;
-its frozen catalog and interface selection passes 145 tests. The active v2
-validator still rejects the two intentional frozen changes.
+accepted. The successor's foundation selection passes 776 tests, including
+three real-pack/unsupported-export composition cases. Both independent reviews
+recomputed the candidate digests and source provenance. The v3 validator accepts
+the pending binding while keeping lane authorization false until attestation.
 
 | Parent | Existing executable evidence | Remaining boundary |
 | --- | --- | --- |
 | WP-0.1 | `tests/policy/test_workspace_contract.py`, `test_workspace_dependencies.py`, `test_import_boundaries.py`, `test_b0_ci_bootstrap.py` | Both hosted lanes on the accepted successor; final gate transition. |
-| WP-0.2 | `EvoNN-Shared/tests/test_exports.py`: strict parsing, three-file echoes, fixtures, golden bytes, atomic publication | Resolve catalog metadata into regular export-contract fixtures; the no-op remains a separate integrity consumer. |
+| WP-0.2 | `EvoNN-Shared/tests/test_exports.py`: strict parsing, three-file echoes, fixtures, golden bytes, atomic publication | All three packs now compose with the regular export fixtures in `test_catalog_export_integration.py`; the no-op remains a separate integrity consumer. |
 | WP-0.3 | `EvoNN-Shared/tests/test_budgets.py` and `test_reference_runner.py`: strict declaration/accounting, unsuccessful and resumed work | Include budget contracts and separately tested no-op accounting in the acceptance evidence. |
 | WP-0.4 | `EvoNN-Shared/tests/test_telemetry.py`: envelope, seeding and measurement provenance | Joint acceptance with catalog/export fixture compatibility. |
 | WP-0.5 | `EvoNN-Shared/tests/test_canonical.py`, `test_rng.py`: canonical vectors and independent deterministic streams | Preserve frozen bytes and historical verdicts in the successor. |
@@ -317,8 +320,8 @@ inherited work, and recover a durable row ahead of its checkpoint without
 reevaluation. Four kill boundaries cover failed and invalid attempts. Resume
 rejects changed seed/config/label identities; diagnostics validate the complete
 persisted state. These diagnostics are not the regular three-file export.
-Remaining work checks accepted catalog metadata against budget/export fixtures
-and closes the reference gate with the full parent matrix. The normative
+All three catalog packs now pass budget/export fixture composition. Remaining
+work closes the reference gate with the full parent matrix and hosted evidence. The normative
 requirements do not require a regular export from the no-op runner or a new
 system identity. It does not claim general
 exactly-once behavior before row commit. Engine resume hooks activate as engines
