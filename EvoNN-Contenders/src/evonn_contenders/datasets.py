@@ -121,12 +121,15 @@ def load_dataset(benchmark_id: str, *, seed: int, cache_root: Path, root: Path |
         raise ValueError("Dataset dimensions disagree with canonical definition")
     raw_digest = array_digest({"x": x, "y": y})
     generated = binding["loader"].startswith("make_")
-    if (not generated or seed == 42) and raw_digest != binding["reference_raw_sha256"]:
+    # Generated float64 intermediates may differ by platform libm rounding.
+    # Only the exact float32/int64 split bytes are consumed; their seed-42
+    # digest remains a hard reference gate on every host.
+    if not generated and raw_digest != binding["reference_raw_sha256"]:
         raise ValueError("Raw dataset differs from reviewed reference")
     arrays = _split(x, y, definition.task_kind.value, seed)
     split_digest = array_digest(arrays)
     if seed == 42 and split_digest != binding["reference_split_sha256"]:
-        raise ValueError("Dataset split differs from reviewed reference")
+        raise ValueError(f"Dataset split differs from reviewed reference: observed {split_digest}; expected {binding["reference_split_sha256"]}")
     cache = cache_root / benchmark_id / split_digest
     create_artifact_directory(cache)
     references = []
@@ -146,7 +149,9 @@ def load_dataset(benchmark_id: str, *, seed: int, cache_root: Path, root: Path |
     provenance = {
         "benchmark_id": benchmark_id, "definition_sha256": definition_digest,
         "runtime_manifest_sha256": hashlib.sha256(manifest_payload).hexdigest(),
-        "raw_sha256": raw_digest, "split_sha256": split_digest, "seed": seed,
+        "raw_sha256": raw_digest, "raw_reference_sha256": binding["reference_raw_sha256"],
+        "raw_reference_match": raw_digest == binding["reference_raw_sha256"],
+        "split_sha256": split_digest, "seed": seed,
         "split_policy": manifest["split_policy"], "cache_directory": str(cache.absolute()),
         "cache_artifacts": references, "checksums_verified_by": "evonn_shared.artifact_io",
         "catalog_status": definition.status.value, "runtime_ready": True,

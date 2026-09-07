@@ -38,3 +38,25 @@ def test_seed_changes_split_without_changing_canonical_definition(tmp_path):
     assert first.provenance["definition_sha256"] == second.provenance["definition_sha256"]
     assert first.provenance["raw_sha256"] == second.provenance["raw_sha256"]
     assert first.provenance["split_sha256"] != second.provenance["split_sha256"]
+
+
+@pytest.mark.parametrize("name", ["moons_classification", "friedman1_regression"])
+def test_generated_intermediates_may_differ_only_when_consumed_bytes_are_identical(tmp_path, monkeypatch, name):
+    from evonn_contenders import datasets
+    original = datasets._raw_data
+    reference = datasets.load_dataset(name, seed=42, cache_root=tmp_path / "reference")
+    def intermediate(binding, seed):
+        x, y = original(binding, seed)
+        x[0, 0] = np.nextafter(x[0, 0], np.inf)
+        return x, y
+    monkeypatch.setattr(datasets, "_raw_data", intermediate)
+    reproduced = datasets.load_dataset(name, seed=42, cache_root=tmp_path / "reproduced")
+    assert reproduced.provenance["raw_reference_match"] is False
+    assert reproduced.provenance["split_sha256"] == reference.provenance["split_sha256"]
+    def consumed_change(binding, seed):
+        x, y = original(binding, seed)
+        x[0, 0] += .01
+        return x, y
+    monkeypatch.setattr(datasets, "_raw_data", consumed_change)
+    with pytest.raises(ValueError, match="split|Split"):
+        datasets.load_dataset(name, seed=42, cache_root=tmp_path / "altered")
