@@ -5,6 +5,8 @@ build-backend = "hatchling.build"
 [project]
 name = "evonn-compare"
 version = "0.0.0"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
 description = "B0 comparison orchestration skeleton for EvoNN"
 readme = "README.md"
 requires-python = ">=3.13"
