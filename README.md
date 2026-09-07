@@ -146,8 +146,9 @@ new file is visible; do not delete published evidence as a pretend rollback.
 ## Benchmark and LM-cache storage
 
 Benchmark definitions live in `shared-benchmarks/catalog/`; packs live in
-`suites/parity/`. The current registry has no entries. Canonical IDs preserve
-data/split/metric meaning; admission and freeze changes follow WP-0.1b/0.8.
+`shared-benchmarks/suites/parity/`. Eight planned definitions and three packs
+are prepared; freeze acceptance and runtime admission remain open. Canonical
+IDs preserve data/split/metric meaning; changes follow WP-0.1b/0.8.
 
 `shared-benchmarks/lm_cache/` holds versioned `<cache_id>.yaml` manifests;
 payload bytes are warmed locally and are not committed. Shared validates file
