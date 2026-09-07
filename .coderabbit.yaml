@@ -13,6 +13,7 @@ reviews:
   high_level_summary: true
   high_level_summary_in_walkthrough: true
   collapse_walkthrough: true
+  review_details: true
   poem: false
   auto_review:
     enabled: true
@@ -21,15 +22,26 @@ reviews:
     # Also review stacked PRs targeting feature/integration branches.
     base_branches:
       - ".*"
-  # Extend default exclusions for local generated artifacts. Explicitly include
-  # the workspace lockfile; keep specs, catalogs and textual test fixtures in scope.
+  # Include repository files as well as the normally ignored workspace lockfile.
+  # A lockfile-only positive pattern excludes all other files from review.
   path_filters:
+    - "**/*"
     - "uv.lock"
     - "!.artifacts/**"
     - "!**/.venv/**"
     - "!**/__pycache__/**"
     - "!**/.pytest_cache/**"
     - "!**/.ruff_cache/**"
+    # Broad inclusion overrides default ignores; keep generated/binary output out.
+    - "!**/{build,dist,node_modules,.cache,.mypy_cache,.tox,.nox,htmlcov}/**"
+    - "!**/*.egg-info/**"
+    - "!**/{generated,__generated__,_generated,gen}/**"
+    - "!**/*.{pyc,pyo,so,dylib,dll,exe,o,bin,whl,wasm}"
+    - "!**/*.{zip,gz,bz2,xz,tar,7z,png,jpg,jpeg,gif,ico,svg,pdf,woff,woff2,ttf,otf}"
+    - "!**/*.{mp3,mp4,wav,mov,avi,mkv,flac,ogg}"
+    - "!**/*.{duckdb,db,npy,npz,pt,pth,safetensors,parquet}"
+    - "!**/!(uv).lock"
+    - "!**/{package-lock.json,pnpm-lock.yaml,bun.lockb}"
   path_instructions:
     - path: "**/*"
       instructions: >-
