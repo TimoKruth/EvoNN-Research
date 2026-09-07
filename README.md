@@ -50,6 +50,34 @@ and synthetic reference tests, followed by their platform-specific package
 checks. Required job names remain stable. Full lanes run for every PR, main
 push and manual dispatch; unopened feature branches need manual dispatch.
 
+## Synthetic integrity evidence
+
+The Phase-0 preparation includes a test-only persistence consumer, not a search
+engine or production benchmark. To generate a comparison of eight real
+SIGKILL/resume cases (failed and invalid attempts at four durable boundaries):
+
+```sh
+uv run --locked --all-packages --group dev python EvoNN-Shared/tests/integrity_probe.py \
+  --work-root .artifacts/reference-integrity/runs \
+  --output .artifacts/reference-integrity/report.json
+uv run --locked --all-packages --group dev python EvoNN-Shared/tests/integrity_probe.py \
+  --validate .artifacts/reference-integrity/report.json
+```
+
+Generation requires fresh work/output paths; it never overwrites prior evidence.
+The report compares row/checkpoint hashes, fresh/inherited accounting, selector
+traces and source digests before/after read-only export. It records host metadata
+and `synthetic_contract_preparation`. Validation checks internal consistency,
+not authenticity. The GitHub run and head commit provide hosted provenance;
+download `b0-linux-synthetic-integrity` or `b0-macos-synthetic-integrity` from
+the corresponding run. Each contains only the report, not raw run directories.
+
+This does not admit the production catalog, qualify an engine, establish
+scientific performance or close Phase 0. Kills before durable row commit and
+general engine failure recovery remain outside this proof. Dependent PRs must
+merge in order with normal review; retarget each child to `main` and revalidate
+after its parent lands. The series does not imply its changes are on `main`.
+
 ## Run-directory assumptions
 
 Use application-owned directories on a local filesystem with functioning
