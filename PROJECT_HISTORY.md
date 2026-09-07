@@ -186,7 +186,7 @@ These reference/evidence files intentionally retain their canonical paths:
 | Retained surface | Why it is separate |
 | --- | --- |
 | [claude-spec](claude-spec/README.md), [program charter](PROGRAM_CHARTER.md), [Product interop](claudex-spec/19-research-interop.md) | Pinned normative authority; changing bytes requires a source upgrade, not summary editing. |
-| [claudex-spec](claudex-spec/README.md), including ADRs/research/schemas | Separate Product reference corpus; it is not Lab implementation scope. |
+| [Product interop reference](claudex-spec/README.md) | Only the consumer contract stays local; the unrelated Product corpus is retrievable at an exact Git revision. |
 | [governance](governance/SPEC_TRACEABILITY.md) and [upgrade process](governance/SPEC_UPGRADE_PROCESS.md) | Canonical source roles, transition procedure and machine-checked evidence. |
 | [reviews](reviews), [B0 task 6 record](.superpowers/sdd/task-6-report.md), [dynamic-import negative result](research/logs/2026-07-18-dynamic-import-policy.md) | Historical validator/test evidence; their dated statements must not be read as current status. |
 | [PARALLEL_WORK_GUIDE.md](PARALLEL_WORK_GUIDE.md) | Short compatibility pointer with the exact freeze marker required by the standalone validator. Lane/workflow content is consolidated in the plan. |
@@ -221,3 +221,21 @@ contracts **145 passed** (3.09s); inventory **5 passed**; Ruff and diff checks
 passed. The unchanged standalone freeze validator rejected exactly the two
 intentional frozen changes (`test_catalog.py`, `canonical_ids.yaml`). This is
 an expected draft blocker, not a waived policy failure.
+
+## 2026-09-07 — Remove reference material without current Lab value
+
+Removed 45 unpinned Product reference files (chapters 00–18, ADRs,
+research notes, schemas and examples). They neither govern Lab implementation
+nor run in its tests. Their complete original is preserved at
+[`836cfffc204babab70f8c222b45668df03e04564`](https://github.com/TimoKruth/EvoNN-Research/tree/836cfffc204babab70f8c222b45668df03e04564/claudex-spec).
+The Product-owned consumer contract `claudex-spec/19-research-interop.md`
+remains byte-identical, as do the Lab specification, charter and authority pins.
+This removes local copies, without changing Product scope or its acceptance.
+
+Retention is based on current engineering value. A test demanding an old
+filename or phrase is not sufficient justification. Historical review results
+and failed experiments should be compactly summarized here; exact original
+proof can be verified in Git instead of remaining duplicated in every checkout.
+The remaining review/task-report copies currently participate in active
+freeze/B0 validation. Their removal requires the bounded evidence-storage
+change specified in WP-0.1b, not removal of the underlying integrity checks.

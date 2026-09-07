@@ -263,6 +263,37 @@ admitted nothing; a successor must carry the complete amendment. Extraction of
 remaining private export/catalog parser helpers stays conditional on amendment
 and demonstrated value; keep seven package boundaries and avoid a framework.
 
+### Proposed evidence-retention simplification within WP-0.1b
+
+Historical filenames and prose are not product requirements. Replace the
+historical checkout-copy obligation with verification at the already pinned
+Git commit, while keeping current contracts locally readable.
+
+- **Remove after migration:** superseded B0 and v1 review prose, the 754-line
+  Task 6 report, and the separate dynamic-import experiment log. Preserve their
+  decisions in PROJECT_HISTORY and verify original evidence through exact Git
+  commits/blobs. Keep active v2 reviews only until their replacement is accepted.
+- **Validator change:** distinguish active normative inputs from historical
+  evidence. Continue checking the latter's exact commit ancestry, object type,
+  mode and SHA-256, with replacement objects disabled. Missing, substituted,
+  rewritten or shallow-history evidence must still fail. Removal of the old
+  working-tree copy alone should pass; do not fall back to an unverified copy.
+- **Test change:** replace historical prose/filename assertions with corruption,
+  forged-review identity/digest, missing-object and history-transition cases.
+  Retain all import-boundary, RNG, accounting, atomicity, resume and export
+  behavior checks. Verify the same historical accept/reject cases against both
+  validator versions, except the explicitly retired checkout-copy obligation.
+- **Keep:** active Lab requirements, the Lab/Product consumer boundary, current
+  schema contracts and behavioral/golden fixtures. These determine what the
+  software must do and which claims its evidence supports.
+- **Acceptance:** an exact removal inventory and source-reference map, atomic
+  validator/trust-anchor update, passing regression cases and both hosted lanes.
+  No new archive directory full of duplicate prose; no acceptance inferred from
+  deleting a test or reducing its assertions.
+
+This is a proposed storage-policy change, not an active waiver of the freeze.
+It does not require changing the scientific contracts or weakening reviews.
+
 ### WP-0.10a — Reference integrity integration and acceptance
 
 **Requirements:** claude-spec/03 accounting; /04 exports/integrity;
