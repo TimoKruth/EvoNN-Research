@@ -16,7 +16,7 @@ from evonn_shared.catalog import load_parity_pack
 from evonn_shared.export_reader import read_document, read_export
 from evonn_shared.telemetry import ArtifactReference
 
-from .audit import artifact_json
+from .audit import artifact_json, benchmark_audit
 from .cases import Case, evaluate_case, resolve_export_path
 from .evidence import aggregates, trend_rows, winners
 from .quality import classify
@@ -110,10 +110,10 @@ def _append_rows(root: Path, rows: list[dict]):
             append_artifact(path, b"".join(additions), expected_sha256=hashlib.sha256(payload).hexdigest())
 
 
-def _rebuild(root: Path):
+def _rebuild(root: Path, loaded=None):
     from .dashboard import render_dashboard
     all_rows, case_views, qualities = [], [], []
-    loaded = load_cases(root)
+    loaded = load_cases(root) if loaded is None else loaded
     seed_groups = {}
     for _, document, bundles, acceptance in loaded:
         if not acceptance["blockers"] and acceptance["cohort"] == "current":
@@ -173,6 +173,24 @@ def workspace_report(root: Path):
         for name in ("packs", "runs", "logs", "reports", "trends"):
             create_artifact_directory(owned / name)
         return _rebuild(owned)
+
+
+def workspace_audit(root: Path, pack: str, *, decision_grade: bool = False):
+    """Build views and audit one verified case snapshot under the same workspace lock."""
+    with ownership(root) as owned:
+        for name in ("packs", "runs", "logs", "reports", "trends"):
+            create_artifact_directory(owned / name)
+        loaded = load_cases(owned)
+        data = _rebuild(owned, loaded)
+        bundles = [bundle for _, _, values, _ in loaded for bundle in values]
+        result = benchmark_audit(pack, bundles, decision_grade=decision_grade,
+            dashboard_present=(owned / "fair_matrix_dashboard.html").is_file(),
+            output_levels={item["run_id"]: item["level"] for item in data["output_quality"]})
+        source_blockers = [reason for _, document, _, acceptance in loaded if document["case"]["pack"] == pack for reason in acceptance["blockers"]]
+        result["blockers"] = sorted(set(result["blockers"] + source_blockers))
+        result["blocker_count"] = len(result["blockers"])
+        result["status"] = "blocked" if result["blockers"] else result["status"]
+        return result
 
 
 def fair_matrix(*, workspace: Path, pack: str = "tier1_core", budgets: list[int] | None = None,

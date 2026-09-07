@@ -42,3 +42,23 @@ def test_malformed_numeric_header_is_a_validation_error(tmp_path):
         refs.append({"path": name + ".npy", "sha256": hashlib.sha256(payload).hexdigest(), "size_bytes": len(payload)})
     with pytest.raises(ValueError, match="header syntax"):
         verify_split_cache({"cache_directory": str(tmp_path), "cache_artifacts": refs, "split_sha256": "0" * 64}, feature_count=2, regression=False)
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf")])
+@pytest.mark.parametrize("target", ["x_train", "y_validation"])
+def test_self_consistent_nonfinite_cache_is_rejected(tmp_path, value, target):
+    arrays = {"x_train": np.ones((3, 2), dtype=np.float32), "y_train": np.zeros(3, dtype=np.float32),
+              "x_validation": np.ones((2, 2), dtype=np.float32), "y_validation": np.ones(2, dtype=np.float32)}
+    arrays[target].flat[0] = value
+    refs = []
+    for name, array in arrays.items():
+        buffer = io.BytesIO()
+        np.save(buffer, array, allow_pickle=False)
+        payload = buffer.getvalue()
+        (tmp_path / (name + ".npy")).write_bytes(payload)
+        refs.append({"path": name + ".npy", "sha256": hashlib.sha256(payload).hexdigest(), "size_bytes": len(payload)})
+    digest = canonical_sha256({name: {"dtype": array.dtype.str, "shape": tuple(array.shape), "bytes": array.tobytes()}
+                              for name, array in arrays.items()}, schema_version="evonn-dataset-arrays-v1", digest_field=None)
+    with pytest.raises(ValueError, match="non-finite"):
+        verify_split_cache({"cache_directory": str(tmp_path), "cache_artifacts": refs, "split_sha256": digest},
+                           feature_count=2, regression=True)

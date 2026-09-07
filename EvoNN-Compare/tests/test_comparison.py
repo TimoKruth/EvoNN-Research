@@ -96,7 +96,7 @@ def test_explicit_exporter_blocker_and_evaluation_semantics_propagate(tmp_path, 
     assert rows[0]["fairness_flags"][0]["severity"] == "blocker"
 
 
-@pytest.mark.parametrize("mutation", ["duplicate", "missing", "status"])
+@pytest.mark.parametrize("mutation", ["duplicate", "missing", "status", "datasets"])
 def test_audit_requires_exact_unique_attempt_projection(tmp_path, export_factory, monkeypatch, mutation):
     from evonn_compare import audit
     from evonn_shared.benchmarks import resolve_data_root
@@ -116,7 +116,7 @@ def test_audit_requires_exact_unique_attempt_projection(tmp_path, export_factory
         attempts[-1] = dict(attempts[0])
     elif mutation == "missing":
         attempts.pop()
-    else:
+    elif mutation == "status":
         attempts[0]["status"] = "skipped"
     documents = {
         "config.yaml": {"dataset_versions": versions, "git_commit": bundle.manifest.git_commit, "seed": bundle.manifest.seed, "code_dirty": False,
@@ -126,9 +126,10 @@ def test_audit_requires_exact_unique_attempt_projection(tmp_path, export_factory
     }
     monkeypatch.setattr(audit, "artifact_json", lambda b, name: documents[name])
     result = audit.benchmark_audit("tier1_core", [bundle])
-    expected = {"duplicate": "duplicate attempt", "missing": "every exported outcome", "status": "status/reason/charge"}[mutation]
+    expected = {"duplicate": "duplicate attempt", "missing": "every exported outcome", "status": "status/reason/charge", "datasets": "complete checked dataset"}[mutation]
     assert any(expected in reason for reason in result["blockers"])
     assert result["clean_runs"] == []
+    assert all(not item["successful"] and not item["cache_verified"] for item in result["benchmarks"])
 
 
 def test_seed_groups_keep_full_budget_envelopes_separate(tmp_path, export_factory):

@@ -42,6 +42,8 @@ def verify_split_cache(provenance: dict, *, feature_count: int, regression: bool
         data = payload[10 + length:]
         if len(data) != math.prod(shape) * (4 if header["descr"] == "<f4" else 8):
             raise ValueError("numeric cache shape and bytes differ")
+        if header["descr"] == "<f4" and any(not math.isfinite(value) for (value,) in struct.iter_unpack("<f", data)):
+            raise ValueError("numeric cache contains non-finite values")
         arrays[name.removesuffix(".npy")] = {"dtype": header["descr"], "shape": shape, "bytes": data}
     for suffix in ("train", "validation"):
         x, y = arrays["x_" + suffix], arrays["y_" + suffix]

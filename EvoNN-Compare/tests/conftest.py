@@ -16,6 +16,8 @@ def export_factory():
         base = Path(__file__).resolve().parents[2] / "EvoNN-Shared/tests/fixtures/valid"
         manifest, results, summary = [json.loads((base / name).read_text()) for name in ("manifest.json", "results.json", "summary.json")]
         pack = load_parity_pack(pack_name)
+        if budget % len(pack.benchmarks):
+            raise ValueError("fixture budget must divide evenly across pack benchmarks")
         run_id = run_id or "fixture_" + system + "_" + str(seed)
         for document in (manifest, results, summary):
             document.update(system=system, run_id=run_id, pack_id=pack_name, seed=seed)

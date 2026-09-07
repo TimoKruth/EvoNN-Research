@@ -1,4 +1,5 @@
 """Evidence-based benchmark admission; contract readiness is distinct from decisions."""
+from copy import deepcopy
 import hashlib
 import json
 import math
@@ -32,6 +33,7 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
         manifest = bundle.manifest
         if manifest.pack_id != pack_name or manifest.system.value != "contenders":
             continue
+        candidate_floor = deepcopy(floor)
         try:
             config = artifact_json(bundle, manifest.config_snapshot.path)
             ledger = artifact_json(bundle, "attempts.json")
@@ -80,7 +82,7 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
                     "benchmark": attempt["benchmark_id"], "outcome": outcome}, schema_version="evonn-contender-init-v1", digest_field=None)[:8], 16)
                 if attempt["model_seed"] != model_seed:
                     raise ValueError("attempt initialization seed provenance differs")
-                state = floor[attempt["benchmark_id"]]
+                state = candidate_floor[attempt["benchmark_id"]]
                 if "extra" in model:
                     state["enhanced"].add(name)
                     strength_key = canonical_sha256({"name": name, "configuration": model, "backend": backend,
@@ -126,7 +128,7 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
                 digest = verify_split_cache(dataset, feature_count=math.prod(definition.input_shape), regression=definition.task_kind.value == "regression")
                 if manifest.seed == 42 and digest != binding["reference_split_sha256"]:
                     raise ValueError("reference split differs from reviewed runtime")
-                floor[name]["cache"] = True
+                candidate_floor[name]["cache"] = True
             if seen != set(pack.benchmarks):
                 raise ValueError("every admitted run requires complete checked dataset provenance")
             if manifest.status.value == "completed" and not manifest.accounting.partial_run and not bundle.results.coverage.failed:
@@ -137,6 +139,7 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
                                  "git_commit": manifest.git_commit, "runtime": manifest.runtime.model_dump(mode="json"),
                                  "enhanced": config["enhanced"], "fit_timeout_seconds": config["fit_timeout_seconds"]},
                                  schema_version="evonn-admission-protocol-v1", digest_field=None)})
+            floor = candidate_floor
         except (ValueError, OSError, KeyError, TypeError) as error:
             blockers.append(f"{manifest.run_id}: {error}")
     labels = []

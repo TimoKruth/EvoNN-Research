@@ -99,3 +99,32 @@ def test_reset_preserves_cache_provenance_or_rejects_before_archive(tmp_path, mo
         archive, = tmp_path.glob("workspace.previous_*")
         assert all((archive / path).read_bytes() == payload for path, payload in original.items())
     assert cached.read_bytes() == b"checked fixture bytes"
+
+
+def test_audit_cli_uses_one_locked_case_snapshot(tmp_path, monkeypatch, export_factory, capsys):
+    from evonn_compare.cli import main
+    def run(command, **kwargs):
+        output = Path(command[command.index("--output") + 1])
+        bundle = export_factory(output / "contenders", run_id=output.name + "_contenders")
+        return SimpleNamespace(returncode=0, stdout=str(bundle.root) + "\n", stderr="")
+    monkeypatch.setattr(workspace.subprocess, "run", run)
+    root = tmp_path / "workspace"
+    workspace.fair_matrix(workspace=root)
+    original_load, original_audit = workspace.load_cases, workspace.benchmark_audit
+    calls = []
+    def load(owned):
+        calls.append(owned)
+        assert len(calls) == 1, "audit must not reload a second case snapshot"
+        return original_load(owned)
+    def audit(*args, **kwargs):
+        with pytest.raises(BlockingIOError):
+            with workspace.ownership(root):
+                pytest.fail("audit released its workspace lock")
+        assert len(kwargs["output_levels"]) == len(args[1]) == 1
+        assert kwargs["dashboard_present"]
+        return original_audit(*args, **kwargs)
+    monkeypatch.setattr(workspace, "load_cases", load)
+    monkeypatch.setattr(workspace, "benchmark_audit", audit)
+    assert main(["benchmark-audit", "--pack", "tier1_core", "--workspace", str(root)]) == 1
+    assert json.loads(capsys.readouterr().out)["status"] == "blocked"  # Synthetic fixture is never runtime proof.
+    assert len(calls) == 1

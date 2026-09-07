@@ -34,7 +34,9 @@ for both synthetic generators: platform-dependent discarded Float64
 intermediates are diagnostic; consumed arrays still require exact hashes.
 No frozen metadata, model strength or numeric tolerance was changed.
 Final local verification: 790 foundation/contract tests, 41 Contenders tests,
-18 Compare tests, plus 9 subsequent model-boundary regressions, Ruff, import boundaries and standalone governance/freeze
+18 initial Compare tests plus subsequent boundary checks; the final focused
+Compare/cache suite passes 28 tests, and model/runner suite passes 38 tests.
+Ruff, import boundaries and standalone governance/freeze
 validation passed. Actual dashboard rendering and benchmark filtering also
 passed; absent engines produce no fabricated wins or pairwise evidence.
 
