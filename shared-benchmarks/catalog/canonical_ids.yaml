@@ -1,2 +1,18 @@
 schema_version: 1.0.0
-entries: []
+entries:
+  - id: breast_cancer
+    definition_sha256: 162c12d71260365d05a02227c02e2ee83781cf675de1a82c728d8964cc1e813a
+  - id: credit_g_classification
+    definition_sha256: a598efc96b51e37e52e4a32d4f0925b2000c0e821b4d2128ce5aa5f861c8780b
+  - id: diabetes_regression
+    definition_sha256: c6fd3fe71734efaf499eb4e0aabde99f341dba6f57300ce6b14ff0eff047bb34
+  - id: digits_image
+    definition_sha256: d26b2f81a3a7a8924c4aa8007c2769664d352be9917b7737e60c0acbf529fd81
+  - id: friedman1_regression
+    definition_sha256: 48b70b2fc32aff862905f24c7a0023aff3c0f3a58ee5be9e281dea598d60ec8c
+  - id: iris_classification
+    definition_sha256: 4de1515adfa5ba732932049914c565d71949ce0cbd4eb7a292028e8c98657c04
+  - id: moons_classification
+    definition_sha256: 36ca0afe8cabab108dca0e348bbcb5edaa2e69e38c1a887e0d5b2d756ad1975f
+  - id: wine_classification
+    definition_sha256: 0b2490803aeb325d77977c0167e8b270e872fcffe32f7e6f0982f0f98a1e3d3f

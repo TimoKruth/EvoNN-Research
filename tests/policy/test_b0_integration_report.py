@@ -383,7 +383,14 @@ def test_parallel_guide_points_to_single_lane_model_and_preserves_authorization(
     assert "canonical merge has been verified" in guide
     assert "WP-0.10 and the Phase 0 exit" in guide
     assert "No Phase 0 lane or integration branch exists yet" not in guide
-    for field in ("status: merged_verified", "lane_authorization: true", "lane_branch_creation: authorized"):
+    record = yaml.safe_load((REPO_ROOT / "governance/phase0-interface-freeze.yaml").read_text())
+    authorized = record["status"] == "merged_verified"
+    assert record["lane_authorization"]["authorized"] is authorized
+    for field in (
+        f"status: {record['status']}",
+        f"lane_authorization: {str(authorized).lower()}",
+        "lane_branch_creation: authorized" if authorized else "lane_branches: none",
+    ):
         assert field in guide
     for required in (
         "real artifact influence waits for Lab I1 and Product I2",

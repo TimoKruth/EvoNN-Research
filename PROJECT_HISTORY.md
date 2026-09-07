@@ -192,6 +192,46 @@ These reference/evidence files intentionally retain their canonical paths:
 | [PARALLEL_WORK_GUIDE.md](PARALLEL_WORK_GUIDE.md) | Short compatibility pointer with the exact freeze marker required by the standalone validator. Lane/workflow content is consolidated in the plan. |
 | Package/config READMEs | Local navigation markers pointing to central guidance; no duplicate plans. |
 
+## 2026-09-07 — Reviewed catalog successor (merge/attestation pending)
+
+The successor to closed PR #9 reuses the eight metadata definitions and three
+packs from exact proposal commit `40b704b49bdec262e9bf60ff456f8eb94a8c0b91`.
+This is a fresh candidate based on the consolidated main, not acceptance of #9.
+`shared-benchmarks/provenance/tier_a_catalog_v1.json` records ten source blobs
+independently fetched from predecessor commit
+`3652e0a32a907b51fb26a56fa9650ba258cb9054`; Git blob IDs and SHA-256 were
+recomputed from returned bytes. The original field mapping remains retrievable
+at `40b704b49bdec262e9bf60ff456f8eb94a8c0b91:shared-benchmarks/migration/2026-07-28-tier-a-catalog-admission.md`.
+
+The predecessor's contender loader uses a two-way train/validation split
+(default validation fraction 0.2, seed 42, target stratification for
+classification). It supplies no protected third test split; that is a conditional protocol
+limitation, not a general Lab Phase 0/1 blocker. Data/cache hashes,
+runtime support and contender floors remain unproved. Introducing a protected
+third split changes benchmark meaning and must use new canonical IDs; those
+choices cannot be silently folded into the eight historical IDs.
+
+This candidate keeps all definitions `planned` and `catalog_only`. Independent
+producer/consumer reviews approve `0ece535d8b68c8701a17e404baa25dd6b20be52e`
+and its exact source provenance. Binding `170fc9e19db0f7039d2ffd351d01406af16a8f80`
+is its direct child. The replacement validator and trust anchor preserve v1/v2
+verdicts and reject transient history tampering. Both reviewers separately
+approved the binding and three-pack export fixture composition. Protected merge
+and verified attestation remain required before authorization.
+
+Local candidate checks: foundation **773 passed** (25.50s); catalog/interface
+contracts **145 passed** (3.09s); inventory **5 passed**; Ruff and diff checks
+passed. The unchanged standalone freeze validator rejected exactly the two
+intentional frozen changes (`test_catalog.py`, `canonical_ids.yaml`). This is
+an expected draft blocker, not a waived policy failure. After the reviewed v3
+binding, both governance validators pass. Foundation coverage now passes **776
+tests** (27.51s), including three real-pack/unsupported-export fixture cases.
+Those fixtures assert schema composition, zero executed evaluations, complete
+unsupported visibility and typed three-file roundtrips; they prove no dataset
+execution or scientific floor. The producer independently passed all **142**
+historical freeze tests and **13** successor/history/guide tests; the consumer
+passed **16** targeted tests plus two guide tests on the rebound implementation.
+
 ## 2026-09-07 — Remove reference material without current Lab value
 
 Removed 45 unpinned Product reference files (chapters 00–18, ADRs,

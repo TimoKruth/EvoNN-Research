@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0.0",
+  "status": "proposal_not_admitted",
+  "repository": "https://github.com/TimoKruth/EvoNN",
+  "commit": "3652e0a32a907b51fb26a56fa9650ba258cb9054",
+  "verified_date": "2026-09-07",
+  "sources": [
+    {
+      "path": "shared-benchmarks/suites/parity/tier_a_contract.yaml",
+      "git_blob": "bf936cb39fe52b862a100b4d0699eb7695200fe6",
+      "sha256": "d2774a134aae793837db79fd3894a57a105152c45479bed90e647f633d0e1ee9"
+    },
+    {
+      "path": "shared-benchmarks/catalog/iris.yaml",
+      "git_blob": "04d134b6c791d9e082fd27e8af5c191084ea85e7",
+      "sha256": "c25b50b924ada0d9026bc7049a41510ed909eb3045f87571d52970c97380ae36"
+    },
+    {
+      "path": "shared-benchmarks/catalog/wine.yaml",
+      "git_blob": "84ac9099cbea97f3eed7939f4ff84c753e4e5aaf",
+      "sha256": "d73f239a5b3ee59912e0683fd7f8f88732c03566b9f6c1edc99bf3955bb1e637"
+    },
+    {
+      "path": "shared-benchmarks/catalog/breast_cancer.yaml",
+      "git_blob": "bd28ba6ade6adfdf6029fa764e07657d77577b35",
+      "sha256": "e8260f7afd4ddac33b90286dd14c6f918a779e49f5e4e6d649065c8aaf100fd4"
+    },
+    {
+      "path": "shared-benchmarks/catalog/moons.yaml",
+      "git_blob": "2f2c88c4390fe8cad4c103e67a7667115594e7f8",
+      "sha256": "c0c1f59765d6cc77a7087c3a39aef98b66796e468aa003ff4316b332eae6803b"
+    },
+    {
+      "path": "shared-benchmarks/catalog/digits.yaml",
+      "git_blob": "d48afde3a3b47e659dad5c3be859e5391c5ab491",
+      "sha256": "ed2205fac8ed0e22291bb861a4d7547d86380139383ac765632714ecd27d7713"
+    },
+    {
+      "path": "shared-benchmarks/catalog/diabetes.yaml",
+      "git_blob": "3004eb83018247e728b057712684b8f103ca0b58",
+      "sha256": "ea9da25aea17aaa2c7c5d965fb0c099edf552de76402946933a713408f9c29ce"
+    },
+    {
+      "path": "shared-benchmarks/catalog/friedman1.yaml",
+      "git_blob": "6705d133626d1071efb1837ab116e8db4f3ea97c",
+      "sha256": "34c981d89afbe9b322fcb445b81d721edd6db6bb086bb827ce3186a33a7a23ca"
+    },
+    {
+      "path": "shared-benchmarks/catalog/credit_g.yaml",
+      "git_blob": "9e488568a9ec7eab569ef659c54a8d3f718d3bbd",
+      "sha256": "d6192fbf4e67a19c34f3e3bd304a03bb906d7d66dafbfb13098039d3a3577174"
+    },
+    {
+      "path": "EvoNN-Contenders/src/evonn_contenders/benchmarks/spec.py",
+      "git_blob": "dd322c54ca13e48d8c31f1c8b2fe916bb3fefbb6",
+      "sha256": "ec97b952286f5c44be9a06c50c508135b2ab8c892ad6645e533ceb0528a791a3"
+    }
+  ],
+  "historical_split": {
+    "source": "EvoNN-Contenders/src/evonn_contenders/benchmarks/spec.py",
+    "algorithm": "sklearn.model_selection.train_test_split",
+    "default_validation_fraction": 0.2,
+    "default_seed": 42,
+    "classification_stratifies_on_target": true,
+    "protected_test_split": null
+  },
+  "runtime_admission_blockers": [
+    "No dataset loaders in this repository",
+    "Raw data and generated-cache checksums not yet bound"
+  ],
+  "definition_scope": "Planned metadata only; no runtime compatibility or decision-grade claim",
+  "split_limitation": "The historical loader has no protected third split. This blocks only protocols or claims requiring one, not Lab Phase 0/1 generally. Introducing a different split policy requires new canonical IDs.",
+  "decision_grade_blockers": [
+    "No executed contender floors or benchmark-audit evidence"
+  ]
+}

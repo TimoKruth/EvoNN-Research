@@ -1,0 +1,18 @@
+schema_version: 1.0.0
+id: friedman1_regression
+display_name: Friedman 1 Regression
+status: planned
+task_kind: regression
+input_modality: tabular
+input_shape: [10]
+output_dim: 1
+primary_metric:
+  name: mse
+  direction: min
+ceiling:
+  value: null
+  tie_policy: best_observed
+budget_epochs: 20
+runtime_class: ci
+required_contenders: [extra_trees, hist_gb, ridge_or_linear, svr_or_nystroem_svr]
+tags: [catalog_only, generated, sklearn]
