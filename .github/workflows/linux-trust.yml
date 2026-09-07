@@ -30,8 +30,8 @@ jobs:
         run: uv python install 3.13
       - name: Synchronize locked workspace
         run: uv sync --all-packages --group dev --locked
-      - name: Run Phase 0 shared contract checks
-        run: scripts/ci/phase0-contract-checks.sh
+      - name: Run complete Shared foundation checks
+        run: scripts/ci/foundation-checks.sh
       - name: Prove MLX is absent on Linux
         run: |
           if uv pip show mlx >/dev/null 2>&1; then
@@ -43,7 +43,6 @@ jobs:
         run: scripts/ci/b0-policy-checks.sh
       - name: Run Linux trust package checks
         run: |
-          scripts/ci/shared-checks.sh
           scripts/ci/benchmarks-checks.sh
           scripts/ci/compare-checks.sh
           scripts/ci/contenders-checks.sh

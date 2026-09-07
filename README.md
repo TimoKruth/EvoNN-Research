@@ -37,14 +37,18 @@ uv run --locked --all-packages --group dev ruff check .
 ```
 
 Each package has an independently invocable `scripts/ci/*-checks.sh` script.
+`scripts/ci/foundation-checks.sh` is the shared Linux/macOS entry point: it
+checks the full Shared package and root contract consumer in one selection,
+with a lock check, Ruff and installed package identity verification.
 `scripts/ci/b0-policy-checks.sh` checks governance, dependency/import boundaries,
 capability claims, and their integration tests; it needs full Git history and
 takes longer than the focused suite. The complete `pytest` run additionally
 tests the check scripts themselves, including a nested policy run.
 
-Linux CI runs all Shared tests. macOS CI runs the frozen contracts plus
-checkpoint, RunStore, RunWorkspace, LM-cache, and storage regression tests,
-followed by its engine package checks. Both required job names remain stable.
+Both hosted lanes run the complete foundation suite, including all persistence
+and synthetic reference tests, followed by their platform-specific package
+checks. Required job names remain stable. Full lanes run for every PR, main
+push and manual dispatch; unopened feature branches need manual dispatch.
 
 ## Run-directory assumptions
 

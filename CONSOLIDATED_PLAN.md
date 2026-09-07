@@ -327,8 +327,12 @@ or closes Phase 0. After parent merges, retarget and revalidate each child.
   tests pin all three triggers and retain read-only workflow permissions and
   PR-only cancellation. This halves lane starts for a normal pushed PR update;
   no per-lane wall-clock speedup or test removal is claimed.
-- [ ] Foundation entry point: share complete Shared/root-contract coverage on
+- [x] Foundation entry point: share complete Shared/root-contract coverage on
   both hosts without duplicate contract selection; retain standalone scripts.
+  `foundation-checks.sh` selects the entire Shared test directory and the root
+  consumer once, plus Ruff and installed package identity. Both hosts use it;
+  Linux no longer repeats Shared contract tests via two separate scripts, and
+  macOS no longer depends on a manually maintained persistence file list.
 - [ ] Read-only RunStore reader: shared lock, clean-store requirement, verified
   identity/hash chain, no source writes or exposed writer operations.
 - [ ] Diagnostic consistency: consume the verified reader and reject stale or
