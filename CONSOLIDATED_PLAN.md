@@ -350,7 +350,13 @@ or closes Phase 0. After parent merges, retarget and revalidate each child.
   rejects changed label identity before opening a writer. Selection still
   receives only its label-free view. The synthetic label digest is an identity
   check, not encryption, privacy protection or a Python execution sandbox.
-- [ ] Integrity probe: emit machine-readable killed/resumed comparison evidence.
+- [x] Integrity probe: emit machine-readable killed/resumed comparison evidence.
+  `EvoNN-Shared/tests/integrity_probe.py` executes eight real SIGKILL cases
+  (failure/invalid at four durable boundaries), validates row/checkpoint
+  equivalence, fresh/inherited budgets, selector traces and read-only export
+  source digests. Reports carry host metadata and the synthetic evidence class;
+  internal validation is not source authenticity or production qualification.
+  Existing work/output is never reused. A failed case produces no final report.
 - [ ] Atomic artifact publication: no overwrite or partial visible export.
 - [ ] Hosted integrity evidence: execute and retain the synthetic probe on both
   hosts, document evidence limits and merge order.
