@@ -107,3 +107,22 @@ def test_unrepresentable_ngram_alpha_is_invalid_before_fit(tmp_path, alpha):
     assert result["status"] == "failed" and result["invalid"] == 1 and result["charged"] == 0
     assert "n-gram" in result["reason"]
     assert not (tmp_path / "started").exists()
+
+
+def test_overflowing_optional_probe_keeps_dataset_and_other_candidates_available(tmp_path, monkeypatch):
+    import math
+    from evonn_contenders import prepare
+    original = prepare.build_model
+    def probe(name, **kwargs):
+        if name == "overflow_fixture":
+            math.isfinite(kwargs["parameters"]["learning_rate"])
+        return original(name, **kwargs)
+    monkeypatch.setattr(prepare, "build_model", probe)
+    result = prepare.prepare({"benchmark": "iris_classification", "seed": 42, "cache_root": str(tmp_path / "cache"),
+        "shared_root": str(runner.shared_root()), "enhanced": True,
+        "optional": {"bad": {"model": "overflow_fixture", "parameters": {"learning_rate": 10**400}},
+                     "good": {"model": "logistic", "parameters": {}}}})
+    assert result["status"] == "ok" and result["train_rows"] > 0
+    assert result["available_optional"] == ["good"]
+    invalid = result["optional_results"]["bad"]
+    assert invalid["status"] == "failed" and invalid["invalid"] == 1 and invalid["charged"] == 0
