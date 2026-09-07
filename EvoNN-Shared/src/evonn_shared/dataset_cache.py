@@ -28,7 +28,10 @@ def verify_split_cache(provenance: dict, *, feature_count: int, regression: bool
         length = struct.unpack("<H", payload[8:10])[0]
         if length > 4096 or 10 + length > len(payload):
             raise ValueError("invalid numeric cache header length")
-        header = ast.literal_eval(payload[10:10 + length].decode("ascii"))
+        try:
+            header = ast.literal_eval(payload[10:10 + length].decode("ascii"))
+        except (UnicodeError, SyntaxError, ValueError, RecursionError) as error:
+            raise ValueError("invalid numeric cache header syntax") from error
         if not isinstance(header, dict) or set(header) != {"descr", "fortran_order", "shape"}:
             raise ValueError("invalid numeric cache header")
         shape = header["shape"]

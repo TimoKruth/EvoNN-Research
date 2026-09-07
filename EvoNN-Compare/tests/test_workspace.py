@@ -51,3 +51,17 @@ def test_dashboard_payload_cannot_escape_script_element():
     assert '</script><script>alert(' not in html
     payload = html.split('id="data">', 1)[1].split('</script>', 1)[0]
     assert json.loads(payload)["untrusted"].startswith('</script>')
+
+
+def test_reset_archives_evidence_and_starts_fresh(tmp_path, monkeypatch):
+    root = tmp_path / "workspace"
+    root.mkdir()
+    original = root / "evidence.txt"
+    original.write_text("preserve these bytes")
+    monkeypatch.setattr(workspace.subprocess, "run", lambda *a, **k: (_ for _ in ()).throw(FileNotFoundError("unimplemented fixture engine")))
+    result = workspace.fair_matrix(workspace=root, systems=["prism"], no_contenders=True, reset_workspace=True)
+    archives = list(tmp_path.glob("workspace.previous_*"))
+    assert len(archives) == 1
+    assert (archives[0] / "evidence.txt").read_text() == "preserve these bytes"
+    assert not original.exists() and len(result["cases"]) == 1
+    assert result["cases"][0]["acceptance"]["operating_state"] == "exploratory"

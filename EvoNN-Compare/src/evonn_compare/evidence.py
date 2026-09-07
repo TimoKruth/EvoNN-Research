@@ -6,6 +6,7 @@ import statistics
 
 from evonn_shared.catalog import get_benchmark
 from evonn_shared.canonical import canonical_sha256
+from .audit import artifact_json
 
 
 def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
@@ -13,7 +14,16 @@ def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
     elapsed = manifest.timing.elapsed_seconds
     successes = bundle.results.coverage.ok
     rows = []
+    attempts = {}
+    if manifest.system.value == "contenders":
+        try:
+            ledger = artifact_json(bundle, "attempts.json")
+            attempts = {(item["benchmark_id"], item["outcome_id"]): item for item in ledger["attempts"] if "outcome_id" in item}
+        except (OSError, ValueError, KeyError, TypeError):
+            pass  # Missing diagnostics remain unavailable; admission is checked separately.
     for result in bundle.results.records:
+        key = (result.benchmark_id, result.outcome_id)
+        attempt = attempts[key] if key in attempts else {}
         definition = get_benchmark(result.benchmark_id)
         rows.append({"case_id": case_id, "run_id": manifest.run_id, "engine": manifest.system.value,
             "benchmark": result.benchmark_id, "task_kind": result.task_kind.value,
@@ -31,6 +41,8 @@ def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
             "score_per_second": result.metric.value / elapsed if result.metric.value is not None and elapsed else None,
             "score_per_second_note": "raw metric/time; lower-is-better scores are not utility rates",
             "envelope_sha256": canonical_sha256(manifest.budget.model_dump(mode="json"), schema_version="evonn-compare-envelope-v1", digest_field=None),
+            "model_family": attempt["family"] if "family" in attempt else None,
+            "model_backend": attempt["backend"] if "backend" in attempt else None,
             "evaluation_semantics": manifest.accounting.evaluation_semantics,
             "fairness_flags": [flag.model_dump(mode="json") for flag in bundle.summary.fairness_flags],
             "cached_evaluations": manifest.accounting.cached_evaluations,

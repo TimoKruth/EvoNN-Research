@@ -31,12 +31,14 @@ def test_case_mismatch_engine_only_and_all_operating_states(tmp_path, export_fac
     assert state["engine_only"] and not state["external_floor_claim"]
     audit = {"scope": "decision_grade", "status": "passed", "repeatability": "low_and_mid_repeated",
              "pack": "tier1_core", "clean_runs": [{"run_id": "fixture_contenders_42", "budget": 64, "seed": 42}],
-             "extended_coverage_complete": True}
+             "extended_coverage_complete": True, "admitted_run_ids": ["fixture_contenders_42"]}
     assert apply_admission(state, audit)["operating_state"] == "contract-fair"
     b = export_factory(tmp_path / "b")
     full = evaluate_case(case, [a, b])
     assert apply_admission(full, audit)["operating_state"] == "trusted-core"
     assert apply_admission(full, audit, extended_complete=True)["operating_state"] == "trusted-extended"
+    unreplicated = {**audit, "admitted_run_ids": []}
+    assert apply_admission(full, unreplicated)["operating_state"] == "contract-fair"
     wrong_audit = {**audit, "pack": "tier_a_contract"}
     assert apply_admission(full, wrong_audit)["operating_state"] == "contract-fair"
     assert evaluate_case(case, [b], cohort="reference")["operating_state"] == "reference"

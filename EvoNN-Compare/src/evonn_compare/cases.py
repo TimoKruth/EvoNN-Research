@@ -1,10 +1,11 @@
 """Canonical cases and envelope parity, independent of engine implementations."""
 from dataclasses import dataclass
 from pathlib import Path
+import json
 
 from evonn_shared.canonical import canonical_sha256
 from evonn_shared.catalog import load_parity_pack
-from evonn_shared.export_reader import ExportBundle
+from evonn_shared.export_reader import ExportBundle, read_document
 
 
 @dataclass(frozen=True)
@@ -88,3 +89,18 @@ def resolve_export_path(workspace: Path, relative: str) -> Path:
     if resolved.resolve().is_relative_to(workspace.resolve()) is False:
         raise ValueError("run reference escapes workspace")
     return resolved
+
+
+def resolve_preset(name: str) -> tuple[str, int]:
+    """Only admit aliases backed by checked-in runtime evidence, never future labels."""
+    repository = Path(__file__).resolve().parents[3]
+    receipt = json.loads(read_document(repository / "governance", "phase1-runtime-evidence.json"))
+    presets = receipt["runtime_presets"]
+    if name not in presets:
+        raise ValueError(f"preset {name!r} has no verified runtime evidence")
+    preset = presets[name]
+    supported = [run for run in receipt["runs"] if run["run_id"] in preset["run_ids"]]
+    if (not supported or len(supported) != len(preset["run_ids"])
+            or any(run["pack"] != preset["pack"] or run["budget"] != preset["budget"] or run["status"] != "completed" for run in supported)):
+        raise ValueError("preset evidence binding is incomplete")
+    return preset["pack"], preset["budget"]

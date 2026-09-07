@@ -31,3 +31,14 @@ def test_numeric_cache_wire_verification_matches_reference_array_digest(tmp_path
     refs[0].update(sha256=hashlib.sha256(bad).hexdigest(), size_bytes=len(bad))
     with pytest.raises(ValueError, match="format"):
         verify_split_cache(provenance, feature_count=2, regression=False)
+
+
+def test_malformed_numeric_header_is_a_validation_error(tmp_path):
+    import struct
+    payload = b"\x93NUMPY\x01\x00" + struct.pack("<H", 1) + b"("
+    refs = []
+    for name in ("x_train", "y_train", "x_validation", "y_validation"):
+        (tmp_path / (name + ".npy")).write_bytes(payload)
+        refs.append({"path": name + ".npy", "sha256": hashlib.sha256(payload).hexdigest(), "size_bytes": len(payload)})
+    with pytest.raises(ValueError, match="header syntax"):
+        verify_split_cache({"cache_directory": str(tmp_path), "cache_artifacts": refs, "split_sha256": "0" * 64}, feature_count=2, regression=False)

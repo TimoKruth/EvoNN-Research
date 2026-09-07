@@ -11,7 +11,7 @@ import subprocess
 import uuid
 
 from evonn_shared._run_io import open_directory, open_regular_at
-from evonn_shared.artifact_io import append_artifact, create_artifact_directory, publish_artifact, read_verified_artifact
+from evonn_shared.artifact_io import append_artifact, create_artifact_directory, publish_artifact, publish_artifact_directory, read_verified_artifact
 from evonn_shared.catalog import load_parity_pack
 from evonn_shared.export_reader import read_document, read_export
 from evonn_shared.telemetry import ArtifactReference
@@ -177,7 +177,7 @@ def workspace_report(root: Path):
 def fair_matrix(*, workspace: Path, pack: str = "tier1_core", budgets: list[int] | None = None,
                 seeds: list[int] | None = None, systems: list[str] | None = None,
                 no_contenders: bool = False, timeout: float = 1200, fit_timeout: float = 180,
-                cache: Path | None = None, enhanced: bool = False, cohort: str = "current"):
+                cache: Path | None = None, enhanced: bool = False, cohort: str = "current", reset_workspace: bool = False):
     if not math.isfinite(timeout) or timeout <= 0 or timeout > 1740:
         raise ValueError("each system run must have a time limit in (0, 1740] seconds")
     selected = list(SYSTEMS[:1] if systems is None else systems)
@@ -187,6 +187,10 @@ def fair_matrix(*, workspace: Path, pack: str = "tier1_core", budgets: list[int]
         raise ValueError("select distinct known systems; no-contenders requires at least one engine")
     source_pack = load_parity_pack(pack)
     cases = [Case(pack, budget, seed) for budget in (budgets or [source_pack.budget_policy.evaluation_count]) for seed in (seeds or [42])]
+    if reset_workspace and workspace.exists():
+        archive = workspace.absolute().with_name(workspace.name + ".previous_" + uuid.uuid4().hex)
+        with ownership(workspace) as previous:
+            publish_artifact_directory(previous, archive)
     with ownership(workspace) as root:
         for name in ("packs", "runs", "logs", "reports", "trends"):
             create_artifact_directory(root / name)

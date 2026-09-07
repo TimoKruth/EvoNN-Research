@@ -121,7 +121,7 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
                     "x_train.npy", "y_train.npy", "x_validation.npy", "y_validation.npy"}:
                     raise ValueError("four distinct split cache artifacts required")
                 binding = runtime_manifest["benchmarks"][name]
-                if (not binding["loader"].startswith("make_") or manifest.seed == 42) and dataset["raw_sha256"] != binding["reference_raw_sha256"]:
+                if not binding["loader"].startswith("make_") and dataset["raw_sha256"] != binding["reference_raw_sha256"]:
                     raise ValueError("raw dataset reference differs")
                 digest = verify_split_cache(dataset, feature_count=math.prod(definition.input_shape), regression=definition.task_kind.value == "regression")
                 if manifest.seed == 42 and digest != binding["reference_split_sha256"]:
@@ -172,8 +172,12 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
             if key not in low_groups:
                 low_groups[key] = set()
             low_groups[key].add(run["seed"])
-    repeated = any(len(seeds) >= 2 and any(run["budget"] > budgets[0] and run["protocol_sha256"] == key[0] for run in runs)
-                   for key, seeds in low_groups.items())
+    admitted_ids = set()
+    for key, seeds in low_groups.items():
+        if len(seeds) >= 2 and any(run["budget"] > budgets[0] and run["protocol_sha256"] == key[0] for run in runs):
+            admitted_ids.update(run["run_id"] for run in runs if run["protocol_sha256"] == key[0]
+                                and (run["budget"] > budgets[0] or run["envelope_sha256"] == key[1]))
+    repeated = bool(admitted_ids)
     if decision_grade:
         if not repeated:
             blockers.append("requires two independent low-budget seeds and one clean mid-budget run")
@@ -188,7 +192,7 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
             "status": "blocked" if blockers else "passed", "blocker_count": len(set(blockers)),
             "blockers": sorted(set(blockers)), "warnings": sorted(set(warnings)), "benchmarks": labels,
             "budgets": budgets, "repeatability": "low_and_mid_repeated" if repeated else "incomplete",
-            "clean_runs": runs, "extended_coverage_complete": False, "scientific_qualification": False,
+            "clean_runs": runs, "admitted_run_ids": sorted(admitted_ids), "extended_coverage_complete": False, "scientific_qualification": False,
             "note": "Runtime admission is separate from the immutable planned catalog snapshot; Tier A does not establish broad capability."}
 
 
@@ -196,7 +200,7 @@ def apply_admission(acceptance: dict, audit: dict, *, extended_complete: bool = 
     result = dict(acceptance)
     case = result["case"]
     admitted = {run["run_id"] for run in audit["clean_runs"]
-                if run["budget"] == case["budget"] and run["seed"] == case["seed"]}
+                if run["budget"] == case["budget"] and run["seed"] == case["seed"] and run["run_id"] in audit["admitted_run_ids"]}
     bound = audit["pack"] == case["pack"] and bool(result["contender_run_ids"]) and set(result["contender_run_ids"]) <= admitted
     if (bound and result["operating_state"] == "contract-fair" and not result["engine_only"]
             and audit["scope"] == "decision_grade" and audit["status"] == "passed"):

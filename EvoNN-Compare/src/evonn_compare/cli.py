@@ -6,7 +6,7 @@ import webbrowser
 
 from evonn_shared.export_reader import read_export
 from .audit import benchmark_audit
-from .cases import Case, evaluate_case
+from .cases import Case, evaluate_case, resolve_preset
 from .evidence import trend_rows, winners
 from .quality import classify
 from .workspace import fair_matrix, load_cases, workspace_report
@@ -17,7 +17,10 @@ def main(argv=None):
     commands = parser.add_subparsers(dest="command", required=True)
     matrix = commands.add_parser("fair-matrix")
     matrix.add_argument("--workspace", type=Path, required=True)
-    matrix.add_argument("--pack", default="tier1_core")
+    selection = matrix.add_mutually_exclusive_group()
+    selection.add_argument("--pack")
+    selection.add_argument("--preset")
+    matrix.add_argument("--reset-workspace", action="store_true")
     matrix.add_argument("--budgets", nargs="+", type=int)
     matrix.add_argument("--seeds", nargs="+", type=int, default=[42])
     matrix.add_argument("--systems", nargs="+", default=["contenders"])
@@ -46,9 +49,15 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == "fair-matrix":
-            data = fair_matrix(workspace=args.workspace, pack=args.pack, budgets=args.budgets, seeds=args.seeds,
+            pack = args.pack or "tier1_core"
+            if args.preset:
+                pack, budget = resolve_preset(args.preset)
+                if args.budgets is not None and args.budgets != [budget]:
+                    raise ValueError("preset budget cannot be overridden")
+                args.budgets = [budget]
+            data = fair_matrix(workspace=args.workspace, pack=pack, budgets=args.budgets, seeds=args.seeds,
                 systems=args.systems, no_contenders=args.no_contenders, timeout=args.timeout, fit_timeout=args.fit_timeout,
-                cache=args.cache, enhanced=args.enhanced, cohort=args.cohort)
+                cache=args.cache, enhanced=args.enhanced, cohort=args.cohort, reset_workspace=args.reset_workspace)
             if args.open:
                 webbrowser.open((args.workspace / "fair_matrix_dashboard.html").absolute().as_uri())
             print(json.dumps({"workspace": str(args.workspace.absolute()), "cases": len(data["cases"]),
