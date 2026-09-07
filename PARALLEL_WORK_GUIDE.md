@@ -11,11 +11,12 @@ Current workflow and lane ownership are consolidated in
 Use [README](README.md#development-workflow) for PR mechanics and
 [project history](PROJECT_HISTORY.md) for completed integration evidence.
 
-Gate B0 is closed. The canonical merge has been verified; Phase 0 implementation
+Gate B0 is closed. The v2 canonical merge has been verified; Phase 0 implementation
 has begun and its maintenance series is integrated. WP-0.10 and the Phase 0 exit
 remain joint. The exact authorization block below is retained because the
 standalone freeze validator requires this canonical path and matching marker.
-It records the historical authorization, not today's task list.
+It records the active freeze status. The v3 successor stays unauthorized until
+its canonical merge and separate authorization attestation are verified.
 
 <!-- phase0-interface-freeze:begin -->
 ```yaml

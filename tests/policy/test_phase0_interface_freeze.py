@@ -2270,3 +2270,115 @@ def test_verdict_is_identical_across_every_checkout_shape(validator, tmp_path: P
     assert verdicts["feature-branch"] == [], verdicts["feature-branch"]
     distinct = {shape: sorted(errors) for shape, errors in verdicts.items()}
     assert len(set(map(str, distinct.values()))) == 1, distinct
+
+
+V3_BINDING = "170fc9e19db0f7039d2ffd351d01406af16a8f80"
+PRE_V3_MAIN = "836cfffc204babab70f8c222b45668df03e04564"
+
+
+def _versioned_clone(tmp_path: Path, revision: str) -> Path:
+    clone = tmp_path / "versioned-clone"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-local", str(REPO_ROOT), str(clone)],
+        check=True, capture_output=True,
+    )
+    _git(clone, "checkout", "--quiet", "--detach", revision)
+    _git(clone, "remote", "set-url", "origin", CANONICAL_ORIGIN)
+    return clone
+
+
+def test_v3_accepts_reviewed_catalog_and_exact_verified_transition(validator, tmp_path: Path) -> None:
+    clone = _versioned_clone(tmp_path, V3_BINDING)
+    assert validator.validate_phase0_interface_freeze(clone) == []
+    _prospective_freeze_merge(clone, approved_commit=validator.V3_CONTRACT.approved_commit)
+    assert validator.validate_phase0_interface_freeze(clone) == []
+    merge = str(_git(clone, "rev-parse", "HEAD")).strip()
+    record = _record(clone)
+    record["status"] = "merged_verified"
+    record["merge_verification"] = {
+        "target_branch": "main", "status": "verified",
+        "canonical_merge_commit": merge, "verified_at": "2026-09-07T15:00:00Z",
+    }
+    record["lane_authorization"] = dict(validator.VERIFIED_AUTHORIZATION)
+    _write_record(clone, record)
+    _replace_marker(clone, validator._expected_marker_body(record, validator.V3_CONTRACT))
+    _commit(clone, "attest exact v3 merge")
+    assert validator.validate_phase0_interface_freeze(clone) == []
+
+
+@pytest.mark.parametrize("relative", [
+    "shared-benchmarks/catalog/iris_classification.yaml",
+    "shared-benchmarks/provenance/tier_a_catalog_v1.json",
+    "shared-benchmarks/suites/parity/tier1_core.yaml",
+])
+def test_v3_new_frozen_paths_reject_mutation_even_after_restore(validator, tmp_path: Path, relative: str) -> None:
+    clone = _versioned_clone(tmp_path, V3_BINDING)
+    path = clone / relative
+    original = path.read_bytes()
+    path.write_bytes(original + b"\n# altered frozen evidence\n")
+    _commit(clone, "alter reviewed catalog surface")
+    errors = validator.validate_phase0_interface_freeze(clone)
+    assert any(relative in error and "frozen path" in error for error in errors), errors
+    path.write_bytes(original)
+    _commit(clone, "restore frozen bytes after forbidden change")
+    errors = validator.validate_phase0_interface_freeze(clone)
+    assert any(relative in error and "pending descendants" in error for error in errors), errors
+
+
+def test_v3_rejects_rewritten_predecessor_review(validator, tmp_path: Path) -> None:
+    clone = _versioned_clone(tmp_path, V3_BINDING)
+    relative = validator.V2_CONTRACT.reviews[0]["evidence_path"]
+    path = clone / relative
+    path.write_bytes(path.read_bytes() + b"\nchanged previous approval\n")
+    _commit(clone, "rewrite earlier review")
+    errors = validator.validate_phase0_interface_freeze(clone)
+    assert any(relative in error and "historical review digest" in error for error in errors), errors
+
+
+def test_v3_rejects_nonzero_findings_without_prose_keyword_dependency(validator, tmp_path: Path) -> None:
+    clone = _versioned_clone(tmp_path, V3_BINDING)
+    assert validator.validate_phase0_interface_freeze(clone) == []
+    record = _record(clone)
+    record["reviews"][1]["findings"]["important"] = 1
+    _write_record(clone, record)
+    _commit(clone, "claim approval despite important finding")
+    errors = validator.validate_phase0_interface_freeze(clone)
+    assert any("findings must be exact integer zeros" in error for error in errors), errors
+
+
+def test_v3_binding_requires_exact_predecessor_record(validator, tmp_path: Path) -> None:
+    clone = _versioned_clone(tmp_path, validator.V3_CONTRACT.approved_commit)
+    record = _record(clone)
+    record["merge_verification"]["verified_at"] = "2026-01-01T00:00:00Z"
+    _write_record(clone, record)
+    _commit(clone, "substitute predecessor evidence before binding")
+    _git(clone, "read-tree", "--reset", "-u", f"{V3_BINDING}^{{tree}}")
+    _commit(clone, "transplant binding after substituted predecessor")
+    errors = validator.validate_phase0_interface_freeze(clone)
+    assert any("exactly one ordinary pending supersession binding" in error for error in errors), errors
+
+
+@pytest.mark.parametrize("revision", [APRIME, PRE_V2_TIP, PRE_V3_MAIN])
+def test_successor_validator_preserves_historical_verdicts(validator, tmp_path: Path, revision: str) -> None:
+    clone = _versioned_clone(tmp_path, revision)
+    path = tmp_path / "previous_validator.py"
+    path.write_bytes(_git(REPO_ROOT, "show", f"{PRE_V3_MAIN}:scripts/policy/validate_phase0_interface_freeze.py", text=False))
+    spec = importlib.util.spec_from_file_location("previous_freeze_validator", path)
+    assert spec and spec.loader
+    previous = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(previous)
+    assert validator.validate_phase0_interface_freeze(clone) == previous.validate_phase0_interface_freeze(clone)
+
+
+def test_v3_rejects_predecessor_rewrite_then_restore_before_binding(validator, tmp_path: Path) -> None:
+    clone = _versioned_clone(tmp_path, validator.V3_CONTRACT.approved_commit)
+    path = clone / "governance/phase0-interface-freeze.yaml"
+    original = path.read_bytes()
+    path.write_bytes(original + b"\n# unauthorized predecessor rewrite\n")
+    _commit(clone, "rewrite predecessor record")
+    path.write_bytes(original)
+    _commit(clone, "restore predecessor record")
+    _git(clone, "read-tree", "--reset", "-u", f"{V3_BINDING}^{{tree}}")
+    _commit(clone, "bind v3 after concealed historical rewrite")
+    errors = validator.validate_phase0_interface_freeze(clone)
+    assert any("exactly one ordinary pending supersession binding" in error for error in errors), errors
