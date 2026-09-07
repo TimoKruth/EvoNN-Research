@@ -1728,6 +1728,72 @@ def _validate_historical_b0(
     return errors
 
 
+# Exact reviewed values are supplied only after the hosted evidence exists.
+PHASE0_ACCEPTANCE_PATH = "governance/phase0-acceptance.json"
+PHASE0_ACCEPTANCE_SHA256 = "af8acdae28be3c214c6a2f0b433db4fd56a472c161a5fe9e809e5d1978c26c1c"
+PHASE0_ACCEPTANCE_COMMIT = "e5076d651bc7946839ceb4e03c77b8d508e281c5"
+PHASE0_ACCEPTANCE_TREE = "9a1253cdbff91db6fe92d1f60da80991d8cfcdea"
+PHASE0_ACCEPTANCE_FREEZE_MERGE = "322834900aa99a267b78b789a733e96ac205dd04"
+
+
+def _phase0_acceptance(
+    repo_root: Path,
+    record: Mapping[str, Any],
+    head_tree: Mapping[str, tuple[str, str, str]],
+    contract: FreezeContract,
+) -> tuple[bool, list[str]]:
+    errors: list[str] = []
+    relative = PHASE0_ACCEPTANCE_PATH
+    entry = head_tree[relative] if relative in head_tree else None
+    revisions = _git_text(repo_root, "log", "--full-history", "--format=%H", "HEAD", "--", relative).splitlines()
+    if entry is None and not revisions:
+        return False, []
+    if entry is None or entry[:2] != ("100644", "blob"):
+        return False, ["Phase 0 acceptance must remain a committed regular 100644 receipt"]
+    if _sha256(_blob(repo_root, entry[2])) != PHASE0_ACCEPTANCE_SHA256:
+        errors.append("Phase 0 acceptance receipt differs from its independently reviewed bytes")
+    errors.extend(_validate_path_checkout(repo_root, relative, entry, "Phase 0 acceptance"))
+    if contract is not V3_CONTRACT or record.get("status") != STATUS_VERIFIED:
+        errors.append("Phase 0 acceptance requires the verified v3 interface freeze")
+    merge = record.get("merge_verification")
+    if not isinstance(merge, Mapping) or merge.get("canonical_merge_commit") != PHASE0_ACCEPTANCE_FREEZE_MERGE:
+        errors.append("Phase 0 acceptance requires its exact reviewed canonical freeze merge")
+    _object(repo_root, PHASE0_ACCEPTANCE_COMMIT, "commit", "Phase 0 acceptance evidence", errors)
+    if errors:
+        return False, errors
+    if _git(repo_root, "merge-base", "--is-ancestor", PHASE0_ACCEPTANCE_COMMIT, "HEAD", check=False).returncode:
+        errors.append("Phase 0 acceptance evidence commit must be an ancestor of HEAD")
+    if _git_text(repo_root, "rev-parse", f"{PHASE0_ACCEPTANCE_COMMIT}^{{tree}}").strip() != PHASE0_ACCEPTANCE_TREE:
+        errors.append("Phase 0 acceptance evidence tree differs from its reviewed tree")
+    introductions = []
+    for revision in revisions:
+        tree = _tree(repo_root, revision, "Phase 0 acceptance history", errors)
+        historic_entry = tree[relative] if relative in tree else None
+        if historic_entry != entry:
+            errors.append(f"Phase 0 acceptance history contains a rewrite/removal at {revision}")
+        parents = _git_text(repo_root, "show", "-s", "--format=%P", revision).strip().split()
+        parent_has_receipt = any(
+            relative in _tree(repo_root, parent, "Phase 0 acceptance parent", errors)
+            for parent in parents
+        )
+        if not parent_has_receipt:
+            introductions.append(revision)
+            if parents != [PHASE0_ACCEPTANCE_COMMIT]:
+                errors.append("Phase 0 acceptance must directly follow its accepted evidence commit")
+            changed = set(_git_text(repo_root, "diff-tree", "--no-commit-id", "--name-only", "-r", revision).splitlines())
+            allowed = {
+                PHASE0_ACCEPTANCE_PATH, "CONSOLIDATED_PLAN.md", "PROJECT_HISTORY.md", "README.md",
+                "scripts/policy/validate_phase0_interface_freeze.py",
+                "scripts/policy/validate_repository_governance.py",
+                "tests/policy/test_phase0_interface_freeze.py",
+            }
+            if not changed <= allowed:
+                errors.append("Phase 0 acceptance introduction changes unrelated implementation files")
+    if len(introductions) != 1:
+        errors.append("Phase 0 acceptance must be introduced once directly after its accepted evidence commit")
+    return not errors, errors
+
+
 def _validate_documents(
     repo_root: Path,
     record: Mapping[str, Any],
@@ -1760,6 +1826,8 @@ def _validate_documents(
     if len(blocks) == 2 and len(set(blocks.values())) != 1:
         errors.append("plan/guide Phase 0 authorization blocks must agree exactly")
 
+    accepted, acceptance_errors = _phase0_acceptance(repo_root, record, head_tree, contract)
+    errors.extend(acceptance_errors)
     plan = texts.get("CONSOLIDATED_PLAN.md")
     if plan is not None:
         phase0_matches = list(re.finditer(r"^## Phase 0(?:\s|$)", plan, re.MULTILINE))
@@ -1773,10 +1841,20 @@ def _validate_documents(
                 errors.append("CONSOLIDATED_PLAN.md must place ## Phase 1 after ## Phase 0")
             else:
                 phase0 = plan[phase0_matches[0].end() : phase1_matches[0].start()]
-                for item in range(1, 11):
-                    pattern = re.compile(rf"^- \[ \] \*\*WP-0\.{item}(?!\d)", re.MULTILINE)
-                    if pattern.search(phase0) is None:
-                        errors.append(f"WP-0.{item} must remain unchecked in CONSOLIDATED_PLAN.md")
+                if contract is V3_CONTRACT:
+                    parents = re.findall(
+                        r"^- \[([^\]\r\n]*)\][ \t]+\*\*WP-0\.(\d+)(?=[ \t]|\*\*)",
+                        phase0,
+                        re.MULTILINE,
+                    )
+                    expected = [("x" if accepted else " ", str(item)) for item in range(1, 11)]
+                    if parents != expected:
+                        errors.append("Phase 0 parent checkboxes must match the exact ordered acceptance state")
+                else:
+                    for item in range(1, 11):
+                        pattern = re.compile(rf"^- \[ \] \*\*WP-0\.{item}(?!\d)", re.MULTILINE)
+                        if pattern.search(phase0) is None:
+                            errors.append(f"WP-0.{item} must remain unchecked in CONSOLIDATED_PLAN.md")
     return errors
 
 

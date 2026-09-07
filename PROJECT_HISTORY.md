@@ -192,7 +192,7 @@ These reference/evidence files intentionally retain their canonical paths:
 | [PARALLEL_WORK_GUIDE.md](PARALLEL_WORK_GUIDE.md) | Short compatibility pointer with the exact freeze marker required by the standalone validator. Lane/workflow content is consolidated in the plan. |
 | Package/config READMEs | Local navigation markers pointing to central guidance; no duplicate plans. |
 
-## 2026-09-07 — Reviewed catalog successor (merge/attestation pending)
+## 2026-09-07 — Reviewed catalog successor (merged #25/#27)
 
 The successor to closed PR #9 reuses the eight metadata definitions and three
 packs from exact proposal commit `40b704b49bdec262e9bf60ff456f8eb94a8c0b91`.
@@ -217,7 +217,7 @@ and its exact source provenance. Binding `170fc9e19db0f7039d2ffd351d01406af16a8f
 is its direct child. The replacement validator and trust anchor preserve v1/v2
 verdicts and reject transient history tampering. Both reviewers separately
 approved the binding and three-pack export fixture composition. Protected merge
-and verified attestation remain required before authorization.
+#25 and the separate verified #27 attestation completed authorization.
 
 Local candidate checks: foundation **773 passed** (25.50s); catalog/interface
 contracts **145 passed** (3.09s); inventory **5 passed**; Ruff and diff checks
@@ -249,3 +249,31 @@ proof can be verified in Git instead of remaining duplicated in every checkout.
 The remaining review/task-report copies currently participate in active
 freeze/B0 validation. Their removal requires the bounded evidence-storage
 change specified in WP-0.1b, not removal of the underlying integrity checks.
+
+## 2026-09-07 — Phase 0 contract acceptance
+
+PR #25 merged at `322834900aa99a267b78b789a733e96ac205dd04`; #27 carried its
+verified authorization onto canonical main. The acceptance receipt records the
+exact carrier commit/tree, hosted CI IDs and artifact hashes, plus the complete
+WP-0.1–0.10 test map. Both hosted lanes passed 776 foundation tests and all
+selected policy/package checks. Actual tested PR checkouts are distinguished
+from canonical commits and accepted only with identical trees and ordered
+merge parents, verified by checkout logs and fresh artifact downloads.
+
+Independent producer and consumer reviews confirmed the actual freeze and
+attestation. CodeRabbit's supplemental-test freeze request (#25) was declined:
+normal reviewed consumer tests cannot rewrite the explicitly frozen contracts.
+Its HEAD/main authorization concern (#27) was resolved by retaining offline,
+ref-independent proposal validation and separately verifying canonical main
+before operating on authorization. No premature lane creation occurred.
+
+The acceptance validator binds reviewed receipt bytes to their exact evidence
+parent and rejects rewritten, removed, restored or multiply introduced evidence,
+unrelated implementation changes during introduction, and premature/malformed
+parent checklists. Historical v1/v2 verdicts remain unchanged. No permanent
+raw-log archive or new narrative review files are added.
+
+This closes contract foundations only. Catalog entries remain planned metadata;
+regular export composition and actual no-op integrity are separate evidence.
+Engine-specific resume and Topograph speciation/reproduction are explicitly
+pending. No backend is scientifically qualified and no multi-hour training ran.

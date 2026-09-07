@@ -2382,3 +2382,111 @@ def test_v3_rejects_predecessor_rewrite_then_restore_before_binding(validator, t
     _commit(clone, "bind v3 after concealed historical rewrite")
     errors = validator.validate_phase0_interface_freeze(clone)
     assert any("exactly one ordinary pending supersession binding" in error for error in errors), errors
+
+
+@pytest.fixture
+def acceptance_clone(tmp_path, validator):
+    """Use the actual CI-evidence parent, independently of the test checkout."""
+    clone = _versioned_clone(tmp_path, validator.PHASE0_ACCEPTANCE_COMMIT)
+    receipt = REPO_ROOT / validator.PHASE0_ACCEPTANCE_PATH
+    (clone / validator.PHASE0_ACCEPTANCE_PATH).write_bytes(receipt.read_bytes())
+    plan = clone / "CONSOLIDATED_PLAN.md"
+    text = plan.read_text()
+    import re
+    text, count = re.subn(r"^- \[ \]( \*\*WP-0\.\d+ )", r"- [x]\1", text, flags=re.MULTILINE)
+    assert count == 10
+    plan.write_text(text)
+    _commit(clone, "bind actual accepted Phase 0 evidence")
+    return clone
+
+
+def _acceptance_verdict(validator, clone):
+    errors = []
+    tree = validator._tree(clone, "HEAD", "acceptance test", errors)
+    assert errors == []
+    return validator._phase0_acceptance(clone, _record(clone), tree, validator.V3_CONTRACT)
+
+
+def test_phase0_acceptance_valid_introduction_and_merge_carrier(acceptance_clone, validator):
+    clone = acceptance_clone
+    assert validator.validate_phase0_interface_freeze(clone) == []
+    accepted = str(_git(clone, "rev-parse", "HEAD")).strip()
+    _git(clone, "checkout", "--detach", validator.PHASE0_ACCEPTANCE_COMMIT)
+    _git(clone, "-c", "user.name=policy-test", "-c", "user.email=policy@test", "merge", "--no-ff", accepted, "-m", "carry acceptance")
+    assert validator.validate_phase0_interface_freeze(clone) == []
+
+
+@pytest.mark.parametrize("mutation", ["upper_duplicate", "malformed_duplicate", "subitem", "letter", "unchecked", "removed", "reordered"])
+def test_phase0_acceptance_requires_exact_parent_checklist(acceptance_clone, validator, mutation):
+    path = acceptance_clone / "CONSOLIDATED_PLAN.md"
+    text = path.read_text()
+    if mutation == "upper_duplicate":
+        text = text.replace("## Phase 1 —", "- [X] **WP-0.1 Duplicate**\n\n## Phase 1 —", 1)
+    elif mutation == "malformed_duplicate":
+        text = text.replace("## Phase 1 —", "- [?] **WP-0.1 Duplicate**\n\n## Phase 1 —", 1)
+    elif mutation == "subitem":
+        text = text.replace("**WP-0.1 Workspace", "**WP-0.1.1 Workspace", 1)
+    elif mutation == "letter":
+        text = text.replace("**WP-0.1 Workspace", "**WP-0.1a Workspace", 1)
+    elif mutation == "unchecked":
+        text = text.replace("- [x] **WP-0.1 Workspace", "- [ ] **WP-0.1 Workspace", 1)
+    elif mutation == "removed":
+        text = text.replace("- [x] **WP-0.1 Workspace", "Workspace", 1)
+    else:
+        text = text.replace("**WP-0.1 Workspace", "**WP-0.99 Workspace", 1).replace("**WP-0.2 Export", "**WP-0.1 Export", 1).replace("**WP-0.99 Workspace", "**WP-0.2 Workspace", 1)
+    path.write_text(text)
+    _commit(acceptance_clone, "malformed acceptance checklist")
+    errors = []
+    tree = validator._tree(acceptance_clone, "HEAD", "test", errors)
+    errors += validator._validate_documents(acceptance_clone, _record(acceptance_clone), tree, validator.V3_CONTRACT)
+    assert any("exact ordered acceptance state" in error for error in errors), errors
+
+
+def test_phase0_acceptance_missing_receipt_cannot_check_parents(tmp_path, validator):
+    clone = _versioned_clone(tmp_path, validator.PHASE0_ACCEPTANCE_COMMIT)
+    assert _acceptance_verdict(validator, clone) == (False, [])
+    path = clone / "CONSOLIDATED_PLAN.md"
+    path.write_text(path.read_text().replace("- [ ] **WP-0.1 Workspace", "- [x] **WP-0.1 Workspace", 1))
+    _commit(clone, "premature acceptance")
+    errors = validator.validate_phase0_interface_freeze(clone)
+    assert any("exact ordered acceptance state" in error for error in errors), errors
+
+
+@pytest.mark.parametrize("mutation", ["checkout", "rewrite_restore", "delete", "tree", "freeze", "unrelated_parent", "extra_source", "second_introduction"])
+def test_phase0_acceptance_rejects_unbound_evidence(acceptance_clone, validator, monkeypatch, mutation):
+    clone = acceptance_clone
+    path = clone / validator.PHASE0_ACCEPTANCE_PATH
+    receipt = path.read_bytes()
+    binding = str(_git(clone, "rev-parse", "HEAD")).strip()
+    if mutation == "checkout":
+        path.write_bytes(receipt + b"changed")
+    elif mutation == "rewrite_restore":
+        path.write_bytes(receipt + b"changed")
+        _commit(clone, "rewrite receipt")
+        path.write_bytes(receipt)
+        _commit(clone, "restore receipt")
+    elif mutation == "delete":
+        path.unlink()
+        _commit(clone, "delete receipt")
+    elif mutation == "tree":
+        monkeypatch.setattr(validator, "PHASE0_ACCEPTANCE_TREE", "0" * 40)
+    elif mutation == "freeze":
+        monkeypatch.setattr(validator, "PHASE0_ACCEPTANCE_FREEZE_MERGE", binding)
+    elif mutation == "unrelated_parent":
+        _git(clone, "checkout", "--detach", validator.PHASE0_ACCEPTANCE_COMMIT)
+        (clone / "README.md").write_text("unrelated evidence branch\n")
+        unrelated = _commit(clone, "unrelated evidence")
+        _git(clone, "checkout", "--detach", binding)
+        monkeypatch.setattr(validator, "PHASE0_ACCEPTANCE_COMMIT", unrelated)
+    elif mutation == "extra_source":
+        _git(clone, "reset", "--soft", validator.PHASE0_ACCEPTANCE_COMMIT)
+        (clone / "EvoNN-Compare/src/evonn_compare/unrelated.py").write_text("VALUE = 1\n")
+        _commit(clone, "acceptance mixed with implementation")
+    else:
+        _git(clone, "checkout", "--detach", validator.PHASE0_ACCEPTANCE_COMMIT)
+        path.write_bytes(receipt)
+        sibling = _commit(clone, "second independent receipt introduction")
+        _git(clone, "checkout", "--detach", binding)
+        _git(clone, "-c", "user.name=policy-test", "-c", "user.email=policy@test", "merge", "--no-ff", sibling, "-m", "merge duplicate introductions")
+    accepted, errors = _acceptance_verdict(validator, clone)
+    assert not accepted and errors, (mutation, errors)

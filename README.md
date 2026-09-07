@@ -19,22 +19,21 @@ Package READMEs are short navigation links, not separate status reports or plans
 
 ## Current capabilities
 
-**Verified baseline: 2026-09-07, main `646dde2`.** Gate B0 is closed; Phase 0
-is in progress. The #10–#20 maintenance series is integrated, GPL-3.0-only
-licensing (#21) and CodeRabbit configuration (#22) are present. Both final-main
-hosted lanes passed. Exact commits and runs are recorded in project history.
+**Verified baseline: 2026-09-07.** Gate B0 and Phase 0 contract acceptance are
+closed. The [acceptance receipt](governance/phase0-acceptance.json) binds the
+canonical catalog authorization and successful Linux/macOS CI evidence.
+Exact integrations and review decisions are recorded in project history.
 
-| Component | Implemented | Not yet implemented or accepted |
+| Component | Implemented | Remaining |
 | --- | --- | --- |
-| Shared | Canonical identities/RNG, strict budget/telemetry/export contracts, catalog/pack loaders, checkpoints, LM-cache validation, transactional per-run DuckDB, workspace/reporting and verified read-only access | Joint Phase 0 acceptance and catalog-backed reference integration |
-| Shared benchmarks | Data layout, schemas/loaders in Shared, immutable-ID validation | Eight planned definitions and three packs are proposed; freeze acceptance and runtime admission remain open |
-| Reference fixtures | Real kill/resume tests, failed/invalid budgets, seed/label binding, verified diagnostic export and cross-host JSON evidence | Production three-file export integration; engine/scientific qualification |
-| Contenders + Compare | Importable packages, check scripts and capability manifests | Baseline fitting, CLI orchestration, comparison and evidence reports |
-| Prism, Topograph, Stratograph, Primordia | Importable packages and runtime bootstrap dependencies/probes | Search/training engines, qualified backends and scientific results |
+| Shared | Canonical identities/RNG, strict budgets/telemetry/three-file exports, catalog/pack loaders, checkpoints, LM-cache validation, transactional DuckDB/workspace and verified read-only access | Engine consumers and their evidence |
+| Shared benchmarks | Eight immutable planned definitions, three packs, verified historical provenance and budget/export composition | Dataset runtime admission and demonstrated contender floors |
+| Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Engine-specific resume/speciation and scientific qualification |
+| Contenders + Compare | Importable packages, checks and capability manifests | Phase 1 baseline fitting, orchestration, comparison and evidence dashboard |
+| Prism, Topograph, Stratograph, Primordia | Importable packages and bootstrap runtime dependencies/probes | Search/training engines and qualified scientific results |
 
-The next acceptance milestone is Phase 0 completion; its ordered work and
-failure conditions are in the consolidated plan. A green bootstrap or synthetic
-probe does not establish engine capability or scientific performance.
+The next milestone is Phase 1 Contenders + Compare. Contract acceptance does
+not establish engine capability or scientific performance.
 
 ## Architecture and authority
 
@@ -113,8 +112,8 @@ authenticity. Hosted provenance comes from the GitHub run and tested commit.
 Each hosted lane uploads only the report as `b0-linux-synthetic-integrity` or
 `b0-macos-synthetic-integrity`, with missing-file failure enabled.
 
-This does not admit catalog entries, qualify an engine, close Phase 0 or prove
-scientific performance. Kills before durable row commit and general engine
+This evidence contributes to the accepted Phase 0 contract gate; it does not
+admit executable datasets, qualify an engine or prove scientific performance. Kills before durable row commit and general engine
 failure recovery are outside this proof. The diagnostic JSON is not the regular
 `manifest.json` / `results.json` / `summary.json` export contract.
 
@@ -148,7 +147,8 @@ new file is visible; do not delete published evidence as a pretend rollback.
 
 Benchmark definitions live in `shared-benchmarks/catalog/`; packs live in
 `shared-benchmarks/suites/parity/`. Eight planned definitions and three packs
-are prepared; freeze acceptance and runtime admission remain open. Canonical
+are accepted as catalog metadata under freeze v3; runtime admission remains
+open. Canonical
 IDs preserve data/split/metric meaning; changes follow WP-0.1b/0.8.
 
 `shared-benchmarks/lm_cache/` holds versioned `<cache_id>.yaml` manifests;
