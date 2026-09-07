@@ -86,19 +86,18 @@ def test_validator_rejects_exact_dependency_array_mutations(
     assert "project.dependencies must be exactly" in diagnostics[0]
 
 
-def test_validator_keeps_contenders_without_scikit_learn_until_phase_1(tmp_path: Path) -> None:
+def test_validator_requires_pinned_contender_runtime(tmp_path: Path) -> None:
     _copy_workspace_manifests(tmp_path)
     manifest = tmp_path / "EvoNN-Contenders/pyproject.toml"
     _replace(
         manifest,
-        'dependencies = ["evonn-shared"]',
-        'dependencies = ["evonn-shared", "scikit-learn"]',
+        '"scikit-learn==1.8.0"',
+        '"scikit-learn"',
     )
 
     diagnostics = _validator().validate_repository(tmp_path)
 
     assert any("project.dependencies must be exactly" in diagnostic for diagnostic in diagnostics)
-    assert any("scikit-learn must remain undeclared" in diagnostic for diagnostic in diagnostics)
 
 
 def test_validator_cli_passes_from_another_directory(tmp_path: Path) -> None:

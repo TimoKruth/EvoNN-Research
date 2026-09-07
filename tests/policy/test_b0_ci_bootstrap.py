@@ -286,9 +286,11 @@ def test_engine_dependency_markers_are_exact_and_linux_safe() -> None:
             WORKSPACE_DEPENDENCY_BY_DIRECTORY[directory].dependencies
         )
 
-    contenders = (REPO_ROOT / "EvoNN-Contenders/pyproject.toml").read_text(encoding="utf-8")
-    assert "scikit-learn" not in contenders.lower()
-    assert "sklearn" not in contenders.lower()
+    with (REPO_ROOT / "EvoNN-Contenders/pyproject.toml").open("rb") as stream:
+        contenders = tomllib.load(stream)
+    assert contenders["project"]["dependencies"] == list(
+        WORKSPACE_DEPENDENCY_BY_DIRECTORY["EvoNN-Contenders"].dependencies
+    )
 
 
 def test_phase0_contract_script_is_executable_cwd_independent_and_exactly_locked() -> None:

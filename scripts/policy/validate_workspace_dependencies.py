@@ -36,12 +36,6 @@ def validate_repository(repo_root: Path) -> list[str]:
             diagnostics.append(
                 f"{relative_path}: project.dependencies must be exactly {expected_dependencies!r}; found {dependencies!r}"
             )
-        if package.distribution == "evonn-contenders" and isinstance(dependencies, list):
-            declared = " ".join(str(dependency).lower() for dependency in dependencies)
-            if "scikit-learn" in declared or "sklearn" in declared:
-                diagnostics.append(
-                    f"{relative_path}: scikit-learn must remain undeclared until Contenders Phase 1 implementation"
-                )
 
     return sorted(set(diagnostics), key=lambda item: item.encode("utf-8"))
 

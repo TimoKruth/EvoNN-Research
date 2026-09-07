@@ -90,3 +90,65 @@ def test_catalog_budget_export_composition_preserves_unsupported_visibility(
             definition.task_kind, definition.primary_metric.name, definition.primary_metric.direction,
         )
         assert record.metric.value is None
+
+
+@pytest.mark.parametrize("mutation", ["none", "corrupt", "missing", "echo", "metric", "symlink"])
+def test_read_export_validates_actual_portable_bytes(tmp_path, mutation):
+    from evonn_shared.export_reader import read_export
+    test_catalog_budget_export_composition_preserves_unsupported_visibility("tier1_core", tmp_path)
+    root = tmp_path / "export"
+    documents = {name: json.loads((root / (name + ".json")).read_text()) for name in ("manifest", "results", "summary")}
+    manifest = documents["manifest"]
+    references = [manifest["config_snapshot"], manifest["report_markdown"], *manifest["artifacts"]]
+    for reference in references:
+        payload = b"test-only artifact bytes"
+        path = root / reference["path"]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(payload)
+        reference["sha256"] = hashlib.sha256(payload).hexdigest()
+    documents["summary"]["artifact_digests"] = sorted(references, key=lambda item: item["path"])
+    if mutation == "echo":
+        documents["summary"]["seed"] += 1
+    if mutation == "metric":
+        documents["results"]["records"][0]["metric"]["name"] = "wrong_metric"
+    for name, document in documents.items():
+        (root / (name + ".json")).write_text(json.dumps(document))
+    if mutation == "corrupt":
+        (root / "report.md").write_bytes(b"changed")
+    if mutation == "missing":
+        (root / "report.md").unlink()
+    if mutation == "symlink":
+        original = root / "manifest.json"
+        actual = root / "manifest.actual"
+        original.rename(actual)
+        original.symlink_to(actual)
+    before = {str(path): path.read_bytes() for path in root.rglob("*") if path.is_file()}
+    if mutation == "none":
+        bundle = read_export(root)
+        assert bundle.results.coverage.unsupported == 8
+    else:
+        with pytest.raises((ValueError, OSError)):
+            read_export(root)
+    assert before == {str(path): path.read_bytes() for path in root.rglob("*") if path.is_file()}
+
+
+def test_export_bundle_bounds_reference_count_before_reads_and_total_bytes(tmp_path, monkeypatch):
+    from evonn_shared import export_reader
+    test_read_export_validates_actual_portable_bytes(tmp_path, "none")
+    root = tmp_path / "export"
+    bundle = export_reader.read_export(root)
+    count = len(bundle.summary.artifact_digests)
+    total = sum((root / item.path).stat().st_size for item in bundle.summary.artifact_digests)
+    assert count > 1
+    original, calls = export_reader.read_verified_artifact, []
+    def counted(*args, **kwargs):
+        calls.append(kwargs["max_bytes"])
+        return original(*args, **kwargs)
+    monkeypatch.setattr(export_reader, "read_verified_artifact", counted)
+    with pytest.raises(ValueError, match="artifact count"):
+        export_reader.read_export(root, max_artifacts=count - 1)
+    assert calls == []
+    export_reader.read_export(root, max_artifacts=count, max_artifact_bytes=total)
+    assert calls[-1] < calls[0]
+    with pytest.raises(ValueError, match="limit"):
+        export_reader.read_export(root, max_artifact_bytes=total - 1)

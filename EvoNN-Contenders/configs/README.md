@@ -1,5 +1,7 @@
-# Configuration area
+# Contender configuration
 
-No runnable official-lane configuration exists here yet. See the central
-[capability table](../../README.md#current-capabilities) and
-[execution plan](../../CONSOLIDATED_PLAN.md).
+The installed defaults are
+[`pools.yaml`](../src/evonn_contenders/pools.yaml) and
+[`official_lanes.yaml`](../src/evonn_contenders/official_lanes.yaml).
+Use `--pools <path>` for an explicit override. The complete configuration and
+its digest are exported; an override does not inherit floor qualification.

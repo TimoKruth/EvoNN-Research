@@ -1,0 +1,10 @@
+schema_version: 1.0.0
+# Configurations are not evidence-backed Compare presets. Missing packs fail
+# resolution explicitly; larger budgets are not authorized training campaigns.
+lanes:
+  smoke: {benchmark_pack: {pack_name: tier1_core_smoke}, evaluation_count: 16}
+  tier1_core_eval64: {benchmark_pack: {pack_name: tier1_core}, evaluation_count: 64}
+  tier1_core_eval256: {benchmark_pack: {pack_name: tier1_core}, evaluation_count: 256}
+  tier1_core_eval1000: {benchmark_pack: {pack_name: tier1_core}, evaluation_count: 1000}
+  tier_b_core_eval256: {benchmark_pack: {pack_name: tier_b_core}, evaluation_count: 256}
+  tier_b_core_eval1000: {benchmark_pack: {pack_name: tier_b_core}, evaluation_count: 1000}

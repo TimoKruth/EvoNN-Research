@@ -1,14 +1,17 @@
 {
   "schema_version": "1.0.0",
   "system": "contenders",
-  "runtime_role": "contender_skeleton",
+  "runtime_role": "fixed_pool_contender",
   "capabilities": [
     {
       "id": "sklearn_contender",
-      "platforms": ["darwin", "linux"],
-      "implemented": false,
+      "platforms": [
+        "darwin",
+        "linux"
+      ],
+      "implemented": true,
       "dependency": "scikit-learn",
-      "dependency_condition": "Not declared in B0; no contender runtime is implemented or qualified."
+      "dependency_condition": "Pinned required CPU runtime; optional boosted and torch pressure is reported separately. No scientific qualification."
     }
   ],
   "evidence": {
