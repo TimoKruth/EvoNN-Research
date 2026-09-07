@@ -266,6 +266,11 @@ unsafe paths mutate external files, or platform regressions remain.
   directories by another process with the same filesystem privileges is not
   claimed to be sandboxed. Preserve OS writer locks.
 - [ ] Obtain hosted verification and normal PR review before acceptance.
+  Hosted verification is now green at PR #10 head
+  `d0db8077fd6fa9639142cf97ea75ccbb36d5d7af`: Linux runs `34059683181` and
+  `34059685991`, macOS runs `34059683432` and `34059686029` all succeeded on
+  2026-09-06. GitHub still reports `REVIEW_REQUIRED` with no reviews; the PR
+  remains unmerged and this acceptance item remains open.
 
 #### WP-0.1a — Cross-host persistence coverage and economical CI
 
@@ -283,11 +288,31 @@ hosted workflows.
 renamed/bypassed, or cancellation prevents default-branch validation.
 
 - [x] Add the missing macOS persistence tests and cancel superseded PR runs
-  (workflow implementation; hosted execution remains pending).
+  (original storage matrix verified on both hosted lanes at PR #10 head
+  `d0db807`; the later synthetic reference-test addition still awaits hosted
+  execution).
 - [ ] Follow-up: consolidate duplicate contract/package tests and repeated
   lock checks behind one documented entry point; preserve independently
   invocable package scripts and all required checks. Measure before/after
   runtimes. Retain historical-policy coverage in a dedicated integration suite.
+  First bounded optimization on 2026-09-06: the repository-governance validator
+  reuses successful full-object-ID blob/tree reads within one validation call.
+  Mutable refs, index/worktree checks, errors and validation verdicts are never
+  cached; nested checks share the scope and later calls read Git afresh. The
+  frozen standalone validator and all trust anchors are unchanged. Six new
+  regressions pass. The same 39 hosted-evidence/committed-file cases passed in
+  108.10 s before and 45.87 s after on this local macOS checkout; the final
+  import-policy-compatible implementation passed them again in 72.81 s.
+  These variable single samples are indicative, not a hosted speed guarantee. Canonical policy and
+  hosted follow-up verification remain pending. Repeated fixture cloning was
+  also measured; no reliable improvement was demonstrated, so it is unchanged.
+  A direct cached/uncached comparison of the same B0 report reduced Git
+  subprocesses from 226 to 160 with identical successful verdicts. The overnight
+  runner could not commit because its Git metadata was read-only. On
+  2026-09-07 these changes were transferred to the dedicated follow-up worktree
+  on `agent/p0-followup-preparation`, based on PR #10 head `d0db807` without the
+  one-shot automation. Canonical verification and follow-up hosted evidence
+  are tracked in the stacked PR; this does not imply approval of PR #10.
 
 #### WP-0.1b — Versioned contracts and maintainable internal helpers
 
@@ -307,9 +332,35 @@ validator comparison, and hosted results; contract evidence only.
 **Failure conditions:** historical evidence loses verifiability, a hash update
 substitutes for review, or a second active execution plan is introduced.
 
-- [ ] Separate versioned public contracts, immutable catalog identities, and
-  implementation/test bytes in a proposed governance model. Keep freeze v2
-  effective until its replacement is reviewed and accepted.
+- [x] Draft a proposal separating versioned public contracts, immutable catalog
+  identities, and implementation/test bytes (below). Proposal acceptance is
+  pending; freeze v2 stays effective until its replacement is reviewed and
+  accepted.
+
+**Concrete amendment proposal — 2026-09-06 (not authorized or accepted).**
+The current v2 freeze and its pinned standalone validator remain effective.
+The proposed replacement would distinguish these review surfaces:
+
+| Surface | Proposed invariant and evidence | Required review |
+|---|---|---|
+| Public contracts | Versioned exported symbols, signatures, model field meanings, canonical encoding and golden vectors; explicit compatibility matrix and schema changelog | Fresh reciprocal producer/consumer review of the exact candidate commit, tree and surface digests; incompatible behavior requires an explicit version transition |
+| Catalog identities | Existing canonical IDs and their task/split/metric semantics remain immutable; additions include provenance, loader validation, pack membership and contender requirements | Normal catalog admission plus reciprocal review; the proposal in PR #9 remains subject to its own documented amendment process |
+| Internal implementation and tests | Behavior-preserving refactors may change implementation bytes only after the replacement freeze explicitly separates them from the public surface | Normal PR review and the complete relevant regression suites on both hosts; no test removal or changed golden result may stand in for compatibility evidence |
+| Historical authority | B0 source pins, historical binding commits, review records, evidence blobs and digests remain unchanged and independently verifiable | Old and proposed validators must agree on historical valid/rejected fixtures; any intended new admission is listed separately with its rationale |
+
+The amendment PR must carry the exact old/new surface inventory, source diff,
+provenance and traceability impact required by
+`governance/SPEC_UPGRADE_PROCESS.md`, a supersession statement, and an
+accept/reject comparison covering altered signatures, canonical bytes, model
+fields, rewritten IDs, compatible catalog additions, and internal-only edits.
+Its reviewed replacement validator and trust-anchor update must be atomic.
+Fresh reciprocal reviews must bind the candidate commit/tree/digests; then
+the ordinary protected merge, canonical merge verification and separate
+authorization attestation sequence applies. Neither this proposal nor a green
+synthetic fixture authorizes changing frozen bytes or admitting production
+benchmarks. Missing review, divergent historical verdicts, or unverified
+Linux/macOS results keep the amendment and parent WP open.
+
 - [ ] Extract small internal descriptor-I/O and strict-parser helpers;
   migrate existing private imports from exports/catalog only with the required
   freeze amendment and behavior-preserving regression coverage.
@@ -340,6 +391,35 @@ explicitly open until separately implemented and proven.
 evidence, placeholder hooks count as passing, or any parent WP is unaccepted.
 
 - [ ] Implement the reference runner and interruption/export capability tests.
+  Isolated preparation implemented locally (2026-09-07): a synthetic runner in
+  `EvoNN-Shared/tests/reference_runner.py` and acceptance cases in
+  `EvoNN-Shared/tests/test_reference_runner.py`. Drive real SIGKILL at the
+  committed-row, staged-checkpoint, published-payload and committed-manifest
+  boundaries; reconcile a committed row ahead of its checkpoint without
+  reevaluation. Compare complete row chains and deterministic checkpoint
+  bytes with an uninterrupted run. Check partial and repeated-resume budget
+  identities, reject changed envelopes, restrict selection inputs to a
+  label-free view, and hash the complete source tree around a read-only
+  diagnostic export. These isolated fixtures use no production catalog and
+  cannot satisfy catalog admission or close the parent integrity gate.
+  Targeted verification: `uv run --locked --all-packages --group dev pytest
+  -q EvoNN-Shared/tests/test_reference_runner.py`; canonical verification:
+  `scripts/ci/shared-checks.sh` and the relevant policy/hosted checks above.
+  Local macOS results: 23 reference tests passed in 43.60 s; the canonical
+  Shared script passed all 696 tests in 99.90 s plus lock/Ruff/import/version
+  checks. CI workflow regressions passed (13 tests, one script self-test
+  deselected); the existing macOS persistence job includes the new test module,
+  while Linux discovers it through the standalone Shared script. A local JSON
+  comparison for SIGKILL after payload publication at step 3 of 6 records equal
+  row chains, checkpoint digests and final states; resumed accounting is three
+  inherited plus three fresh evaluations, and both diagnostic exports preserve
+  the complete source-file digests. This is synthetic preparation, not hosted
+  evidence. The label test restricts supplied selector capabilities, not
+  arbitrary Python execution. Failure/invalid-attempt lifecycle coverage,
+  production symbiosis exports, catalog admission, canonical governance checks
+  and joint acceptance remain open. The preparation is carried on
+  `agent/p0-followup-preparation`, stacked on PR #10 until its protected merge;
+  no production capability or completed Phase-0 gate is claimed.
 - [ ] Jointly review the Phase 0 exit before advancing to Contenders/Compare.
 
 **Lane split & sync:** **A:** WP-0.2, 0.3, 0.4, 0.5 (contract/budget/

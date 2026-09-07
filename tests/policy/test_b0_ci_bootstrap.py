@@ -216,6 +216,7 @@ def test_macos_runs_the_shared_persistence_regressions() -> None:
         "EvoNN-Shared/tests/test_run_store.py",
         "EvoNN-Shared/tests/test_run_workspace.py",
         "EvoNN-Shared/tests/test_storage_integrity.py",
+        "EvoNN-Shared/tests/test_reference_runner.py",
         "EvoNN-Shared/tests/test_lm_cache.py",
     }
     assert any(
