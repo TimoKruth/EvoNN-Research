@@ -24,7 +24,11 @@ class OptionalContenderUnavailable(RuntimeError):
 class NGram:
     """Smoothed next-token counts, with no access to evaluation labels at fit."""
     def __init__(self, *, order: int = 2, alpha: float = 1.0, vocabulary_size: int = 256):
-        if order not in (1, 2, 3) or not math.isfinite(alpha) or alpha < np.finfo(np.float64).eps or vocabulary_size < 2:
+        try:
+            finite_alpha = math.isfinite(alpha)
+        except (TypeError, OverflowError) as error:
+            raise ValueError("invalid n-gram smoothing alpha") from error
+        if order not in (1, 2, 3) or not finite_alpha or alpha < np.finfo(np.float64).eps or vocabulary_size < 2:
             raise ValueError("invalid n-gram configuration; alpha must be at least float64 machine epsilon")
         self.order, self.alpha, self.vocabulary_size = order, alpha, vocabulary_size
         self.counts = defaultdict(Counter)

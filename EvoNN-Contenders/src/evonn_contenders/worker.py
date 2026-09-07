@@ -55,7 +55,7 @@ def evaluate(request: dict) -> dict:
         backend = backend_provenance(request["model"])
     except OptionalContenderUnavailable as error:
         return {"status": "skipped", "reason": str(error), "charged": 0, "invalid": 0}
-    except (ValueError, TypeError) as error:
+    except (ValueError, TypeError, OverflowError) as error:
         return {"status": "failed", "reason": f"invalid configuration: {error}", "charged": 0, "invalid": 1}
     publish_artifact(Path(request["attempt_started"]), b"fit/eval attempt charged\n")
     started = time.monotonic()
