@@ -1,3 +1,5 @@
 # EvoNN Compare
 
-B0 package skeleton for future file-based comparison orchestration and evidence handling. No comparison engine, CLI, backend, or producer-conformance behavior is implemented.
+See the central [capability table](../README.md#current-capabilities) and
+[execution plan](../CONSOLIDATED_PLAN.md) for this package’s current scope.
+Run `scripts/ci/compare-checks.sh` from the repository root.

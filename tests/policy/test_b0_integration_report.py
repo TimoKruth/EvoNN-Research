@@ -365,11 +365,10 @@ def test_checked_in_hosted_runtime_probe_bytes_and_identities_are_exact() -> Non
         )
 
 
-def test_parallel_work_guide_is_non_authoritative_and_records_exact_lane_model() -> None:
+def test_parallel_guide_points_to_single_lane_model_and_preserves_authorization() -> None:
     validator = _validator()
-    assert GUIDE_PATH.is_file(), "parallel-work guide is not installed"
-    metadata = validator.read_frontmatter(GUIDE_PATH)
-    assert metadata == {
+    assert GUIDE_PATH.is_file(), "freeze compatibility guide is not installed"
+    assert validator.read_frontmatter(GUIDE_PATH) == {
         "document_kind": "guide",
         "status": "current",
         "authoritative": False,
@@ -377,26 +376,24 @@ def test_parallel_work_guide_is_non_authoritative_and_records_exact_lane_model()
     assert validator.find_active_execution_plans(REPO_ROOT) == [Path("CONSOLIDATED_PLAN.md")]
     assert validator.validate_plan_metadata(REPO_ROOT) == []
 
-    text = GUIDE_PATH.read_text(encoding="utf-8")
+    guide = GUIDE_PATH.read_text(encoding="utf-8")
+    plan = PLAN_PATH.read_text(encoding="utf-8")
+    assert "CONSOLIDATED_PLAN.md#parallel-execution-and-integration" in guide
+    assert "Gate B0 is closed" in guide
+    assert "canonical merge has been verified" in guide
+    assert "WP-0.10 and the Phase 0 exit" in guide
+    assert "No Phase 0 lane or integration branch exists yet" not in guide
+    for field in ("status: merged_verified", "lane_authorization: true", "lane_branch_creation: authorized"):
+        assert field in guide
     for required in (
-        "Level 1 — Lab and Product repositories",
         "real artifact influence waits for Lab I1 and Product I2",
-        "fixtures and co-signed schemas allow parallel build",
-        "Level 2 — Lab phase lanes",
+        "fixtures and co-signed schemas allow",
         "freeze interfaces → parallel lanes → cross-review → joint integration → joint gate",
-        "B0, Foundation Integrity Gate, phase exits, transfer proof, L-SCI, portfolio status, and release governance",
     ):
-        assert required in text
-    assert "Gate B0 is closed" in text
-    assert "status: merged_verified" in text
-    assert "lane_authorization: true" in text
-    assert "lane_branch_creation: authorized" in text
-    assert "No Phase 0 lane or integration branch exists yet" in text
-    assert "canonical merge has been verified" in text
-    assert "WP-0.10 and the Phase 0 exit remain joint" in text
-    assert "no Phase 0 lane branch may begin before" not in text
+        assert required in plan
     for row in EXPECTED_LANE_ROWS:
-        assert row in text
+        assert row in plan
+        assert row not in guide
 
 
 def test_consolidated_plan_records_closed_b0_and_exact_next_actions() -> None:
@@ -424,14 +421,13 @@ def test_consolidated_plan_records_closed_b0_and_exact_next_actions() -> None:
     for item in ("WP-0.1", "WP-0.2", "WP-0.3", "WP-0.4", "WP-0.5", "WP-0.6", "WP-0.7", "WP-0.8", "WP-0.9", "WP-0.10"):
         assert f"- [ ] **{item}" in phase0_section
 
-    next_actions = text.split("## Immediate Next Actions", 1)[1]
-    assert "status: merged_verified" in next_actions
-    assert "lane_authorization: true" in next_actions
-    assert "canonical merge is verified" in next_actions
-    assert "Phase 0 lane and integration branches may be created" in next_actions
-    assert "WP-0.10 and the Phase 0 exit remain joint" in next_actions
+    next_actions = text.split("## Immediate Next Actions", 1)[1].split("## Execution Rules", 1)[0]
+    for pending in ("WP-0.1b", "WP-0.8", "WP-0.10a", "Phase 1 Contenders + Compare"):
+        assert pending in next_actions
+    assert "Phase 0 remains open" in next_actions
     assert "Jointly freeze the Phase 0 interfaces" not in next_actions
     assert "Record the co-signed interface freeze" not in next_actions
+    assert "No Phase 0 lane or integration branch exists yet" not in text
 
 
 def test_checked_in_b0_report_is_complete_and_valid() -> None:

@@ -13,512 +13,265 @@ b0_repository_model:
   data_skeleton_validation: layout_and_loader
 ---
 
-# EvoNN Lab (claude-spec) — Master Execution Plan
+# EvoNN Lab — Consolidated Execution Plan
 
-**Revision:** 2 (integrates `archive/2026-07-17-LAB_PLAN_CRITIQUE.md`; status was `REVISE_BEFORE_BOOTSTRAP`, now revised)
+**Updated:** 2026-09-07. Revision 2 remains the governing plan baseline; this
+consolidation updates execution status without changing specifications or gates.
 
-> **For agentic workers:** This is the master plan for building the Lab. At
-> the Lab repository it is installed as `CONSOLIDATED_PLAN.md` — the single
-> active execution plan. **WP expansion never creates separate plan
-> files:** expand the active WP either as a nested checklist section inside
-> `CONSOLIDATED_PLAN.md` (replacing its summary while active) or as a
-> PR-local checklist citing the WP. Completed checklists move to research
-> logs, marked non-authoritative. A CI policy test fails if any other file
-> declares itself an active execution plan.
+This is the sole execution plan. Expand work packages here or in a PR-local
+checklist. [README.md](README.md) owns capabilities and operating instructions;
+[PROJECT_HISTORY.md](PROJECT_HISTORY.md) owns completed work, decisions and
+verification references. Pinned [Lab specifications](claude-spec/README.md)
+win on disagreement. The [program charter](PROGRAM_CHARTER.md) separates Lab,
+Product and interop; Product implementation is outside this repository's plan.
 
-**Goal:** Build the claude-spec research platform — four distinct search
-engines, a trust substrate, and an evidence loop — to the point where Gate
-L-SCI (scientific conclusion) and Gate I1 (interop producer conformance)
-are both reachable.
+## Immediate Next Actions
 
-**Architecture:** uv workspace monorepo; engines as independent packages
-exchanging file artifacts; Compare as orchestrator/auditor; per-run DuckDB;
-`mlx_native` scientific path with `numpy_fallback` portability path.
-Normative source: `claude-spec/` chapters 00–19 **at the pinned revision
-(Gate B0)**. Where this plan and the spec disagree, the spec wins.
+The technical baseline is `646dde2270d540877c7d9165718eb01a5b05b84c`.
+The reviewed #10–#20 series is integrated, #21 supplies GPL-3.0-only licensing,
+and #22 configures CodeRabbit. #9 was closed without catalog admission.
+Both main CI lanes passed. Gate B0 is closed; Phase 0 remains open.
 
-**Tech Stack:** Python ≥ 3.13, uv workspace, Pydantic 2 (strict at
-boundaries), MLX (macOS), NumPy (fallback), DuckDB (per-run), Typer,
-pytest + ruff, scikit-learn (contender floor). Each non-normative choice is
-labeled `accepted` (spec-mandated), `provisional` (default, replaceable),
-or `spike-gated` (needs a validation spike before freeze). MLX wheel
-availability on the pinned Python is `spike-gated`; all else here is
-`accepted` per claude-spec/01.
+| Order | Deliverable | Completion condition |
+| --- | --- | --- |
+| 1 | WP-0.1b bounded catalog/freeze amendment | Explicit compatible-addition rules, preserved historical verdicts, reviewed replacement validator and trust-anchor transition. |
+| 2 | WP-0.8 canonical catalog and packs | Eight `tier1_core` benchmarks and the required smoke/Tier-A packs resolve reproducibly with immutable IDs and complete metadata. Load validation is not decision-grade admission. |
+| 3 | WP-0.10a reference integration and Phase 0 acceptance | Catalog-backed reference fixtures, regular export-contract coverage and an evidence matrix for every parent WP; both hosted lanes pass. |
+| 4 | Phase 1 Contenders + Compare | Begin with one benchmark through fit/evaluate/export/ingest/report, then complete the full Phase 1 scope and exit. |
 
-## Definitions Used Throughout
+Supporting follow-ups belong to WP-0.1a: profile the B0 policy bottleneck before
+optimizing it; correct CodeRabbit's effective file selection and verify it on a
+real PR; decide a useful docstring policy for tests. PR #23 confirmed that all
+29 changed files were skipped by path filters. Its green bot status is not an
+in-content review. None of these items substitutes for catalog or integrity
+acceptance.
 
-- **five-system cohort** = the four engines + Contenders in one fair-matrix
-  case set (distinct from the dashboard's full-system vs projects-only
-  *views*).
-- **Backend labels** — `mlx_native` (scientific evidence for engine
-  training claims), `numpy_fallback` (portability evidence only,
-  `portability_only` in cohort labels), `sklearn_contender`. Fallback
-  results never mix silently with `mlx_native` cohorts.
-- **Evidence classes** — every phase exit states which it produced:
-  `contract`, `exploratory-scientific`, `portability`,
-  `decision-grade-scientific`, or `producer-conformance` evidence.
-- **Cumulative gates rule** — later gates include all earlier standing
-  gates. Benchmark admission, output quality, seed coverage, backend
-  qualification, artifact validation, and contender adequacy are cumulative
-  requirements; satisfying one never substitutes for another.
-- **Interop authorization rule** — I1 proves only Lab publishing readiness.
-  No real artifact may influence Product behavior until consumer
-  conformance (I2, Product-owned) passes; the first real crossing is
-  recorded as I3.
+## Execution Rules And Evidence
 
-## Global Constraints
+- **Architecture:** Python >=3.13, one uv workspace/lock, seven independent
+  packages and a data-only benchmark directory. Engines never import one
+  another; Compare invokes CLIs and consumes files. Shared contains contracts
+  and infrastructure, not genomes, search or an engine runtime.
+- **Backend classes:** `mlx_native` supports scientific engine-training
+  evidence only after qualification; `numpy_fallback` is `portability_only`;
+  `sklearn_contender` identifies the external floor. Do not silently mix cohorts.
+- **Evidence classes:** `contract`, `exploratory-scientific`, `portability`,
+  `decision-grade-scientific`, `producer-conformance`. The current synthetic
+  report is `synthetic_contract_preparation`; it does not qualify an engine.
+- **Cumulative gates:** benchmark admission, output quality, seed coverage,
+  backend qualification, artifact validity and contender adequacy all apply.
+  Every engine must hold L3 on Tier A and `tier1_core@64` before trusted claims.
+- **Accounting:** preserve all nine accounting fields and seven declaration
+  fields from claude-spec/03. No negative/over-budget/double-counted work;
+  `partial_run` reflects incomplete coverage. Failure/invalid semantics and
+  fresh versus inherited work stay explicit.
+- **Persistence:** one OS-locked writer per per-run DuckDB; validated canonical
+  RunWorkspace; deterministic named RNG streams; atomic/checksummed checkpoints;
+  immutable evaluations and read-only export. See README for filesystem limits.
+- **Claims:** five-system cohort means four engines plus Contenders.
+  Engine-only cohorts support portfolio/parity decisions; contender-including
+  cohorts support external-floor claims. Mixed evidence remains inconclusive.
+- **Interop:** Lab I1 proves publishing readiness; real Product influence
+  requires Product-owned I2 as well. Register the first crossing as I3.
+- **Change discipline:** PRs with relevant tests and concrete review findings;
+  no direct pushes to main. GitHub requires zero approving accounts and no
+  last-push approval. Required Linux/macOS checks, up-to-date branches and
+  resolved conversations still apply. Freeze amendments retain their separate
+  producer/consumer evidence review; two GitHub identities are not a substitute.
+- **Feature flags:** default off or to a demonstrated better default; preserve
+  a way to restore prior behavior. Keep research scope separate from Product.
 
-- Python ≥ 3.13; one uv workspace lock at repo root (claude-spec/01).
-- Engines MUST NOT import each other; Compare invokes engine CLIs and reads
-  exports only; import-direction policy tests enforce this from Gate B0.
-- `evonn_shared` stays dependency-light: no search logic, no genomes, no
-  engine runtime (claude-spec/01).
-- Canonical benchmark IDs only at every export boundary (claude-spec/02).
-- Budget accounting fields on every compare-visible export
-  (claude-spec/03): `evaluation_count`, `actual_evaluations`,
-  `cached_evaluations`, `failed_evaluations`, `invalid_evaluations`,
-  `resumed_from_run_id`, `resumed_evaluations`, `partial_run`,
-  `evaluation_semantics`. Validators enforce
-  `actual_evaluations ≤ evaluation_count` for **all** runs (no partial-run
-  exemption — there is no overrun license); `partial_run = true` whenever
-  execution stopped before the declared envelope; accounting identities
-  reject negative, inconsistent, or double-counted resumed/cached work.
-- One DuckDB writer per file, per-run DBs only.
-- Canonical run directory (`config.yaml`, `metrics.duckdb`, `state.json`,
-  `summary.json`, `report.md`, `checkpoints/`) is validated by a
-  `RunWorkspace` constructor/validator, not asserted by convention.
-- Output-quality ladder L0–L4 (claude-spec/04); **standing requirement:
-  every engine holds L3 on Tier A and `tier1_core@64`** before any trusted
-  claim (claude-spec/04).
-- Branch/PR policy per claude-spec/18; engine-advancement PRs carry the
-  decision-gate bundle, machine-checked (WP-3.5).
-- Foundation Integrity Gate (WP-0.10) is a permanent CI gate.
-- New feature flags default off-or-better-default, prior behavior
-  restorable (claude-spec/18).
+### Work-package expansion template
 
-## WP Template (mandatory at expansion)
-
-Every WP expands using this template before implementation:
+Before implementation, expand the active WP here or in its PR checklist:
 
 ```markdown
 ### WP-X.Y — Outcome-oriented title
-**Requirements:** exact spec sections (e.g. claude-spec/04 §Export Contract)
-**Depends on / Produces / Blocks:** WP IDs; stable interfaces + artifact paths
+**Requirements:** exact pinned spec sections
+**Depends on / Produces / Blocks:** WP IDs, interfaces and artifact paths
 **Hosts/backends:** required execution classes
-**Tests first:** named test files/cases
-**Verify:** exact commands and expected results
-**Evidence:** machine-readable artifact proving completion + its class
-**Failure conditions:** what keeps this WP open
+**Tests first:** named behavioral and rejection cases
+**Verify:** exact commands and expected outcomes
+**Evidence:** machine-readable artifact and evidence class
+**Failure conditions:** what keeps the WP open
 ```
 
-WPs marked **[epic]** below MUST be split into template-conforming sub-WPs
-inside the consolidated plan at expansion; the split is part of the WP.
+Split every `[epic]` into these sub-WPs. Preserve numbering and dependencies;
+record a dependency reason before changing order. Completed execution notes go
+to project history, not a second active plan. Technology choices mandated by
+the spec are accepted; implementation defaults remain provisional until tested.
+Bootstrap MLX wheel availability has been demonstrated; engine qualification
+still requires the later real runtime evidence.
 
-## Parallel Execution Model (Two Lanes)
+### Parallel execution and integration
 
-The plan is executed by **two parallel agents — Lane A and Lane B** — with
-a joint integration step closing every phase. Each phase declares its lane
-split in a **Lane split & sync** block; WPs not listed there are joint.
+Lab and Product can develop independently; fixtures and co-signed schemas allow
+parallel build while real artifact influence waits for Lab I1 and Product I2.
+Within a Lab phase, the ownership blocks below are the single lane map:
+**freeze interfaces → parallel lanes → cross-review → joint integration → joint gate**.
+Use `agent/p<N>-lane-<a|b>-<slug>` and `agent/p<N>-integrate` when executing lanes.
+Do not overlap file ownership; shared packages require explicitly disjoint
+modules. A frozen interface change requires a recorded amendment review.
+Review the other lane against exact specs, WP requirements and integrity tests.
+Integration runs full CI on both hosts, cross-cutting suites and exit commands.
+With one worker, execute lanes sequentially through the normal PR flow and keep
+integration acceptance. B0, Foundation Integrity Gate, phase exits, transfer
+proof, L-SCI, portfolio status and release governance remain joint decisions.
 
-Rules:
 
-1. **Ownership.** A lane touches only its assigned packages for the phase.
-   Two lanes may share a package only on the explicitly listed disjoint
-   modules. File-collision between lanes inside a phase is a process
-   defect, not a merge problem to absorb.
-2. **Interface freeze.** At phase start both agents co-sign the phase's
-   interface contract — the types, CLI shapes, and artifact schemas that
-   cross the lane boundary (each phase's freeze list is in its sync
-   block). Changing a frozen interface mid-phase requires a joint
-   mini-review recorded in the consolidated plan.
-3. **Branching.** Each lane works on `agent/p<N>-lane-<a|b>-<slug>`;
-   integration happens on `agent/p<N>-integrate`.
-4. **Cross-review.** Each lane's phase work merges only via a PR reviewed
-   by the *other* lane's agent, checked against the pinned spec chapters,
-   the WP requirements, and the integrity suite — the reviewing agent is
-   accountable for the review, not just a rubber stamp.
-5. **Joint integration WP.** After both cross-reviews: merge both branches
-   into the integration branch; run full CI on both hosts, the integrity
-   suite, all cross-cutting suites (import-direction, telemetry
-   conformance where applicable), and the phase-exit acceptance commands;
-   fix integration defects pairwise; only then evaluate the phase exit
-   gate. The phase exit is always a joint decision.
-6. **Fallback.** If only one agent is available, lanes execute
-   sequentially A-then-B with self-review replaced by the normal PR flow;
-   the integration WP still runs unchanged.
+| Phase | Lane A | Lane B | Joint work |
+| --- | --- | --- | --- |
+| 0 | WP-0.2, 0.3, 0.4, 0.5 | WP-0.1, 0.6, 0.7, 0.8, 0.9 | WP-0.10 integrity gate + phase exit |
+| 1 | WP-1.1, 1.2, 1.7, 1.8 | WP-1.3, 1.4, 1.5, 1.6 | phase-exit fair-matrix run |
+| 2 | WP-2.1–2.4 | WP-2.5–2.9 | WP-2.10 + exit cohort |
+| 3 | WP-3.1, 3.4 | WP-3.2, 3.3 | WP-3.5 + phase exit |
+| 4 | WP-4.1–4.4 | WP-4.5, 4.6, 4.7 | WP-4.8 + exit cohort |
+| 5 | WP-5.1, 5.2 | WP-5.3 | WP-5.4 transfer proof campaign |
+| 6 | WP-6.1, 6.2 | WP-6.3, 6.4 | WP-6.5 portfolio statuses + WP-6.6 L-SCI |
+| 7 | WP-7.1, 7.2 | WP-7.3, 7.4 | WP-7.5 release governance + phase exit |
 
-## Phase Map And Dependencies
+## Gate B0 — Closed Bootstrap
 
-```
-B0 ─► Phase 0 ─► Phase 1 ─► Phase 2 ─► Phase 3 ─► Phase 4 ─► Phase 5 ─► Phase 6 ─► Phase 7
-(pin) (contracts (floor+    (Prism,    (evidence  (Strato,   (transfer  (QD, tiers, (perf, Obs,
-       +integrity) Compare)  Topograph) +stats)    Primordia)  proof)     L-SCI)      automation)
-                                          │
-                                          └──► Interop Producer Workstream (WP-I.*, parallel from Phase 3; Gates I0/I1)
-```
+- [x] **B0.1** Canonical Lab repository and branch/PR workflow exist.
+- [x] **B0.2** Normative sources are remote-pinned with reproducible provenance.
+- [x] **B0.3** Seven importable packages and one tested data-only skeleton exist.
+- [x] **B0.4** Import-direction policy is enforced.
+- [x] **B0.5** Hosted Linux/NumPy and macOS/MLX bootstrap probes are preserved.
+- [x] **B0.6** Single execution plan and transition-safe governance are enforced.
 
-Cross-phase dependency notes (enforced via `Depends on` at expansion):
-benchmark audits depend on contender adequacy labels (WP-1.1 → WP-1.7);
-dashboard decision slices depend on stable case/evidence schemas
-(WP-1.4/3.1 → WP-1.6); native transfer depends on registry promotion and
-backend classification (WP-3.1, WP-2.10 → Phase 5); I1 fixtures depend on
-export schemas (WP-0.2 → WP-I.3); Observatory depends on structured JSON
-from all reporting surfaces (Phases 1/3 → WP-7.3).
-
----
-
-## Gate B0 — Reproducible Authority And Repository Bootstrap
-
-- [x] **B0.1** Lab repository created; work proceeds on the dedicated
-  `b0/close-gate` implementation branch, never `main`.
-- [x] **B0.2** Governing sources are pinned by the checked-in provenance
-  manifest to the canonical authority remote
-  `https://github.com/TimoKruth/EvoNN-Research.git`, with exact commits,
-  declared versions, import dates, Git object identities, and content
-  digests. The pin covers `claude-spec/` (full), `PROGRAM_CHARTER.md`, and
-  `claudex-spec/19-research-interop.md`; Product consumer acceptance remains
-  governed by the Product chapter. The recorded upgrade process and
-  traceability procedure govern future source changes.
-- [x] **B0.3** seven importable Python package skeletons (Shared,
-  Contenders, Compare, Prism, Topograph, Stratograph, Primordia), each with
-  an importable module, empty test, and per-package check script; plus
-  one tested data-only `shared-benchmarks/` skeleton with an independently
-  invocable dedicated check script (`scripts/ci/benchmarks-checks.sh`).
-  Benchmark resolution helpers live in `evonn_shared.benchmarks`;
-  `shared-benchmarks/` is not a Python package. Local package/data checks pass.
-- [x] **B0.4** Import-direction policy tests green across all seven Python
-  skeletons (engine↛engine, shared↛engines). The data-only
-  `shared-benchmarks/` skeleton is layout- and catalog-loader-validated, not
-  import-validated. The permanent policy validator passes locally.
-- [x] **B0.5** Both hosted CI workflows executed real (non-stub) bootstrap
-  probes against commit `f68856f0c2fdf0ebc73671264b5a3ab0cff3b224`:
-  Linux/NumPy run `29658842317` and macOS/MLX run `29658842318`. Their exact
-  uploaded artifacts are preserved at
-  `governance/evidence/b0/hosted/linux-runtime-probe.json` and
-  `governance/evidence/b0/hosted/macos-runtime-probe.json`. Both remain
-  `bootstrap_probe_only`: they prove bootstrap/runtime availability and are
-  not scientific evidence. These hosted workflows exercised the named tested
-  commit, not this Commit A closure implementation.
-- [x] **B0.6** Single-active-plan policy is preserved; the consolidated plan
-  remains the sole active execution plan, with the closure transition covered
-  by transition-aware policy tests.
-
-**Lane split & sync:** B0 was executed **jointly** (it is small and creates
-the shared ground both lanes stand on).
-
-**Exit (contract evidence):** Gate B0 is closed by the anchored schema-2
-report and closed status evidence. Historical Binding C remains immutable and
-records the v1 pending freeze. The ordinary Binding D supersession records the
-reviewed A-double-prime v2 freeze, now in `merged_verified` state. The
-protected freeze PR merged as `5a98d9d45c4f2a7bc35bc75f93141473d0769e94` on
-canonical `main` and that merge has been verified against the recorded topology
-and digests. This authorization attestation records the verification; lane and
-integration work become authorized once the attestation is merged.
-
----
+Gate B0 is closed by its anchored schema-2 report and status record. Historical
+hosted evidence tests `f68856f0c2fdf0ebc73671264b5a3ab0cff3b224`: Linux
+`29658842317`, macOS `29658842318`. It is `bootstrap_probe_only`, not scientific
+evidence. The protected freeze PR and separate authorization attestation are
+merged; freeze v2 is `merged_verified`. History retains the exact B0 bindings,
+review records and probe paths. This state does not imply Phase 0 acceptance.
 
 ## Phase 0 — Workspace, Contracts, Integrity Foundation
 
-**Objective:** validated contracts, benchmark resolution, and the integrity
-gate proven against executable skeletons. Spec: claude-spec/01–04, /13, /18.
+**Objective:** validated contracts, benchmark resolution and a permanent
+integrity gate proven against executable skeletons. Spec: claude-spec/01–04,
+/13, /18. All ten parent checkboxes below represent acceptance, not whether
+implementation exists. The current freeze validator requires them to remain
+open; formal closure must include the appropriate reviewed gate transition.
 
-### Maintenance integration — 2026-09-06
+### Current acceptance matrix
 
-This section integrates the repository review into the sole active plan.
-Implementation, verification, and gate acceptance are separate states: the
-unchecked parent WPs below remain unaccepted until their full evidence is
-reviewed. B0 is closed; export/budget/telemetry/identity/catalog interfaces,
-checkpoints, RunStore/RunWorkspace, and LM-cache validators are implemented.
-The production benchmark catalog on `main` remains empty. Compare, Contenders,
-and all four engines remain skeletons. Phase 0 and WP-0.10 are still open.
+| Parent | Implemented and verified | Remaining acceptance work |
+| --- | --- | --- |
+| WP-0.1 | Workspace, package scripts, full cross-host foundation coverage, consolidated CI triggers | Final evidence mapping; bounded CI/review follow-ups below. |
+| WP-0.2–0.5 | Strict export/budget/telemetry models, identities and RNG contracts | Map existing tests to every requirement; integrate regular export fixtures with the reference proof. |
+| WP-0.6–0.7 | Atomic checkpoints, transactional store/workspace, verified reader and diagnostic consistency | Include persistence and failure results in joint acceptance. |
+| WP-0.8 | Strict catalog and pack loaders | Production registry is empty; admit the specified benchmark definitions and packs after amendment. |
+| WP-0.9 | LM-cache existence/size/checksum validators | Record contract acceptance; real LM execution belongs to later phases. |
+| WP-0.10 | Real synthetic kill/resume proof, budget and protected-label tests, cross-host JSON evidence | Complete catalog/export integration and joint reference acceptance. Engine-specific hooks remain separately open. |
 
-#### WP-0.7a — Transactional evidence and safe run-directory I/O
+### WP-0.1a — Cross-host coverage and economical CI
 
-**Requirements:** claude-spec/01 storage boundary; /04 immutable evaluation
-records and canonical run directory; /18 Operational Safety Rules.
-**Depends on / Produces / Blocks:** WP-0.7; hardened RunStore/RunWorkspace and
-regressions in their existing test modules; blocks WP-0.10 resume proof.
-**Hosts/backends:** Linux and macOS; DuckDB, independent of engine backend.
-**Tests first:** interrupted INSERT/tip UPDATE rolls back; killed writer
-recovers the previous committed chain; corrupt chain rejected on reopen;
-symlink/hardlink lock and DB paths rejected before mutation; nested symlink
-artifacts rejected; report publication preserves prior bytes on failure.
-**Verify:** `scripts/ci/shared-checks.sh`; all seven package/data checks;
-`scripts/ci/phase0-contract-checks.sh`; `scripts/ci/b0-policy-checks.sh`.
-**Evidence:** local test results and hosted Linux/macOS job results in the PR;
-contract evidence only, no engine-resume or scientific claim.
-**Failure conditions:** an interrupted append leaves a partial logical record,
-unsafe paths mutate external files, or platform regressions remain.
+**Requirements:** claude-spec/13 portability; /18 Testing Expectations.
+**Depends on / Produces / Blocks:** WP-0.1 and WP-0.7a; consistent hosted
+coverage and bounded CI improvements; contributes to Phase 0 acceptance.
+**Hosts/backends:** Linux/NumPy and macOS/MLX with unchanged required job names.
+**Tests first:** workflow contracts for triggers, coverage, cancellation,
+read-only permissions, evidence generation/validation and explicit upload paths.
+**Verify:** `scripts/ci/foundation-checks.sh`; `scripts/ci/b0-policy-checks.sh`;
+both hosted lanes. The latter requires full Git history.
+**Evidence:** #11/#13/#14/#20 and the final-main runs linked in project history.
+**Failure conditions:** lost coverage, skipped required checks, changed historical
+policy verdicts or a speed claim without comparable measurements.
 
-- [x] Implement and locally verify transactions, fail-closed reopen, bounded
-  lock reads, descriptor-relative artifact reads and atomic report writes.
-  Local macOS verification on 2026-09-06: 682 Shared/benchmark/contract tests
-  passed (including 25 new storage regressions), all eight package/data check
-  scripts and the Phase 0 contract script passed, repository Ruff passed.
-  At local commit `31f57ba`, all five standalone policy validators passed;
-  `scripts/ci/b0-policy-checks.sh` finished with 628 passed and 2 intentionally
-  deselected script-selftest/matrix cases. Its pytest portion took 1109.82 s
-  (18 min 29 s), the local baseline for WP-0.1a's CI simplification. Hosted
-  Linux/macOS execution and review remain pending; these local results do not
-  close WP-0.7 or the Phase 0 gate.
-- [x] Document the filesystem trust boundary: the application owns run
-  directories; DuckDB opens pathnames, so concurrent hostile replacement of
-  directories by another process with the same filesystem privileges is not
-  claimed to be sandboxed. Preserve OS writer locks.
-- [ ] Obtain hosted verification and normal PR review before acceptance.
-  Hosted verification is now green at PR #10 head
-  `d0db8077fd6fa9639142cf97ea75ccbb36d5d7af`: Linux runs `34059683181` and
-  `34059685991`, macOS runs `34059683432` and `34059686029` all succeeded on
-  2026-09-06. GitHub still reports `REVIEW_REQUIRED` with no reviews; the PR
-  remains unmerged and this acceptance item remains open.
+Implemented: scoped immutable-Git-read caching; no duplicate feature push runs;
+a single foundation selection on both hosts; independently callable package
+scripts; required hosted synthetic report generation/validation/upload.
+Remaining: profile B0 policy tests and measure any bounded change against the
+same cases. Final main's macOS B0 step took 18m46s; foundation took 35s. These
+are observations from one run, not a stable benchmark. Investigate effective
+CodeRabbit path selection (all 29 files skipped on #23) and the optional
+docstring warning separately; verify actual reviewed files after any fix.
 
-#### WP-0.1a — Cross-host persistence coverage and economical CI
+### WP-0.7a — Transactional evidence and safe run-directory I/O
 
-**Requirements:** claude-spec/13 portability checks; /18 Testing Expectations.
-**Depends on / Produces / Blocks:** WP-0.1, WP-0.7a; extended macOS persistence
-coverage and workflow regressions; blocks Phase 0 acceptance.
-**Hosts/backends:** Linux/NumPy and macOS/MLX, existing required check names.
-**Tests first:** workflow checks require checkpoint, RunStore, RunWorkspace,
-and LM-cache tests on macOS as well as the Linux shared package suite.
-**Verify:** `uv run --locked --all-packages --group dev pytest -q
-tests/policy/test_b0_ci_bootstrap.py -m 'not b0_policy_script_selftest'`;
-hosted workflows.
-**Evidence:** workflow tests and hosted job results; contract evidence.
-**Failure conditions:** storage checks absent on either host, required checks
-renamed/bypassed, or cancellation prevents default-branch validation.
+**Requirements:** claude-spec/01 storage; /04 records/run directory;
+/18 Operational Safety Rules.
+**Depends on / Produces / Blocks:** WP-0.7; hardened store/workspace and reader;
+prerequisite for reference integrity acceptance.
+**Hosts/backends:** Linux and macOS; DuckDB, independent of engine runtime.
+**Tests first:** transaction rollback/recovery; corrupt-chain rejection;
+symlink/hardlink refusal; shared reader/exclusive writer ownership; atomic
+publication and unchanged evidence on read/export failures.
+**Verify:** `scripts/ci/shared-checks.sh`; `scripts/ci/phase0-contract-checks.sh`;
+`scripts/ci/b0-policy-checks.sh`; both hosted lanes.
+**Evidence:** merged #10, #15, #16 and #19; exact integrations in history.
+**Failure conditions:** partial logical records, source mutation during export,
+unsafe-path mutation, or unsupported filesystem guarantees being claimed.
 
-- [x] Add the missing macOS persistence tests and cancel superseded PR runs
-  (original storage matrix verified on both hosted lanes at PR #10 head
-  `d0db807`; synthetic reference tests subsequently verified on both hosted
-  lanes at PR #11 head `41e8e09` on 2026-09-07).
-- [ ] Follow-up: consolidate duplicate contract/package tests and repeated
-  lock checks behind one documented entry point; preserve independently
-  invocable package scripts and all required checks. Measure before/after
-  runtimes. Retain historical-policy coverage in a dedicated integration suite.
-  First bounded optimization on 2026-09-06: the repository-governance validator
-  reuses successful full-object-ID blob/tree reads within one validation call.
-  Mutable refs, index/worktree checks, errors and validation verdicts are never
-  cached; nested checks share the scope and later calls read Git afresh. The
-  frozen standalone validator and all trust anchors are unchanged. Six new
-  regressions pass. The same 39 hosted-evidence/committed-file cases passed in
-  108.10 s before and 45.87 s after on this local macOS checkout; the final
-  import-policy-compatible implementation passed them again in 72.81 s.
-  These variable single samples are indicative, not a hosted speed guarantee.
-  PR #11 head `41e8e09` subsequently passed both hosted lanes, including all
-  634 policy/CI tests (two recursive self-tests deselected). Repeated fixture cloning was
-  also measured; no reliable improvement was demonstrated, so it is unchanged.
-  A direct cached/uncached comparison of the same B0 report reduced Git
-  subprocesses from 226 to 160 with identical successful verdicts. The overnight
-  runner could not commit because its Git metadata was read-only. On
-  2026-09-07 these changes were transferred to the dedicated follow-up worktree
-  on `agent/p0-followup-preparation`, based on PR #10 head `d0db807` without the
-  one-shot automation. Canonical verification and follow-up hosted evidence
-  are tracked in the stacked PR; this does not imply approval of PR #10.
+The bounded implementation and cross-host review series is complete. Parent
+WP-0.7 acceptance remains part of the phase evidence matrix. `_run_io` already
+centralizes no-follow descriptor I/O and atomic no-clobber publication.
 
-**Bounded follow-up series (2026-09-07; WP-0.1a / WP-0.7a / WP-0.10a).**
-Each item has its own dependent PR; implementation checkboxes are not acceptance.
-Keep all frozen surfaces and required jobs intact. Full hosted verification and
-independent review remain required; synthetic evidence never admits a catalog
-or closes Phase 0. After parent merges, retarget and revalidate each child.
+### WP-0.1b — Bounded versioned-contract and catalog amendment
 
-- [x] CI events: run complete lanes on every PR (including stacked bases), main
-  pushes and manual dispatch, eliminating duplicate feature-branch push runs.
-  Unopened feature branches need manual dispatch for hosted checks. Regression
-  tests pin all three triggers and retain read-only workflow permissions and
-  PR-only cancellation. This halves lane starts for a normal pushed PR update;
-  no per-lane wall-clock speedup or test removal is claimed.
-- [x] Foundation entry point: share complete Shared/root-contract coverage on
-  both hosts without duplicate contract selection; retain standalone scripts.
-  `foundation-checks.sh` selects the entire Shared test directory and the root
-  consumer once, plus Ruff and installed package identity. Both hosts use it;
-  Linux no longer repeats Shared contract tests via two separate scripts, and
-  macOS no longer depends on a manually maintained persistence file list.
-- [x] Read-only RunStore reader: shared lock, clean-store requirement, verified
-  identity/hash chain, no source writes or exposed writer operations.
-  `open_run_reader` holds shared advisory ownership and a read-only DuckDB
-  transaction. Missing files and WALs are rejected, never created/recovered.
-  Regression coverage includes corruption, concurrent readers/writers, aliased
-  files, enforced read-only SQL, unchanged bytes and exception cleanup.
-- [x] Diagnostic consistency: consume the verified reader and reject stale or
-  contradictory checkpoint/config/accounting evidence before export.
-  Row-chain and run identity verification precede checkpoint-tip/count/score,
-  declared configuration and fresh/resumed accounting checks. Invalid evidence
-  produces no output and is not repaired. The export remains synthetic, not
-  a production symbiosis envelope or externally anchored authenticity claim.
-- [x] Resume inputs: bind seed and protected-label identity to checkpoint state.
-  Validate seed and binary label types before creating a workspace; resume
-  rejects changed label identity before opening a writer. Selection still
-  receives only its label-free view. The synthetic label digest is an identity
-  check, not encryption, privacy protection or a Python execution sandbox.
-- [x] Integrity probe: emit machine-readable killed/resumed comparison evidence.
-  `EvoNN-Shared/tests/integrity_probe.py` executes eight real SIGKILL cases
-  (failure/invalid at four durable boundaries), validates row/checkpoint
-  equivalence, fresh/inherited budgets, selector traces and read-only export
-  source digests. Reports carry host metadata and the synthetic evidence class;
-  internal validation is not source authenticity or production qualification.
-  Existing work/output is never reused. A failed case produces no final report.
-- [x] Atomic artifact publication: no overwrite or partial visible export.
-  A small internal `_run_io.publish_new_file` helper stages/fsyncs bytes before
-  no-clobber hard-link publication in an opened no-follow parent directory.
-  Diagnostics and probe reports use it. Tests cover existing aliases/files,
-  partial writes, file/directory fsync failure and concurrent publishers.
-  Post-publication directory-fsync failure reports uncertain durability;
-  a complete output may already exist and is never removed as a rollback.
-- [x] Hosted integrity evidence: execute and retain the synthetic probe on both
-  hosts, document evidence limits and merge order.
-  Both stable required jobs generate/validate the complete eight-case probe,
-  then upload only its explicit JSON file with missing-artifact errors enabled.
-  Workflow regressions forbid conditional/continue-on-error probe bypass and
-  bind upload ordering/path/pinned action. Local execution is not a substitute
-  for hosted results; each stacked PR records its own check state. This finishes
-  implementation of the bounded series, not any parent gate or review.
+**Requirements:** claude-spec/01 boundaries; /02 immutable canonical identity;
+/04 compatibility; /18 review/documentation; the recorded upgrade process.
+**Depends on / Produces / Blocks:** current freeze v2 and WP-0.7a; reviewed
+replacement freeze/validator and catalog-addition rules; precedes WP-0.8.
+**Hosts/backends:** both hosted lanes; no engine runtime dependency.
+**Tests first:** reject changed signatures, field meanings, canonical bytes,
+rewritten IDs and altered historical evidence; accept explicitly compatible
+catalog additions; compare old/new validators on historical fixtures.
+**Verify:** full policy/contract suites on both hosts, independently recomputed
+historical digests, and the specified canonical merge/attestation sequence.
+**Evidence:** exact old/new surface inventory, source diff, provenance and
+traceability impact, supersession rationale, candidate commit/tree/digests,
+producer/consumer review records and hosted results.
+**Failure conditions:** historical evidence becomes unverifiable, hashes stand
+in for review, validator/trust-anchor updates diverge, or any review is missing.
 
-#### WP-0.1b — Versioned contracts and maintainable internal helpers
+The proposal separates versioned public contracts, immutable catalog semantics,
+and behavior-preserving internal/test edits. Existing IDs never change meaning;
+new IDs require provenance, split/metric definitions, pack membership and
+contender expectations. The reviewed validator and trust-anchor update must be
+atomic. Follow [SPEC_UPGRADE_PROCESS](governance/SPEC_UPGRADE_PROCESS.md).
+Freeze v2 remains effective until the replacement is accepted. Closed PR #9
+admitted nothing; a successor must carry the complete amendment. Extraction of
+remaining private export/catalog parser helpers stays conditional on amendment
+and demonstrated value; keep seven package boundaries and avoid a framework.
 
-**Requirements:** claude-spec/01 package boundaries; /02 canonical identities;
-/04 export compatibility; /18 documentation and review policy.
-**Depends on / Produces / Blocks:** current freeze v2 and WP-0.7a; jointly
-reviewed governance amendment and internal I/O/parser module boundaries;
-precedes production catalog admission under revised rules.
-**Hosts/backends:** both hosted lanes; no engine-runtime dependency.
-**Tests first:** incompatible schema/API/canonical-byte changes and rewritten
-catalog identities fail; compatible catalog additions pass the proposed
-admission rules; all historical freeze attestations still validate.
-**Verify:** full policy/contract suites on both hosts plus independently
-recomputed historical digests under the documented upgrade process.
-**Evidence:** amendment rationale, fresh reciprocal review records, old/new
-validator comparison, and hosted results; contract evidence only.
-**Failure conditions:** historical evidence loses verifiability, a hash update
-substitutes for review, or a second active execution plan is introduced.
+### WP-0.10a — Reference integrity integration and acceptance
 
-- [x] Draft a proposal separating versioned public contracts, immutable catalog
-  identities, and implementation/test bytes (below). Proposal acceptance is
-  pending; freeze v2 stays effective until its replacement is reviewed and
-  accepted.
+**Requirements:** claude-spec/03 accounting; /04 exports/integrity;
+/18 resumable lifecycle; WP-0.10 protected-label capability boundary.
+**Depends on / Produces / Blocks:** WP-0.7a, WP-0.1a and accepted WP-0.8;
+immutable reference acceptance fixtures; blocks Phase 0 exit and Phase 1.
+**Hosts/backends:** both hosted lanes; contract evidence only.
+**Tests first:** uninterrupted/resumed row and checkpoint equality; declared
+budgets and failed/invalid accounting; read-only export; seed/label identity;
+selection cannot access protected labels; measured/proxy provenance.
+**Verify:** `scripts/ci/foundation-checks.sh`; catalog admission checks;
+`scripts/ci/b0-policy-checks.sh`; both hosted lanes.
+**Evidence:** existing eight-case synthetic reports plus the missing
+catalog/export integration evidence and requirement-to-test acceptance matrix.
+**Failure conditions:** synthetic fixtures are called production/scientific
+proof, placeholder hooks count as passing, or any parent is unaccepted.
 
-**Concrete amendment proposal — 2026-09-06 (not authorized or accepted).**
-The current v2 freeze and its pinned standalone validator remain effective.
-The proposed replacement would distinguish these review surfaces:
+The synthetic runner and probe are implemented, reviewed, merged and hosted.
+They charge each candidate under an explicit policy, distinguish fresh and
+inherited work, and recover a durable row ahead of its checkpoint without
+reevaluation. Four kill boundaries cover failed and invalid attempts. Resume
+rejects changed seed/config/label identities; diagnostics validate the complete
+persisted state. These diagnostics are not the regular three-file export.
+Remaining work integrates the accepted catalog and export contracts, names any
+necessary schema decision explicitly, and closes the reference gate with the
+full parent matrix. It does not invent an engine identity or claim general
+exactly-once behavior before row commit. Engine resume hooks activate as engines
+land; speciation behavior activates with Topograph, not a placeholder.
 
-| Surface | Proposed invariant and evidence | Required review |
-|---|---|---|
-| Public contracts | Versioned exported symbols, signatures, model field meanings, canonical encoding and golden vectors; explicit compatibility matrix and schema changelog | Fresh reciprocal producer/consumer review of the exact candidate commit, tree and surface digests; incompatible behavior requires an explicit version transition |
-| Catalog identities | Existing canonical IDs and their task/split/metric semantics remain immutable; additions include provenance, loader validation, pack membership and contender requirements | Normal catalog admission plus reciprocal review; the proposal in PR #9 remains subject to its own documented amendment process |
-| Internal implementation and tests | Behavior-preserving refactors may change implementation bytes only after the replacement freeze explicitly separates them from the public surface | Normal PR review and the complete relevant regression suites on both hosts; no test removal or changed golden result may stand in for compatibility evidence |
-| Historical authority | B0 source pins, historical binding commits, review records, evidence blobs and digests remain unchanged and independently verifiable | Old and proposed validators must agree on historical valid/rejected fixtures; any intended new admission is listed separately with its rationale |
+### Parent scope and phase exit
 
-The amendment PR must carry the exact old/new surface inventory, source diff,
-provenance and traceability impact required by
-`governance/SPEC_UPGRADE_PROCESS.md`, a supersession statement, and an
-accept/reject comparison covering altered signatures, canonical bytes, model
-fields, rewritten IDs, compatible catalog additions, and internal-only edits.
-Its reviewed replacement validator and trust-anchor update must be atomic.
-Fresh reciprocal reviews must bind the candidate commit/tree/digests; then
-the ordinary protected merge, canonical merge verification and separate
-authorization attestation sequence applies. Neither this proposal nor a green
-synthetic fixture authorizes changing frozen bytes or admitting production
-benchmarks. Missing review, divergent historical verdicts, or unverified
-Linux/macOS results keep the amendment and parent WP open.
-
-- [ ] Extract small internal descriptor-I/O and strict-parser helpers;
-  migrate existing private imports from exports/catalog only with the required
-  freeze amendment and behavior-preserving regression coverage.
-  First step implemented: `_run_io` centralizes no-follow run-directory I/O
-  without editing the frozen export/catalog implementation.
-- [ ] Keep the seven package boundaries; do not build a generic framework.
-- [x] Add a root README and update Shared documentation with actual capability
-  state, local checks, filesystem assumptions, and this plan as the authority.
-
-#### WP-0.10a — Reference-runner integrity proof (next functional milestone)
-
-**Requirements:** claude-spec/03 budget accounting; /04 integrity and exports;
-/18 resumable lifecycle; WP-0.10's protected-label capability boundary.
-**Depends on / Produces / Blocks:** WP-0.7a, WP-0.1a, accepted WP-0.8 catalog;
-deterministic no-op reference runner and immutable acceptance fixtures;
-blocks Phase 0 exit and Phase 1 Contenders/Compare implementation.
-**Hosts/backends:** both hosted lanes; reference contract evidence only.
-**Tests first:** uninterrupted versus killed/resumed execution has identical
-evaluation records and final deterministic state; budget identities hold;
-export leaves source evidence unchanged; protected labels are inaccessible
-from search/selection; measurements and proxies remain distinguished.
-**Verify:** named WP-0.10 integrity tests, full package/contract/policy checks,
-and catalog admission checks in both hosted lanes.
-**Evidence:** machine-readable comparison of uninterrupted/resumed fixture
-digests and budgets, plus CI results. Engine resume/speciation hooks remain
-explicitly open until separately implemented and proven.
-**Failure conditions:** fixture success is presented as engine or scientific
-evidence, placeholder hooks count as passing, or any parent WP is unaccepted.
-
-- [ ] Implement the reference runner and interruption/export capability tests.
-  Isolated preparation implemented locally (2026-09-07): a synthetic runner in
-  `EvoNN-Shared/tests/reference_runner.py` and acceptance cases in
-  `EvoNN-Shared/tests/test_reference_runner.py`. Drive real SIGKILL at the
-  committed-row, staged-checkpoint, published-payload and committed-manifest
-  boundaries; reconcile a committed row ahead of its checkpoint without
-  reevaluation. Compare complete row chains and deterministic checkpoint
-  bytes with an uninterrupted run. Check partial and repeated-resume budget
-  identities, reject changed envelopes, restrict selection inputs to a
-  label-free view, and hash the complete source tree around a read-only
-  diagnostic export. These isolated fixtures use no production catalog and
-  cannot satisfy catalog admission or close the parent integrity gate.
-  Targeted verification: `uv run --locked --all-packages --group dev pytest
-  -q EvoNN-Shared/tests/test_reference_runner.py`; canonical verification:
-  `scripts/ci/shared-checks.sh` and the relevant policy/hosted checks above.
-  Local macOS results: 23 reference tests passed in 43.60 s; the canonical
-  Shared script passed all 696 tests in 99.90 s plus lock/Ruff/import/version
-  checks. CI workflow regressions passed (13 tests, one script self-test
-  deselected); the existing macOS persistence job includes the new test module,
-  while Linux discovers it through the standalone Shared script. A local JSON
-  comparison for SIGKILL after payload publication at step 3 of 6 records equal
-  row chains, checkpoint digests and final states; resumed accounting is three
-  inherited plus three fresh evaluations, and both diagnostic exports preserve
-  the complete source-file digests. This is synthetic preparation, not hosted
-  evidence. The label test restricts supplied selector capabilities, not
-  arbitrary Python execution. Failure/invalid-attempt lifecycle coverage,
-  production symbiosis exports, catalog admission, canonical governance checks
-  and joint acceptance remain open. The preparation is carried on
-  `agent/p0-followup-preparation`, stacked on PR #10 until its protected merge;
-  no production capability or completed Phase-0 gate is claimed.
-
-  **Follow-up: failed/invalid attempt lifecycle (2026-09-07).** Prepared on
-  `agent/p0-attempt-lifecycle`, stacked on PR #11 head `41e8e09`. Extend only
-  the synthetic fixture: checkpoint-bind a deterministic outcome schedule and
-  an explicit policy charging one slot to every candidate, including invalid
-  candidates rejected before full evaluation. Persist failed/invalid attempts
-  under distinct metric names, never as successful agreement scores. Fresh
-  failure/invalid counters are separate from inherited cached work; diagnostic
-  totals retain all persisted outcomes across repeated resumes. Catch only the
-  explicitly injected evaluation-failure type; unexpected exceptions propagate.
-  Tests cover mixed and unsuccessful-only budgets, invalid candidates avoiding
-  the evaluator, immutable schedules, and SIGKILL after each of the four durable
-  boundaries followed by exact row/checkpoint equivalence and no recharge.
-  This is not a general engine lifecycle or exactly-once claim for a kill before
-  the row commit. Synthetic artifacts are test fixtures, not a stable production
-  format; earlier test-fixture configuration formats are not migrated. Catalog
-  admission, production exports, native engine failure/recovery behavior and
-  joint Phase-0 acceptance remain open. Verify with
-  `scripts/ci/shared-checks.sh`, `scripts/ci/phase0-contract-checks.sh`, the
-  existing five policy validators and both hosted lanes; exact results belong
-  to the follow-up PR. No frozen public contract or authority pin is changed.
-- [ ] Jointly review the Phase 0 exit before advancing to Contenders/Compare.
-
-**Lane split & sync:** **A:** WP-0.2, 0.3, 0.4, 0.5 (contract/budget/
-telemetry models, identity + RNG). **B:** WP-0.1, 0.6, 0.7, 0.8, 0.9
-(tooling/CI, checkpoints, RunStore/RunWorkspace, benchmarks, LM cache).
-**Joint:** WP-0.10 integrity gate (consumes both lanes) + phase exit.
-*Interface freeze:* canonical-encoding/digest API (A→B for checkpoint
-checksums), export model shapes (A→B for RunWorkspace fixtures), catalog
-loader signatures (B→A for validators). The co-signed freeze is recorded and its
-canonical merge is verified; lane creation is authorized once this attestation
-is merged.
-
-*Joint amendment mini-review:* A-double-prime changes six frozen implementation
-and contract-test paths to close strict container validation, canonical UTC
-parsing, and catalog error-taxonomy gaps. Public symbols and signatures remain
-unchanged, all three surface digests were recomputed, both fresh reciprocal
-reviews approved the exact replacement commit and tree, and no benchmark,
-capability, or scientific evidence was added. Freeze v2 supersedes v1 while
-remaining subject to the same protected merge and attestation sequence.
+**Lane split & sync:** A owns WP-0.2–0.5; B owns WP-0.1 and WP-0.6–0.9;
+WP-0.10 and the Phase 0 exit remain joint. Frozen interfaces are canonical
+encoding/digests, export models and catalog-loader signatures. Freeze v2 and
+its authorization are already merged and verified. This consolidation changes
+no freeze bytes, source pins or acceptance state.
 
 <!-- phase0-interface-freeze:begin -->
 ```yaml
@@ -609,6 +362,7 @@ its layout and catalog-loader checks; integrity suite green including the
 reference resume proof; Tier A packs load-validated. The integrity gate remains
 **open-labeled** for engine-specific resume/speciation hooks until each
 engine proves them — a placeholder can never represent engine integrity.
+
 
 ---
 
@@ -1043,32 +797,3 @@ provenance-envelope schema (A→B, co-signed before fixture work starts).
   acceptance criteria, expected evidence artifact).
 
 ---
-
-## Standing Rules During Execution
-
-- The integrity suite is a permanent CI gate; every new engine adds its
-  resume-equivalence, read-only-export, and (where applicable) speciation
-  hooks before its evidence counts.
-- `evidence validate --require-artifacts` green before any registry
-  citation merges (from Phase 3).
-- Engine-only cohorts for parity/portfolio decisions; contender-including
-  cohorts for external claims; enforced in validators, never by memory.
-- The cumulative-gates rule (Definitions) applies to every exit.
-- Mixed results are classified `inconclusive/mixed` and kept.
-- Sub-WP expansion follows WP numbering unless a recorded dependency note
-  says otherwise; expansions live in the consolidated plan or PR
-  checklists only (never separate plan files).
-- Lane rules (Parallel Execution Model) apply to every phase: ownership
-  boundaries, interface freeze, cross-review by the other lane, and the
-  joint integration WP before any exit-gate evaluation.
-
-## Immediate Next Actions
-
-The durable governance record is `governance/phase0-interface-freeze.yaml` with
-`status: merged_verified` and `lane_authorization: true`. The protected freeze
-PR merged as `5a98d9d45c4f2a7bc35bc75f93141473d0769e94` and that
-canonical merge is verified. No Phase 0 lane or integration branch exists yet.
-
-Once this attestation is merged, the
-Phase 0 lane and integration branches may be created and Phase 0 implementation
-work may begin. WP-0.10 and the Phase 0 exit remain joint.
