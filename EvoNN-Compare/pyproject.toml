@@ -7,10 +7,13 @@ name = "evonn-compare"
 version = "0.0.0"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
-description = "B0 comparison orchestration skeleton for EvoNN"
+description = "File-based fair comparison and evidence reports for EvoNN"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = ["evonn-shared"]
+
+[project.scripts]
+evonn-compare = "evonn_compare.cli:main"
 
 [tool.uv.sources]
 evonn-shared = { workspace = true }

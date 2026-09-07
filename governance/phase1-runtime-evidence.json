@@ -1,0 +1,155 @@
+{
+  "cache_root": "/Users/timokruth/Projekte/EvoNN-phase1-20260907/.artifacts/dataset-cache",
+  "core_audit": {
+    "admitted_run_ids": [
+      "contenders_20260907T174611_54200f380652",
+      "contenders_20260907T174924_0618be02003e",
+      "contenders_20260907T175225_669073240c25",
+      "contenders_20260907T175434_67395686801d"
+    ],
+    "blockers": [],
+    "decision_grade": true,
+    "pack": "tier1_core",
+    "sha256": "de2fc1501957500463d05aae0f8b83caff40a6c303e507f124fe276b1fdf7f23",
+    "status": "passed"
+  },
+  "evidence_class": "phase1_contract_runtime",
+  "limits": [
+    "Smoke @16 completes its budget but cannot cover all 25 minimum floors; not admitted as core.",
+    "Optional enhanced models are explicitly absent from these runtime runs; small Torch fixtures separately test image and causal LM behavior.",
+    "No evolutionary engine or scientific superiority is qualified.",
+    "Source exports and cache bytes are retained locally; receipt hashes bind them but do not replace those artifacts."
+  ],
+  "producer": {
+    "commit": "998acfb7193904f8ffce7a9dae364c59af018d07",
+    "dirty": false,
+    "tree": "8a404b9d2ea37814ab8308afaa743d510b9e7ead"
+  },
+  "recorded_on": "2026-09-07",
+  "runs": [
+    {
+      "actual_evaluations": 128,
+      "budget": 128,
+      "code_dirty": false,
+      "documents": {
+        "manifest.json": "51c4c25be763353aafbd18d90c01d789d15342817fc1eff0fc8e8fec1110c82b",
+        "results.json": "eec070d0d59f3ef319e264babe54663b58cf5a3f03d3cb9fdec2a7f5341e40bf",
+        "summary.json": "efd36ab1f244aa05e26467f15429d1491b048972543e0b4d32b8a22e8b545d1a"
+      },
+      "elapsed_seconds": 212.507621,
+      "export": "runs/tier1_core_b128_s42_20260907T175433_6fd37098/contenders_20260907T175434_67395686801d/symbiosis",
+      "failed_evaluations": 0,
+      "git_commit": "998acfb7193904f8ffce7a9dae364c59af018d07",
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "run_id": "contenders_20260907T175434_67395686801d",
+      "seed": 42,
+      "status": "completed"
+    },
+    {
+      "actual_evaluations": 64,
+      "budget": 64,
+      "code_dirty": false,
+      "documents": {
+        "manifest.json": "c47894875722108cf2986439ebf6cf23bfb5a9139201aee20ffea92d239f745c",
+        "results.json": "c6e93aae45b0c7551cf5a599e99e278dd34c081c4abe64f5f22529757e82516c",
+        "summary.json": "55a33d51eecd605036a33b6da055bb8cb2dadb8abae831034863cf90adf55fd3"
+      },
+      "elapsed_seconds": 129.462868,
+      "export": "runs/tier1_core_b64_s42_20260907T174525_29b97c19/contenders_20260907T174611_54200f380652/symbiosis",
+      "failed_evaluations": 0,
+      "git_commit": "998acfb7193904f8ffce7a9dae364c59af018d07",
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "run_id": "contenders_20260907T174611_54200f380652",
+      "seed": 42,
+      "status": "completed"
+    },
+    {
+      "actual_evaluations": 64,
+      "budget": 64,
+      "code_dirty": false,
+      "documents": {
+        "manifest.json": "66dc37ed472a8af9d530a1035c18916584efbf9fd225d43f700fab68c4a5906b",
+        "results.json": "fa30def5b572900dba378c768330e38b8ae8f4e049346934693cf18311647454",
+        "summary.json": "069f4899e813409fdcefb65abcf0f20fc9530fba9048c4cb171be80821dd0c2d"
+      },
+      "elapsed_seconds": 119.717108,
+      "export": "runs/tier1_core_b64_s43_20260907T174922_2767f83f/contenders_20260907T174924_0618be02003e/symbiosis",
+      "failed_evaluations": 0,
+      "git_commit": "998acfb7193904f8ffce7a9dae364c59af018d07",
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "run_id": "contenders_20260907T174924_0618be02003e",
+      "seed": 43,
+      "status": "completed"
+    },
+    {
+      "actual_evaluations": 64,
+      "budget": 64,
+      "code_dirty": false,
+      "documents": {
+        "manifest.json": "6d7cbfeaf2d85f4bd49a7567d1552d053c07d36d8e668306a8fd410d6e1d205c",
+        "results.json": "faac9a053a792bb00c1c6c4b0098c2eb8b895cd7b9fca75b2fca760e572c79d7",
+        "summary.json": "e2b5f7ca2e1615b8fe61319cee7f8a542cad7babffd57ec7d3ca8d09c31fed5c"
+      },
+      "elapsed_seconds": 118.374673,
+      "export": "runs/tier1_core_b64_s44_20260907T175224_8520f1c1/contenders_20260907T175225_669073240c25/symbiosis",
+      "failed_evaluations": 0,
+      "git_commit": "998acfb7193904f8ffce7a9dae364c59af018d07",
+      "output_quality": "L3",
+      "pack": "tier1_core",
+      "run_id": "contenders_20260907T175225_669073240c25",
+      "seed": 44,
+      "status": "completed"
+    },
+    {
+      "actual_evaluations": 16,
+      "budget": 16,
+      "code_dirty": false,
+      "documents": {
+        "manifest.json": "1648f668cdd076c5c64885a64ce85f3f0515d8d4626ca206af26afed13788700",
+        "results.json": "8a6527bd9fb25e05800aa53adc65869f8a037096d0538a4227419764cb1075c3",
+        "summary.json": "0c0a34bdc8a71aec35a732f51a27bdda72dcc91b2f29e17012b472aff031443b"
+      },
+      "elapsed_seconds": 40.796035,
+      "export": "runs/tier1_core_smoke_b16_s42_20260907T180302_b9e1be89/contenders_20260907T180304_9118d12742f6/symbiosis",
+      "failed_evaluations": 0,
+      "git_commit": "998acfb7193904f8ffce7a9dae364c59af018d07",
+      "output_quality": "L3",
+      "pack": "tier1_core_smoke",
+      "run_id": "contenders_20260907T180304_9118d12742f6",
+      "seed": 42,
+      "status": "completed"
+    }
+  ],
+  "runtime_presets": {
+    "local": {
+      "budget": 64,
+      "pack": "tier1_core",
+      "run_ids": [
+        "contenders_20260907T174611_54200f380652",
+        "contenders_20260907T174924_0618be02003e",
+        "contenders_20260907T175225_669073240c25"
+      ]
+    },
+    "smoke": {
+      "budget": 16,
+      "pack": "tier1_core_smoke",
+      "run_ids": [
+        "contenders_20260907T180304_9118d12742f6"
+      ]
+    }
+  },
+  "schema_version": "1.0.0",
+  "scientific_qualification": false,
+  "source_workspace": "/Users/timokruth/Projekte/EvoNN-phase1-validation-20260907/.artifacts/phase1-evidence",
+  "verification": {
+    "consumer_file_hashes": {
+      "EvoNN-Compare/src/evonn_compare/audit.py": "1e81b59fbf1cbd24e7c8de1836659346a4cea0206ed49d908ff4bbd828dc660b",
+      "EvoNN-Shared/src/evonn_shared/dataset_cache.py": "587eed741bf3a578b7f5e1d629a11eb1489f43ac48f60aed9ae3b061132ff99c"
+    },
+    "dashboard": "Desktop and 390px mobile visually checked; benchmark/task/backend/device/case filters and recomputed winners/pairs tested on separate explicitly synthetic five-system fixtures."
+  },
+  "workspace": ".artifacts/phase1-acceptance-evidence"
+}

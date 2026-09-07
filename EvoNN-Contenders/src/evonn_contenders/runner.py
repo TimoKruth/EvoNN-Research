@@ -152,6 +152,7 @@ def run_contenders(*, pack_name: str, budget: int | None, seed: int, output_pare
                 "seed": seed, "pool_sha256": pool_digest, "pools": config, "enhanced": enhanced,
                 "fit_timeout_seconds": fit_timeout, "runtime": runtime, "evaluation_semantics": SEMANTICS,
                 "initialization_stream": str(derive_stream(seed, StreamName.INIT)),
+                "dataset_versions": {name: importlib.metadata.version(name) for name in ("numpy", "scipy", "scikit-learn", "pandas", "openml")},
                 "git_commit": git_commit, "code_dirty": code_dirty}
     publish_artifact(workspace.config_path, json_bytes(snapshot))
     records, attempts, provenance = [], [], []
