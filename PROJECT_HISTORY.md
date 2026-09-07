@@ -125,6 +125,12 @@ Its successor requirements are incorporated into WP-0.1b/0.8.
   changed files. Preserve that distinction; do not equate a green bot status
   with proven full configured coverage. Follow-up is recorded in WP-0.1a.
 
+- During documentation consolidation, [#23's bot notice](https://github.com/TimoKruth/EvoNN-Research/pull/23#issuecomment-5571484447)
+  confirmed all 29 changed files were skipped by path filters. No review threads
+  were opened. This establishes missing configured coverage for this PR; the
+  bot's successful status is not a completed content review. Configuration
+  correction and verification are tracked in WP-0.1a.
+
 See [the #20 summary](https://github.com/TimoKruth/EvoNN-Research/pull/20#issuecomment-5570512089)
 and [CodeRabbit path-filter documentation](https://docs.coderabbit.ai/configuration/path-instructions).
 

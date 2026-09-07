@@ -40,10 +40,11 @@ Both main CI lanes passed. Gate B0 is closed; Phase 0 remains open.
 | 4 | Phase 1 Contenders + Compare | Begin with one benchmark through fit/evaluate/export/ingest/report, then complete the full Phase 1 scope and exit. |
 
 Supporting follow-ups belong to WP-0.1a: profile the B0 policy bottleneck before
-optimizing it; verify CodeRabbit's effective file selection on a real follow-up
-PR; decide a useful docstring policy for tests. The observed skipped-review
-notice is an investigation item, not a verified global review outage. None of
-these items substitutes for catalog or integrity acceptance.
+optimizing it; correct CodeRabbit's effective file selection and verify it on a
+real PR; decide a useful docstring policy for tests. PR #23 confirmed that all
+29 changed files were skipped by path filters. Its green bot status is not an
+in-content review. None of these items substitutes for catalog or integrity
+acceptance.
 
 ## Execution Rules And Evidence
 
@@ -184,7 +185,8 @@ scripts; required hosted synthetic report generation/validation/upload.
 Remaining: profile B0 policy tests and measure any bounded change against the
 same cases. Final main's macOS B0 step took 18m46s; foundation took 35s. These
 are observations from one run, not a stable benchmark. Investigate effective
-CodeRabbit path selection and the optional docstring warning separately.
+CodeRabbit path selection (all 29 files skipped on #23) and the optional
+docstring warning separately; verify actual reviewed files after any fix.
 
 ### WP-0.7a — Transactional evidence and safe run-directory I/O
 
