@@ -36,6 +36,13 @@ def encode(value):
     return (json.dumps(value, sort_keys=True, allow_nan=False, separators=(",", ":")) + "\n").encode()
 
 
+def encode_snapshot(value):
+    payload = encode(value)
+    if len(payload) > 128 * 1024**2:
+        raise ValueError("checkpoint or transaction exceeds supported 128 MiB transport limit")
+    return payload
+
+
 def utc():
     return datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
 
@@ -101,6 +108,16 @@ def boundary_ownership(directory, name=".boundary.lock", timeout=0):
             yield
         finally:
             fcntl.flock(fd, fcntl.LOCK_UN)
+
+
+def terminal_worker_failure(directory, reason, timeout):
+    """Close a failed dispatch under the worker lock, fencing delayed children."""
+    with boundary_ownership(directory, ".worker.lock", timeout=max(0.001, timeout)):
+        if (directory / "result.json").exists():
+            return json.loads(read_document(directory, "result.json"))
+        result = {"status": "failed", "reason": reason, "charged": int((directory / "started").is_file()), "invalid": 0}
+        publish_artifact(directory / "result.json", encode(result))
+        return result
 
 
 def _process(system, verb, request, directory, timeout):

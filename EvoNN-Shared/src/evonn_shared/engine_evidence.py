@@ -11,6 +11,7 @@ from .dataset_cache import verify_split_cache
 from .benchmarks import resolve_data_root
 from .export_reader import read_document
 from .rng import derive_stream, StreamName
+from .runtime_budget import MAX_ENGINE_EVALUATIONS
 
 MANDATORY_TELEMETRY = {
     "prism": ("family_distribution", "archive_occupancy", "operator_success", "inheritance", "generations"),
@@ -43,6 +44,8 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
     ledger = artifact_json(bundle, "attempts.json")
     state = artifact_json(bundle, "state.json")
     data = artifact_json(bundle, "dataset_provenance.json")
+    if type(config["total"]) is not int or not 1 <= config["total"] <= MAX_ENGINE_EVALUATIONS:
+        raise ValueError("engine evaluation budget exceeds supported bounded history")
     if config != state["config"] or (
         config["system"],
         config["pack"],

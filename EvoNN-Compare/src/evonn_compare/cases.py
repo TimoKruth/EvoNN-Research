@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import json
 
+from .evidence import comparison_fingerprint
 from evonn_shared.canonical import canonical_sha256
 from evonn_shared.catalog import load_parity_pack
 from evonn_shared.engine_evidence import validate_engine_bundle
@@ -44,7 +45,7 @@ def evaluate_case(case: Case, bundles: list[ExportBundle], *, failures: list[dic
         blockers.append("duplicate system within a comparison case")
     if not bundles:
         blockers.append("no valid exported runs")
-    budgets, seed_regimes = [], []
+    budgets, seed_regimes, protocols = [], [], []
     for bundle in bundles:
         manifest = bundle.manifest
         if (manifest.pack_id, manifest.accounting.evaluation_count, manifest.seed) != (case.pack, case.budget, case.seed):
@@ -53,6 +54,8 @@ def evaluate_case(case: Case, bundles: list[ExportBundle], *, failures: list[dic
             blockers.append(f"incomplete run: {manifest.run_id}")
         try:
             validate_engine_bundle(bundle, verify_cache=True)
+            if manifest.system.value in {"prism", "topograph"}:
+                protocols.append(comparison_fingerprint(bundle))
         except (ValueError, OSError, KeyError, TypeError) as error:
             blockers.append(f"{manifest.run_id}: invalid engine evidence: {error}")
         if manifest.accounting.actual_evaluations + manifest.accounting.cached_evaluations != case.budget:
@@ -70,6 +73,8 @@ def evaluate_case(case: Case, bundles: list[ExportBundle], *, failures: list[dic
     engine_backends = {b.manifest.runtime.backend.value for b in bundles if b.manifest.system.value != "contenders"}
     if len(engine_backends) > 1:
         blockers.append("mixed engine backends require separate native and portability cases")
+    if len(set(protocols)) > 1:
+        blockers.append("engine runtime versions, hosts or shared training policies differ")
     engine_only = no_contenders or "contenders" not in systems
     if no_contenders and "contenders" in systems:
         blockers.append("no-contenders case contains contenders")

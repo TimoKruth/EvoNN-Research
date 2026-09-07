@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 import hashlib
+from concurrent.futures.process import BrokenProcessPool
 import importlib.metadata
 import io
 import json
@@ -22,7 +23,10 @@ from evonn_shared.rng import StreamName, derive_stream
 from evonn_shared.run_workspace import create_run_workspace, open_run_workspace, write_report
 from evonn_shared.run_store import open_run_store
 from evonn_shared.telemetry import ArtifactReference
+from evonn_shared.runtime_budget import MAX_ENGINE_EVALUATIONS
 from evonn_shared.runtime_io import (
+    encode_snapshot,
+    terminal_worker_failure,
     boundary_ownership,
     code_identity,
     source_identity,
@@ -138,14 +142,15 @@ def run_engine(
         raise ValueError("run and fit limits must be in (0,1800] seconds")
     if type(seed) is not int or not 0 <= seed < 2**32:
         raise ValueError("seed must be a 32-bit unsigned integer")
+    cache_root = Path(".artifacts/dataset-cache") if cache_root is None else cache_root
     TrainConfig(epochs=epochs, timeout=fit_timeout)
     if type(population_size) is not int or not 2 <= population_size <= 16:
         raise ValueError("population_size must be an integer in [2,16]")
     selection = Backend(backend, device)
     root = shared_root()
     pack = load_parity_pack(pack_name, shared_root=root)
-    if type(budget) is not int or budget < 1 or budget % len(pack.benchmarks):
-        raise ValueError("positive budget divisible across pack required")
+    if type(budget) is not int or not 1 <= budget <= MAX_ENGINE_EVALUATIONS or budget % len(pack.benchmarks):
+        raise ValueError("budget must be in [1,256] and divisible across the pack")
     definitions = [get_benchmark(name, shared_root=root) for name in pack.benchmarks]
     commit, dirty = code_identity()
     system = search_type.system
@@ -213,7 +218,7 @@ def run_engine(
             "elapsed": time.monotonic() - invocation_start,
             "dataset_sha256": hashlib.sha256(encode(provenance)).hexdigest(),
         }
-        publish_checkpoint(workspace.checkpoint_directory, identifier, "step_0", encode(state))
+        publish_checkpoint(workspace.checkpoint_directory, identifier, "step_0", encode_snapshot(state))
         with open_run_store(workspace.root, identifier, create=True):
             pass
     else:
@@ -263,7 +268,7 @@ def run_engine(
                 transaction_path = workspace.root / f"transaction_{step:06d}.json"
                 if transaction_path.exists():
                     transaction = json.loads(read_document(workspace.root, transaction_path.name, limit=128 * 1024**2))
-                    if transaction["before_sha256"] != hashlib.sha256(encode(state)).hexdigest():
+                    if transaction["before_sha256"] != hashlib.sha256(encode_snapshot(state)).hexdigest():
                         raise ValueError("pending transaction does not extend checkpoint")
                     next_state = transaction["state"]
                     inherited = max(inherited, step)
@@ -286,51 +291,64 @@ def run_engine(
                         schema_version="evonn-weight-context/v1",
                         digest_field=None,
                     )
-                    model = search.compile(genome, definition, backend=backend, device=device, seed=model_seed)
-                    if model.parameter_count > 2_000_000:
-                        raise ValueError("compiled candidate exceeds local runtime parameter safety cap")
-                    inheritance = search.inherit(model, definition.id, namespace)
                     generation = search.benchmarks[definition.id]["generation"]
                     full_epochs = max(1, math.ceil(epochs * (0.5 if generation == 0 else 1)))
-                    ratio = {"exact": 0.3, "partial": 0.6, "none": 1.0}[inheritance["mode"]]
-                    allocated = max(1, math.ceil(full_epochs * ratio))
-                    training = TrainConfig(
-                        epochs=allocated,
-                        learning_rate=genome.learning_rate,
-                        weight_decay=genome.weight_decay,
-                        timeout=min(fit_timeout, max(0.001, deadline - time.monotonic())),
-                    )
+                    allocated = full_epochs
+                    inheritance = {"mode": "none", "source": None, "copied_parameters": 0}
                     directory = create_artifact_directory(workspace.root / f"attempt_{step:06d}")
-                    request = {
-                        "benchmark": definition.id,
-                        "shared_root": str(root),
-                        "genome": genome.model_dump(mode="json"),
-                        "backend": backend,
-                        "device": device,
-                        "model_seed": model_seed,
-                        "data": data,
-                        "weights": {k: v.tolist() for k, v in model.weights.items()},
-                        "buffers": {k: [np.asarray(a).tolist() for a in v] for k, v in model.buffers.items()},
-                        "training": {name: value for name, value in vars_free_training(training).items()},
-                        "source_sha256": configuration["source_sha256"],
-                    }
                     try:
-                        result = evaluator.evaluate_many(
-                            [
-                                {
-                                    "request": request,
-                                    "directory": directory,
-                                    "timeout": min(fit_timeout + 10, deadline - time.monotonic()),
-                                }
-                            ]
-                        )[0]
-                    except ValueError as error:
+                        model = search.compile(genome, definition, backend=backend, device=device, seed=model_seed)
+                        if model.parameter_count > 2_000_000:
+                            raise ValueError("compiled candidate exceeds local runtime parameter safety cap")
+                        inheritance = search.inherit(model, definition.id, namespace)
+                        ratio = {"exact": 0.3, "partial": 0.6, "none": 1.0}[inheritance["mode"]]
+                        allocated = max(1, math.ceil(full_epochs * ratio))
+                        training = TrainConfig(
+                            epochs=allocated,
+                            learning_rate=genome.learning_rate,
+                            weight_decay=genome.weight_decay,
+                            timeout=min(fit_timeout, max(0.001, deadline - time.monotonic())),
+                        )
+                        request = {
+                            "benchmark": definition.id,
+                            "shared_root": str(root),
+                            "genome": genome.model_dump(mode="json"),
+                            "backend": backend,
+                            "device": device,
+                            "model_seed": model_seed,
+                            "data": data,
+                            "weights": {k: v.tolist() for k, v in model.weights.items()},
+                            "buffers": {k: [np.asarray(a).tolist() for a in v] for k, v in model.buffers.items()},
+                            "training": {name: value for name, value in vars_free_training(training).items()},
+                            "source_sha256": configuration["source_sha256"],
+                        }
+                    except (ValueError, TypeError, OverflowError) as error:
                         result = {
                             "status": "failed",
-                            "reason": str(error),
-                            "charged": int((directory / "started").is_file()),
-                            "invalid": 0,
+                            "reason": f"invalid pre-fit candidate: {error}",
+                            "charged": 0,
+                            "invalid": 1,
                         }
+                    else:
+                        try:
+                            result = evaluator.evaluate_many(
+                                [
+                                    {
+                                        "request": request,
+                                        "directory": directory,
+                                        "timeout": min(fit_timeout + 10, deadline - time.monotonic()),
+                                    }
+                                ]
+                            )[0]
+                        except (
+                            ValueError,
+                            TypeError,
+                            OverflowError,
+                            OSError,
+                            TimeoutError,
+                            BrokenProcessPool,
+                        ) as error:
+                            result = terminal_worker_failure(directory, str(error), deadline - time.monotonic())
                     _crash("worker", step, crash_at, crash_step)
                     if result["status"] == "ok":
                         ref = ArtifactReference(**result["model_artifact"])
@@ -370,8 +388,11 @@ def run_engine(
                         "attempts": state["attempts"] + [attempt],
                         "elapsed": state["elapsed"] + (time.monotonic() - clock_started),
                     }
-                    transaction = {"before_sha256": hashlib.sha256(encode(state)).hexdigest(), "state": next_state}
-                    publish_artifact(transaction_path, encode(transaction))
+                    transaction = {
+                        "before_sha256": hashlib.sha256(encode_snapshot(state)).hexdigest(),
+                        "state": next_state,
+                    }
+                    publish_artifact(transaction_path, encode_snapshot(transaction))
                     _crash("transaction", step, crash_at, crash_step)
                 attempt = next_state["attempts"][-1]
                 metric = (
@@ -395,7 +416,7 @@ def run_engine(
                 _crash("row", step, crash_at, crash_step)
                 next_state["tip"] = row.row_sha256
                 publication = CheckpointPublication(
-                    workspace.checkpoint_directory, workspace.run_id, f"step_{step}", encode(next_state)
+                    workspace.checkpoint_directory, workspace.run_id, f"step_{step}", encode_snapshot(next_state)
                 )
                 publication.stage()
                 _crash("stage", step, crash_at, crash_step)
@@ -406,7 +427,7 @@ def run_engine(
                 state = next_state
                 clock_started = time.monotonic()
             search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"])
-            derived(workspace.state_path, encode(state))
+            derived(workspace.state_path, encode_snapshot(state))
             status = (
                 "completed"
                 if state["completed"] == budget and all(a["status"] == "ok" for a in state["attempts"])

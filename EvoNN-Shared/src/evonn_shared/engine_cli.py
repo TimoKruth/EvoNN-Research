@@ -66,7 +66,10 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
         if options.verb in {"evolve", "run"}:
             user_config = {}
             if options.config:
-                user_config = yaml.safe_load(read_document(options.config.parent, options.config.name))
+                try:
+                    user_config = yaml.safe_load(read_document(options.config.parent, options.config.name))
+                except yaml.YAMLError as error:
+                    raise ValueError(f"invalid config YAML: {error}") from error
                 if not isinstance(user_config, dict):
                     raise ValueError("config must be a mapping")
             supplied_config_fields = set(user_config)

@@ -258,3 +258,42 @@ def test_invalid_engine_config_keeps_blocked_diagnostics(tmp_path, export_factor
     assert acceptance["blockers"] and rows
     assert all(row["protocol_fingerprint"] is None and row["active_run_seconds"] is None for row in rows)
     assert all(group["n"] == 0 for group in aggregates(rows)["spread"])
+
+
+@pytest.mark.parametrize("field", ["epochs", "backend_version", "host_fingerprint"])
+def test_engine_shared_protocol_mismatch_blocks_case_and_pairs(tmp_path, export_factory, assume_engine_runtime_checked, monkeypatch, field):
+    from evonn_compare import evidence
+    a = export_factory(tmp_path / "a", system="prism")
+    b = export_factory(tmp_path / "b", system="topograph")
+    runtime = b.manifest.runtime.model_copy(update={"precision_mode":"float32 latent; per-layer QAT in genome"})
+    b = type(b)(b.root,b.manifest.model_copy(update={"runtime":runtime}),b.results,b.summary)
+    case = Case("tier1_core", 64, 42)
+    accepted = evaluate_case(case, [a, b])
+    assert not accepted["blockers"]
+    rows = [r for bundle in (a,b) for r in trend_rows(bundle,"same",accepted)]
+    assert len(aggregates(rows)["pairwise_seed_deltas"]) == 8
+    if field == "epochs":
+        original = evidence.artifact_json
+        def altered(bundle, path):
+            data = original(bundle,path)
+            return {**data,"epochs":24} if bundle.root == b.root and path == "config.yaml" else data
+        monkeypatch.setattr(evidence,"artifact_json",altered)
+    else:
+        runtime = b.manifest.runtime.model_copy(update={field:"different"})
+        b = type(b)(b.root,b.manifest.model_copy(update={"runtime":runtime}),b.results,b.summary)
+    blocked = evaluate_case(case,[a,b])
+    assert any("training policies differ" in reason for reason in blocked["blockers"])
+    # Even callers supplying stale acceptance cannot construct incompatible engine deltas.
+    rows = [r for bundle in (a,b) for r in trend_rows(bundle,"mixed",accepted)]
+    assert aggregates(rows)["pairwise_seed_deltas"] == []
+    assert all(not item["comparison_available"] for item in winners(rows))
+
+
+def test_missing_engine_artifact_is_quality_diagnostic(tmp_path, export_factory, monkeypatch):
+    from evonn_compare import quality
+    bundle=export_factory(tmp_path / "engine",system="prism")
+    def missing(*args,**kwargs):
+        raise FileNotFoundError("missing state artifact")
+    monkeypatch.setattr(quality,"validate_engine_bundle",missing)
+    result=quality.classify(bundle.root,propagated=True)
+    assert result["level"] != "L3" and any("missing state artifact" in gap for gap in result["gaps"])

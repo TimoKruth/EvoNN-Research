@@ -41,6 +41,12 @@ insufficient for complete floor coverage. The compact
 export hashes. [PR #29](https://github.com/TimoKruth/EvoNN-Research/pull/29) and
 [PR #30](https://github.com/TimoKruth/EvoNN-Research/pull/30) carry the
 implementation and required hosted acceptance checks.
+Phase 2 engine runs accept at most **256 proposals** and **30 minutes** per run.
+Checkpoints retain full search/attempt snapshots, with a **128 MiB** serialization
+guard before publication and a **32 MiB** weight cache. This deliberately bounds
+local acceptance work; full-history snapshot writes still grow quadratically.
+Larger campaigns require an append-only attempt journal and separate qualification.
+
 Phase 2 implementation is under review. Local numerical, model-replay and real
 SIGKILL tests exercise both engines. The full Phase 2 exit remains open until
 the source-bound cohort and hosted checks pass; no scientific superiority is claimed.

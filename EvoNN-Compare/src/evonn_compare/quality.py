@@ -23,7 +23,7 @@ def classify(root: Path, *, propagated: bool = False) -> dict:
         return result
     try:
         validate_engine_bundle(bundle)
-    except (ValueError, KeyError, TypeError) as error:
+    except (ValueError, OSError, KeyError, TypeError) as error:
         result["gaps"].append(str(error))
     if manifest.timing.elapsed_seconds <= 0:
         result["gaps"].append("positive elapsed time required for throughput")

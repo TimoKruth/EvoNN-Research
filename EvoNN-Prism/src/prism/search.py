@@ -157,13 +157,17 @@ class Search:
             rate = self.operator_stats["crossover"]["ema"] if "crossover" in self.operator_stats else 0.5
             if self.rng.random() < 0.2 + 0.6 * rate:
                 child = crossover(
-                    parent, ModelGenome.model_validate(c["genome"]), self.rng, self.rng.choice(["uniform", "splice"])
+                    parent,
+                    ModelGenome.model_validate(c["genome"]),
+                    self.rng,
+                    self.rng.choice(["uniform", "splice"]),
+                    task=definition.task_kind.value,
                 )
                 op = "crossover"
                 if child.genome_id == parent.genome_id:
-                    child, op = mutate(child, self.rng, allowed)
+                    child, op = mutate(child, self.rng, allowed, task=definition.task_kind.value)
             else:
-                child, op = mutate(parent, self.rng, allowed)
+                child, op = mutate(parent, self.rng, allowed, task=definition.task_kind.value)
             # Preserve a second architectural niche, cycling underrepresented families.
             if slot == 1 and len(allowed) > 1:
                 present = {v["family"] for v in children}

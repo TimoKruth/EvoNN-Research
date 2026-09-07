@@ -21,6 +21,38 @@ def protocol_fingerprint(bundle):
                             schema_version="evonn-comparison-protocol/v1", digest_field=None)
 
 
+def comparison_fingerprint(bundle):
+    """Bind cross-engine comparisons to shared training policy and execution host."""
+    config = artifact_json(bundle, bundle.manifest.config_snapshot.path)
+    runtime = bundle.manifest.runtime.model_dump(mode="json")
+    return canonical_sha256({
+        "runtime": {key: runtime[key] for key in ("backend", "backend_version", "device_class", "host_fingerprint")},
+        "policy": {key: config[key] for key in ("source_sha256", "epochs", "population_size", "fit_timeout")},
+    }, schema_version="evonn-cross-engine-protocol/v1", digest_field=None)
+
+
+def compatible_rows(a, b):
+    if a["seeding"] != b["seeding"]:
+        return False
+    if "contenders" in (a["engine"], b["engine"]):
+        return True
+    return bool(a.get("comparison_fingerprint")) and a.get("comparison_fingerprint") == b.get("comparison_fingerprint")
+
+
+def comparison_groups(rows):
+    """Keep baselines from bridging incompatible engine partitions."""
+    engines = [row for row in rows if row["engine"] != "contenders"]
+    baselines = [row for row in rows if row["engine"] == "contenders"]
+    groups = defaultdict(list)
+    for row in engines:
+        groups[row.get("comparison_fingerprint") or ("unavailable:" + row["run_id"])].append(row)
+    if len(groups) == 1:
+        next(iter(groups.values())).extend(baselines)
+    elif baselines:
+        groups["baseline"] = baselines
+    return list(groups.values())
+
+
 def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
     manifest = bundle.manifest
     elapsed = manifest.timing.elapsed_seconds
@@ -65,17 +97,19 @@ def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
             "parameter_count": result.parameter_count.value, "peak_memory_bytes": result.peak_memory_bytes.value,
             "seeding": manifest.seeding.model_dump(mode="json"), "started_at": manifest.timing.started_at.isoformat()})
     if manifest.system.value in {"prism", "topograph"}:
-        protocol, active = None, None
+        protocol, comparison, active = None, None, None
         try:
             protocol = protocol_fingerprint(bundle)
+            comparison = comparison_fingerprint(bundle)
             if any(ref.path == "state.json" for ref in bundle.summary.artifact_digests):
                 active = artifact_json(bundle, "state.json")["elapsed"]
         except (ValueError, OSError, KeyError, TypeError):
-            protocol, active = None, None  # Invalid evidence remains diagnostic and blocked by admission.
+            protocol, comparison, active = None, None, None  # Invalid evidence remains diagnostic and blocked by admission.
         for row in rows:
             key = (row["benchmark"], row["outcome_id"])
             attempt = attempts[key] if key in attempts else {}
             row["protocol_fingerprint"] = protocol
+            row["comparison_fingerprint"] = comparison
             row["backend_version"] = manifest.runtime.backend_version
             row["active_run_seconds"] = active
             row["wall_clock_note"] = "timestamp span includes resume pauses; active_run_seconds is the consumed execution budget"
@@ -110,12 +144,13 @@ def winners(rows: list[dict], *, projects_only: bool = False) -> list[dict]:
         if not projects_only or row["engine"] != "contenders":
             groups[(row["cohort"], row["case_id"], row["benchmark"])].append(row)
     output = []
-    for (cohort, case, benchmark), values in sorted(groups.items()):
-        ok = [row for row in values if row["status"] == "ok"]
+    partitions = [(key, part) for key, values in sorted(groups.items()) for part in comparison_groups(values)]
+    for (cohort, case, benchmark), values in partitions:
+        ok = [row for row in values if row["status"] == "ok" and row["accounting_state"] == "complete" and row["operating_state"] not in ("exploratory", "reference")]
         chosen = []
         if ok:
             value = (max if ok[0]["direction"] == "max" else min)(row["value"] for row in ok)
-            chosen = [row for row in ok if row["value"] == value]
+            chosen = sorted([row for row in ok if row["value"] == value], key=lambda row: row["engine"])
         else:
             value = None
         tied = len(chosen) > 1
@@ -155,17 +190,21 @@ def aggregates(rows: list[dict]) -> dict:
             "gap": None if error is not None else "at least three independent seeds required for interval",
             "failed_or_missing_runs": sum(row["status"] != "ok" for row in values)})
     pairs = []
-    match = defaultdict(dict)
+    match = defaultdict(list)
     for row in best:
         if row["status"] == "ok" and row["accounting_state"] == "complete" and row["operating_state"] not in ("exploratory", "reference"):
-            match[(row["cohort"], row["case_id"], row["benchmark"], row["seed"])][row["engine"]] = row
-    for key, engines in sorted(match.items()):
+            match[(row["cohort"], row["case_id"], row["benchmark"], row["seed"])].append(row)
+    partitions = [(key, part) for key, values in sorted(match.items()) for part in comparison_groups(values)]
+    for key, values in partitions:
+        engines = {row["engine"]: row for row in values}
+        if len(engines) != len(values):
+            continue
         for left in sorted(engines):
             for right in sorted(engines):
                 if left >= right:
                     continue
                 a, b = engines[left], engines[right]
-                if a["seeding"] != b["seeding"] or (left != "contenders" and right != "contenders" and a["backend"] != b["backend"]):
+                if not compatible_rows(a, b):
                     continue
                 pairs.append({"cohort": key[0], "case_id": key[1], "benchmark": key[2], "seed": key[3],
                     "left": left, "right": right, "left_backend": a["backend"], "right_backend": b["backend"], "portability_only": "numpy_fallback" in (a["backend"], b["backend"]), "raw_delta": a["value"]-b["value"],

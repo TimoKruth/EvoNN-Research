@@ -106,3 +106,24 @@ def test_real_causal_language_model_training_reports_perplexity(backend):
     result = fit(model, x, y, x, y, task="language_modeling", config=TrainConfig(epochs=2, batch_size=4), seed=4)
     assert result["weights_changed"] and result["updates"] == 2
     assert np.isfinite(result["score"]) and result["score"] <= -1
+
+
+def test_language_model_variation_never_introduces_batchnorm():
+    rng = Random(73)
+    parent = ModelGenome(family="causal_transformer", hidden_layers=(8,), norm_type="batch")
+    for _ in range(80):
+        child, _ = mutate(parent, rng, compatible_families("text", "language_modeling"), task="language_modeling")
+        child = crossover(child, parent, rng, task="language_modeling")
+        assert child.norm_type != "batch"
+        compile_genome(child, (5,), 7, "text", "language_modeling")
+        parent = child
+
+
+def test_rope_mutation_respects_head_width():
+    parent = ModelGenome(
+        family="causal_transformer", embedding_dim=4, num_heads=4, kv_heads=1, position_encoding="none"
+    )
+    for seed in range(20):
+        child, _ = mutate(parent, Random(seed), ["causal_transformer"], operator="position", task="language_modeling")
+        assert child.position_encoding != "rope"
+        compile_genome(child, (5,), 7, "text", "language_modeling")

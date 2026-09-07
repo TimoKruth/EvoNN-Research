@@ -138,15 +138,23 @@ def test_dashboard_keeps_native_and_portable_credits_separate():
     if node is None:
         pytest.skip("Node is required for the dashboard JavaScript regression")
     html = render_dashboard({"rows": []})
-    functions = "\n".join(re.findall(r"^function (?:credits|selectedWinners|selectedPairs)\(.*$", html, re.MULTILINE))
+    functions = "\n".join(re.findall(r"^function (?:credits|selectedWinners|selectedPairs|comparisonGroups)\(.*$", html, re.MULTILINE))
     script = "const D={cases:[]};\n" + functions + r'''
 const rows = ['mlx_native','numpy_fallback'].flatMap((backend,i)=>['prism','topograph'].map((engine,j)=>({
 cohort:'current',case_id:String(i),benchmark:'iris',pack:'tier1_core',budget:64,seed:42,
-engine,backend,protocol_fingerprint:'protocol'+i,host_fingerprint:'host',status:'ok',
+engine,backend,comparison_fingerprint:'compatible'+i,protocol_fingerprint:'protocol'+i,host_fingerprint:'host',status:'ok',
 direction:'max',value:1-j*.1,ceiling:null,accounting_state:'complete',operating_state:'contract-fair',seeding:{}})));
 const creditsByProtocol=credits(selectedWinners(rows,false));
 if(creditsByProtocol.length!==2 || creditsByProtocol.some(r=>r.credit!==1)) throw Error('mixed backend credits');
 if(new Set(creditsByProtocol.map(r=>r.backend)).size!==2) throw Error('backend labels missing');
+const mixed=rows.map(r=>({...r,case_id:'same'}));
+if(selectedWinners(mixed,false).length!==2) throw Error('incompatible winners combined');
+if(selectedPairs(mixed).length!==2) throw Error('incompatible pairs combined');
+const baseline={...mixed[0],engine:'contenders',run_id:'baseline'};
+if(selectedPairs([...mixed,baseline]).length!==2) throw Error('baseline bridged incompatible groups');
+const blocked=mixed.map(r=>({...r,accounting_state:'blocked',value:100}));
+if(selectedWinners(blocked,false).some(r=>r.winners.length)) throw Error('blocked winner shown');
+
 '''
     result = subprocess.run([node, "-e", script], capture_output=True, text=True, timeout=10)
     assert result.returncode == 0, result.stderr

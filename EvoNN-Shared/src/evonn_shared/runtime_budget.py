@@ -1,6 +1,9 @@
 """Comparable execution envelope; model-specific work remains in attempt telemetry."""
 
 
+MAX_ENGINE_EVALUATIONS = 256
+
+
 def execution_budget(pack, total, timeout, device):
     return {
         "evaluation": {"total": total, "stages": [{"name": "full", "evaluations": total}]},

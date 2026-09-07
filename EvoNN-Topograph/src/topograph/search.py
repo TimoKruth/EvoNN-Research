@@ -341,17 +341,9 @@ class Search:
                 group = next(group for group in groups if index in group)
                 mate = population[self.rng.choice(group)]
                 child = crossover(parent, mate, self.rng)
-                # Keep the champion of each protected species before mutation fills its slots.
-                if slot >= len(groups):
-                    op = self.scheduler.choose(self.progress, self.rng)
-                    child = mutate(child, self.rng, self.innovations, op)
-                    operators[child.genome_id] = [op, state["scores"][index]["quality"]]
-                else:
-                    # Young species still explore; retain global best in slot zero only.
-                    if slot > 0:
-                        op = self.scheduler.choose(self.progress, self.rng)
-                        child = mutate(child, self.rng, self.innovations, op)
-                        operators[child.genome_id] = [op, state["scores"][index]["quality"]]
+                op = self.scheduler.choose(self.progress, self.rng)
+                child = mutate(child, self.rng, self.innovations, op)
+                operators[child.genome_id] = [op, state["scores"][index]["quality"]]
                 children.append(child.model_dump(mode="json"))
             state.update(
                 population=children,

@@ -111,7 +111,7 @@ def changed(genome, **updates):
     return ModelGenome.model_validate({**genome.model_dump(), **updates})
 
 
-def mutate(genome, rng: Random, allowed, operator=None):
+def mutate(genome, rng: Random, allowed, operator=None, task="classification"):
     operators = [
         "family",
         "width",
@@ -170,7 +170,10 @@ def mutate(genome, rng: Random, allowed, operator=None):
     elif operator == "lr":
         updates["learning_rate"] = other(genome.learning_rate, [0.001, 0.003, 0.01])
     elif operator == "norm":
-        updates["norm_type"] = other(genome.norm_type, ["none", "layer", "rms", "batch"])
+        updates["norm_type"] = other(
+            genome.norm_type,
+            ["none", "layer", "rms"] if task == "language_modeling" else ["none", "layer", "rms", "batch"],
+        )
     elif operator == "dropout":
         updates["dropout"] = other(genome.dropout, [0, 0.1, 0.3])
     elif operator == "weight_decay":
@@ -202,16 +205,21 @@ def mutate(genome, rng: Random, allowed, operator=None):
     elif operator == "top_k":
         updates["moe_top_k"] = other(genome.moe_top_k, [1, 2])
     elif operator == "position":
-        updates["position_encoding"] = other(genome.position_encoding, ["none", "sinusoidal", "rope"])
+        choices = ["none", "sinusoidal"]
+        if genome.embedding_dim // genome.num_heads % 2 == 0:
+            choices.append("rope")
+        updates["position_encoding"] = other(genome.position_encoding, choices)
     elif operator == "embedding":
         updates["embedding_dim"] = other(genome.embedding_dim, [16, 32, 64])
     child = changed(genome, **updates)
     if child.genome_id == genome.genome_id:
         child = changed(genome, learning_rate=other(genome.learning_rate, [0.001, 0.003, 0.01]))
+    if task == "language_modeling" and child.norm_type == "batch":
+        child = changed(child, norm_type="layer")
     return child, operator
 
 
-def crossover(a, b, rng: Random, mode="uniform"):
+def crossover(a, b, rng: Random, mode="uniform", *, task="classification"):
     if mode not in {"uniform", "splice"}:
         raise ValueError("unknown crossover mode")
     data = a.model_dump()
@@ -227,4 +235,6 @@ def crossover(a, b, rng: Random, mode="uniform"):
                 if rng.random() < 0.5:
                     data[key] = b.model_dump()[key]
     data["residual"] = data["residual"] and GROUPS[data["family"]] == "mlp"
+    if task == "language_modeling" and data["norm_type"] == "batch":
+        data["norm_type"] = "layer"
     return ModelGenome.model_validate(data)

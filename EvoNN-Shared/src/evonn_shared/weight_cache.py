@@ -11,10 +11,23 @@ class WeightCache:
             raise ValueError("positive cache capacity required")
         self.capacity = capacity
         self.entries = OrderedDict(state or [])
+        self.sizes = {
+            key: len(json.dumps([key, value], separators=(",", ":")).encode()) for key, value in self.entries.items()
+        }
+        self.entry_bytes = sum(self.sizes.values())
+        self._trim()
+
+    def _trim(self):
+        # JSON array brackets plus commas between [key,value] entries.
+        while len(self.entries) > self.capacity or self.entry_bytes + max(0, len(self.entries) - 1) + 2 > 32 * 1024**2:
+            key, _ = self.entries.popitem(last=False)
+            self.entry_bytes -= self.sizes[key]
+            del self.sizes[key]
 
     def put(self, namespace, identity, topology, family, weights, buffers=None):
         key = namespace + ":" + identity
         if key in self.entries:
+            self.entry_bytes -= self.sizes[key]
             del self.entries[key]
         self.entries[key] = {
             "namespace": namespace,
@@ -24,11 +37,9 @@ class WeightCache:
             "buffers": {k: [np.asarray(a).tolist() for a in v] for k, v in (buffers or {}).items()},
             "weights": {k: np.asarray(v, dtype=np.float32).tolist() for k, v in weights.items()},
         }
-        while (
-            len(self.entries) > self.capacity
-            or len(json.dumps(list(self.entries.items()), separators=(",", ":"))) > 32 * 1024**2
-        ):
-            self.entries.popitem(last=False)
+        self.sizes[key] = len(json.dumps([key, self.entries[key]], separators=(",", ":")).encode())
+        self.entry_bytes += self.sizes[key]
+        self._trim()
 
     def inherit(
         self, model, *, namespace, identity, topology, family, parents=(), compatible_groups=(), allow_partial=True
