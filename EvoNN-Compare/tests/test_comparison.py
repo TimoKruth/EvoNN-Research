@@ -140,3 +140,18 @@ def test_seed_groups_keep_full_budget_envelopes_separate(tmp_path, export_factor
     rows += trend_rows(changed, "b", evaluate_case(Case("tier1_core", 64, 43), [changed]))
     stats = aggregates(rows)
     assert len(stats["spread"]) == 16 and all(item["n"] == 1 for item in stats["spread"])
+
+
+def test_runtime_presets_require_exact_unique_evidence_bindings(monkeypatch):
+    from evonn_compare import cases
+    import json
+    receipt = {"runtime_presets": {"local": {"pack": "tier1_core", "budget": 64, "run_ids": ["present", "missing"]}},
+               "runs": [{"run_id": "present", "pack": "tier1_core", "budget": 64, "status": "completed"}] * 2}
+    monkeypatch.setattr(cases, "read_document", lambda *a: json.dumps(receipt).encode())
+    with pytest.raises(ValueError, match="unique"):
+        cases.resolve_preset("local")
+    receipt["runs"] = receipt["runs"][:1]
+    with pytest.raises(ValueError, match="incomplete"):
+        cases.resolve_preset("local")
+    receipt["runtime_presets"]["local"]["run_ids"] = ["present"]
+    assert cases.resolve_preset("local") == ("tier1_core", 64)

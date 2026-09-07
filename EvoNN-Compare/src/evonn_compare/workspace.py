@@ -16,6 +16,7 @@ from evonn_shared.catalog import load_parity_pack
 from evonn_shared.export_reader import read_document, read_export
 from evonn_shared.telemetry import ArtifactReference
 
+from .audit import artifact_json
 from .cases import Case, evaluate_case, resolve_export_path
 from .evidence import aggregates, trend_rows, winners
 from .quality import classify
@@ -190,11 +191,27 @@ def fair_matrix(*, workspace: Path, pack: str = "tier1_core", budgets: list[int]
     if reset_workspace and workspace.exists():
         archive = workspace.absolute().with_name(workspace.name + ".previous_" + uuid.uuid4().hex)
         with ownership(workspace) as previous:
+            for provenance in previous.rglob("dataset_provenance.json"):
+                export_root = provenance.parent if (provenance.parent / "manifest.json").exists() else provenance.parent / "symbiosis"
+                bundle = read_export(export_root)
+                references = {item.path: item for item in bundle.summary.artifact_digests}
+                if "dataset_provenance.json" not in references:
+                    raise ValueError("cannot archive unbound dataset provenance")
+                read_verified_artifact(provenance.parent, references["dataset_provenance.json"], max_bytes=16 * 1024 * 1024)
+                datasets = artifact_json(bundle, "dataset_provenance.json")
+                if not isinstance(datasets, list):
+                    raise ValueError("cannot archive unreadable dataset provenance")
+                for dataset in datasets:
+                    if not isinstance(dataset, dict) or "cache_directory" not in dataset or not isinstance(dataset["cache_directory"], str):
+                        raise ValueError("cannot archive unreadable cache provenance")
+                    cache_path = Path(dataset["cache_directory"])
+                    if not cache_path.is_absolute() or cache_path.resolve().is_relative_to(previous.resolve()):
+                        raise ValueError("cannot reset workspace with internal cache references; retain this workspace and use a new workspace with an external cache")
             publish_artifact_directory(previous, archive)
     with ownership(workspace) as root:
         for name in ("packs", "runs", "logs", "reports", "trends"):
             create_artifact_directory(root / name)
-        cache = create_artifact_directory(cache if cache is not None else root / "cache")
+        cache = create_artifact_directory(cache if cache is not None else root.with_name(root.name + ".cache"))
         for case in cases:
             comparison_id = case.id + "_" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S") + "_" + uuid.uuid4().hex[:8]
             output = create_artifact_directory(root / "runs" / comparison_id)

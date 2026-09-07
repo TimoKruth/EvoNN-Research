@@ -6,12 +6,32 @@ authoritative: false
 
 # EvoNN Project History
 
-**Consolidated:** 2026-09-07, against main
-`646dde2270d540877c7d9165718eb01a5b05b84c`.
+**Updated:** 2026-09-07. Foundation acceptance is merged through #28;
+Phase 1 implementation/runtime evidence is under final review in #29/#30.
 This is the compact record of completed work, review decisions and verification.
 Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
+
+## Phase 1 runtime verification — 2026-09-07
+
+Five real CPU Contenders runs completed 336 fits at unchanged execution commit
+`998acfb7193904f8ffce7a9dae364c59af018d07`: core@64 at seeds 42/43/44,
+core@128 at seed 42, smoke@16 at seed 42. Each took 41–213 seconds. Core audit
+passes with zero blockers and L3 outputs; missing optional enhanced pressure
+remains visible. Smoke cannot cover all 25 minimum floors. The
+[compact receipt](governance/phase1-runtime-evidence.json) binds original export
+hashes, code/tree, runtime presets and the derived audit; raw artifacts stay
+local and immutable. These are contract-runtime results, not engine training
+or scientific superiority.
+
+Independent producer/consumer reviews found and closed accounting, provenance,
+cache, cohort/admission and ingestion issues. CodeRabbit fixes include direct
+dependencies, controlled errors, bounded reads, protocol-owned execution and
+true held-out model fixtures. Linux confirmed exact consumed reference arrays
+for both synthetic generators: platform-dependent discarded Float64
+intermediates are diagnostic; consumed arrays still require exact hashes.
+No frozen metadata, model strength or numeric tolerance was changed.
 
 ## Durable decisions
 

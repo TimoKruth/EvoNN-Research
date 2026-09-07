@@ -67,3 +67,35 @@ def test_reset_archives_evidence_and_starts_fresh(tmp_path, monkeypatch):
     assert (archives[0] / "evidence.txt").read_text() == "preserve these bytes"
     assert not original.exists() and len(result["cases"]) == 1
     assert result["cases"][0]["acceptance"]["operating_state"] == "exploratory"
+
+
+@pytest.mark.parametrize("internal", [True, False])
+def test_reset_preserves_cache_provenance_or_rejects_before_archive(tmp_path, monkeypatch, export_factory, internal):
+    root = tmp_path / "workspace"
+    cache = (root / "arbitrary-data-location" if internal else tmp_path / "workspace.cache")
+    cache.mkdir(parents=True)
+    cached = cache / "checked.npy"
+    cached.write_bytes(b"checked fixture bytes")
+    bundle = export_factory(root / "runs" / "fixture" / "symbiosis")
+    payload = json.dumps([{"cache_directory": str(cache)}]).encode()
+    (bundle.root / "dataset_provenance.json").write_bytes(payload)
+    (bundle.root.parent / "dataset_provenance.json").write_bytes(payload)
+    reference = {"path": "dataset_provenance.json", "sha256": hashlib.sha256(payload).hexdigest()}
+    for name, key in (("manifest", "artifacts"), ("summary", "artifact_digests")):
+        path = bundle.root / (name + ".json")
+        document = json.loads(path.read_text())
+        document[key].append(reference)
+        document[key].sort(key=lambda item: item["path"])
+        path.write_text(json.dumps(document))
+    original = {str(p.relative_to(root)): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+    monkeypatch.setattr(workspace.subprocess, "run", lambda *a, **k: (_ for _ in ()).throw(FileNotFoundError("fixture")))
+    if internal:
+        with pytest.raises(ValueError, match="internal cache"):
+            workspace.fair_matrix(workspace=root, reset_workspace=True)
+        assert not list(tmp_path.glob("workspace.previous_*"))
+        assert all((root / path).read_bytes() == payload for path, payload in original.items())
+    else:
+        workspace.fair_matrix(workspace=root, reset_workspace=True)
+        archive, = tmp_path.glob("workspace.previous_*")
+        assert all((archive / path).read_bytes() == payload for path, payload in original.items())
+    assert cached.read_bytes() == b"checked fixture bytes"

@@ -16,7 +16,9 @@ uv run evonn-compare output-quality .artifacts/compare
 `trend-report` supports benchmark, budget and system filters. `dashboard`
 rebuilds the static HTML/JSON pair. `compare <export> <export>` inspects an ad
 hoc case. Runs accumulate by default. `--reset-workspace` archives the previous workspace
-as a sibling directory before starting fresh. Named `--preset` aliases require
+as a sibling directory before starting fresh. The default dataset cache is a
+stable sibling `<workspace>.cache`; resets reject older internal cache references
+to preserve their auditability. Named `--preset` aliases require
 a checked-in runtime evidence binding; unavailable future presets fail.
 Source exports and workspace JSONL are
 immutable evidence. Interrupted or altered trend records are rejected, never

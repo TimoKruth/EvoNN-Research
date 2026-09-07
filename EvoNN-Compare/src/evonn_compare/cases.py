@@ -99,8 +99,12 @@ def resolve_preset(name: str) -> tuple[str, int]:
     if name not in presets:
         raise ValueError(f"preset {name!r} has no verified runtime evidence")
     preset = presets[name]
-    supported = [run for run in receipt["runs"] if run["run_id"] in preset["run_ids"]]
-    if (not supported or len(supported) != len(preset["run_ids"])
+    all_ids = [run["run_id"] for run in receipt["runs"]]
+    requested = preset["run_ids"]
+    if len(all_ids) != len(set(all_ids)) or len(requested) != len(set(requested)):
+        raise ValueError("preset evidence requires unique run IDs")
+    supported = [run for run in receipt["runs"] if run["run_id"] in requested]
+    if (not supported or {run["run_id"] for run in supported} != set(requested)
             or any(run["pack"] != preset["pack"] or run["budget"] != preset["budget"] or run["status"] != "completed" for run in supported)):
         raise ValueError("preset evidence binding is incomplete")
     return preset["pack"], preset["budget"]

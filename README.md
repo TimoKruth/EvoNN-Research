@@ -27,20 +27,36 @@ Exact integrations and review decisions are recorded in project history.
 | Component | Implemented | Remaining |
 | --- | --- | --- |
 | Shared | Canonical identities/RNG, strict budgets/telemetry/three-file exports, catalog/pack loaders, checkpoints, LM-cache validation, transactional DuckDB/workspace and verified read-only access | Engine consumers and their evidence |
-| Shared benchmarks | Eight immutable planned definitions, three packs, verified historical provenance and budget/export composition | Dataset runtime admission and demonstrated contender floors |
+| Shared benchmarks | Eight immutable planned definitions, three packs, verified historical provenance and budget/export composition | Future image/LM packs and optional enhanced runtime evidence |
 | Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Engine-specific resume/speciation and scientific qualification |
-| Contenders + Compare | Importable packages, checks and capability manifests | Phase 1 baseline fitting, orchestration, comparison and evidence dashboard |
+| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality and interactive evidence dashboard | Final hosted acceptance; evolutionary engine comparisons |
 | Prism, Topograph, Stratograph, Primordia | Importable packages and bootstrap runtime dependencies/probes | Search/training engines and qualified scientific results |
 
-The next milestone is Phase 1 Contenders + Compare. Contract acceptance does
-not establish engine capability or scientific performance.
+Phase 1 runtime evidence now contains **336 successful fits in five short runs**:
+`tier1_core@64` at seeds 42/43/44, core@128 at seed 42, and smoke@16.
+Core admission passes with zero blockers and all outputs are L3; smoke remains
+insufficient for complete floor coverage. The compact
+[runtime receipt](governance/phase1-runtime-evidence.json) binds exact code and
+export hashes. PRs #29/#30 carry the implementation and final hosted acceptance.
+Next implementation phase: Prism + Topograph; no evolutionary engine or
+scientific superiority is qualified.
+
+Run a verified short preset and rebuild its dashboard:
+
+```sh
+uv run evonn-compare fair-matrix --workspace .artifacts/compare --preset local
+uv run evonn-compare workspace-report .artifacts/compare
+```
+
+`--preset smoke` uses 16 fits; `local` uses 64. Runs accumulate. Each system
+run stays below 30 minutes; no overnight/weekend preset is admitted.
 
 ## Architecture and authority
 
 The seven uv workspace packages are Shared, Contenders, Compare, Prism,
 Topograph, Stratograph and Primordia. `shared-benchmarks/` is data only;
 `evonn_shared.catalog` and `evonn_shared.benchmarks` implement its resolution.
-Engines remain independent. Compare will invoke engine CLIs and consume file
+Engines remain independent. Compare invokes system CLIs and consume file
 exports; Shared contains infrastructure rather than an engine core.
 
 The pinned [Lab specification](claude-spec/README.md) is normative;

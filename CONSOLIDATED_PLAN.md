@@ -33,10 +33,12 @@ are merged. Phase 0 contract acceptance is bound in
 `governance/phase0-acceptance.json`: exact canonical commit/tree, successful
 Linux/macOS evidence, immutable freeze digests and every parent WP's tests.
 
-The next implementation is **Phase 1 Contenders + Compare**: start with one
-benchmark through fit/evaluate/export/ingest/report, then complete WP-1.1–1.8
-and the contenders-only `tier1_core@64` exit. Engine resume/speciation hooks and
-scientific/backend qualification remain open until their owning engine phases.
+**Phase 1 Contenders + Compare is implemented in #29/#30.** Complete final
+review/hosted acceptance before merging and closing the phase. The runtime
+receipt `governance/phase1-runtime-evidence.json` records 336 successful fits,
+three core@64 seeds plus core@128 and smoke@16; core audit passes with zero
+blockers and every run is L3. Next implementation: **Phase 2 Prism + Topograph**.
+Engine resume/speciation and scientific/backend qualification remain open.
 Short validation and baseline runs up to 30 minutes are allowed. Stop before
 starting a multi-hour training campaign and report the exact proposed run.
 
@@ -422,9 +424,14 @@ Spec: claude-spec/05, /06.
 
 ### Active Phase 1 implementation and verification
 
-The implementation starts with one real benchmark through loading, fitting,
-transactional recording, the unchanged three-file export and read-only Compare
-consumption. Then complete all parent requirements below before phase exit.
+Implemented and locally verified through loading, fitting, transactional
+recording, unchanged three-file exports and read-only Compare consumption.
+Final hosted/review acceptance remains open; checkboxes close only with that
+evidence. Runtime receipt: `governance/phase1-runtime-evidence.json`.
+The four core runs took 118–213 seconds each; smoke took 41 seconds. The
+336 fits completed without failed evaluations. Dashboard surfaces and filters
+were checked on desktop and mobile using separate synthetic UI fixtures;
+actual admission uses only the real Contenders exports.
 
 - **Data/runtime:** retain all eight canonical IDs, legacy source parameters,
   split/dtype semantics and frozen metadata. An additive pinned runtime manifest
