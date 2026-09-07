@@ -24,7 +24,7 @@ def prepare(request):
                 result["reason"] = "optional contender not reached within budget"
             except OptionalContenderUnavailable as error:
                 result["reason"] = str(error)
-            except (ValueError, TypeError) as error:
+            except (ValueError, TypeError, OverflowError) as error:
                 result = {"status": "failed", "reason": f"invalid optional configuration: {error}", "charged": 0, "invalid": 1}
         outcomes[name] = result
     return {"status": "ok", "provenance": dataset.provenance, "train_rows": len(dataset.x_train),
