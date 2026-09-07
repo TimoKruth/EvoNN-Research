@@ -22,6 +22,7 @@ from pathlib import Path
 import signal
 
 from evonn_shared.budgets import BudgetAccounting
+from evonn_shared._run_io import publish_new_file
 from evonn_shared.checkpoints import (
     CheckpointPublication, load_latest_checkpoint, publish_checkpoint, read_checkpoint_manifest,
 )
@@ -247,8 +248,7 @@ def export_diagnostic(root, destination):
     if destination.resolve().is_relative_to(root.resolve()):
         raise ValueError("diagnostic export must be outside the source workspace")
     diagnostic = diagnostic_data(root)
-    with destination.open("xb") as output:
-        output.write(encode(diagnostic))
+    publish_new_file(destination, encode(diagnostic))
 
 
 if __name__ == "__main__":

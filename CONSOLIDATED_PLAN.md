@@ -357,7 +357,13 @@ or closes Phase 0. After parent merges, retarget and revalidate each child.
   source digests. Reports carry host metadata and the synthetic evidence class;
   internal validation is not source authenticity or production qualification.
   Existing work/output is never reused. A failed case produces no final report.
-- [ ] Atomic artifact publication: no overwrite or partial visible export.
+- [x] Atomic artifact publication: no overwrite or partial visible export.
+  A small internal `_run_io.publish_new_file` helper stages/fsyncs bytes before
+  no-clobber hard-link publication in an opened no-follow parent directory.
+  Diagnostics and probe reports use it. Tests cover existing aliases/files,
+  partial writes, file/directory fsync failure and concurrent publishers.
+  Post-publication directory-fsync failure reports uncertain durability;
+  a complete output may already exist and is never removed as a rollback.
 - [ ] Hosted integrity evidence: execute and retain the synthetic probe on both
   hosts, document evidence limits and merge order.
 
