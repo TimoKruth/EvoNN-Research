@@ -1,4 +1,4 @@
-"""EvoNN Stratograph engine skeleton."""
+"""EvoNN Stratograph bounded evolutionary engine."""
 
 SYSTEM = "stratograph"
 __version__ = "0.0.0"

@@ -1,0 +1,9 @@
+schema_version: 1
+pack: tier1_core
+budget: 64
+epochs: 12
+population_size: 4
+backend: numpy_fallback
+target_device: cpu
+timeout: 1200
+fit_timeout: 120

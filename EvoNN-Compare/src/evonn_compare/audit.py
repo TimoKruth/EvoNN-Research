@@ -7,10 +7,11 @@ import math
 from evonn_shared.artifact_io import read_verified_artifact
 from evonn_shared.benchmarks import resolve_data_root
 from evonn_shared.canonical import canonical_sha256
-from evonn_shared.catalog import get_benchmark, load_parity_pack
+from evonn_shared.active_catalog import get_benchmark, load_parity_pack
 from evonn_shared.export_reader import read_document
 from evonn_shared.dataset_cache import verify_split_cache
 from evonn_shared.rng import derive_stream, StreamName
+from evonn_shared.runtime_catalog import runtime_manifest as read_runtime_manifest
 
 
 def artifact_json(bundle, name: str):
@@ -112,6 +113,8 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
                 if name in seen or name not in floor:
                     raise ValueError("duplicate or foreign dataset provenance")
                 seen.add(name)
+                runtime_payload,runtime_manifest=read_runtime_manifest(name)
+                runtime_hash=hashlib.sha256(runtime_payload).hexdigest()
                 definition = get_benchmark(name)
                 if dataset["definition_sha256"] != canonical_sha256(definition.model_dump(mode="json"), schema_version="evonn.catalog.benchmark/v1", digest_field=None):
                     raise ValueError("dataset definition provenance differs")

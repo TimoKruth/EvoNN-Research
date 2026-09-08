@@ -1,0 +1,14 @@
+schema_version: 1.0.0
+id: shakespeare_byte_lm
+display_name: Shakespeare Byte Next Token
+status: experimental
+task_kind: language_modeling
+input_modality: text
+input_shape: [16]
+output_dim: 256
+primary_metric: {name: perplexity, direction: min}
+ceiling: {value: 1.0, tie_policy: not_evidence}
+budget_epochs: 8
+runtime_class: local
+required_contenders: [bigram_lm, trigram_lm, unigram_lm]
+tags: [byte_lm, real_text, tier_b]

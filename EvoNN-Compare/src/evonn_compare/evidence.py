@@ -4,7 +4,7 @@ import math
 import json
 import statistics
 
-from evonn_shared.catalog import get_benchmark
+from evonn_shared.active_catalog import get_benchmark
 from evonn_shared.canonical import canonical_sha256
 from .audit import artifact_json
 
@@ -13,9 +13,9 @@ def protocol_fingerprint(bundle):
     """Bind repeated runs to runtime identity and seed-independent engine policy."""
     runtime = bundle.manifest.runtime.model_dump(mode="json")
     policy = {}
-    if bundle.manifest.system.value in {"prism", "topograph"}:
+    if bundle.manifest.system.value in {"prism", "topograph", "stratograph", "primordia"}:
         config = artifact_json(bundle, bundle.manifest.config_snapshot.path)
-        keys = ("source_sha256", "epochs", "population_size", "fit_timeout", "benchmark_pooling", "novelty_weight")
+        keys = ("source_sha256", "epochs", "population_size", "fit_timeout", "benchmark_pooling", "novelty_weight", "variant", "evaluator_fidelity")
         policy = {key: config[key] for key in keys if key in config}
     return canonical_sha256({"system": bundle.manifest.system.value, "runtime": runtime, "policy": policy},
                             schema_version="evonn-comparison-protocol/v1", digest_field=None)
@@ -59,7 +59,7 @@ def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
     successes = bundle.results.coverage.ok
     rows = []
     attempts = {}
-    if manifest.system.value in {"contenders", "prism", "topograph"}:
+    if manifest.system.value in {"contenders", "prism", "topograph", "stratograph", "primordia"}:
         try:
             ledger = artifact_json(bundle, "attempts.json")
             attempts = {(item["benchmark_id"], item["outcome_id"]): item for item in ledger["attempts"] if "outcome_id" in item}
@@ -96,7 +96,7 @@ def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
             "train_seconds": result.train_seconds.value, "model_bytes": result.model_bytes.value,
             "parameter_count": result.parameter_count.value, "peak_memory_bytes": result.peak_memory_bytes.value,
             "seeding": manifest.seeding.model_dump(mode="json"), "started_at": manifest.timing.started_at.isoformat()})
-    if manifest.system.value in {"prism", "topograph"}:
+    if manifest.system.value in {"prism", "topograph", "stratograph", "primordia"}:
         protocol, comparison, active = None, None, None
         try:
             protocol = protocol_fingerprint(bundle)
@@ -117,7 +117,7 @@ def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
             row["latency_seconds"] = attempt["latency_seconds"] if "latency_seconds" in attempt else None
             row["packed_bytes_estimate"] = attempt["packed_bytes_estimate"] if "packed_bytes_estimate" in attempt else None
             row["allocated_epochs"] = attempt["allocated_epochs"] if "allocated_epochs" in attempt else None
-            row["model_family"] = attempt["genome"].get("family", "dag") if "genome" in attempt else None
+            row["model_family"] = attempt["genome"].get("family", attempt["genome"].get("profile", "primitive" if manifest.system.value=="primordia" else "dag")) if "genome" in attempt else None
             row["evidence_class"] = "portability_only" if manifest.runtime.backend.value == "numpy_fallback" else "native_runtime"
     return rows
 

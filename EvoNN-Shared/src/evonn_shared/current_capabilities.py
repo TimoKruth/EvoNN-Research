@@ -4,7 +4,7 @@ from copy import deepcopy
 
 from .backend_contract import EXPECTED_MANIFESTS as B0_MANIFESTS
 
-CURRENT_CAPABILITIES_VERSION = "3.0.0"
+CURRENT_CAPABILITIES_VERSION = "4.0.0"
 EXPECTED_MANIFESTS = deepcopy(B0_MANIFESTS)
 EXPECTED_MANIFESTS["EvoNN-Contenders/backend-capabilities.json"] = {
     "schema_version": "1.0.0",
@@ -67,3 +67,13 @@ EXPECTED_MANIFESTS["EvoNN-Topograph/backend-capabilities.json"] = {
     ],
     "evidence": {"scientific": False, "portability": False, "producer_conformance": False},
 }
+
+for directory, system, fidelity in (
+    ("EvoNN-Stratograph", "stratograph", "Deterministic hierarchy features with a differentiated GELU head; no end-to-end hierarchy claim."),
+    ("EvoNN-Primordia", "primordia", "Package-local differentiated primitive circuits with architecture and epoch caps."),
+):
+    manifest = deepcopy(EXPECTED_MANIFESTS["EvoNN-Prism/backend-capabilities.json"])
+    manifest["system"] = system
+    for capability in manifest["capabilities"]:
+        capability["dependency_condition"] = fidelity + (" Native Apple Silicon runtime." if capability["id"] == "mlx_native" else " Portability-only evidence.")
+    EXPECTED_MANIFESTS[directory + "/backend-capabilities.json"] = manifest

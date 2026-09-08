@@ -12,7 +12,7 @@ import uuid
 
 from evonn_shared._run_io import open_directory, open_regular_at
 from evonn_shared.artifact_io import append_artifact, create_artifact_directory, publish_artifact, publish_artifact_directory, read_verified_artifact
-from evonn_shared.catalog import load_parity_pack
+from evonn_shared.active_catalog import load_parity_pack
 from evonn_shared.export_reader import read_document, read_export
 from evonn_shared.telemetry import ArtifactReference
 
@@ -242,7 +242,7 @@ def fair_matrix(*, workspace: Path, pack: str = "tier1_core", budgets: list[int]
                 command = [f"evonn-{system}", "run", "--pack", case.pack, "--budget", str(case.budget),
                            "--seed", str(case.seed), "--output", str(output), "--cache", str(cache),
                            "--timeout", str(timeout), "--fit-timeout", str(fit_timeout)]
-                if system in {"prism", "topograph"}:
+                if system in {"prism", "topograph", "stratograph", "primordia"}:
                     command.extend(["--backend", engine_backend, "--epochs", str(engine_epochs)])
                 if system == "contenders" and enhanced:
                     command.append("--enhanced")

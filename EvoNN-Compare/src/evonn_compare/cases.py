@@ -5,7 +5,7 @@ import json
 
 from .evidence import comparison_fingerprint
 from evonn_shared.canonical import canonical_sha256
-from evonn_shared.catalog import load_parity_pack
+from evonn_shared.active_catalog import load_parity_pack
 from evonn_shared.engine_evidence import validate_engine_bundle
 from evonn_shared.export_reader import ExportBundle, read_document
 
@@ -54,7 +54,7 @@ def evaluate_case(case: Case, bundles: list[ExportBundle], *, failures: list[dic
             blockers.append(f"incomplete run: {manifest.run_id}")
         try:
             validate_engine_bundle(bundle, verify_cache=True)
-            if manifest.system.value in {"prism", "topograph"}:
+            if manifest.system.value in {"prism", "topograph", "stratograph", "primordia"}:
                 protocols.append(comparison_fingerprint(bundle))
         except (ValueError, OSError, KeyError, TypeError) as error:
             blockers.append(f"{manifest.run_id}: invalid engine evidence: {error}")

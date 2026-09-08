@@ -13,7 +13,7 @@ import time
 import uuid
 import numpy as np
 from evonn_shared.artifact_io import create_artifact_directory, publish_artifact, read_verified_artifact
-from evonn_shared.catalog import get_benchmark, load_parity_pack
+from evonn_shared.active_catalog import get_benchmark, load_parity_pack
 from evonn_shared.canonical import canonical_sha256
 from evonn_shared.checkpoints import CheckpointPublication, load_latest_checkpoint, publish_checkpoint
 from evonn_shared.datasets import shared_root
@@ -425,6 +425,8 @@ def run_engine(
 def perplexity_from_logits(predicted, targets, backend):
     """Reproduce the positive exported LM metric using the training loss algebra."""
     b = backend
+    if targets.ndim == 1 and predicted.ndim == 3:
+        predicted = predicted[:, -1, :]
     logits = b.array(predicted).reshape((-1, predicted.shape[-1]))
     shifted = logits - b.array(b.numpy(logits).max(axis=-1, keepdims=True))
     log_probs = shifted - b.log(b.exp(shifted).sum(axis=-1, keepdims=True))

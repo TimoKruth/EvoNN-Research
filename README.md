@@ -31,7 +31,8 @@ Exact integrations and review decisions are recorded in project history.
 | Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Engine-specific resume/speciation and scientific qualification |
 | Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality, append-only evidence registry, paired-seed L4 analysis and evidence dashboard | Evolutionary engine comparisons and scientific qualification |
 | Prism + Topograph | Package-local MLX/NumPy models, bounded AdamW search, inheritance, atomic resume, portable model exports and Compare ingestion | Larger scientific campaigns; repeated native evidence through registry analysis |
-| Stratograph + Primordia | Importable packages and bootstrap runtime dependencies/probes | Search/training engines and qualified scientific results |
+| Stratograph | Hierarchical cell search, trained-head proxy, five ablations, winner motifs, resume/replay | End-to-end hierarchy learning and scientific comparison claims |
+| Primordia | Trained primitive circuits, bounded archive/cost policy, verified motif/seed bank | Native cross-engine ingestion and proven transfer gains |
 
 Phase 1 runtime evidence now contains **336 successful fits in five short runs**:
 `tier1_core@64` at seeds 42/43/44, core@128 at seed 42, and smoke@16.
@@ -256,3 +257,14 @@ Unless otherwise indicated, original code and documentation are licensed under
 GNU GPL version 3 only (`GPL-3.0-only`); see [LICENSE](LICENSE). Each workspace
 package carries its own copy for distribution. The software comes without
 warranty. Dependencies, datasets and model weights retain their own licenses.
+
+The Phase 4 runtime adds `tier_b_core_v2`: OpenML banknote authentication,
+small digit images, diabetes regression and a real Shakespeare byte next-token
+benchmark. The text source is pinned to an immutable [char-rnn snapshot](https://github.com/karpathy/char-rnn/blob/370cbcd448eb7daf32f21a6be560b70e0b33c4e3/data/tinyshakespeare/input.txt).
+Raw text is split before context creation; the final 15% is protected and unused.
+The bounded profile samples at most 1,536 training and 384 validation contexts.
+The historical catalog and runtime identities remain immutable; active runtime
+consumers use the additive extension through `evonn_shared.active_catalog`.
+Package READMEs document [Stratograph](EvoNN-Stratograph/README.md) and
+[Primordia](EvoNN-Primordia/README.md). Large repeated comparison and native
+transfer claims require subsequent evidence, not these bounded configurations.

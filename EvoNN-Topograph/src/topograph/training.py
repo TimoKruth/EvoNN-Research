@@ -81,6 +81,8 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
 
     def loss(parameters, features, targets, training=False, mask_seed=0):
         logits = model.forward(parameters, b.array(features), training=training, seed=mask_seed)
+        if task == "language_modeling" and targets.ndim == 1 and logits.ndim == 3:
+            logits = logits[:, -1, :]
         if regression:
             return ((logits.reshape((-1,)) - b.array(targets.reshape(-1))) ** 2).mean()
         logits = logits.reshape((-1, logits.shape[-1]))

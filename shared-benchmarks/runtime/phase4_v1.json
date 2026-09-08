@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0.0",
+  "evidence_class": "contract",
+  "scope": "Phase 4 bounded runtime reference: OpenML 1462 and real byte-language modeling; no statistical or transfer qualification.",
+  "versions": {
+    "numpy": "2.4.4",
+    "scipy": "1.17.1",
+    "scikit-learn": "1.8.0",
+    "pandas": "3.0.2",
+    "openml": "0.15.1"
+  },
+  "split_policy": "per-binding: banknote stratified 80/20; text contiguous 70/15/15 before context windows, bounded train/validation samples, protected final 15 percent unused",
+  "reference_seed": 42,
+  "benchmarks": {
+    "banknote_classification": {
+      "loader": "openml_1462",
+      "openml_id": 1462,
+      "target": "Class",
+      "source_url": "https://www.openml.org/d/1462",
+      "license": "Public",
+      "definition_sha256": "b6377b6594e1b18fb4c93c62deac6d2792a0abc1b3d74472d189e94dc664d41f",
+      "reference_raw_sha256": "7da69d2aa94ed7e72465f67c81f489090a08a2ec780ce2c0318c962953997e3d",
+      "reference_split_sha256": "68b9113159396fc1e3a260c59e2fda802646a3ca256f7e02cda9807be78f5d46"
+    },
+    "shakespeare_byte_lm": {
+      "loader": "shakespeare_bytes_v1",
+      "source_url": "https://raw.githubusercontent.com/karpathy/char-rnn/370cbcd448eb7daf32f21a6be560b70e0b33c4e3/data/tinyshakespeare/input.txt",
+      "source_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+      "source_size_bytes": 1115394,
+      "license": "Public-domain Shakespeare text; source transcription from char-rnn tinyshakespeare",
+      "context": 16,
+      "stride": 8,
+      "train_limit": 1536,
+      "validation_limit": 384,
+      "split_fractions": [
+        0.7,
+        0.85
+      ],
+      "test_policy": "last 15 percent reserved and never consumed",
+      "definition_sha256": "795b93c1b4293a9c8114aaa7376463c75c9efde68a6914f43b65886908669cf0",
+      "reference_raw_sha256": "1fa83253b4be6e63cb8436a4c41f0fc18600e85bd8f777e69da113d7b03ffe83",
+      "reference_split_sha256": "0d72f230d23e86d7888571173fa57a377306de3bd33d5e2040c4cbcf41599be9"
+    }
+  },
+  "reference_date": "2026-09-08"
+}

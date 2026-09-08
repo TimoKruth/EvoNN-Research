@@ -1,0 +1,11 @@
+schema_version: 1.0.0
+pack_name: tier_b_core_v2
+ladder_tier: B
+benchmarks: [banknote_classification, digits_image, diabetes_regression, shakespeare_byte_lm]
+budget_policy: {evaluation_count: 96}
+symmetry: symmetric
+modalities: [image, tabular, text]
+expected_local_runtime_class: medium
+minimum_contenders: [bigram_lm, extra_trees, hist_gb, mlp_wide, ridge_or_linear, svr_or_nystroem_svr, trigram_lm, unigram_lm]
+suitability: daily
+full_fidelity_local_safe: true

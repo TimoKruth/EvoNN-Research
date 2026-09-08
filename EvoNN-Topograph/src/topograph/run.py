@@ -14,7 +14,7 @@ import time
 import uuid
 import numpy as np
 from evonn_shared.artifact_io import create_artifact_directory, publish_artifact, read_verified_artifact
-from evonn_shared.catalog import get_benchmark, load_parity_pack
+from evonn_shared.active_catalog import get_benchmark, load_parity_pack
 from evonn_shared.canonical import canonical_sha256
 from evonn_shared.checkpoints import CheckpointPublication, load_latest_checkpoint, publish_checkpoint
 from evonn_shared.datasets import shared_root

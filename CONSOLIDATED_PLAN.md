@@ -776,6 +776,71 @@ artifact shape (B→Phase 5, co-signed here because Primordia emits it).
   clone+specialize counts/motif frequency; Primordia: primitive counts/
   bank size/promotion counts); CI scripts in the Linux lane.
 
+### Active Phase 4 implementation contract
+
+**Requirements:** claude-spec/09 Genome, Compilation, Operators, Ablation,
+Motif Mining and Diagnostics; /10 Search Lane, Artifacts and Standalone Rule;
+/11 seed artifact contract; /02 benchmark ladder; /03 accounting and fidelity.
+**Depends on / Produces / Blocks:** reviewed Phase 3 analysis interface; two
+independent package runtimes and Shared seed-envelope v1; blocks the larger
+five-system comparison campaign. Native transfer ingestion remains Phase 5.
+**Hosts/backends:** bounded NumPy and native MLX candidate evaluation; native
+proxy execution is labeled separately from end-to-end hierarchy training.
+
+- **WP-4.1a — Hierarchy genome:** strict macro/cell DAGs, reachability and
+  references, deterministic codec, macro/cell depth and reuse descriptors.
+- **WP-4.2a — Executable hierarchy proxy:** shared compiled cell objects
+  process their own macro inputs; deterministic projections depend on cell
+  semantics, not arbitrary IDs. Fit a real GELU readout, with inherited trained
+  head weights. Preserve clone function until specialization. Classification,
+  regression, image and causal-LM interfaces expose honest proxy fidelity.
+- **WP-4.3a — Hierarchy search:** crossover-first segment inheritance,
+  clone/specialize/rewire/skip/width/activation/motif changes; explicit task and
+  dimension seed profiles and budget-dependent depth limits. No broad
+  benchmark-leader exploitation slot. Resumable lineage and occupied niches.
+- **WP-4.4a — Ablation and motifs:** matched-budget flat/unshared/shared/
+  no-clone/no-motif-bias variants; mine repeated sub-cell structures from actual
+  winners with local/global and clone lineage. Report LM evaluator/genotype/
+  compiler/search diagnostics with unavailable causes explicit.
+- **WP-4.5a — Primitive genome:** tiny sparse/gated circuits, validated
+  connectivity, merge and activation operators; package-local differentiable
+  compiler, training, loader boundary and search. Record necessary copied
+  infrastructure in the required compact duplication notes.
+- **WP-4.5b — Cheap search:** explicit family/slot epoch caps, architecture
+  clamps, cheaper mutations for weak/expensive parents, bounded elite archive,
+  benchmark/family leaders and matched per-benchmark scheduling.
+- **WP-4.6a — Exported bank:** strict Shared metadata envelope with local
+  genotype encoding, source/data/split/cost/runtime provenance, checksums,
+  descriptors, target compatibility and versioned ingestion instructions.
+  Produce ranked bank, benchmark-conditioned seeds and search leaders;
+  reconstruct a missing bank from durable best/trial artifacts. No claimed
+  downstream influence or native transfer before Phase 5 proof.
+- **WP-4.7a — Tier B data:** additive catalog/runtime definitions for real
+  OpenML, small image and LM inputs; preserve existing IDs/splits. Add only
+  packs/presets supported by bounded verified runtime. Keep inadequate floors
+  and unqualified broader cohorts explicitly blocked.
+- **WP-4.8a — Integration:** explicit worker module and loader callbacks,
+  checksum-bound extra artifacts before export publication, complete Compare
+  ledger/fidelity/telemetry validation for all four engines. Preserve historical
+  bootstrap receipts while moving current probes to an honest contract role.
+
+**Tests first:** invalid/cyclic/unreachable genomes; shared executor identity
+and different inputs; clone equivalence then specialization; real nonzero
+updates and head inheritance; deterministic resume and process-death fences;
+all ablation variants; invalid/missing seed provenance and bank reconstruction;
+unsupported task evidence never silently qualified; both native and portable
+winner replay and CLI conformance.
+**Verify:** package CI scripts; Shared foundation and import/governance checks;
+short Tier-A/core@64 L3 qualification and shared-vs-flat ablation; both hosted
+lanes. Each local qualification command stays below 30 minutes.
+**Evidence:** compact runtime receipt and registry-bound contract decisions;
+large model/data artifacts transported externally. Separate proxy, portability,
+native runtime, scientific superiority and transfer evidence.
+**Failure conditions:** engine coupling, proxy mislabeled end-to-end, missing
+budget charges, unbound artifacts, false L3/L4 promotion or failing checks.
+The full Tier-B three-seed five-system exit cohort stays a separate campaign;
+stop before starting a multi-hour training/comparison campaign.
+
 **Phase 4 exit:** five-system-cohort Tier B `trusted-extended` at 3 seeds —
 where `trusted-extended` requires **L4 repeated-seed aggregates, a
 statistical decision label, complete contender floor, and validated

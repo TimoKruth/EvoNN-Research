@@ -16,7 +16,7 @@ concurrency:
 jobs:
   macos-engines:
     runs-on: macos-15
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -61,6 +61,8 @@ jobs:
         run: |
           scripts/ci/prism-checks.sh
           scripts/ci/topograph-checks.sh
+          scripts/ci/stratograph-checks.sh
+          scripts/ci/primordia-checks.sh
       - name: Verify real engine resume, replay and Compare integration
         env:
           EVONN_TEST_BACKEND: mlx_native

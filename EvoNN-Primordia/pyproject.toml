@@ -7,14 +7,17 @@ name = "evonn-primordia"
 version = "0.0.0"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
-description = "B0 Primordia engine skeleton for EvoNN"
+description = "Primordia bounded evolutionary search for EvoNN"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "evonn-shared",
+    "evonn-shared[datasets]",
     "numpy>=2.1,<3",
     "mlx>=0.25,<1; sys_platform == 'darwin' and platform_machine == 'arm64'",
 ]
+
+[project.scripts]
+evonn-primordia = "evonn_primordia.cli:main"
 
 [tool.uv.sources]
 evonn-shared = { workspace = true }
