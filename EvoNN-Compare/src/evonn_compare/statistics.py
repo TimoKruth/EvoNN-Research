@@ -263,9 +263,9 @@ def compare_cohorts(rows, *, before, after, materiality=.01, request=None):
     rows=best_rows(rows)
     selected=sorted([r for r in rows if r['label'] in (before,after)],key=lambda r:(r['pack'],r['budget'],r['engine'],r['label'],r['seed'],r['benchmark'],r['run_id']))
     groups=defaultdict(list)
-    targets=None if request is None else {p.engine for p in request.panels}
+    targets=None if request is None else {(p.pack,p.budget,p.engine) for p in request.panels}
     for row in selected:
-        if targets is None or row['engine'] in targets:
+        if targets is None or (row['pack'],row['budget'],row['engine']) in targets:
             groups[(row['pack'],row['budget'],row['engine'])].append(row)
     panels={} if request is None else {(p.pack,p.budget,p.engine):p for p in request.panels}
     results=[_paired_group(values,before,after,materiality,panels[key] if key in panels else None,request) for key,values in sorted(groups.items())]

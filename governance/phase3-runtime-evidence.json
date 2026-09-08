@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "phase": 3,
+  "date": "2026-09-08",
+  "scope": "registry/statistical contract qualification; no advancement claim",
+  "consumer": {
+    "code_dirty": false,
+    "git_commit": "5276d544975bc074b5d701456d8fcdd572af9007",
+    "source_sha256": "4d2b74fb91143f13a9a653532bbe55b3cf72c63d08b1c607d9e133fed66b12c8"
+  },
+  "producer_revisions": {
+    "before": "1828b2813292048197836ac32033e9604690aba7",
+    "after": "32cd43fdd0a57270c98a84bafdab3d51790a9ffc"
+  },
+  "analysis": {
+    "pack": "tier1_core",
+    "budget": 64,
+    "engine": "prism",
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "n": 3,
+    "effect_mean": 0.0,
+    "bootstrap_ci95": [
+      0.0,
+      0.0
+    ],
+    "statistical_label": "no_material_change",
+    "aggregation_label": "no_material_change",
+    "blockers": [],
+    "level": "L4"
+  },
+  "decision_category": "inconclusive",
+  "registry": {
+    "index_sha256": "3fe0e5fbcccce482cab9cabb3917889c0b0a0212e08900bf177bc85c86f2eeff",
+    "record_ids": [
+      "6303b74c7753d4a6fd60b9f24d4b5bf437468dd1d67c6c70215b2e94504936c5",
+      "1c46ff2668a2e7c297e5f784078a964c1a91cd51a6f9759f6c7871b4507a6b6f",
+      "b32b996080df629d1540a848d4f8b9d3c27a8bf779ebb9eb4dd42283f8325efc",
+      "d51919cdc66adae97c14d1caa7b89e28c17701eed0261b83bdf1828592e4d8ee",
+      "c3f97a06684addbb688d4698a31597997abc94381909da626675519c8a32a542",
+      "592b9a576b23daf3b8fc6704867a13aa3ef5032510eb65e982d1d433e0faab3e",
+      "fc1cfe4bc27ce9d325cfbf053bf91023291b0b6a7f1472f411ae618dd10660eb",
+      "ce748999a978d8b26cc6108e8be7484fd3cf7567afda788640170f51af6a221f",
+      "ff392e51d8521d9594840f8a5c479367fb0a5e68593e29fd28183dfd5c4550cc",
+      "03cdcc9f20f6b6fa61a1a8a10c81576b46fc0d7df0dd94467150044175b01d0e",
+      "53a172ffd23b9c2a136baa54707646f39677716ea079ea59fe5a0a50fecddb5a",
+      "f3ff578e45c3f4e928f481ed08b4d4614450fa67fd35fd5835cd32475aec11eb",
+      "40429ac7620a6243b72db5dc149cf3709c8f93484d02edc1204f67ba85e806e2",
+      "784390f7370ee3e7df7ca7b6473b29733cc48fd67b4e34566500ee98fe2e3661"
+    ],
+    "validation": {
+      "blockers": [],
+      "records": 14,
+      "require_artifacts": true,
+      "status": "passed"
+    }
+  },
+  "qualification_runs": {
+    "native_evaluations": 384,
+    "before_seconds": 375.80013704200974,
+    "after_seconds": 376.7886
+  },
+  "negative_checks": {
+    "host_drift": "blocked",
+    "swapped_same_shape_cache": "blocked",
+    "missing_cache_mapping": "blocked",
+    "fabricated_pr_run_id": "blocked"
+  },
+  "transport": {
+    "registry_url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-phase3-20260908/phase3-registry.tar.gz",
+    "registry_sha256": "7d47a7ba3541d090baba6cfac6f23c8e33b109cb891c1174cec524325ddf1aa7",
+    "registry_size_bytes": 3084082,
+    "dependency_url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-phase3-20260908/phase3-matched-dependencies.tar.gz",
+    "descriptor": {
+      "archive_sha256": "6e8484146847b0edba8213ef7286efbe413e1b8928bd4a3e264a6025cf71dc47",
+      "archive_size_bytes": 56032523,
+      "index_sha256": "3fe0e5fbcccce482cab9cabb3917889c0b0a0212e08900bf177bc85c86f2eeff",
+      "run_ids": [
+        "contenders_20260907T211155_84a32ed3a865",
+        "contenders_20260907T212137_b696f9fbcbcd",
+        "contenders_20260907T213004_12d7f279efba",
+        "contenders_20260907T214704_81decf47cb93",
+        "prism_20260908T073415_4b11856283",
+        "prism_20260908T073608_ac2b5c1619",
+        "prism_20260908T073800_8e0a7f367c",
+        "prism_20260908T075456_e79801f178",
+        "prism_20260908T075656_009539303a",
+        "prism_20260908T075916_cbdadc39b9"
+      ],
+      "schema_version": 1,
+      "transport_manifest_sha256": "2cdfbb0b0920a939e608e04cef3f06391ee48e7bad33c6c52f0d35177b4eb03e"
+    }
+  },
+  "independent_review": {
+    "registry": "reviewed; required-floor IDs and immutable migration checked",
+    "statistics": "clean review; 17 statistical tests and independent confound checks",
+    "coderabbit": "automatic review skipped by repository star-count policy; green status is not a review"
+  }
+}
