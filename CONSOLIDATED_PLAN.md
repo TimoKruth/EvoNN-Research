@@ -46,15 +46,20 @@ reach L3; the recorded verification consumer replays 64 neural winners and core 
 passes as `trusted-core`. Independent reviews and real process-death tests
 cover both engines; both required hosted lanes gate merge of the final revision.
 
-The authorized next implementation is Phase 3 followed by Phase 4: durable
-registry/statistics first, then independent Stratograph and Primordia runtimes
-and their catalog integration. Complete short qualification before proposing
+Phase 3 registry/statistics is implemented in #32. Its runtime receipt
+`governance/phase3-runtime-evidence.json` binds a real three-seed before/after
+comparison: L4, no material change, no advancement claim. Full dependencies
+are versioned release assets, rehydrated and revalidated on both CI hosts.
+The authorized next implementation is Phase 4: independent Stratograph and
+Primordia runtimes and their catalog integration. Complete short qualification before proposing
 the larger five-system comparison campaign. Do not start that campaign here.
 Engine runs currently cap 256 proposals / 1800 seconds; higher per-run budgets
 first need an append-only attempt journal and separate resume qualification.
 Short validation and baseline runs up to 30 minutes are allowed.
 
-Supporting work: CodeRabbit now reviews real content; measured policy validation
+Supporting work: CodeRabbit automatic review is currently skipped by its
+repository star-count policy; a green skipped status is not review evidence.
+Two independent review agents cover the authorized review scope; measured policy validation
 is dominated by Git subprocesses. Optimize only with equivalent verdicts and
 comparable measurements. The evidence-retention proposal below is still a
 proposal; obsolete copies may be removed after its tested policy migration.
@@ -641,12 +646,12 @@ dashboard, L4 classifier). **B:** WP-3.2 (report vocabularies) + WP-3.3
 co-signed at phase start so B computes over rows A stores); the three
 decision-label enums (B→A for dashboard display).
 
-- [ ] **WP-3.1 Evidence registry.** promote/validate; full row fields;
+- [x] **WP-3.1 Evidence registry.** promote/validate; full row fields;
   immutability + supersession; compact artifact copies.
   **Standing CI gate from here on:**
   `evidence validate --registry evidence --require-artifacts` must be
   green before any registry citation merges.
-- [ ] **WP-3.2 Evidence report — distinct vocabularies.** Three separate
+- [x] **WP-3.2 Evidence report — distinct vocabularies.** Three separate
   enums with explicit mappings, never compressed: **cohort statistical
   labels** (`clear_gain`, `likely_gain`, `no_material_change`,
   `regression`, `inconclusive`, `needs_more_runs`); **aggregation labels**
@@ -654,7 +659,7 @@ decision-label enums (B→A for dashboard display).
   decision categories** (`Tier 1 regression`, `needs more seeds`,
   `Tier B-only gain`, `regress`, `promote`, `inconclusive`, with the
   ch. 05 precedence). Minimum-seed gates (A:3, B:3/2, C:3/2, D:3).
-- [ ] **WP-3.3 [epic] Statistical layer.** Split ≥: (a) rank/score
+- [x] **WP-3.3 [epic] Statistical layer.** Split ≥: (a) rank/score
   distributions + budget slopes + floor margins + ceiling-tie exclusion;
   (b) effect sizes + bootstrap CIs + **guarded non-parametric tests
   (Wilcoxon/Friedman-style, emitted only when unit counts permit, else
@@ -665,8 +670,8 @@ decision-label enums (B→A for dashboard display).
   omission; (e) **runtime tradeoffs mandatory** in every
   advancement-ready group (wall-clock, evals/sec, sec/success, score/sec,
   family allocation).
-- [ ] **WP-3.4 Registry-backed dashboard history + L4 classifier.**
-- [ ] **WP-3.5 Decision-gate machine enforcement.** PR template **plus a
+- [x] **WP-3.4 Registry-backed dashboard history + L4 classifier.**
+- [x] **WP-3.5 Decision-gate machine enforcement.** PR template **plus a
   CI policy checker** that parses the evidence block and validates:
   artifact paths exist in the registry, exact case/run IDs, named
   dashboard slices, lane states present, exactly one decision category.

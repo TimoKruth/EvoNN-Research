@@ -340,3 +340,17 @@ This closes contract foundations only. Catalog entries remain planned metadata;
 regular export composition and actual no-op integrity are separate evidence.
 Engine-specific resume and Topograph speciation/reproduction are explicitly
 pending. No backend is scientifically qualified and no multi-hour training ran.
+
+## 2026-09-08 — Phase 3 registry and statistical decisions (#32)
+
+Append-only source-bound registry, paired independent-seed inference, conservative
+PR decisions and versioned dependency transport implemented. The
+[Phase 3 receipt](governance/phase3-runtime-evidence.json) records 384 short native
+Prism evaluations across two unchanged producer revisions: three matched seeds,
+L4, no material change. Initial host-fingerprint drift was correctly blocked;
+reference measurements were repeated without rewriting old evidence. A fabricated
+PR run ID, missing cache relocation and same-shape cache substitution were rejected.
+Independent reviews covered registry integrity and statistics; CodeRabbit skipped
+automatic review under its repository-star policy. Full source artifacts live in
+the versioned release, with checksums and hosted revalidation; no large comparison
+campaign was started.
