@@ -46,10 +46,11 @@ Stratograph explicitly uses deterministic hierarchy features with a trained head
 [Phase 3](governance/phase3-runtime-evidence.json) retain their scoped evidence.
 
 All four engine runtimes accept at most **256 proposals** and **30 minutes** per run.
-Checkpoints retain full search/attempt snapshots, with a **128 MiB** serialization
-guard before publication and a **32 MiB** weight cache. This deliberately bounds
-local acceptance work; full-history snapshot writes still grow quadratically.
-Larger per-run budgets require an append-only attempt journal and separate qualification.
+Each committed checkpoint appends one attempt and a state delta; every 16 steps
+it includes a compact search-state snapshot. Weight-cache changes are keyed, so
+LRU reordering does not rewrite all weights. The **128 MiB** publication guard
+and **32 MiB** cache remain. Search traces and integrity hashing can still grow
+with history; larger per-run budgets require separate runtime qualification.
 
 Run a verified short preset and rebuild its dashboard:
 
@@ -60,6 +61,55 @@ uv run evonn-compare workspace-report .artifacts/compare
 
 `--preset smoke` uses 16 fits; `local` uses 64. Runs accumulate. Each system
 run stays below 30 minutes; no overnight/weekend preset is admitted.
+
+## Campaign planning and recovery
+
+Create a JSON specification, for example `.artifacts/campaign-spec.json`:
+
+```json
+{
+  "pack": "tier_b_core_v2",
+  "budgets": [16],
+  "seeds": [42],
+  "systems": ["contenders", "prism", "topograph", "stratograph", "primordia"],
+  "backend": "mlx_native",
+  "epochs": 12,
+  "timeout": 300,
+  "fit_timeout": 90
+}
+```
+
+```sh
+uv run --no-sync evonn-compare campaign plan \
+  --workspace .artifacts/campaign --spec .artifacts/campaign-spec.json \
+  --cache .artifacts/dataset-cache
+uv run --no-sync evonn-compare campaign preflight .artifacts/campaign
+uv run --no-sync evonn-compare campaign run .artifacts/campaign --max-runs 2
+uv run --no-sync evonn-compare campaign resume .artifacts/campaign
+```
+
+Planning may download and prepare data, but performs no model fits. It freezes
+matrix, code commit, benchmark/pool definitions, environment, host, data hashes
+and training settings in `campaign.json`. It requires a clean source checkout;
+keep that checkout and environment unchanged until the campaign is finished.
+Preflight only reads and validates those inputs, probes the requested backend
+and checks free space (1 GiB by default). It neither downloads nor trains.
+Use a new workspace if planning is interrupted or settings change.
+
+`run` and `resume` share the same recovery path. Each invocation is capped at
+30 minutes and pauses before a slot whose full time allowance no longer fits;
+it never reduces later slots' configured budgets. Stable case/system slots,
+a durable dispatch journal and a worker-inherited lock prevent overlapping
+execution. Completed exports are revalidated and adopted, even if their original
+completion receipt was lost. Resuming a finished campaign starts zero new runs.
+Incomplete native runs resume their committed state; incomplete Contenders runs
+stop for inspection because that engine has no resumable fit contract.
+
+The four native engines also keep a durable invocation clock: clean pauses do
+not charge offline time, while an unclosed invocation conservatively charges
+elapsed wall time through recovery. Clock rollback and broken journals block
+resume. Campaign completion reports execution status only; repeated-seed
+scientific conclusions still require the registry's separate analysis gate.
 
 ## Bounded engine operation
 

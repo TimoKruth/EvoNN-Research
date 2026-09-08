@@ -62,7 +62,7 @@ remain open because repeated low/mid-budget and L4 portfolio evidence are absent
 The single-seed contract decision is `needs more seeds`, with no pre-change
 Tier-B pairing or superiority claim. Native cross-engine ingestion stays Phase 5.
 Engine runs currently cap 256 proposals / 1800 seconds; higher per-run budgets
-first need an append-only attempt journal and separate resume qualification.
+still need separate larger-runtime qualification after the journal work below.
 Short validation and baseline runs up to 30 minutes are allowed.
 
 Supporting work: CodeRabbit automatic review is currently skipped by its
