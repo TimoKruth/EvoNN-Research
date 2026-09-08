@@ -16,7 +16,7 @@ from stratograph import run as stratograph_run
 from stratograph.search import Search as StratographSearch
 from evonn_primordia import run as primordia_run
 from evonn_primordia.search import Search as PrimordiaSearch
-from evonn_shared.checkpoints import load_latest_checkpoint
+from evonn_shared.runtime_journal import load_runtime_checkpoint
 from evonn_shared.datasets import load_dataset
 from evonn_shared.runtime_io import encode_snapshot, terminal_worker_failure, encode
 from evonn_shared.weight_cache import WeightCache
@@ -70,13 +70,13 @@ def test_failed_candidate_advances_once_and_preserves_charge(tmp_path, monkeypat
     root = runtime.run_engine(
         search, pack_name="tier1_core_smoke", budget=8, output_parent=tmp_path / "runs", stop_after=1
     )
-    state = json.loads(load_latest_checkpoint(root / "checkpoints")[1])
+    state = json.loads(load_runtime_checkpoint(root / "checkpoints")[1])
     assert Path(state["config"]["cache"]).is_absolute()  # API None default resolves normally.
     first = state["attempts"][0]
     expected = (0, 1) if failure == "oversized" else (1, 0)
     assert (first["charged"], first["invalid"]) == expected
     runtime.run_engine(search, pack_name="tier1_core_smoke", budget=8, resume=root, stop_after=2)
-    resumed = json.loads(load_latest_checkpoint(root / "checkpoints")[1])
+    resumed = json.loads(load_runtime_checkpoint(root / "checkpoints")[1])
     assert resumed["completed"] == 2 and resumed["attempts"][0] == first
     assert [(a["charged"], a["invalid"]) for a in resumed["attempts"]] == [expected, expected]
     assert resumed["tip"] != state["tip"]

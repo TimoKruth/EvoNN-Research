@@ -11,7 +11,7 @@ import subprocess
 import sys
 
 import pytest
-from evonn_shared.checkpoints import load_latest_checkpoint
+from evonn_shared.runtime_journal import load_runtime_checkpoint
 from evonn_shared.export_reader import read_export
 from evonn_shared.run_store import open_run_reader
 from evonn_shared import engine_evidence
@@ -40,7 +40,7 @@ def clone_prefix(source, parent):
 
 
 def state(root):
-    _, payload = load_latest_checkpoint(root / "checkpoints")
+    _, payload = load_runtime_checkpoint(root / "checkpoints")
     return json.loads(payload)
 
 
