@@ -1,10 +1,12 @@
 """Real fit/export integration and negative accounting boundaries."""
 import hashlib
+import io
 import json
 import subprocess
 import time
 
 import pytest
+import numpy as np
 
 from evonn_contenders import runner
 from evonn_shared.export_reader import read_export
@@ -96,13 +98,27 @@ def test_missing_git_provenance_fails_before_workspace_creation(tmp_path, monkey
 
 @pytest.mark.parametrize("alpha", [5e-324, 10**400, "bad", None, float("nan"), float("inf"), -float("inf")])
 def test_unrepresentable_ngram_alpha_is_invalid_before_fit(tmp_path, alpha):
-    from evonn_contenders.datasets import load_dataset
     from evonn_contenders.worker import evaluate
-    data = load_dataset("iris_classification", seed=42, cache_root=tmp_path / "cache")
-    # Deliberately invalid construction must fail before touching LM fit inputs.
+    from evonn_shared.artifact_io import publish_artifact
+    cache = tmp_path / "cache"
+    cache.mkdir()
+    artifacts = []
+    for name, values in {
+        "x_train": np.array([[0, 1, 2, 0], [1, 2, 0, 1]], dtype=np.float32),
+        "y_train": np.array([1, 2], dtype=np.int64),
+        "x_validation": np.array([[2, 0, 1, 2]], dtype=np.float32),
+        "y_validation": np.array([0], dtype=np.int64),
+    }.items():
+        stream = io.BytesIO()
+        np.save(stream, values, allow_pickle=False)
+        payload = stream.getvalue()
+        reference = publish_artifact(cache / f"{name}.npy", payload)
+        artifacts.append({**reference.model_dump(mode="json"), "size_bytes": len(payload)})
+    # Valid token inputs isolate invalid smoothing and its pre-fit accounting.
     request = {"model": "bigram_lm", "parameters": {"alpha": alpha}, "model_seed": 42,
                "task": "language_modeling", "input_shape": [4], "output_dim": 3,
-               "data": data.provenance, "attempt_started": str(tmp_path / "started")}
+               "data": {"cache_directory": str(cache), "cache_artifacts": artifacts},
+               "attempt_started": str(tmp_path / "started")}
     result = evaluate(request)
     assert result["status"] == "failed" and result["invalid"] == 1 and result["charged"] == 0
     assert "n-gram" in result["reason"]
