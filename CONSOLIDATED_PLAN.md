@@ -72,7 +72,7 @@ is dominated by Git subprocesses. Optimize only with equivalent verdicts and
 comparable measurements. The evidence-retention proposal below is still a
 proposal; obsolete copies may be removed after its tested policy migration.
 
-### Active prerequisite — bounded campaign control and durable journal
+### Implemented prerequisite — bounded campaign control and durable journal
 
 **Requirements:** campaign planning/preflight, whole-campaign resume, scalable
 attempt persistence requested before the larger comparison. This infrastructure
@@ -85,9 +85,13 @@ adopt completed runs after supervisor failure without fitting again; reject
 live concurrent workers and unsupported incomplete Contenders recovery; resume
 all four engines across transaction/row/checkpoint failures; reject broken
 journal chains and measure storage growth without training.
-**Verify:** focused tests, existing real resume/replay cases, short native
-qualification, independent review and both required CI lanes. No large training
-campaign. Existing 256-proposal/1800-second run limits remain until separately
+**Verification:** 831 foundation tests and 86 Compare tests pass. A real
+five-system Tier-B@16 campaign completed 80 fits with pause/resume counts 2/3/0;
+the final resume changed no completed-run or event bytes. All exports are L3
+and 16 neural winners replay. Two independent reviewers found no remaining
+blockers. The compact campaign receipt binds producer and release evidence;
+existing real resume/replay cases and both required CI lanes gate integration.
+No large training campaign. Existing 256-proposal/1800-second run limits remain until separately
 qualified; persistence scalability alone does not qualify a larger runtime.
 **Failure conditions:** duplicate fits/charges, changed comparison settings,
 unbound cache or code, non-atomic state, weakened validation or a scientific

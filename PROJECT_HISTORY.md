@@ -16,6 +16,33 @@ Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
+## Bounded campaign control and incremental journals — 2026-09-08
+
+Campaign planning freezes the matrix, clean source, host/environment, pools,
+data and budgets; a separate preflight validates them without downloads or fits.
+Durable dispatch records, inherited process locks and export validation allow
+whole-campaign recovery without rerunning completed slots. Incomplete native
+runs resume; incomplete Contenders runs stop for inspection. All four engines
+now append attempt/state deltas with compact snapshots every 16 steps and keyed
+weight-cache changes. A durable invocation clock prevents lost time after abrupt
+termination; clean offline pauses remain free.
+
+Independent reviews corrected budget/variant/pool adoption checks, surviving
+worker ownership, canonical numeric delta semantics, bounded journal reads,
+transaction hashes, cache eviction deltas and crash-time accounting. Permanent
+negative tests retain those checks. The short Tier-B@16 campaign completed all
+five systems: 80 fits, L3 exports and 16 replayed neural winners. Pause/resume
+started 2, then 3, then 0 runs; the final pass changed no run or event bytes.
+The [campaign receipt](governance/campaign-runtime-evidence.json) binds five
+pre-change and five post-change exports, source identities and release assets.
+Its decision remains `needs more seeds`, with no superiority claim.
+
+831 foundation tests and 86 Compare tests pass. Existing real process-death,
+reproduction and accounting cases retain their assertions; required Linux/macOS
+checks gate integration. The 256-proposal/30-minute per-run limits remain.
+Search traces and integrity hashing still grow with history; compact snapshots
+alone do not qualify larger budgets. No multi-hour training was started.
+
 ## Phase 4 implementation and short qualification — 2026-09-08
 
 Stratograph now has an independent hierarchical genome, reusable cell compiler,
