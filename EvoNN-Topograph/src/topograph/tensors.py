@@ -238,16 +238,17 @@ class Backend:
         centered = value if kind == "rms" else value - value.mean(axis=axes, keepdims=True)
         return centered / (centered**2).mean(axis=axes, keepdims=True).__add__(1e-5).__pow__(0.5)
 
-    def quantize(self, value, bits):
+    def quantize(self, value, bits, *, per_example=False):
         raw = self.numpy(value)
+        axes = tuple(range(1, raw.ndim)) if per_example else None
         if bits == 16:
             quantized = raw.astype(np.float16).astype(np.float32)
         elif bits == 1.58:
-            scale = max(float(np.mean(np.abs(raw))), 1e-8)
+            scale = np.maximum(np.mean(np.abs(raw), axis=axes, keepdims=per_example), 1e-8)
             quantized = np.clip(np.round(raw / scale), -1, 1) * scale
         elif bits in {4, 8}:
             levels = 2 ** (bits - 1) - 1
-            scale = max(float(np.max(np.abs(raw))) / levels, 1e-8)
+            scale = np.maximum(np.max(np.abs(raw), axis=axes, keepdims=per_example) / levels, 1e-8)
             quantized = np.clip(np.round(raw / scale), -levels, levels) * scale
         elif bits == 32:
             return value

@@ -268,3 +268,7 @@ consumers use the additive extension through `evonn_shared.active_catalog`.
 Package READMEs document [Stratograph](EvoNN-Stratograph/README.md) and
 [Primordia](EvoNN-Primordia/README.md). Large repeated comparison and native
 transfer claims require subsequent evidence, not these bounded configurations.
+
+`evonn-compare fair-matrix --preset tier_b_tiny` resolves only after its
+Phase 4 runtime receipt binds completed L3 short runs. The preset selects
+16 evaluations, not the later repeated comparison campaign.

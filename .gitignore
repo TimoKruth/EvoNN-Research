@@ -8,3 +8,7 @@ __pycache__/
 # Reconstructed registry dependencies remain outside source control.
 evidence/dependencies/
 evidence/artifact_roots.json
+
+# Versioned external registry snapshots are pinned by the committed declaration.
+evidence/*
+!evidence/source_bundle.json

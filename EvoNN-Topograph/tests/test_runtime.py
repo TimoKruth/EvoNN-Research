@@ -105,6 +105,44 @@ def test_champion_survives_crossover_and_pooling_keeps_failure_and_novelty():
     assert search.candidate(benchmark).genome_id == champion.genome_id
 
 
-def test_language_modeling_is_explicitly_outside_topograph_compiler_domain():
+def test_text_classification_requires_a_separate_explicit_contract():
     with pytest.raises(ValueError, match="support"):
-        compile_genome(seed_genome(Innovations()), (4,), 5, task="language_modeling", modality="text")
+        compile_genome(seed_genome(Innovations()), (4,), 5, task="classification", modality="text")
+
+
+def test_real_next_token_training_and_replay_perplexity():
+    from topograph.run import perplexity_from_logits
+
+    model = compile_genome(seed_genome(Innovations()), (4,), 5, task="language_modeling", modality="text")
+    rng = np.random.default_rng(7)
+    x = rng.integers(0, 5, size=(20, 4))
+    y = (x[:, 0] + x[:, -1]) % 5
+    result = fit(model, x, y, x, y, task="language_modeling", config=TrainConfig(epochs=2), seed=7)
+    b = model.backend
+    prediction = b.numpy(model.forward({k: b.array(v) for k, v in model.weights.items()}, b.array(x)))
+    assert prediction.shape == (20, 5) and result["weights_changed"]
+    assert perplexity_from_logits(prediction, y, b) == pytest.approx(-result["score"], rel=1e-6)
+
+
+@pytest.mark.parametrize("backend", ["numpy_fallback", "mlx_native"])
+@pytest.mark.parametrize("bits", [1.58, 4, 8])
+def test_lm_quantization_is_independent_of_batch_neighbors(backend, bits):
+    if backend == "mlx_native":
+        pytest.importorskip("mlx.core")
+    genome = seed_genome(Innovations())
+    genome = Genome.model_validate(
+        {
+            **genome.model_dump(),
+            "layers": [{**node.model_dump(), "weight_bits": bits, "activation_bits": 8} for node in genome.layers],
+        }
+    )
+    model = compile_genome(genome, (4,), 5, task="language_modeling", modality="text", backend=backend)
+    b = model.backend
+    weights = {key: b.array(value) for key, value in model.weights.items()}
+
+    def predict(contexts):
+        return b.numpy(model.forward(weights, b.array(np.array(contexts))))[0]
+
+    reference = predict([[1, 2, 3, 4]])
+    for neighbor in ([0, 0, 0, 0], [4, 4, 4, 4]):
+        np.testing.assert_allclose(predict([[1, 2, 3, 4], neighbor]), reference, rtol=1e-5, atol=1e-6)

@@ -1,7 +1,8 @@
 # EvoNN Primordia
 
 Primitive-first search trains tiny dense, gated, sparse and residual circuits,
-with explicit replace/mean/product merges. Its package-local NumPy/MLX runtime,
+with explicit replace/mean/product merges. LM features combine each token with
+a causal prefix mean before the primitive circuit. Its package-local NumPy/MLX runtime,
 dataset loader and archive search have no sibling-engine imports. See
 [duplication notes](DUPLICATION_NOTES.md) for shared numerical ancestry.
 

@@ -110,3 +110,9 @@ Hosted CI can hydrate a versioned release asset from this repository when
 The archive remains outside Git. Missing assets, missing mappings and expired
 sources block citations explicitly; no fallback to an unrelated local cache is
 allowed when relocation is active.
+
+A committed `evidence/source_bundle.json` may pin both a registry snapshot and
+its full dependency archive. `evidence hydrate-declared` verifies both versions
+and publishes the unchanged index last, allowing receipt-only Git checkouts.
+Snapshot traversal, declaration replacement, conflicts and missing dependencies
+are rejected; CI revalidates all evidence after hydration.
