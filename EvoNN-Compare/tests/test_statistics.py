@@ -106,3 +106,14 @@ def test_one_saturated_seed_cannot_hide_regression_and_controls_do_not_block():
     result=analyze(rows+controls,before='before',after='after',request=request)
     assert len(result['groups'])==1
     assert result['decision_category']=='promote'
+
+
+def test_audit_support_budget_does_not_create_an_unrequested_panel():
+    requested = observations('before') + observations('after', delta=.1)
+    support = [{**row, 'budget':128, 'run_id':'support_'+row['run_id']} for row in observations('before')]
+    result = compare_cohorts(requested+support, before='before', after='after')
+    assert len(result['groups']) == 1
+    assert result['groups'][0]['budget'] == 64 and result['groups'][0]['level'] == 'L4'
+    requested[-1]['budget'] = 128
+    result = compare_cohorts(requested+support, before='before', after='after')
+    assert result['groups'][0]['level'] != 'L4'

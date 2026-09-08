@@ -234,9 +234,14 @@ def _observations(bundle,case_id,acceptance,label,level):
     policy=_policy(bundle)
     bindings=_data_bindings(bundle)
     rows=trend_rows(bundle,case_id,acceptance)
+    contender_ids={}
+    if bundle.manifest.system.value=='contenders' and any(ref.path=='attempts.json' for ref in bundle.summary.artifact_digests):
+        contender_ids={(item['benchmark_id'],item['outcome_id']):item['contender_id'] for item in artifact_json(bundle,'attempts.json')['attempts'] if 'outcome_id' in item}
     for observation in rows:
         observation['data_binding']=bindings[observation['benchmark']] if observation['benchmark'] in bindings else None
-        observation['required_floor']=bundle.manifest.system.value=='contenders' and observation.get('model_family') in get_benchmark(observation['benchmark']).required_contenders
+        outcome=(observation['benchmark'],observation['outcome_id'])
+        observation['contender_id']=contender_ids[outcome] if outcome in contender_ids else None
+        observation['required_floor']=observation['contender_id'] in get_benchmark(observation['benchmark']).required_contenders
         observation.update(label=label,git_commit=bundle.manifest.git_commit,comparison_policy=policy,
             quality_level=level,source_clean=config.get('code_dirty') is False,run_class=bundle.manifest.run_class.value)
     return rows
@@ -507,7 +512,9 @@ def registry_report(registry, *, request=None, require_artifacts=False):
             discovered_systems=sorted(systems),absent_systems=sorted({'contenders','prism','topograph','stratograph','primordia'}-systems),
             registry=dict(index_sha256=hashlib.sha256(_events(root)[0]).hexdigest(),validation=validation,record_ids=[r['record_id'] for r in records]),
             analysis=analysis,descriptive_evidence=description)
-        report=dict(schema_version=1,registry=data['registry'],analysis=analysis,descriptive_evidence=description)
+        consumer_commit,consumer_dirty=code_identity()
+        report=dict(schema_version=1,registry=data['registry'],analysis=analysis,descriptive_evidence=description,
+            consumer=dict(git_commit=consumer_commit,code_dirty=consumer_dirty,source_sha256=source_identity()))
         derived(root/'evidence_report.json',encoded(report))
         markdown='# Registry evidence\n\nArtifact validation: '+('current sources verified' if require_artifacts else 'compact receipts only')+'\n\n'
         if analysis is not None:

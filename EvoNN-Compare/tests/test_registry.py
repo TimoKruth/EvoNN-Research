@@ -99,3 +99,34 @@ def test_report_rebuilds_from_registry_and_preserves_escaping(tmp_path,export_fa
     assert report['registry']['validation']['status']=='passed'
     assert (registry/'fair_matrix_dashboard.html').is_file()
     assert report['descriptive_evidence']['score_distribution']
+
+
+def test_required_floor_uses_catalog_contender_id_and_ignores_unstarted_attempts(monkeypatch):
+    from types import SimpleNamespace as NS
+    import evonn_compare.registry as registry_module
+    bundle=NS(manifest=NS(system=NS(value='contenders'),config_snapshot=NS(path='config.yaml'),
+        git_commit='a'*40,run_class=NS(value='local')),summary=NS(artifact_digests=[NS(path='attempts.json')]))
+    attempts=[dict(benchmark_id='bench',outcome_id='required',contender_id='hist_gb_leaf63'),
+        dict(benchmark_id='bench',outcome_id='optional',contender_id='optional_tree'),
+        dict(benchmark_id='bench',contender_id='not_run',status='optional_not_run')]
+    monkeypatch.setattr(registry_module,'artifact_json',lambda bundle,name: {'code_dirty':False} if name=='config.yaml' else {'attempts':attempts})
+    monkeypatch.setattr(registry_module,'_policy',lambda bundle:{})
+    monkeypatch.setattr(registry_module,'_data_bindings',lambda bundle:{})
+    monkeypatch.setattr(registry_module,'get_benchmark',lambda name:NS(required_contenders=['hist_gb_leaf63']))
+    monkeypatch.setattr(registry_module,'trend_rows',lambda *args:[dict(benchmark='bench',outcome_id=name,model_family='hist_gb') for name in ('required','optional')])
+    rows=registry_module._observations(bundle,'case',{},'before','L3')
+    assert [(row['contender_id'],row['required_floor']) for row in rows] == [('hist_gb_leaf63',True),('optional_tree',False)]
+
+
+def test_report_consumer_is_current_and_preserves_producer_and_index(tmp_path,export_factory,monkeypatch):
+    import evonn_compare.registry as registry_module
+    source=export_factory(tmp_path/'source')
+    registry=tmp_path/'registry'
+    promote(source.root,registry=registry,label='before',copy_artifacts=True)
+    original=(registry/'index.jsonl').read_bytes()
+    monkeypatch.setattr(registry_module,'code_identity',lambda:('b'*40,True))
+    monkeypatch.setattr(registry_module,'source_identity',lambda:'c'*64)
+    report=registry_module.registry_report(registry)
+    assert report['consumer']==dict(git_commit='b'*40,code_dirty=True,source_sha256='c'*64)
+    assert (registry/'index.jsonl').read_bytes()==original
+    assert read_registry(registry)[0]['git_commit']==source.manifest.git_commit
