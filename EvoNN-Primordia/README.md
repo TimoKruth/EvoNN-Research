@@ -8,7 +8,10 @@ dataset loader and archive search have no sibling-engine imports. See
 
 Image/LM circuits cap width 12 and depth 2; other tasks cap width 24/depth 4.
 Image/LM fits cap 4 epochs, other fits 8; slots 16 onward cap 3. Weak expensive
-parents receive cheaper offspring. Every new fit is charged despite inheritance.
+parents receive cheaper offspring. Selection cost is the deterministic proxy
+`parameter_count × optimizer_updates`; measured seconds remain in the ledger and
+reports. This keeps host scheduling noise out of reproduction and resume. Every
+new fit is charged despite inheritance.
 
 ```sh
 uv run --package evonn-primordia evonn-primordia run --config EvoNN-Primordia/configs/smoke.yaml

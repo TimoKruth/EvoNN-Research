@@ -261,39 +261,72 @@ def test_invalid_engine_config_keeps_blocked_diagnostics(tmp_path, export_factor
 
 
 @pytest.mark.parametrize("field", ["epochs", "backend_version", "host_fingerprint"])
-def test_engine_shared_protocol_mismatch_blocks_case_and_pairs(tmp_path, export_factory, assume_engine_runtime_checked, monkeypatch, field):
+def test_engine_shared_protocol_mismatch_blocks_case_and_pairs(
+    tmp_path, export_factory, assume_engine_runtime_checked, monkeypatch, field
+):
     from evonn_compare import evidence
+
     a = export_factory(tmp_path / "a", system="prism")
     b = export_factory(tmp_path / "b", system="topograph")
-    runtime = b.manifest.runtime.model_copy(update={"precision_mode":"float32 latent; per-layer QAT in genome"})
-    b = type(b)(b.root,b.manifest.model_copy(update={"runtime":runtime}),b.results,b.summary)
+    runtime = b.manifest.runtime.model_copy(update={"precision_mode": "float32 latent; per-layer QAT in genome"})
+    b = type(b)(b.root, b.manifest.model_copy(update={"runtime": runtime}), b.results, b.summary)
     case = Case("tier1_core", 64, 42)
     accepted = evaluate_case(case, [a, b])
     assert not accepted["blockers"]
-    rows = [r for bundle in (a,b) for r in trend_rows(bundle,"same",accepted)]
+    rows = [r for bundle in (a, b) for r in trend_rows(bundle, "same", accepted)]
     assert len(aggregates(rows)["pairwise_seed_deltas"]) == 8
     if field == "epochs":
         original = evidence.artifact_json
+
         def altered(bundle, path):
-            data = original(bundle,path)
-            return {**data,"epochs":24} if bundle.root == b.root and path == "config.yaml" else data
-        monkeypatch.setattr(evidence,"artifact_json",altered)
+            data = original(bundle, path)
+            return {**data, "epochs": 24} if bundle.root == b.root and path == "config.yaml" else data
+
+        monkeypatch.setattr(evidence, "artifact_json", altered)
     else:
-        runtime = b.manifest.runtime.model_copy(update={field:"different"})
-        b = type(b)(b.root,b.manifest.model_copy(update={"runtime":runtime}),b.results,b.summary)
-    blocked = evaluate_case(case,[a,b])
+        runtime = b.manifest.runtime.model_copy(update={field: "different"})
+        b = type(b)(b.root, b.manifest.model_copy(update={"runtime": runtime}), b.results, b.summary)
+    blocked = evaluate_case(case, [a, b])
     assert any("training policies differ" in reason for reason in blocked["blockers"])
     # Even callers supplying stale acceptance cannot construct incompatible engine deltas.
-    rows = [r for bundle in (a,b) for r in trend_rows(bundle,"mixed",accepted)]
+    rows = [r for bundle in (a, b) for r in trend_rows(bundle, "mixed", accepted)]
     assert aggregates(rows)["pairwise_seed_deltas"] == []
     assert all(not item["comparison_available"] for item in winners(rows))
 
 
 def test_missing_engine_artifact_is_quality_diagnostic(tmp_path, export_factory, monkeypatch):
     from evonn_compare import quality
-    bundle=export_factory(tmp_path / "engine",system="prism")
-    def missing(*args,**kwargs):
+
+    bundle = export_factory(tmp_path / "engine", system="prism")
+
+    def missing(*args, **kwargs):
         raise FileNotFoundError("missing state artifact")
-    monkeypatch.setattr(quality,"validate_engine_bundle",missing)
-    result=quality.classify(bundle.root,propagated=True)
+
+    monkeypatch.setattr(quality, "validate_engine_bundle", missing)
+    result = quality.classify(bundle.root, propagated=True)
     assert result["level"] != "L3" and any("missing state artifact" in gap for gap in result["gaps"])
+
+
+@pytest.mark.parametrize("model", ["unigram_lm", "bigram_lm", "trigram_lm"])
+def test_ngram_floor_backend_and_smoothing_are_explicitly_pinned(model):
+    from evonn_compare.audit import validate_floor_backend, reviewed_ngram_parameters
+
+    backend = {"package": "evonn-contenders", "version": "0.0.0", "device": "cpu"}
+    versions = {"scikit-learn": "1.8.0"}
+    validate_floor_backend(model, backend, versions)
+    for mutation in (
+        {"package": "numpy"},
+        {"package": "scikit-learn"},
+        {"version": "9.9.9"},
+        {"version": ""},
+        {"device": "gpu"},
+    ):
+        with pytest.raises(ValueError):
+            validate_floor_backend(model, {**backend, **mutation}, versions)
+    with pytest.raises(ValueError):
+        validate_floor_backend("unknown_gram_lm", backend, versions)
+    assert reviewed_ngram_parameters(model, {})
+    assert reviewed_ngram_parameters(model, {"alpha": 1.0})
+    for parameters in ({"alpha": 0.1}, {"alpha": True}, {"alpha": "1.0"}, {"alpha": 1.0, "extra": 1}):
+        assert not reviewed_ngram_parameters(model, parameters)
+    assert not reviewed_ngram_parameters("unknown_gram_lm", {"alpha": 1.0})

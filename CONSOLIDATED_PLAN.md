@@ -812,7 +812,8 @@ proxy execution is labeled separately from end-to-end hierarchy training.
   compiler, training, loader boundary and search. Record necessary copied
   infrastructure in the required compact duplication notes.
 - **WP-4.5b — Cheap search:** explicit family/slot epoch caps, architecture
-  clamps, cheaper mutations for weak/expensive parents, bounded elite archive,
+  clamps, cheaper mutations for weak/expensive parents using parameter count ×
+  optimizer updates (measured seconds remain diagnostic), bounded elite archive,
   benchmark/family leaders and matched per-benchmark scheduling.
 - **WP-4.6a — Exported bank:** strict Shared metadata envelope with local
   genotype encoding, source/data/split/cost/runtime provenance, checksums,
