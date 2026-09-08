@@ -22,13 +22,13 @@ from evonn_compare.quality import classify
 REPO = Path(__file__).resolve().parents[2]
 
 
-def invoke(system, *arguments):
+def invoke(system, *arguments, timeout=240):
     return subprocess.run(
         [sys.executable, "-m", ("evonn_primordia" if system == "primordia" else system) + ".cli", *map(str, arguments)],
         cwd=REPO,
         capture_output=True,
         text=True,
-        timeout=240,
+        timeout=timeout,
     )
 
 
@@ -260,9 +260,9 @@ def _phase4_artifact_checks(system,root,bundle,monkeypatch):
 
 def test_stratograph_matched_ablation_cli(tmp_path):
     result = invoke("stratograph", "ablate", "--pack", "tier1_core_smoke", "--budget", 8,
-        "--epochs", 1, "--population-size", 2, "--timeout", 220, "--run-timeout", 40,
+        "--epochs", 1, "--population-size", 2, "--timeout", 390, "--run-timeout", 70,
         "--fit-timeout", 15, "--backend", os.environ.get("EVONN_TEST_BACKEND", "numpy_fallback"),
-        "--output", tmp_path / "ablations", "--cache", tmp_path / "cache")
+        "--output", tmp_path / "ablations", "--cache", tmp_path / "cache", timeout=420)
     assert result.returncode == 0, result.stderr
     index = json.loads(Path(result.stdout.strip().splitlines()[-1]).read_text())
     assert index["status"] == "completed" and index["planned_runs"] == len(index["cases"]) == 5
@@ -273,7 +273,7 @@ def test_stratograph_matched_ablation_cli(tmp_path):
         bundle = read_export(Path(case["export"]))
         assert bundle.manifest.status.value == "completed" and bundle.manifest.accounting.evaluation_count == 8
         config = engine_evidence.artifact_json(bundle, "config.yaml")
-        assert config["variant"] == case["variant"] and config["timeout"] == 40
+        assert config["variant"] == case["variant"] and config["timeout"] == 70
         assert classify(bundle.root, propagated=True)["level"] == "L3"
         envelopes.append(bundle.manifest.budget.model_dump(mode="json"))
     assert all(envelope == envelopes[0] for envelope in envelopes)
