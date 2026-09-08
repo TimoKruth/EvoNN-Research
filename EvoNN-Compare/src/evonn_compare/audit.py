@@ -126,6 +126,8 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
                     "x_train.npy", "y_train.npy", "x_validation.npy", "y_validation.npy"}:
                     raise ValueError("four distinct split cache artifacts required")
                 binding = runtime_manifest["benchmarks"][name]
+                if dataset["definition_sha256"] != binding["definition_sha256"]:
+                    raise ValueError("dataset definition differs from pinned runtime")
                 if not binding["loader"].startswith("make_") and dataset["raw_sha256"] != binding["reference_raw_sha256"]:
                     raise ValueError("raw dataset reference differs")
                 checked_dataset = dataset

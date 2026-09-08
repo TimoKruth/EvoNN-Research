@@ -5,7 +5,7 @@ from pathlib import Path
 
 from ._run_io import open_directory, open_regular_at
 from .artifact_io import read_verified_artifact
-from .catalog import get_benchmark, load_parity_pack
+from .active_catalog import get_benchmark, load_parity_pack
 from .exports import Manifest, Results, RunSummary, _validate_cross_file
 
 

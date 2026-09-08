@@ -265,6 +265,8 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
         ):
             raise ValueError("engine dataset/split provenance mismatch")
         binding = runtime["benchmarks"][definition.id]
+        if expected != binding["definition_sha256"]:
+            raise ValueError("current dataset definition differs from pinned runtime")
         generated = binding["loader"].startswith("make_")
         if item["raw_reference_sha256"] != binding["reference_raw_sha256"] or item["raw_reference_match"] != (
             item["raw_sha256"] == binding["reference_raw_sha256"]
