@@ -307,8 +307,8 @@ def write_runtime_probe(
         raise ValueError(f"manifest system must be {system}")
     backend_contract = BACKENDS[backend]
     capability = _backend_capability(manifest, str(backend_contract["class"]))
-    if "implemented" not in capability or capability["implemented"] is not False:
-        raise ValueError("B0 backend capability must remain unimplemented")
+    if "implemented" not in capability or type(capability["implemented"]) is not bool:
+        raise ValueError("backend capability must explicitly declare implementation state")
 
     selected_environment = os.environ if environment is None else environment
     selected_runtime = _runtime_snapshot() if runtime is None else dict(runtime)
@@ -594,8 +594,8 @@ def validate_runtime_probe(
                     diagnostics.append("manifest system does not match the system under test")
                 if backend_name is not None and isinstance(manifest_document, Mapping):
                     capability = _backend_capability(manifest_document, str(BACKENDS[backend_name]["class"]))
-                    if "implemented" not in capability or capability["implemented"] is not False:
-                        diagnostics.append("manifest capability must remain unimplemented during B0 bootstrap")
+                    if "implemented" not in capability or type(capability["implemented"]) is not bool:
+                        diagnostics.append("manifest capability must explicitly declare implementation state")
             except (OSError, ValueError, json.JSONDecodeError) as exc:
                 diagnostics.append(f"manifest path or content is invalid: {exc}")
 
