@@ -56,17 +56,17 @@ real-text Tier B and four-engine LM integration. The compact receipt
 `governance/phase4-runtime-evidence.json` binds 13 L3 runs / 304 fits and 80
 replayed winners. The five-system Tier-B@16 contract audit has zero blockers.
 
-**Next:** qualify the optimized runtime before replanning the paused larger
-five-system campaign. The first campaign completed three 64-fit engine slots;
-Topograph exhausted its 1500-second allowance after 51 committed attempts
-(and one durable result). Preserve that producer and its clock unchanged.
-The performance pass removes a redundant Topograph supervisor, avoids eager
-preparation imports, reuses runner-owned search/cache state and deduplicates
-journal hashes. Short native 64/128-fit qualification, crash recovery and
-both hosted lanes must pass before declaring the next campaign ready.
-Run requested macOS jobs with Standard launchd priority; do not restart the
-full comparison during this optimization task. Existing 256-proposal/1800-second
-limits remain. WP-4.7 and the Phase 4 exit still require repeated low/mid-budget
+**Next:** replan the paused five-system campaign on the optimized source after
+integration; keep it paused until the user requests its start. The first campaign
+completed three 64-fit engine slots; Topograph exhausted its 1500-second
+allowance after 51 committed attempts and one further durable result. Preserve
+that producer and clock unchanged. The [performance receipt](governance/performance-runtime-evidence.json)
+qualifies all four native engines at 64/128 on seed 42: 848 fits across 13 short
+runs, 48 winner replays, exact prior search/metric checks and 39 native recovery
+tests. Topograph now completes 64/128 fits in 70/158 seconds. Required hosted
+lanes gate integration; use Standard launchd priority for the fresh campaign.
+The 256-proposal/1800-second engine limits and 1500/90-second campaign/fit
+settings remain. WP-4.7 and the Phase 4 exit still require repeated low/mid-budget
 and L4 portfolio evidence; native cross-engine ingestion stays Phase 5.
 
 Supporting work: CodeRabbit automatic review is currently skipped by its
