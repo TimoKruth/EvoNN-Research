@@ -424,10 +424,16 @@ version = "0.0.0"
 source = { editable = "EvoNN-Compare" }
 dependencies = [
     { name = "evonn-shared", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "numpy", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
+    { name = "scipy", marker = "sys_platform == 'darwin' or sys_platform == 'linux'" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "evonn-shared", editable = "EvoNN-Shared" }]
+requires-dist = [
+    { name = "evonn-shared", editable = "EvoNN-Shared" },
+    { name = "numpy", specifier = "==2.4.4" },
+    { name = "scipy", specifier = "==1.17.1" },
+]
 
 [[package]]
 name = "evonn-contenders"

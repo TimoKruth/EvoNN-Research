@@ -991,3 +991,10 @@ def test_consolidated_plan_frontmatter_matches_normative_b0_repository_model(val
     assert metadata["status"] == "active"
     assert metadata["revision"] == 2
     assert metadata["b0_repository_model"] == validator.EXPECTED_B0_REPOSITORY_MODEL
+
+
+def test_phase3_evidence_is_data_and_does_not_create_a_second_plan(validator):
+    assert validator.find_active_execution_plans(REPO_ROOT) == [Path('CONSOLIDATED_PLAN.md')]
+    template=(REPO_ROOT/'.github/pull_request_template.md').read_text()
+    assert 'evonn-evidence' in template
+    assert 'document_kind: execution_plan' not in template

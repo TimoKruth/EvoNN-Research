@@ -4,3 +4,7 @@
 __pycache__/
 *.py[cod]
 .claude/
+
+# Reconstructed registry dependencies remain outside source control.
+evidence/dependencies/
+evidence/artifact_roots.json

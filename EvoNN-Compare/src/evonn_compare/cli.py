@@ -47,8 +47,64 @@ def main(argv=None):
     audit.add_argument("--decision-grade", action="store_true")
     compare = commands.add_parser("compare")
     compare.add_argument("exports", nargs="+", type=Path)
+    evidence = commands.add_parser("evidence")
+    actions = evidence.add_subparsers(dest="evidence_command", required=True)
+    promotion = actions.add_parser("promote")
+    promotion.add_argument("source", type=Path)
+    promotion.add_argument("--label", required=True)
+    promotion.add_argument("--copy-artifacts", action="store_true")
+    validation = actions.add_parser("validate")
+    reporting = actions.add_parser("report")
+    reporting.add_argument("--request", type=Path)
+    supersession = actions.add_parser("supersede")
+    supersession.add_argument("--old", required=True)
+    supersession.add_argument("--new", required=True)
+    supersession.add_argument("--reason", required=True)
+    policy = actions.add_parser("pr-policy")
+    policy.add_argument("--event", type=Path, required=True)
+    policy.add_argument("--root", type=Path, default=Path.cwd())
+    declared = actions.add_parser("hydrate-declared")
+    declared.add_argument("--root", type=Path, default=Path.cwd())
+    packing = actions.add_parser("pack")
+    packing.add_argument("--archive", type=Path, required=True)
+    hydration = actions.add_parser("hydrate")
+    hydration.add_argument("--archive", type=Path, required=True)
+    hydration.add_argument("--descriptor", type=Path, required=True)
+    gate = actions.add_parser("decision-gate")
+    gate.add_argument("--body", type=Path, required=True)
+    for action in (promotion, validation, reporting, supersession, gate, packing, hydration):
+        action.add_argument("--registry", type=Path, default=Path("evidence"))
+    for action in (validation, reporting):
+        action.add_argument("--require-artifacts", action="store_true")
     args = parser.parse_args(argv)
     try:
+        if args.command == "evidence":
+            from .registry import promote, registry_report, supersede, validate_registry
+            if args.evidence_command == "pr-policy":
+                from .pr_policy import main as policy_main
+                return policy_main(["--event", str(args.event), "--root", str(args.root)])
+            if args.evidence_command == "hydrate-declared":
+                from .transport import hydrate_declared
+                result = hydrate_declared(args.root)
+            elif args.evidence_command == "promote":
+                result = {"record_ids": promote(args.source, registry=args.registry, label=args.label, copy_artifacts=args.copy_artifacts)}
+            elif args.evidence_command == "validate":
+                result = validate_registry(args.registry, require_artifacts=args.require_artifacts)
+            elif args.evidence_command == "report":
+                request = json.loads(args.request.read_text()) if args.request else None
+                result = registry_report(args.registry, request=request, require_artifacts=args.require_artifacts)
+            elif args.evidence_command in ("pack", "hydrate"):
+                from .transport import pack_registry, hydrate_registry
+                result = (pack_registry(args.registry, archive=args.archive) if args.evidence_command == "pack" else
+                          hydrate_registry(args.registry, archive=args.archive, descriptor=args.descriptor))
+            elif args.evidence_command == "decision-gate":
+                from .decision_gate import validate_decision_block
+                result = validate_decision_block(args.body.read_text(), registry=args.registry)
+            else:
+                supersede(args.registry, old=args.old, new=args.new, reason=args.reason)
+                result = {"status": "passed"}
+            print(json.dumps(result, indent=2, allow_nan=False))
+            return int(result.get("status") == "blocked")
         if args.command == "fair-matrix":
             pack = args.pack or "tier1_core"
             if args.preset:

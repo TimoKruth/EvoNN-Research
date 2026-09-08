@@ -29,8 +29,8 @@ Exact integrations and review decisions are recorded in project history.
 | Shared | Canonical identities/RNG, strict budgets/telemetry/three-file exports, catalog/pack loaders, checkpoints, LM-cache validation, transactional DuckDB/workspace and verified read-only access | Engine consumers and their evidence |
 | Shared benchmarks | Eight immutable planned definitions, three packs, verified historical provenance and budget/export composition | Future image/LM packs and optional enhanced runtime evidence |
 | Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Engine-specific resume/speciation and scientific qualification |
-| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality and interactive evidence dashboard | Evolutionary engine comparisons and scientific qualification |
-| Prism + Topograph | Package-local MLX/NumPy models, bounded AdamW search, inheritance, atomic resume, portable model exports and Compare ingestion | Larger scientific campaigns; L4 statistics in Phase 3 |
+| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality, append-only evidence registry, paired-seed L4 analysis and evidence dashboard | Evolutionary engine comparisons and scientific qualification |
+| Prism + Topograph | Package-local MLX/NumPy models, bounded AdamW search, inheritance, atomic resume, portable model exports and Compare ingestion | Larger scientific campaigns; repeated native evidence through registry analysis |
 | Stratograph + Primordia | Importable packages and bootstrap runtime dependencies/probes | Search/training engines and qualified scientific results |
 
 Phase 1 runtime evidence now contains **336 successful fits in five short runs**:
@@ -204,7 +204,7 @@ coexist with readers, not a writer. Corrupt evidence is never silently repaired.
 DuckDB opens pathnames, so these controls do not sandbox a process with equal
 filesystem privileges replacing directories concurrently. A hash chain and tip
 inside one database detect inconsistent edits, not a coordinated rewrite.
-Independent anchoring belongs to the future evidence registry. Failed schema
+Registry receipts bind source and consumer identities; current artifact validation remains required for new claims. Failed schema
 creation may leave an empty database; preserve it for diagnosis. A directory
 fsync failure after publication means uncertain durability even when a complete
 new file is visible; do not delete published evidence as a pretend rollback.
