@@ -29,8 +29,8 @@ Exact integrations and review decisions are recorded in project history.
 | Shared | Canonical identities/RNG, strict budgets/telemetry/three-file exports, catalog/pack loaders, checkpoints, LM-cache validation, transactional DuckDB/workspace and verified read-only access | Producer interoperability and future contract extensions |
 | Shared benchmarks | Eight frozen definitions plus two additive runtime definitions, four packs, verified tabular/image/real-text caches | Repeated Tier-B scientific qualification and optional enhanced pressure |
 | Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Broader scientific qualification and future producer interoperability |
-| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality, append-only evidence registry, paired-seed L4 analysis and evidence dashboard | Repeated portfolio comparisons and scientific qualification |
-| Prism + Topograph | Package-local MLX/NumPy models including real next-token LM, bounded search, inheritance, atomic resume, portable exports and Compare ingestion | Larger scientific campaigns; repeated native evidence through registry analysis |
+| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality, append-only evidence registry, paired-seed L4 analysis and evidence dashboard | Formal within-cohort L4 decisions and scientific qualification |
+| Prism + Topograph | Package-local MLX/NumPy models including real next-token LM, bounded search, inheritance, atomic resume, portable exports and Compare ingestion | Targeted confirmation, stronger baselines and native transfer evidence |
 | Stratograph | Hierarchical cell search, trained-head proxy, five ablations, winner motifs, resume/replay | End-to-end hierarchy learning and scientific comparison claims |
 | Primordia | Trained primitive circuits, bounded archive/cost policy, verified motif/seed bank | Native cross-engine ingestion and proven transfer gains |
 
@@ -38,8 +38,9 @@ The [Phase 4 receipt](governance/phase4-runtime-evidence.json) records **13 shor
 qualification runs / 304 real fits**: both new engines on Tier A/core@64, five
 Stratograph variants and all five systems on Tier-B@16. All exports are L3;
 80 trained winners replay. Tier-B contract audit passes with zero blockers.
-Repeated-seed and mid-budget evidence remain open, so the decision is
-`needs more seeds`; this is no scientific superiority or transfer claim.
+That short qualification remains single-seed evidence. The completed comparison
+below supplies repeated low/mid-budget observations; neither receipt establishes
+a broad superiority or transfer claim.
 Stratograph explicitly uses deterministic hierarchy features with a trained head.
 [Phase 1](governance/phase1-runtime-evidence.json),
 [Phase 2](governance/phase2-runtime-evidence.json) and
@@ -53,9 +54,18 @@ and **32 MiB** cache remain. Search traces and integrity hashing can still grow
 with history. The [performance receipt](governance/performance-runtime-evidence.json)
 qualifies native Tier-B budgets 64/128 on seed 42: 13 short runs, 848 fits,
 48 replayed neural winners and zero failed fits. The 128-fit runs take 49–158
-seconds on the recorded host. Limits are unchanged; other seeds remain the
-scientific campaign's job. The original comparison remains stopped, and restart
-requires a freshly pinned campaign on the optimized source.
+seconds on the recorded host. Limits are unchanged.
+
+The [completed Tier-B comparison](governance/tier-b-comparison-20260909.json)
+covers **30 runs / 2,880 successful fits**, budgets 64/128 and seeds 42/43/44,
+in 78 minutes. Its decision-grade benchmark-admission audit passes with zero
+blockers; all exports are L3. [Results and scope](PROJECT_HISTORY.md#tier-b-comparison--2026-09-09)
+show Prism leading language modeling, Primordia offering the lowest runtime,
+Topograph showing a regression signal and Stratograph needing a proxy diagnostic.
+These are validation-set observations from three seeds, not an L4 promotion or
+transfer proof. The original failed producer remains preserved. No campaign is
+running or scheduled; [next actions](CONSOLIDATED_PLAN.md#immediate-next-actions)
+prioritize reporting and diagnostic work before further training.
 
 Run a verified short preset and rebuild its dashboard:
 
@@ -165,8 +175,8 @@ The bounded profile samples at most 1,536 training and 384 validation contexts.
 The historical catalog and runtime identities remain immutable; active runtime
 consumers use the additive extension through `evonn_shared.active_catalog`.
 Package READMEs document [Stratograph](EvoNN-Stratograph/README.md) and
-[Primordia](EvoNN-Primordia/README.md). Large repeated comparison and native
-transfer claims require subsequent evidence, not these bounded configurations.
+[Primordia](EvoNN-Primordia/README.md). The completed repeated comparison remains
+scoped to this bounded profile; broader and native transfer claims need further evidence.
 
 Run the verified Tier-B tiny profile across all five systems:
 

@@ -6,7 +6,7 @@ authoritative: false
 
 # EvoNN Project History
 
-**Updated:** 2026-09-08. Foundation acceptance is merged through #28;
+**Updated:** 2026-09-09. Foundation acceptance is merged through #28;
 Phase 1 implementation and runtime evidence are recorded in #29/#30, with
 required hosted checks attached to those revisions. Phase2 implementation and
 its source-bound acceptance cohort are recorded in #31. Phase 3 is merged in
@@ -15,6 +15,115 @@ This is the compact record of completed work, review decisions and verification.
 Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
+
+## Tier-B comparison — 2026-09-09
+
+The optimized campaign completed at **00:30 CEST on 2026-09-09**, after
+77m36s: **30 runs, 2,880 fits, zero failed fits**. Source producer
+`53a8c915ea97120bce062e1c872d7c836769047f` is preserved in its clean clone;
+its runtime source digest matches merged #35. The fixed matrix was
+`tier_b_core_v2` × budgets 64/128 × seeds 42/43/44 × four native engines plus
+Contenders, with 12 maximum epochs, 1500-second runs and 90-second fit limits.
+No fitting or tuning was performed during the subsequent analysis.
+The [machine-readable analysis](governance/tier-b-comparison-20260909.json)
+retains exact run IDs, source/export hashes, per-seed scores, floor identities,
+effects, uncertainty, budget response and runtime costs.
+
+**Verification:** all 30 L3 exports passed current artifact validation; 96 neural
+benchmark winners reproduced through inference-only replay. The decision-grade
+benchmark-admission audit passes with zero blockers and repeated low/mid
+coverage. All required contender families are present; optional enhanced
+pressure is absent on all four tasks. This admits the bounded benchmark
+surface and does not establish scientific qualification or native transfer.
+
+**Quality at 128 fits:** arithmetic means of the three best-per-run validation
+scores. Accuracy is higher-is-better; MSE and perplexity are lower-is-better.
+The Contenders row uses its best outcome across the whole configured pool;
+external margins in the receipt separately use the **best required contender**
+for each seed and budget. The two baselines can differ on diabetes.
+
+| System | Banknote accuracy | Digits accuracy | Diabetes MSE | Shakespeare perplexity |
+| --- | ---: | ---: | ---: | ---: |
+| Stratograph | 73.70% | 25.09% | 3519.8 | 30.69 |
+| Primordia | 99.88% | 88.52% | 2661.5 | 25.21 |
+| Prism | 100.00% | 97.96% | 2686.9 | 16.32 |
+| Topograph | 100.00% | 97.59% | 2590.5 | 30.13 |
+| Contenders | 100.00% | 98.61% | 2698.5 | 33.68 |
+
+**Interpretation and provisional research priorities:**
+
+- **Prism:** strongest observed LM engine on every seed at both budgets.
+  At 128, perplexity is 46–56% below the required NGram floor per seed. It is
+  near the image floor but below it on all three seeds (0.28–0.83 percentage
+  points); banknote ceiling ties provide no superiority evidence. Prioritize
+  confirmation against a stronger neural LM baseline, not a broad-engine win.
+- **Topograph:** lowest mean regression MSE at 128; beats the required floor
+  on all three seeds by 1.17–8.13%. Different native engines lead individual
+  regression seeds, so this is a specialization signal rather than a proven
+  best-regressor claim. Its image/LM quality does not justify replacing Prism
+  generally; its runtime remains substantially higher.
+- **Primordia:** fastest engine at both budgets, with competitive tabular
+  results and a clear image-quality tradeoff. At 128 its image accuracy is
+  88.52% versus Prism's 97.96%. Retain it as an efficiency candidate; a
+  seed-source role still requires downstream transfer evidence.
+- **Stratograph:** weak banknote/image/regression results despite runtime
+  comparable to Prism. Digits is exactly unchanged on every seed after budget
+  doubling; LM changes only about 0.11%. Diagnose the hierarchy-feature /
+  trained-head proxy before spending more fits. This does not refute
+  end-to-end hierarchical learning or justify archiving the engine.
+
+**Runtime:** medians of three complete run wall times on the same host.
+
+| System | 64 fits | 128 fits | Fits/s at 128 |
+| --- | ---: | ---: | ---: |
+| Stratograph | 42.3 s | 86.1 s | 1.49 |
+| Primordia | 26.9 s | 49.8 s | 2.57 |
+| Prism | 39.9 s | 96.3 s | 1.33 |
+| Topograph | 69.8 s | 165.6 s | 0.77 |
+| Contenders | 92.2 s | 183.2 s | 0.70 |
+
+The slowest Topograph run completed in 200.3 seconds, far below the unchanged
+1500-second cap; these budgets need no timeout increase. Exported run spans
+sum to 43.6 minutes, versus 77.6 minutes for the campaign. The remaining 34.0
+minutes cover work outside those spans and need separate profiling. Recorded
+fit training sums to 8.8 minutes; this is not end-to-end campaign time. Runtime
+order was fixed and engine epoch policies differ, so equal fit budgets do not
+mean equal compute and the observed ratios are not randomized speed trials.
+
+**Budget response:** doubling fits reduces mean LM perplexity from 18.11→16.32
+for Prism and 28.00→25.21 for Primordia, with improvement on all three seeds.
+Topograph's mean diabetes MSE improves 2771.2→2590.5, but one seed is unchanged.
+Stratograph gains little; its image scores are identical. Contenders' image,
+LM and saturated banknote results are unchanged at both budgets. Additional
+fits should therefore target specific hypotheses rather than repeat the whole
+matrix uniformly.
+
+**Uncertainty and decision:** effects use the existing direction-aware symmetric
+relative formula and 4096 deterministic paired-seed bootstrap resamples. One
+seed, not one candidate or benchmark row, is the independent unit; fixed-panel
+means give each unsaturated benchmark equal weight. Ceiling-saturated tasks are
+excluded per comparison. Different exclusions mean these panel effects must
+not be ranked against one another. Per-seed values and 95% intervals remain
+in the receipt. Three seed units satisfy local coverage but cannot provide the
+six nonzero pairs required by the project's signed-rank test. No significant
+`clear_gain`, formal portfolio status change, L4 promotion or L-SCI closure is
+claimed. The descriptive overall decision is **inconclusive for broad
+superiority**, with the task-specific signals above. Validation winners were
+selected during search; the protected text test split remains unused. The LM
+surface is only 1536 training and 384 validation windows of 16 bytes, and the
+floor contains NGrams rather than a neural LM. Generalization to larger text,
+other tasks or hosts is untested.
+
+**Reporting defect found during analysis:** the optional clock extraction uses
+a 16 MiB state reader, although validated native states may be up to 128 MiB.
+All three Topograph128 exports exceed the smaller limit. The exception also
+clears already computed protocol fingerprints, incorrectly isolating Topograph
+and the external floor in old dashboard rankings. This analysis verifies exact
+shared config/runtime policies and all 12 benchmark/seed data bindings directly
+and computes a separate analytical view. Original exports, append-only trends
+and registry records remain unchanged. Repair and test the reporting path before
+claiming a formal within-cohort L4 result; the current L4 request interface only
+models same-engine before/after revisions. The plan records the remaining work.
 
 ## Native runtime performance — 2026-09-08
 
@@ -46,7 +155,8 @@ inheritance, metrics and updates. Two independent reviews found no unresolved
 source or qualification blockers. Both hosted lanes gate integration. The
 18-record registry's single-seed decision remains `needs more seeds`; no
 scientific advancement is claimed. Existing limits remain, and the full
-comparison is paused pending a fresh pinned plan and user-requested start.
+comparison was paused at that checkpoint; its later authorized completion and
+analysis are recorded above.
 
 ## Bounded campaign control and incremental journals — 2026-09-08
 

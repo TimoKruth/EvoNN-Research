@@ -15,7 +15,7 @@ b0_repository_model:
 
 # EvoNN Lab — Consolidated Execution Plan
 
-**Updated:** 2026-09-08. Revision 2 remains the governing plan baseline; this
+**Updated:** 2026-09-09. Revision 2 remains the governing plan baseline; this
 consolidation updates execution status without changing specifications or gates.
 
 This is the sole execution plan. Expand work packages here or in a PR-local
@@ -56,18 +56,53 @@ real-text Tier B and four-engine LM integration. The compact receipt
 `governance/phase4-runtime-evidence.json` binds 13 L3 runs / 304 fits and 80
 replayed winners. The five-system Tier-B@16 contract audit has zero blockers.
 
-**Next:** replan the paused five-system campaign on the optimized source after
-integration; keep it paused until the user requests its start. The first campaign
-completed three 64-fit engine slots; Topograph exhausted its 1500-second
-allowance after 51 committed attempts and one further durable result. Preserve
-that producer and clock unchanged. The [performance receipt](governance/performance-runtime-evidence.json)
-qualifies all four native engines at 64/128 on seed 42: 848 fits across 13 short
-runs, 48 winner replays, exact prior search/metric checks and 39 native recovery
-tests. Topograph now completes 64/128 fits in 70/158 seconds. Required hosted
-lanes gate integration; use Standard launchd priority for the fresh campaign.
-The 256-proposal/1800-second engine limits and 1500/90-second campaign/fit
-settings remain. WP-4.7 and the Phase 4 exit still require repeated low/mid-budget
-and L4 portfolio evidence; native cross-engine ingestion stays Phase 5.
+**Completed comparison:** the user-authorized optimized campaign finished on
+2026-09-09 at 00:30 CEST: 30/30 runs, 2,880/2,880 fits, zero failures; Tier B
+budgets 64/128 × seeds 42/43/44 × five systems. The
+[analysis receipt](governance/tier-b-comparison-20260909.json) and
+[interpretation](PROJECT_HISTORY.md#tier-b-comparison--2026-09-09) bind the exact
+producer and per-seed measurements. Decision-grade benchmark admission now
+passes with zero blockers. Three seeds meet the local coverage minimum, but
+this post-run within-cohort analysis does not close the L4 scientific exit.
+The original timed-out campaign remains untouched; existing limits remain.
+
+**Next, in priority order (no new training is scheduled):**
+
+1. **Repair large-state reporting and implement the explicit within-cohort L4
+   decision path.** Compare's optional 16 MiB state-telemetry read clears valid
+   Topograph protocol fingerprints for three 128-fit exports. Preserve source
+   evidence, retain integrity/size validation, separate optional clock gaps
+   from verified protocol identity, and test valid large states plus corrupted
+   states. A source-bound analytical projection already verifies matching
+   shared policies and data; do not edit historical rows to manufacture a pass.
+   The existing formal L4 request supports same-engine before/after revisions,
+   not this same-revision cross-engine/budget experiment. Add the proper request
+   and validation surface instead of relabeling engines or budgets as revisions.
+2. **Diagnose Stratograph before increasing its budget.** Image accuracy stays
+   at 25.09% on average when doubling 64→128 fits; LM changes by only 0.11%.
+   Use its existing shared/flat ablations to distinguish representation,
+   pooling/compiler and search-policy limitations. Its trained-head proxy does
+   not establish that end-to-end hierarchical learning would fail. No archive
+   decision is supported yet.
+3. **Prepare a targeted, preregistered confirmation protocol.** Prioritize
+   Prism's LM signal, Topograph's regression signal and Primordia's runtime/
+   quality tradeoff. Use matched seeds and stronger task-appropriate baselines;
+   keep the protected text test split unused until the protocol is fixed.
+   Three additional seeds would reach the existing six-nonzero-seed signed-rank
+   minimum only where all six effects are nonzero; they do not guarantee a
+   significant result or convert post-hoc selection into confirmation. Start
+   no replication run under this analysis task.
+4. **Profile comparison overhead without training.** Exported runs account for
+   43.6 of 77.6 campaign minutes; 34.0 minutes fall outside those spans. Fits
+   themselves report 8.8 minutes across the cohort. Measure validation,
+   orchestration and persistence separately before optimizing their costs;
+   these differences alone do not identify one bottleneck.
+
+WP-4.7's repeated low/mid admission requirement is now met. Its full parent and
+Phase 4 exit remain open for the specified trusted-extended/L4 decision surface
+and remaining preset/acceptance work. Native cross-engine ingestion stays
+Phase 5. Research priorities are provisional; formal portfolio status changes
+and broad superiority claims remain unmade.
 
 Supporting work: CodeRabbit automatic review is currently skipped by its
 repository star-count policy; a green skipped status is not review evidence.
@@ -819,8 +854,10 @@ artifact shape (B→Phase 5, co-signed here because Primordia emits it).
   clone+specialize counts/motif frequency; Primordia: primitive counts/
   bank size/promotion counts); CI scripts in the Linux lane.
 
-WP-4.7 data and `tier_b_tiny` are implemented and contract-qualified. Its parent
-checkbox remains open for the required repeated decision-grade audit. The other
+WP-4.7 data and `tier_b_tiny` are implemented and contract-qualified. The
+2026-09-09 repeated 64/128 cohort passes decision-grade benchmark admission
+with zero blockers. Its parent remains open for the complete specified preset
+surface and trusted-extended/L4 exit; admission alone is not that exit. The other
 checked work packages mean implemented + short-qualified; they do not close the
 full scientific exit. Independent reviews covered numerical/search behavior,
 artifact semantics, transport and the bounded command surface.
@@ -888,8 +925,9 @@ large model/data artifacts transported externally. Separate proxy, portability,
 native runtime, scientific superiority and transfer evidence.
 **Failure conditions:** engine coupling, proxy mislabeled end-to-end, missing
 budget charges, unbound artifacts, false L3/L4 promotion or failing checks.
-The full Tier-B three-seed five-system exit cohort stays a separate campaign;
-stop before starting a multi-hour training/comparison campaign.
+The Tier-B three-seed five-system 64/128 cohort is complete and analyzed in
+the 2026-09-09 receipt. Further training requires a separate execution decision;
+this analysis starts no additional fits.
 
 **Phase 4 exit:** five-system-cohort Tier B `trusted-extended` at 3 seeds —
 where `trusted-extended` requires **L4 repeated-seed aggregates, a
