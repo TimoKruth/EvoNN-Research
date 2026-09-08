@@ -19,7 +19,7 @@ EXPECTED_DEPENDENCY_CONTRACTS = (
             "PyYAML>=6.0.2,<7",
         ),
     ),
-    ("EvoNN-Compare", "evonn-compare", ("evonn-shared",)),
+    ("EvoNN-Compare", "evonn-compare", ("evonn-shared", "numpy==2.4.4", "scipy==1.17.1")),
     ("EvoNN-Contenders", "evonn-contenders", ("evonn-shared", "numpy==2.4.4", "scipy==1.17.1", "scikit-learn==1.8.0", "pandas==3.0.2", "openml==0.15.1", "PyYAML>=6.0.2,<7", "threadpoolctl==3.6.0",)),
     (
         "EvoNN-Prism",
@@ -68,7 +68,7 @@ def _contract():
 def test_workspace_dependency_contract_has_exact_version_and_ordered_mapping() -> None:
     contract = _contract()
 
-    assert contract.WORKSPACE_DEPENDENCY_CONTRACT_VERSION == "3.0.0"
+    assert contract.WORKSPACE_DEPENDENCY_CONTRACT_VERSION == "4.0.0"
     assert tuple(
         (package.directory, package.distribution, package.dependencies)
         for package in contract.WORKSPACE_DEPENDENCY_CONTRACTS

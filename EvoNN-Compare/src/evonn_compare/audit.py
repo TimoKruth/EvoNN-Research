@@ -21,7 +21,7 @@ def artifact_json(bundle, name: str):
 
 
 def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = False,
-                    dashboard_present: bool = False, output_levels: dict | None = None) -> dict:
+                    dashboard_present: bool = False, output_levels: dict | None = None, cache_roots: dict | None = None) -> dict:
     pack = load_parity_pack(pack_name)
     definitions = [get_benchmark(name) for name in pack.benchmarks]
     blockers, warnings, runs = [], [], []
@@ -125,7 +125,13 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
                 binding = runtime_manifest["benchmarks"][name]
                 if not binding["loader"].startswith("make_") and dataset["raw_sha256"] != binding["reference_raw_sha256"]:
                     raise ValueError("raw dataset reference differs")
-                digest = verify_split_cache(dataset, feature_count=math.prod(definition.input_shape), regression=definition.task_kind.value == "regression")
+                checked_dataset = dataset
+                if cache_roots is not None:
+                    original = dataset["cache_directory"]
+                    if original not in cache_roots:
+                        raise ValueError("transport is missing an exact dataset-cache root")
+                    checked_dataset = {**dataset, "cache_directory": str(cache_roots[original])}
+                digest = verify_split_cache(checked_dataset, feature_count=math.prod(definition.input_shape), regression=definition.task_kind.value == "regression")
                 if manifest.seed == 42 and digest != binding["reference_split_sha256"]:
                     raise ValueError("reference split differs from reviewed runtime")
                 candidate_floor[name]["cache"] = True

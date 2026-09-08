@@ -15,7 +15,7 @@ b0_repository_model:
 
 # EvoNN Lab — Consolidated Execution Plan
 
-**Updated:** 2026-09-07. Revision 2 remains the governing plan baseline; this
+**Updated:** 2026-09-08. Revision 2 remains the governing plan baseline; this
 consolidation updates execution status without changing specifications or gates.
 
 This is the sole execution plan. Expand work packages here or in a PR-local
@@ -46,14 +46,13 @@ reach L3; the recorded verification consumer replays 64 neural winners and core 
 passes as `trusted-core`. Independent reviews and real process-death tests
 cover both engines; both required hosted lanes gate merge of the final revision.
 
-Further Phase-2 model-quality conclusions require new controlled experiments.
-The next research step is a larger seed/budget campaign, kept outside this task's
-multi-hour-run boundary. Phase 3 registry/statistics remains separate non-training
-implementation work; it is not claimed to be blocked by training. Engine runs
-currently cap 256 proposals / 1800 seconds; higher per-run budgets first need an
-append-only attempt journal and separate resume/transport qualification.
-Short validation and baseline runs up to 30 minutes are allowed. Stop before
-starting a multi-hour training campaign and report the exact proposed run.
+The authorized next implementation is Phase 3 followed by Phase 4: durable
+registry/statistics first, then independent Stratograph and Primordia runtimes
+and their catalog integration. Complete short qualification before proposing
+the larger five-system comparison campaign. Do not start that campaign here.
+Engine runs currently cap 256 proposals / 1800 seconds; higher per-run budgets
+first need an append-only attempt journal and separate resume qualification.
+Short validation and baseline runs up to 30 minutes are allowed.
 
 Supporting work: CodeRabbit now reviews real content; measured policy validation
 is dominated by Git subprocesses. Optimize only with equivalent verdicts and
@@ -672,6 +671,61 @@ decision-label enums (B→A for dashboard display).
   artifact paths exist in the registry, exact case/run IDs, named
   dashboard slices, lane states present, exactly one decision category.
   Single-plan policy test extended.
+
+### Active Phase 3 implementation contract
+
+**Requirements:** claude-spec/12 Evidence Registry, L4 Statistical Decision
+Layer and mandatory diagnostics; /05 decision precedence and evidence bundle.
+**Depends on / Produces / Blocks:** Phase 2 L3 exports; additive Compare-owned
+registry schema v1, statistical reports and PR evidence validator; blocks
+Phase 4 trusted-extended claims. Existing Phase 0 schemas remain unchanged.
+**Hosts/backends:** Linux and macOS; reports preserve native/portability and
+host distinctions. One implementation worker, two independent review agents.
+
+- **WP-3.1a — Durable rows:** one immutable run record per label/run identity,
+  with all chapter-12 fields and compact score/telemetry snapshots. Promotion
+  reads verified exports and recomputes admission; user-supplied summaries
+  cannot assert trust. An OS lock serializes writers; append-only index is the
+  source of truth, checksummed manifest/report are recoverable derived views.
+  Supersession appends an event and never rewrites the old row. Artifact
+  publication precedes index commit; interrupted unreferenced copies are not
+  evidence. Copy only bounded metadata, keep large models external with hashes.
+- **WP-3.1b — Validation:** reject duplicate/conflicting identities, unsafe
+  paths, incomplete index lines, stale hashes, missing required artifacts and
+  unsupported schema fields. Stable labels identify explicitly selected
+  before/after cohorts; compare does not infer cohorts from directory names.
+- **WP-3.2a — Vocabulary:** separate strict statistical, aggregation and PR
+  decision enums; enforce chapter-05 precedence and seed thresholds.
+- **WP-3.3a — Descriptive evidence:** matched benchmark/seed score and rank
+  distributions, floor margins, ceiling-tie exclusion, budget slopes and
+  explicit missing/duplicate observations. Never pool incompatible budgets,
+  backend versions, hosts or training policies. Before/after permits only
+  explicitly identified source revisions to differ in the protocol binding.
+- **WP-3.3b — Inference:** deterministic paired bootstrap over independent
+  seed-level effects, bounded nonparametric tests with stated unit counts,
+  effect sizes and uncertainty; insufficient counts remain inconclusive.
+  Do not treat candidate outcomes or benchmark repeats as independent seeds.
+- **WP-3.3c — Diagnostics:** always emit transfer readiness, LM flatlines,
+  provisional engine roles, runtime tradeoffs and family allocation. Missing
+  proof stays insufficient_data/not_applicable; no native-transfer inference.
+- **WP-3.4a — Consumer:** registry-derived history, required named dashboard
+  slices and L4 classification based on validated repeated evidence, not a
+  caller-provided level. Keep best observed separate from advancement claims.
+- **WP-3.5a — Enforcement:** structured PR evidence block, artifact/run/case
+  validation and exactly one derived decision category; malformed fixture
+  must fail. CI validates committed registry citations and the single plan.
+
+**Tests first:** corrupt/stale/symlink artifacts, interrupted append/publication,
+repeated promotion and supersession; ceiling ties, missing seeds, duplicate
+runs, backend/host/policy drift and mixed budgets; false trust/promotion;
+malformed PR blocks and escaped dashboard content.
+**Verify:** `uv run --package evonn-compare pytest EvoNN-Compare/tests`;
+`scripts/ci/compare-checks.sh`; `scripts/ci/b0-policy-checks.sh`; both hosted
+lanes; `evonn-compare evidence validate --registry <registry> --require-artifacts`.
+**Evidence:** fixture-based contract decisions plus a bounded real before/after
+engine qualification; durable receipts cite exact source and consumer revisions.
+**Failure conditions:** invalid artifacts, unpaired/confounded comparisons,
+unsupported trust upgrades, missing required diagnostics or failing checks.
 
 **Phase 3 exit (contract evidence):** a before/after engine change is
 judged end-to-end from registry-backed evidence; the policy checker blocks

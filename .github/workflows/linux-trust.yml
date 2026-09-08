@@ -53,6 +53,10 @@ jobs:
           path: .artifacts/reference-integrity/report.json
           include-hidden-files: true
           if-no-files-found: error
+      - name: Rehydrate declared evidence dependencies
+        run: uv run --locked --all-packages --group dev evonn-compare evidence hydrate-declared
+      - name: Validate registry and PR decision evidence
+        run: uv run --locked --all-packages --group dev evonn-compare evidence pr-policy --event "$GITHUB_EVENT_PATH"
       - name: Run common B0 policies
         run: scripts/ci/b0-policy-checks.sh
       - name: Run Linux trust package checks
