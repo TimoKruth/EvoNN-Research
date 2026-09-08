@@ -6,14 +6,11 @@ from pathlib import Path
 import sys
 import yaml
 from .active_catalog import load_parity_pack
-from .datasets import load_dataset
 from .runtime_io import prepare_worker, boundary_ownership
 from .export_reader import read_document, read_export
-from .run_store import open_run_store, open_run_reader
-from .run_workspace import open_run_workspace, write_report
 
 
-def main(search_type, genome_type, run_engine, evaluation_worker, config_type, replay_export, argv=None, *, dataset_loader=load_dataset, inspect_extra=None):
+def main(search_type, genome_type, run_engine, evaluation_worker, config_type, replay_export, argv=None, *, dataset_loader=None, inspect_extra=None):
     argv = sys.argv[1:] if argv is None else argv
     if argv and argv[0] in {"_prepare", "_worker"}:
         request = json.loads(read_document(Path(argv[1]).parent, Path(argv[1]).name, limit=128 * 1024**2))
@@ -190,11 +187,17 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
         elif options.verb == "benchmarks":
             print("\n".join(load_parity_pack(options.pack).benchmarks))
         elif options.verb == "warm-cache":
+            if dataset_loader is None:
+                from .datasets import load_dataset
+                dataset_loader = load_dataset
             for benchmark in load_parity_pack(options.pack).benchmarks:
                 print(
                     dataset_loader(benchmark, seed=options.seed, cache_root=options.cache).provenance["cache_directory"]
                 )
         else:
+            from .run_store import open_run_store, open_run_reader
+            from .run_workspace import open_run_workspace, write_report
+
             workspace = open_run_workspace(options.run_directory)
             if inspect_extra is not None and options.verb in {"inspect", "report"}:
                 with boundary_ownership(workspace.root):

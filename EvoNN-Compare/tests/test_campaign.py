@@ -177,3 +177,22 @@ def test_adoption_checks_full_export_budget_envelope(binding, tmp_path, monkeypa
     monkeypatch.setattr(c, "artifact_json", lambda *args: native)
     with pytest.raises(ValueError, match="budget envelope"):
         c.adopted(tmp_path, manifest, case, "stratograph")
+
+
+def test_slow_second_preflight_cannot_overrun_session(planned, monkeypatch):
+    clock, calls = [0.0], []
+    original = c.preflight
+    def slow(root):
+        result = original(root)
+        calls.append(root)
+        if len(calls) == 2:
+            clock[0] = 60.0
+        return result
+    monkeypatch.setattr(c, "preflight", slow)
+    monkeypatch.setattr(c.time, "monotonic", lambda: clock[0])
+    monkeypatch.setattr(c, "_bounded_process", lambda *a, **k: pytest.fail("must not dispatch"))
+    monkeypatch.setattr(c, "workspace_report", lambda root: {})
+    result = c.run_campaign(planned, session_timeout=100)
+    assert result["status"] == "paused" and result["new_runs"] == 0
+    assert len(calls) == 2
+    assert not (planned / "events").exists()

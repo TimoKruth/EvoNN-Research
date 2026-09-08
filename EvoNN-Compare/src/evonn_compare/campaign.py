@@ -375,6 +375,8 @@ def run_campaign(root, *, session_timeout=1800, max_runs=None):
                 if state["completed"] > case.budget or (state["elapsed"] >= spec.timeout and state["completed"] < case.budget):
                     raise ValueError("incomplete slot exhausted its budget; no automatic replacement")
                 command += ["--resume", str(run)]
+            if deadline - time.monotonic() < spec.timeout + 20:
+                break  # Preflight/recovery must not consume the reserved slot budget.
             event = append_event(root, manifest, history, slot, "dispatch", {"command": command})
             dispatch = create_artifact_directory(root / "dispatch")
             description = dispatch / f"{event['sequence']:06d}.json"

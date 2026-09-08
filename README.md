@@ -50,7 +50,12 @@ Each committed checkpoint appends one attempt and a state delta; every 16 steps
 it includes a compact search-state snapshot. Weight-cache changes are keyed, so
 LRU reordering does not rewrite all weights. The **128 MiB** publication guard
 and **32 MiB** cache remain. Search traces and integrity hashing can still grow
-with history; larger per-run budgets require separate runtime qualification.
+with history. The [performance receipt](governance/performance-runtime-evidence.json)
+qualifies native Tier-B budgets 64/128 on seed 42: 13 short runs, 848 fits,
+48 replayed neural winners and zero failed fits. The 128-fit runs take 49–158
+seconds on the recorded host. Limits are unchanged; other seeds remain the
+scientific campaign's job. The original comparison remains stopped, and restart
+requires a freshly pinned campaign on the optimized source.
 
 Run a verified short preset and rebuild its dashboard:
 
@@ -95,6 +100,13 @@ keep that checkout and environment unchanged until the campaign is finished.
 Preflight only reads and validates those inputs, probes the requested backend
 and checks free space (1 GiB by default). It neither downloads nor trains.
 Use a new workspace if planning is interrupted or settings change.
+
+For an explicitly requested macOS training job launched through `launchd`, use
+`ProcessType = Standard` (the default), with `KeepAlive = false`. `Background`
+and `Adaptive` without an active XPC transaction throttle worker startup and
+journal work substantially. Keep the computer awake with `caffeinate -i -m`
+around the bounded command. Preserve the launch configuration beside the run;
+changing execution priority or source requires a newly planned campaign.
 
 `run` and `resume` share the same recovery path. Each invocation is capped at
 30 minutes and pauses before a slot whose full time allowance no longer fits;

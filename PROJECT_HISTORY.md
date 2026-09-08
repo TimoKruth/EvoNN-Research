@@ -16,6 +16,38 @@ Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
+## Native runtime performance — 2026-09-08
+
+The first larger campaign stopped at Topograph after 51 committed fits in its
+1500-second allowance. The original source, successful slots, checkpoint and
+52nd durable result remain untouched. Background launchd priority throttled
+startup and journaling; the next campaign uses Standard priority.
+
+Topograph now sends a serial job directly to the existing isolated fit process,
+while multiple jobs retain their supervised pool. Historical process disclosures
+remain readable. All four engines avoid eager data-preparation imports, retain
+runner-owned search/cache state between fits and avoid redundant journal hashes.
+Recovery still validates the predecessor and reconstructs Search after a pending
+transaction. Campaign dispatch checks the full time reserve after preflight.
+
+The [performance receipt](governance/performance-runtime-evidence.json) binds
+13 native/Contenders qualification runs, 848 successful fits and 48 winner
+replays. Native 64-fit timings are 39/27/45/70 seconds for Stratograph/Primordia/
+Prism/Topograph; 128-fit timings are 92/49/94/158 seconds. Historical background
+comparisons combine code and process-priority changes. Separate three-repetition
+probes at equal priority measure about 6x faster native CLI imports. The first
+cold Stratograph16 preparation remains slower than its earlier cohort; no
+uniform cold-start improvement is claimed.
+
+836 foundation tests, 46 targeted tests and 39 native recovery/integration tests
+pass. A 160-step regression checks persistent versus restored search state;
+prior 16-fit cohorts and available 64-fit prefixes retain exact architectures,
+inheritance, metrics and updates. Two independent reviews found no unresolved
+source or qualification blockers. Both hosted lanes gate integration. The
+18-record registry's single-seed decision remains `needs more seeds`; no
+scientific advancement is claimed. Existing limits remain, and the full
+comparison is paused pending a fresh pinned plan and user-requested start.
+
 ## Bounded campaign control and incremental journals — 2026-09-08
 
 Campaign planning freezes the matrix, clean source, host/environment, pools,
