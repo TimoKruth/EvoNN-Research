@@ -11,7 +11,7 @@ class WorkspaceDependencyContract(NamedTuple):
     dependencies: tuple[str, ...]
 
 
-WORKSPACE_DEPENDENCY_CONTRACT_VERSION = "4.0.0"
+WORKSPACE_DEPENDENCY_CONTRACT_VERSION = "5.0.0"
 ENGINE_DEPENDENCIES = (
     "evonn-shared",
     "numpy>=2.1,<3",
@@ -33,8 +33,8 @@ WORKSPACE_DEPENDENCY_CONTRACTS = (
     WorkspaceDependencyContract("EvoNN-Contenders", "evonn-contenders", ("evonn-shared", "numpy==2.4.4", "scipy==1.17.1", "scikit-learn==1.8.0", "pandas==3.0.2", "openml==0.15.1", "PyYAML>=6.0.2,<7", "threadpoolctl==3.6.0",)),
     WorkspaceDependencyContract("EvoNN-Prism", "evonn-prism", TRAINING_ENGINE_DEPENDENCIES),
     WorkspaceDependencyContract("EvoNN-Topograph", "evonn-topograph", TRAINING_ENGINE_DEPENDENCIES),
-    WorkspaceDependencyContract("EvoNN-Stratograph", "evonn-stratograph", ENGINE_DEPENDENCIES),
-    WorkspaceDependencyContract("EvoNN-Primordia", "evonn-primordia", ENGINE_DEPENDENCIES),
+    WorkspaceDependencyContract("EvoNN-Stratograph", "evonn-stratograph", TRAINING_ENGINE_DEPENDENCIES),
+    WorkspaceDependencyContract("EvoNN-Primordia", "evonn-primordia", TRAINING_ENGINE_DEPENDENCIES),
 )
 WORKSPACE_DEPENDENCY_BY_DIRECTORY = {
     package.directory: package for package in WORKSPACE_DEPENDENCY_CONTRACTS

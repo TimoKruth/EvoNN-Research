@@ -17,7 +17,7 @@ from evonn_shared.artifact_io import append_artifact, create_artifact_directory,
 from evonn_shared.export_reader import read_document, read_export
 from evonn_shared.runtime_io import source_identity, code_identity
 from evonn_shared.telemetry import ArtifactReference
-from evonn_shared.catalog import get_benchmark
+from evonn_shared.active_catalog import get_benchmark
 from .audit import apply_admission, artifact_json, benchmark_audit
 from .cases import Case, evaluate_case
 from .evidence import best_rows, trend_rows

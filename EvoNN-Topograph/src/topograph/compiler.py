@@ -6,11 +6,16 @@ from .tensors import Backend
 
 
 class QuantizedLinear:
-    def __init__(self, bits=8, activation_bits=32):
+    def __init__(self, bits=8, activation_bits=32, *, per_example=False):
         self.bits, self.activation_bits = bits, activation_bits
+        self.per_example = per_example
 
     def __call__(self, backend, x, weight, bias):
-        return backend.quantize(x, self.activation_bits) @ backend.quantize(weight, self.bits) + bias
+        return (
+            backend.quantize(x, self.activation_bits, per_example=self.per_example)
+            @ backend.quantize(weight, self.bits)
+            + bias
+        )
 
 
 class BitLinear(QuantizedLinear):
@@ -21,8 +26,9 @@ class BitLinear(QuantizedLinear):
 class EvolvedModel:
     token_input = False
 
-    def __init__(self, genome, input_shape, output_dim, backend, seed):
+    def __init__(self, genome, input_shape, output_dim, backend, seed, *, token_input=False):
         self.genome, self.backend, self.input_shape, self.output_dim = genome, backend, tuple(input_shape), output_dim
+        self.token_input = token_input
         self.layers = genome.active_layers()
         self.weights, self.precisions = {}, {}
         self.buffers = {}
@@ -51,7 +57,9 @@ class EvolvedModel:
             target = nodes[edge.target]
             linear(
                 f"edge{edge.innovation}",
-                math.prod(input_shape) if edge.source == -1 else nodes[edge.source].width,
+                math.prod(input_shape) * (output_dim if token_input else 1)
+                if edge.source == -1
+                else nodes[edge.source].width,
                 target.width,
                 target.weight_bits,
             )
@@ -91,10 +99,24 @@ class EvolvedModel:
 
     def forward(self, p, x, *, training=False, seed=0):
         b = self.backend
+        if self.token_input:
+            tokens = b.numpy(x)
+            if (
+                tokens.ndim != 2
+                or not np.isfinite(tokens).all()
+                or np.any(tokens != np.floor(tokens))
+                or np.any(tokens < 0)
+                or np.any(tokens >= self.output_dim)
+            ):
+                raise ValueError("integer in-vocabulary context matrix required")
+            # Every context token precedes the single scored next-token target.
+            x = b.array(np.eye(self.output_dim, dtype=np.float32)[tokens.astype(np.int64)])
         values = {-1: x.reshape((x.shape[0], -1))}
 
         def linear(key, value, activation_bits=32):
-            return QuantizedLinear(self.precisions[key + ".w"], activation_bits)(b, value, p[key + ".w"], p[key + ".b"])
+            return QuantizedLinear(self.precisions[key + ".w"], activation_bits, per_example=self.token_input)(
+                b, value, p[key + ".w"], p[key + ".b"]
+            )
 
         for node in self.layers:
             key, n, width = f"node{node.innovation}", x.shape[0], node.width
@@ -142,7 +164,7 @@ class EvolvedModel:
                 raw = np.abs(b.numpy(value))
                 keep = max(1, int(width * (1 - node.sparsity)))
                 value = value * b.array(raw >= np.sort(raw, axis=-1)[:, -keep][:, None])
-            values[node.innovation] = b.quantize(value, node.activation_bits)
+            values[node.innovation] = b.quantize(value, node.activation_bits, per_example=self.token_input)
         output = values[self.genome.output]
         if self.genome.experts:
             logits = linear("gate", output) / self.genome.gate.temperature
@@ -170,8 +192,11 @@ def compile_genome(
     device="cpu",
     seed=0,
 ):
-    if task not in {"classification", "regression"} or modality not in {"tabular", "image", "sequence"}:
-        raise ValueError("Phase-2 Topograph supports numeric classification/regression; text/LM is not implemented")
+    token_input = task == "language_modeling" and modality == "text"
+    if not token_input and (
+        task not in {"classification", "regression"} or modality not in {"tabular", "image", "sequence"}
+    ):
+        raise ValueError("unsupported Topograph task/modality pair")
     if not input_shape or any(type(v) is not int or v <= 0 for v in input_shape) or output_dim < 1:
         raise ValueError("positive model dimensions required")
-    return EvolvedModel(genome, input_shape, output_dim, Backend(backend, device), seed)
+    return EvolvedModel(genome, input_shape, output_dim, Backend(backend, device), seed, token_input=token_input)

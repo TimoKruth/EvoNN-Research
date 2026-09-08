@@ -48,6 +48,12 @@ def evaluate(request: dict) -> dict:
                                          size_bytes=item["size_bytes"])
         arrays[Path(item["path"]).stem] = np.load(io.BytesIO(payload), allow_pickle=False)
     try:
+        if request["task"] == "language_modeling":
+            for name in ("x_train", "x_validation"):
+                value=arrays[name]
+                if not np.isfinite(value).all() or np.any(value!=np.floor(value)) or np.any(value<0) or np.any(value>=request["output_dim"]):
+                    raise ValueError("invalid integer token context")
+                arrays[name]=value.astype(np.int64)
         model = build_model(request["model"], task=request["task"], seed=request["model_seed"],
                             input_shape=tuple(request["input_shape"]), output_dim=request["output_dim"],
                             train_rows=len(arrays["x_train"]), parameters=request["parameters"])

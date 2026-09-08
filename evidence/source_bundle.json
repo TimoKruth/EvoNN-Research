@@ -1,0 +1,32 @@
+{
+  "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-phase4-20260908/phase4-dependencies.tar.gz",
+  "descriptor": {
+    "schema_version": 1,
+    "archive_sha256": "ca7980f002f05e790bf37eb236dc0fdb69765653b1ee58ddefe1158fc6f57ea9",
+    "archive_size_bytes": 21848672,
+    "index_sha256": "3ad1e11f510d859804c663c22b7919b2d7d091ee0af2068dad49731d3611da69",
+    "transport_manifest_sha256": "c0f59013cc23777935528abe8282e2978cd15f303230013c7dfcacd1258cd088",
+    "run_ids": [
+      "contenders_20260907T211155_84a32ed3a865",
+      "contenders_20260908T091833_91c4a0b330bb",
+      "primordia_20260908T090346_bc8a858b68",
+      "primordia_20260908T090609_90a4b08d8e",
+      "primordia_20260908T091556_6c14140ece",
+      "prism_20260908T091634_e1981c3106",
+      "stratograph_20260908T082654_6edb74b505",
+      "stratograph_20260908T083036_7a14e0d517",
+      "stratograph_20260908T083112_15cbb0c57c",
+      "stratograph_20260908T083148_c8baf45e93",
+      "stratograph_20260908T083225_fac23ede8a",
+      "stratograph_20260908T083303_e4954e2c89",
+      "stratograph_20260908T091514_2fe487e2a0",
+      "topograph_20260908T091713_302d848a77"
+    ]
+  },
+  "registry_snapshot": {
+    "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-phase4-20260908/phase4-registry.tar.gz",
+    "archive_sha256": "36cb2382c59d79b92477469af110b284172c4b153650b0911bee23e675cf20f4",
+    "archive_size_bytes": 2672474,
+    "index_sha256": "3ad1e11f510d859804c663c22b7919b2d7d091ee0af2068dad49731d3611da69"
+  }
+}

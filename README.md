@@ -19,43 +19,37 @@ Package READMEs are short navigation links, not separate status reports or plans
 
 ## Current capabilities
 
-**Verified baseline: 2026-09-07.** Gate B0 and Phase 0 contract acceptance are
+**Verified baseline: 2026-09-08.** Gate B0 and Phase 0 contract acceptance are
 closed. The [acceptance receipt](governance/phase0-acceptance.json) binds the
 canonical catalog authorization and successful Linux/macOS CI evidence.
 Exact integrations and review decisions are recorded in project history.
 
 | Component | Implemented | Remaining |
 | --- | --- | --- |
-| Shared | Canonical identities/RNG, strict budgets/telemetry/three-file exports, catalog/pack loaders, checkpoints, LM-cache validation, transactional DuckDB/workspace and verified read-only access | Engine consumers and their evidence |
-| Shared benchmarks | Eight immutable planned definitions, three packs, verified historical provenance and budget/export composition | Future image/LM packs and optional enhanced runtime evidence |
-| Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Engine-specific resume/speciation and scientific qualification |
-| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality, append-only evidence registry, paired-seed L4 analysis and evidence dashboard | Evolutionary engine comparisons and scientific qualification |
-| Prism + Topograph | Package-local MLX/NumPy models, bounded AdamW search, inheritance, atomic resume, portable model exports and Compare ingestion | Larger scientific campaigns; repeated native evidence through registry analysis |
-| Stratograph + Primordia | Importable packages and bootstrap runtime dependencies/probes | Search/training engines and qualified scientific results |
+| Shared | Canonical identities/RNG, strict budgets/telemetry/three-file exports, catalog/pack loaders, checkpoints, LM-cache validation, transactional DuckDB/workspace and verified read-only access | Producer interoperability and future contract extensions |
+| Shared benchmarks | Eight frozen definitions plus two additive runtime definitions, four packs, verified tabular/image/real-text caches | Repeated Tier-B scientific qualification and optional enhanced pressure |
+| Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Broader scientific qualification and future producer interoperability |
+| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality, append-only evidence registry, paired-seed L4 analysis and evidence dashboard | Repeated portfolio comparisons and scientific qualification |
+| Prism + Topograph | Package-local MLX/NumPy models including real next-token LM, bounded search, inheritance, atomic resume, portable exports and Compare ingestion | Larger scientific campaigns; repeated native evidence through registry analysis |
+| Stratograph | Hierarchical cell search, trained-head proxy, five ablations, winner motifs, resume/replay | End-to-end hierarchy learning and scientific comparison claims |
+| Primordia | Trained primitive circuits, bounded archive/cost policy, verified motif/seed bank | Native cross-engine ingestion and proven transfer gains |
 
-Phase 1 runtime evidence now contains **336 successful fits in five short runs**:
-`tier1_core@64` at seeds 42/43/44, core@128 at seed 42, and smoke@16.
-Core admission passes with zero blockers and all outputs are L3; smoke remains
-insufficient for complete floor coverage. The compact
-[runtime receipt](governance/phase1-runtime-evidence.json) binds exact code and
-export hashes. [PR #29](https://github.com/TimoKruth/EvoNN-Research/pull/29) and
-[PR #30](https://github.com/TimoKruth/EvoNN-Research/pull/30) carry the
-implementation and required hosted acceptance checks.
-Phase 2 engine runs accept at most **256 proposals** and **30 minutes** per run.
+The [Phase 4 receipt](governance/phase4-runtime-evidence.json) records **13 short
+qualification runs / 304 real fits**: both new engines on Tier A/core@64, five
+Stratograph variants and all five systems on Tier-B@16. All exports are L3;
+80 trained winners replay. Tier-B contract audit passes with zero blockers.
+Repeated-seed and mid-budget evidence remain open, so the decision is
+`needs more seeds`; this is no scientific superiority or transfer claim.
+Stratograph explicitly uses deterministic hierarchy features with a trained head.
+[Phase 1](governance/phase1-runtime-evidence.json),
+[Phase 2](governance/phase2-runtime-evidence.json) and
+[Phase 3](governance/phase3-runtime-evidence.json) retain their scoped evidence.
+
+All four engine runtimes accept at most **256 proposals** and **30 minutes** per run.
 Checkpoints retain full search/attempt snapshots, with a **128 MiB** serialization
 guard before publication and a **32 MiB** weight cache. This deliberately bounds
 local acceptance work; full-history snapshot writes still grow quadratically.
-Larger campaigns require an append-only attempt journal and separate qualification.
-
-Phase 2 acceptance records **896 actual fits in 13 short runs**, all L3:
-Contenders/Prism/Topograph on core@64 seeds 42/43/44 and Tier-A@64 seed 42,
-plus Contenders core@128. Each run took 100–280 seconds. The recorded verification consumer
-reproduces all 64 exported neural winners; core floor admission is `trusted-core`.
-The [Phase 2 receipt](governance/phase2-runtime-evidence.json) separates exact
-producer and consumer commits. [PR #31](https://github.com/TimoKruth/EvoNN-Research/pull/31)
-binds hosted qualification; both required lanes must pass before merge.
-Real SIGKILL/resume and delayed-worker tests cover failure recovery.
-These are contract and exploratory results; no scientific superiority is claimed.
+Larger per-run budgets require an append-only attempt journal and separate qualification.
 
 Run a verified short preset and rebuild its dashboard:
 
@@ -79,7 +73,7 @@ uv run evonn-compare fair-matrix --workspace .artifacts/phase2-native \
   --engine-backend mlx_native --engine-epochs 12 --timeout 1200 --fit-timeout 120
 ```
 
-Both engines expose `evolve`/`run`, `inspect`, `report`, `replay`, `benchmarks`,
+All four engines expose `evolve`/`run`, `inspect`, `report`, `replay`, `benchmarks`,
 `warm-cache` and `symbiosis-export`. Configurations and resumes reject option,
 source, dependency and data drift. The tiny presets perform real fits on all
 eight smoke benchmarks. NumPy executes the actual architecture and produces
@@ -100,6 +94,29 @@ full deployment objectives and statistical superiority remain later-phase work.
 Compare keeps immutable case evidence at `contract-fair`; a separate
 `benchmark-audit --decision-grade` result governs trusted floor admission. A
 green audit does not rewrite the original case labels or append-only rows.
+
+The Phase 4 runtime adds `tier_b_core_v2`: OpenML banknote authentication,
+small digit images, diabetes regression and a real Shakespeare byte next-token
+benchmark. The text source is pinned to an immutable [char-rnn snapshot](https://github.com/karpathy/char-rnn/blob/370cbcd448eb7daf32f21a6be560b70e0b33c4e3/data/tinyshakespeare/input.txt).
+Raw text is split before context creation; the final 15% is protected and unused.
+The bounded profile samples at most 1,536 training and 384 validation contexts.
+The historical catalog and runtime identities remain immutable; active runtime
+consumers use the additive extension through `evonn_shared.active_catalog`.
+Package READMEs document [Stratograph](EvoNN-Stratograph/README.md) and
+[Primordia](EvoNN-Primordia/README.md). Large repeated comparison and native
+transfer claims require subsequent evidence, not these bounded configurations.
+
+Run the verified Tier-B tiny profile across all five systems:
+
+```sh
+uv run --locked --all-packages evonn-compare fair-matrix \
+  --workspace .artifacts/tier-b-tiny --preset tier_b_tiny \
+  --systems contenders prism topograph stratograph primordia --seeds 42 \
+  --engine-backend mlx_native --engine-epochs 12 --timeout 300 --fit-timeout 90
+```
+
+The preset selects 16 evaluations per system. Each invocation caps five minutes;
+this command starts a short qualification, not the larger repeated campaign.
 
 ## Architecture and authority
 
@@ -213,8 +230,10 @@ new file is visible; do not delete published evidence as a pretend rollback.
 
 Benchmark definitions live in `shared-benchmarks/catalog/`; packs live in
 `shared-benchmarks/suites/parity/`. Eight planned definitions and three packs
-are accepted as catalog metadata under freeze v3; runtime admission remains
-open. Canonical
+are accepted under freeze v3. Additive runtime definitions live in
+`shared-benchmarks/extensions/phase4/`; `evonn_shared.active_catalog` resolves
+both generations without rewriting frozen identities. Scientific admission is
+scoped by the runtime receipts. Canonical
 IDs preserve data/split/metric meaning; changes follow WP-0.1b/0.8.
 
 `shared-benchmarks/lm_cache/` holds versioned `<cache_id>.yaml` manifests;

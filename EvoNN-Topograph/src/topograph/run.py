@@ -14,7 +14,7 @@ import time
 import uuid
 import numpy as np
 from evonn_shared.artifact_io import create_artifact_directory, publish_artifact, read_verified_artifact
-from evonn_shared.catalog import get_benchmark, load_parity_pack
+from evonn_shared.active_catalog import get_benchmark, load_parity_pack
 from evonn_shared.canonical import canonical_sha256
 from evonn_shared.checkpoints import CheckpointPublication, load_latest_checkpoint, publish_checkpoint
 from evonn_shared.datasets import shared_root
@@ -454,6 +454,19 @@ def run_engine(
         return export_run(workspace, state, definitions, pack, selection, device_class, inherited)
 
 
+def perplexity_from_logits(predicted, targets, backend):
+    """Reproduce the positive exported LM metric using the training loss algebra."""
+    b = backend
+    if targets.ndim == 1 and predicted.ndim == 3:
+        predicted = predicted[:, -1, :]
+    logits = b.array(predicted).reshape((-1, predicted.shape[-1]))
+    shifted = logits - b.array(b.numpy(logits).max(axis=-1, keepdims=True))
+    log_probs = shifted - b.log(b.exp(shifted).sum(axis=-1, keepdims=True))
+    hot = np.eye(logits.shape[-1], dtype=np.float32)[targets.reshape(-1)]
+    loss = -(b.array(hot) * log_probs).sum(axis=-1).mean()
+    return math.exp(float(b.numpy(loss)))
+
+
 def replay_export(root, search_type, genome_type):
     """Reconstruct every retained winner from portable JSON/NPZ and checked data."""
     from evonn_shared.export_reader import read_export
@@ -505,6 +518,8 @@ def replay_export(root, search_type, genome_type):
             calibration = preprocessing["calibration"]
             predicted = predicted * calibration["slope"] + calibration["intercept"]
             observed = float(np.mean((predicted.reshape(-1) - y.reshape(-1)) ** 2))
+        elif definition.task_kind.value == "language_modeling":
+            observed = perplexity_from_logits(predicted, y, b)
         else:
             observed = float(np.mean(predicted.argmax(axis=-1) == y))
         if not math.isclose(observed, winner.value, rel_tol=1e-6, abs_tol=1e-8):

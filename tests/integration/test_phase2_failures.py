@@ -12,6 +12,10 @@ from prism.config import RunConfig as PrismConfig
 from topograph import run as topograph_run
 from topograph.search import Search as TopographSearch
 from topograph.config import RunConfig as TopographConfig
+from stratograph import run as stratograph_run
+from stratograph.search import Search as StratographSearch
+from evonn_primordia import run as primordia_run
+from evonn_primordia.search import Search as PrimordiaSearch
 from evonn_shared.checkpoints import load_latest_checkpoint
 from evonn_shared.datasets import load_dataset
 from evonn_shared.runtime_io import encode_snapshot, terminal_worker_failure, encode
@@ -32,7 +36,7 @@ def prepared(tmp_path):
     "runtime,search,failure",
     [
         (runtime, search, failure)
-        for runtime, search in [(prism_run, PrismSearch), (topograph_run, TopographSearch)]
+        for runtime, search in [(prism_run, PrismSearch), (topograph_run, TopographSearch), (stratograph_run, StratographSearch), (primordia_run, PrimordiaSearch)]
         for failure in (
             ["oversized", "transport", "timeout", "broken_pool"]
             if runtime is topograph_run
@@ -49,7 +53,7 @@ def test_failed_candidate_advances_once_and_preserves_charge(tmp_path, monkeypat
             raise TimeoutError("supervisor deadline")
         raise TypeError("post-start transport fault")
 
-    def process(system, verb, request, directory, timeout):
+    def process(system, verb, request, directory, timeout, **options):
         if verb == "_prepare":
             return {"status": "ok", "provenance": prepared[request["benchmark"]]}
         dispatch(directory)

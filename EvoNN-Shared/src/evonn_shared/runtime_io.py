@@ -120,7 +120,7 @@ def terminal_worker_failure(directory, reason, timeout):
         return result
 
 
-def _process(system, verb, request, directory, timeout):
+def _process(system, verb, request, directory, timeout, *, worker_module=None):
     request_path = directory / "request.json"
     if request_path.exists():
         previous = json.loads(read_document(directory, request_path.name, limit=128 * 1024**2))
@@ -159,7 +159,7 @@ def _process(system, verb, request, directory, timeout):
     )
     try:
         process = subprocess.run(
-            [sys.executable, "-m", system + ".cli", verb, str(directory / "request.json"), str(output)],
+            [sys.executable, "-m", worker_module or system + ".cli", verb, str(directory / "request.json"), str(output)],
             env=env,
             capture_output=True,
             timeout=max(0.001, timeout),
@@ -174,8 +174,8 @@ def _process(system, verb, request, directory, timeout):
         return terminal_worker_failure(directory, "isolated worker wall-clock cap exceeded", 0)
 
 
-def prepare_worker(request, output):
-    dataset = load_dataset(
+def prepare_worker(request, output, *, dataset_loader=load_dataset):
+    dataset = dataset_loader(
         request["benchmark"], seed=request["seed"], cache_root=Path(request["cache"]), root=Path(request["shared_root"])
     )
     publish_artifact(output, encode({"status": "ok", "provenance": dataset.provenance}))
@@ -195,7 +195,7 @@ def vars_free_training(config):
     }
 
 
-def export_run(workspace, state, definitions, pack, selection, device_class, inherited):
+def export_run(workspace, state, definitions, pack, selection, device_class, inherited, *, extra_artifacts=(), artifact_builder=None):
     configuration, attempts = state["config"], state["attempts"]
     directory = workspace.root / (
         "symbiosis" if state["completed"] == configuration["total"] else f"symbiosis_step_{state['completed']}"
@@ -394,8 +394,13 @@ def export_run(workspace, state, definitions, pack, selection, device_class, inh
         "attempts.json",
         "dataset_provenance.json",
     ]
+    if artifact_builder is not None:
+        extra_artifacts = (*extra_artifacts, *artifact_builder(workspace, state, definitions, runtime))
+    names += list(extra_artifacts)
     names += dataset_names
     names += ["model_" + b["benchmark_id"] + suffix for b in best for suffix in (".npz", ".json")]
+    if len(names) != len(set(names)):
+        raise ValueError("duplicate extra export artifact")
     references = {
         name: ArtifactReference(
             path=name, sha256=hashlib.sha256(read_document(workspace.root, name, limit=256 * 1024**2)).hexdigest()

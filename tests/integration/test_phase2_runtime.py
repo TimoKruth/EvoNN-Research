@@ -22,13 +22,13 @@ from evonn_compare.quality import classify
 REPO = Path(__file__).resolve().parents[2]
 
 
-def invoke(system, *arguments):
+def invoke(system, *arguments, timeout=240):
     return subprocess.run(
-        [sys.executable, "-m", system + ".cli", *map(str, arguments)],
+        [sys.executable, "-m", ("evonn_primordia" if system == "primordia" else system) + ".cli", *map(str, arguments)],
         cwd=REPO,
         capture_output=True,
         text=True,
-        timeout=240,
+        timeout=timeout,
     )
 
 
@@ -44,7 +44,7 @@ def state(root):
     return json.loads(payload)
 
 
-@pytest.mark.parametrize("system", ["prism", "topograph"])
+@pytest.mark.parametrize("system", ["prism", "topograph", "stratograph", "primordia"])
 def test_real_resume_kill_boundaries_export_and_report(system, tmp_path, monkeypatch):
     result = invoke(
         system,
@@ -81,6 +81,8 @@ def test_real_resume_kill_boundaries_export_and_report(system, tmp_path, monkeyp
     expected = state(baseline)
     bundle = read_export(baseline / "symbiosis")
     engine_evidence.validate_engine_bundle(bundle, verify_cache=True)
+    if system in {"stratograph", "primordia"}:
+        _phase4_artifact_checks(system, baseline, bundle, monkeypatch)
     hidden_cache = tmp_path / "cache_hidden"
     (tmp_path / "cache").rename(hidden_cache)
     try:
@@ -154,7 +156,7 @@ def test_real_resume_kill_boundaries_export_and_report(system, tmp_path, monkeyp
     assert drift.returncode != 0 and "differs" in drift.stderr
 
 
-@pytest.mark.parametrize("system", ["prism", "topograph"])
+@pytest.mark.parametrize("system", ["prism", "topograph", "stratograph", "primordia"])
 def test_resume_after_reproduction_and_trained_inheritance(system, tmp_path):
     result = invoke(
         system,
@@ -199,3 +201,79 @@ def test_resume_after_reproduction_and_trained_inheritance(system, tmp_path):
     assert [a["metric_value"] for a in actual["attempts"]] == [a["metric_value"] for a in expected["attempts"]]
     assert any(a["inheritance"]["mode"] != "none" for a in actual["attempts"])
     engine_evidence.validate_engine_bundle(read_export(interrupted / "symbiosis"), verify_cache=True)
+
+
+def _phase4_artifact_checks(system,root,bundle,monkeypatch):
+    reader=engine_evidence.artifact_json
+    names=("motif_analysis.json","lm_diagnostics.json") if system=="stratograph" else ("seed_candidates.json","primitive_bank.json","search_leaders.json")
+    original={name:reader(bundle,name) for name in names}
+    attacks=["motif","lm"] if system=="stratograph" else ["empty","quality","source","genome","bank","leaders"]
+    for attack in attacks:
+        changed=deepcopy(original)
+        if attack=="motif":
+            changed["motif_analysis.json"]["global_frequency"]={"invented":99999}
+        elif attack=="lm":
+            changed["lm_diagnostics.json"]=[{"native_transfer_proven":True,"broad_claim_ready":True}]
+        elif attack=="empty":
+            changed["seed_candidates.json"]=[]
+        elif attack in {"quality","source","genome"}:
+            from evonn_shared.seed_artifact import seal_seed
+            payload=changed["seed_candidates.json"][0]
+            del payload["checksum"]
+            if attack=="quality":
+                payload["quality"]["value"]=99999.
+            elif attack=="source":
+                payload["source"]["seed"]+=1
+            else:
+                payload["encoding"]["genome"]["width"]+=1
+            changed["seed_candidates.json"][0]=seal_seed(payload)
+        elif attack=="bank":
+            changed["primitive_bank.json"]["entries"]=[]
+        else:
+            changed["search_leaders.json"]["benchmarks"]={}
+        with monkeypatch.context() as patched:
+            patched.setattr(engine_evidence,"artifact_json",lambda current,name:changed[name] if name in changed else reader(current,name))
+            with pytest.raises(ValueError):
+                engine_evidence.validate_engine_bundle(bundle)
+    if system == "stratograph":
+        inspected = invoke(system, "motifs", "analyze", root)
+        assert inspected.returncode == 0, inspected.stderr
+        assert json.loads(inspected.stdout) == original["motif_analysis.json"]
+    if system=="primordia":
+        bank=root/"primitive_bank.json"
+        expected=bank.read_bytes()
+        bank.unlink()
+        rebuilt=invoke(system,"inspect",root)
+        assert rebuilt.returncode==0,rebuilt.stderr
+        assert bank.read_bytes()==expected
+        context=root/"bank_context.json"
+        saved=context.read_bytes()
+        payload=json.loads(saved)
+        payload["config"]["seed"]+=1
+        context.write_text(json.dumps(payload))
+        try:
+            rejected=invoke(system,"inspect",root)
+            assert rejected.returncode!=0 and "differs from immutable export" in rejected.stderr
+        finally:
+            context.write_bytes(saved)
+
+
+def test_stratograph_matched_ablation_cli(tmp_path):
+    result = invoke("stratograph", "ablate", "--pack", "tier1_core_smoke", "--budget", 8,
+        "--epochs", 1, "--population-size", 2, "--timeout", 390, "--run-timeout", 70,
+        "--fit-timeout", 15, "--backend", os.environ.get("EVONN_TEST_BACKEND", "numpy_fallback"),
+        "--output", tmp_path / "ablations", "--cache", tmp_path / "cache", timeout=420)
+    assert result.returncode == 0, result.stderr
+    index = json.loads(Path(result.stdout.strip().splitlines()[-1]).read_text())
+    assert index["status"] == "completed" and index["planned_runs"] == len(index["cases"]) == 5
+    assert index["decision_grade"] is False
+    assert [case["variant"] for case in index["cases"]] == ["shared", "flat", "unshared", "no-clone", "no-motif-bias"]
+    envelopes = []
+    for case in index["cases"]:
+        bundle = read_export(Path(case["export"]))
+        assert bundle.manifest.status.value == "completed" and bundle.manifest.accounting.evaluation_count == 8
+        config = engine_evidence.artifact_json(bundle, "config.yaml")
+        assert config["variant"] == case["variant"] and config["timeout"] == 70
+        assert classify(bundle.root, propagated=True)["level"] == "L3"
+        envelopes.append(bundle.manifest.budget.model_dump(mode="json"))
+    assert all(envelope == envelopes[0] for envelope in envelopes)

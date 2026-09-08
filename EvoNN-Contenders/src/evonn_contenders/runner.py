@@ -19,7 +19,7 @@ from evonn_shared.artifact_io import (
     create_artifact_directory, publish_artifact, publish_artifact_directory, read_verified_artifact,
 )
 from evonn_shared.canonical import canonical_sha256
-from evonn_shared.catalog import get_benchmark, load_parity_pack
+from evonn_shared.active_catalog import get_benchmark, load_parity_pack
 from evonn_shared.exports import Manifest, Results, RunSummary, write_export
 from evonn_shared.rng import StreamName, derive_stream
 from evonn_shared.run_store import STORE_FILENAME, open_run_reader, open_run_store

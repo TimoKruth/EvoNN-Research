@@ -1,0 +1,14 @@
+schema_version: 1.0.0
+id: banknote_classification
+display_name: Banknote Authentication OpenML 1462
+status: experimental
+task_kind: classification
+input_modality: tabular
+input_shape: [4]
+output_dim: 2
+primary_metric: {name: accuracy, direction: max}
+ceiling: {value: 1.0, tie_policy: not_evidence}
+budget_epochs: 12
+runtime_class: local
+required_contenders: [extra_trees, hist_gb, mlp_wide]
+tags: [openml, real_data, tier_b]

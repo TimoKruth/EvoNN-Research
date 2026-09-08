@@ -46,13 +46,21 @@ reach L3; the recorded verification consumer replays 64 neural winners and core 
 passes as `trusted-core`. Independent reviews and real process-death tests
 cover both engines; both required hosted lanes gate merge of the final revision.
 
-Phase 3 registry/statistics is implemented in #32. Its runtime receipt
+Phase 3 registry/statistics is merged in #32 (both hosted lanes green). Its runtime receipt
 `governance/phase3-runtime-evidence.json` binds a real three-seed before/after
 comparison: L4, no material change, no advancement claim. Full dependencies
 are versioned release assets, rehydrated and revalidated on both CI hosts.
-The authorized next implementation is Phase 4: independent Stratograph and
-Primordia runtimes and their catalog integration. Complete short qualification before proposing
-the larger five-system comparison campaign. Do not start that campaign here.
+Phase 4 implementation and short qualification are complete: independent
+Stratograph/Primordia runtimes, matched ablation and motif commands, strict banks,
+real-text Tier B and four-engine LM integration. The compact receipt
+`governance/phase4-runtime-evidence.json` binds 13 L3 runs / 304 fits and 80
+replayed winners. The five-system Tier-B@16 contract audit has zero blockers.
+
+**Next:** review the larger repeated five-system campaign; do not start it in
+this implementation task. WP-4.7's decision-grade audit and the full Phase 4 exit
+remain open because repeated low/mid-budget and L4 portfolio evidence are absent.
+The single-seed contract decision is `needs more seeds`, with no pre-change
+Tier-B pairing or superiority claim. Native cross-engine ingestion stays Phase 5.
 Engine runs currently cap 256 proposals / 1800 seconds; higher per-run budgets
 first need an append-only attempt journal and separate resume qualification.
 Short validation and baseline runs up to 30 minutes are allowed.
@@ -751,20 +759,20 @@ packs). **Joint:** WP-4.8 (integration, CLI conformance, telemetry rows)
 catalog schema (Phase 0; B extends data, not schema), seed-candidate
 artifact shape (B→Phase 5, co-signed here because Primordia emits it).
 
-- [ ] **WP-4.1 Stratograph genome + codec** (invariants, structural
+- [x] **WP-4.1 Stratograph genome + codec** (invariants, structural
   metrics, digesting).
-- [ ] **WP-4.2 Stratograph compiler + proxy evaluator** (cell reuse,
+- [x] **WP-4.2 Stratograph compiler + proxy evaluator** (cell reuse,
   trained heads, fidelity-regime labels).
-- [ ] **WP-4.3 Stratograph search ops** (clone/specialize/rewire/motif
+- [x] **WP-4.3 Stratograph search ops** (clone/specialize/rewire/motif
   rewrite; crossover preserving macro edges; task/dimension seed
   profiles; crossover-first — no broad exploitation slot).
-- [ ] **WP-4.4 Ablation harness + motif mining** (flat/unshared/shared/
+- [x] **WP-4.4 Ablation harness + motif mining** (flat/unshared/shared/
   no-clone/no-motif-bias; `motifs analyze`).
-- [ ] **WP-4.5 [epic] Primordia engine.** Split ≥: (a) primitive genome +
+- [x] **WP-4.5 [epic] Primordia engine.** Split ≥: (a) primitive genome +
   mutation; (b) MLX lane + runtime caps (epoch/family caps, architecture
   clamps); (c) `numpy_fallback` compare-grade lane; (d) bounded
   elite/archive search + budget-matched scheduling.
-- [ ] **WP-4.6 Primordia artifacts — strict schemas.** Primitive bank
+- [x] **WP-4.6 Primordia artifacts — strict schemas.** Primitive bank
   (ranked, diversity descriptors), `seed_candidates.json`
   (benchmark-conditioned), `search_leaders.json`, usage/coverage/failure
   telemetry; **reconstruction test**: inspect rebuilds the bank view from
@@ -774,12 +782,84 @@ artifact shape (B→Phase 5, co-signed here because Primordia emits it).
   small image, real LM caches); `tier_b_core`, `tier_b_core_v2`
   (+cumulative); presets; **decision-grade audit with zero blockers and
   adequacy labels** (exact command in exit).
-- [ ] **WP-4.8 Integration + CLI conformance.** Both engines: full verb
+- [x] **WP-4.8 Integration + CLI conformance.** Both engines: full verb
   set with tiny-config e2e tests (evolve, resume, inspect, report,
   benchmarks/cache discovery, symbiosis export); engine-specific resume
   tests; telemetry conformance rows (Stratograph: macro depth/reuse/
   clone+specialize counts/motif frequency; Primordia: primitive counts/
   bank size/promotion counts); CI scripts in the Linux lane.
+
+WP-4.7 data and `tier_b_tiny` are implemented and contract-qualified. Its parent
+checkbox remains open for the required repeated decision-grade audit. The other
+checked work packages mean implemented + short-qualified; they do not close the
+full scientific exit. Independent reviews covered numerical/search behavior,
+artifact semantics, transport and the bounded command surface.
+
+### Active Phase 4 implementation contract
+
+**Requirements:** claude-spec/09 Genome, Compilation, Operators, Ablation,
+Motif Mining and Diagnostics; /10 Search Lane, Artifacts and Standalone Rule;
+/11 seed artifact contract; /02 benchmark ladder; /03 accounting and fidelity.
+**Depends on / Produces / Blocks:** reviewed Phase 3 analysis interface; two
+independent package runtimes and Shared seed-envelope v1; blocks the larger
+five-system comparison campaign. Native transfer ingestion remains Phase 5.
+**Hosts/backends:** bounded NumPy and native MLX candidate evaluation; native
+proxy execution is labeled separately from end-to-end hierarchy training.
+
+- **WP-4.1a — Hierarchy genome:** strict macro/cell DAGs, reachability and
+  references, deterministic codec, macro/cell depth and reuse descriptors.
+- **WP-4.2a — Executable hierarchy proxy:** shared compiled cell objects
+  process their own macro inputs; deterministic projections depend on cell
+  semantics, not arbitrary IDs. Fit a real GELU readout, with inherited trained
+  head weights. Preserve clone function until specialization. Classification,
+  regression, image and causal-LM interfaces expose honest proxy fidelity.
+- **WP-4.3a — Hierarchy search:** crossover-first segment inheritance,
+  clone/specialize/rewire/skip/width/activation/motif changes; explicit task and
+  dimension seed profiles and budget-dependent depth limits. No broad
+  benchmark-leader exploitation slot. Resumable lineage and occupied niches.
+- **WP-4.4a — Ablation and motifs:** matched-budget flat/unshared/shared/
+  no-clone/no-motif-bias variants; mine repeated sub-cell structures from actual
+  winners with local/global and clone lineage. Report LM evaluator/genotype/
+  compiler/search diagnostics with unavailable causes explicit.
+- **WP-4.5a — Primitive genome:** tiny sparse/gated circuits, validated
+  connectivity, merge and activation operators; package-local differentiable
+  compiler, training, loader boundary and search. Record necessary copied
+  infrastructure in the required compact duplication notes.
+- **WP-4.5b — Cheap search:** explicit family/slot epoch caps, architecture
+  clamps, cheaper mutations for weak/expensive parents using parameter count ×
+  optimizer updates (measured seconds remain diagnostic), bounded elite archive,
+  benchmark/family leaders and matched per-benchmark scheduling.
+- **WP-4.6a — Exported bank:** strict Shared metadata envelope with local
+  genotype encoding, source/data/split/cost/runtime provenance, checksums,
+  descriptors, target compatibility and versioned ingestion instructions.
+  Produce ranked bank, benchmark-conditioned seeds and search leaders;
+  reconstruct a missing bank from durable best/trial artifacts. No claimed
+  downstream influence or native transfer before Phase 5 proof.
+- **WP-4.7a — Tier B data:** additive catalog/runtime definitions for real
+  OpenML, small image and LM inputs; preserve existing IDs/splits. Add only
+  packs/presets supported by bounded verified runtime. Keep inadequate floors
+  and unqualified broader cohorts explicitly blocked.
+- **WP-4.8a — Integration:** explicit worker module and loader callbacks,
+  checksum-bound extra artifacts before export publication, complete Compare
+  ledger/fidelity/telemetry validation for all four engines. Preserve historical
+  bootstrap receipts while moving current probes to an honest contract role.
+
+**Tests first:** invalid/cyclic/unreachable genomes; shared executor identity
+and different inputs; clone equivalence then specialization; real nonzero
+updates and head inheritance; deterministic resume and process-death fences;
+all ablation variants; invalid/missing seed provenance and bank reconstruction;
+unsupported task evidence never silently qualified; both native and portable
+winner replay and CLI conformance.
+**Verify:** package CI scripts; Shared foundation and import/governance checks;
+short Tier-A/core@64 L3 qualification and shared-vs-flat ablation; both hosted
+lanes. Each local qualification command stays below 30 minutes.
+**Evidence:** compact runtime receipt and registry-bound contract decisions;
+large model/data artifacts transported externally. Separate proxy, portability,
+native runtime, scientific superiority and transfer evidence.
+**Failure conditions:** engine coupling, proxy mislabeled end-to-end, missing
+budget charges, unbound artifacts, false L3/L4 promotion or failing checks.
+The full Tier-B three-seed five-system exit cohort stays a separate campaign;
+stop before starting a multi-hour training/comparison campaign.
 
 **Phase 4 exit:** five-system-cohort Tier B `trusted-extended` at 3 seeds —
 where `trusted-extended` requires **L4 repeated-seed aggregates, a

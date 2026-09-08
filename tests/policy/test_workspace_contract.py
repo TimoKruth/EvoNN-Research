@@ -43,7 +43,7 @@ EXPECTED_DEPENDENCY_CONTRACTS = (
         "EvoNN-Stratograph",
         "evonn-stratograph",
         (
-            "evonn-shared",
+            "evonn-shared[datasets]",
             "numpy>=2.1,<3",
             "mlx>=0.25,<1; sys_platform == 'darwin' and platform_machine == 'arm64'",
         ),
@@ -52,7 +52,7 @@ EXPECTED_DEPENDENCY_CONTRACTS = (
         "EvoNN-Primordia",
         "evonn-primordia",
         (
-            "evonn-shared",
+            "evonn-shared[datasets]",
             "numpy>=2.1,<3",
             "mlx>=0.25,<1; sys_platform == 'darwin' and platform_machine == 'arm64'",
         ),
@@ -68,7 +68,7 @@ def _contract():
 def test_workspace_dependency_contract_has_exact_version_and_ordered_mapping() -> None:
     contract = _contract()
 
-    assert contract.WORKSPACE_DEPENDENCY_CONTRACT_VERSION == "4.0.0"
+    assert contract.WORKSPACE_DEPENDENCY_CONTRACT_VERSION == "5.0.0"
     assert tuple(
         (package.directory, package.distribution, package.dependencies)
         for package in contract.WORKSPACE_DEPENDENCY_CONTRACTS

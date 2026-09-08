@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import sys
 import yaml
-from .catalog import load_parity_pack
+from .active_catalog import load_parity_pack
 from .datasets import load_dataset
 from .runtime_io import prepare_worker, boundary_ownership
 from .export_reader import read_document, read_export
@@ -13,12 +13,12 @@ from .run_store import open_run_store, open_run_reader
 from .run_workspace import open_run_workspace, write_report
 
 
-def main(search_type, genome_type, run_engine, evaluation_worker, config_type, replay_export, argv=None):
+def main(search_type, genome_type, run_engine, evaluation_worker, config_type, replay_export, argv=None, *, dataset_loader=load_dataset, inspect_extra=None):
     argv = sys.argv[1:] if argv is None else argv
     if argv and argv[0] in {"_prepare", "_worker"}:
         request = json.loads(read_document(Path(argv[1]).parent, Path(argv[1]).name, limit=128 * 1024**2))
         if argv[0] == "_prepare":
-            prepare_worker(request, Path(argv[2]))
+            prepare_worker(request, Path(argv[2]), dataset_loader=dataset_loader)
         else:
             with boundary_ownership(Path(argv[2]).parent, ".worker.lock", timeout=1800):
                 if Path(argv[2]).exists():
@@ -45,6 +45,8 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
     if search_type.system == "topograph":
         run.add_argument("--benchmark-pooling", action="store_true")
         run.add_argument("--novelty-weight", type=float, default=0)
+    if search_type.system == "stratograph":
+        run.add_argument("--variant", choices=["shared", "flat", "unshared", "no-clone", "no-motif-bias"], default="shared")
     run.add_argument("--resume", type=Path)
     run.add_argument("--stop-after", type=int)
     # Explicit fault injection is limited to testing local persistence boundaries.
@@ -98,6 +100,9 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
             if search_type.system == "topograph":
                 fields = (*fields, "benchmark_pooling", "novelty_weight")
                 values.update(benchmark_pooling=options.benchmark_pooling, novelty_weight=options.novelty_weight)
+            if search_type.system == "stratograph":
+                fields = (*fields, "variant")
+                values["variant"] = options.variant
             for field in fields:
                 flag = "--" + field.replace("_", "-")
                 explicit = any(arg == flag or arg.startswith(flag + "=") for arg in argv)
@@ -130,6 +135,8 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
             }
             if search_type.system == "topograph":
                 config.update(benchmark_pooling=validated.benchmark_pooling, novelty_weight=validated.novelty_weight)
+            if search_type.system == "stratograph":
+                config["variant"] = validated.variant
             if options.resume:
                 stored = json.loads(read_document(options.resume, "config.yaml"))
                 mappings = {
@@ -159,6 +166,9 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
                 if search_type.system == "topograph":
                     mappings.update(benchmark_pooling="benchmark_pooling", novelty_weight="novelty_weight")
                     flags.update(benchmark_pooling="--benchmark-pooling", novelty_weight="--novelty-weight")
+                if search_type.system == "stratograph":
+                    mappings["variant"] = "variant"
+                    flags["variant"] = "--variant"
                 for target, source in mappings.items():
                     explicit = flags[target][2:].replace("-", "_") in supplied_config_fields or any(
                         argument == flags[target] or argument.startswith(flags[target] + "=") for argument in argv
@@ -182,10 +192,13 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
         elif options.verb == "warm-cache":
             for benchmark in load_parity_pack(options.pack).benchmarks:
                 print(
-                    load_dataset(benchmark, seed=options.seed, cache_root=options.cache).provenance["cache_directory"]
+                    dataset_loader(benchmark, seed=options.seed, cache_root=options.cache).provenance["cache_directory"]
                 )
         else:
             workspace = open_run_workspace(options.run_directory)
+            if inspect_extra is not None and options.verb in {"inspect", "report"}:
+                with boundary_ownership(workspace.root):
+                    inspect_extra(workspace.root)
             if options.verb == "replay":
                 print(json.dumps(replay_export(workspace.root / "symbiosis", search_type, genome_type), sort_keys=True))
             elif options.verb == "report":

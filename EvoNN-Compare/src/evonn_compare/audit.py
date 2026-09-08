@@ -1,4 +1,5 @@
 """Evidence-based benchmark admission; contract readiness is distinct from decisions."""
+
 from copy import deepcopy
 import hashlib
 import json
@@ -7,10 +8,43 @@ import math
 from evonn_shared.artifact_io import read_verified_artifact
 from evonn_shared.benchmarks import resolve_data_root
 from evonn_shared.canonical import canonical_sha256
-from evonn_shared.catalog import get_benchmark, load_parity_pack
+from evonn_shared.active_catalog import get_benchmark, load_parity_pack
 from evonn_shared.export_reader import read_document
 from evonn_shared.dataset_cache import verify_split_cache
 from evonn_shared.rng import derive_stream, StreamName
+from evonn_shared.runtime_catalog import runtime_manifest as read_runtime_manifest
+
+
+# Versioned CPU floor protocol, independent of the consumer's installed packages.
+NGRAM_MODELS = frozenset({"unigram_lm", "bigram_lm", "trigram_lm"})
+NGRAM_BACKEND_VERSION = "0.0.0"
+
+
+def validate_floor_backend(model, backend, versions):
+    packages = {
+        "xgboost": "xgboost",
+        "lightgbm": "lightgbm",
+        "catboost": "catboost",
+        "cnn_small": "torch",
+        "transformer_lm_tiny": "torch",
+        "unigram_lm": "evonn-contenders",
+        "bigram_lm": "evonn-contenders",
+        "trigram_lm": "evonn-contenders",
+    }
+    package = packages[model] if model in packages else "scikit-learn"
+    if backend["package"] != package or backend["device"] != "cpu" or not backend["version"]:
+        raise ValueError("attempt backend provenance differs from CPU model protocol")
+    if package == "scikit-learn" and backend["version"] != versions["scikit-learn"]:
+        raise ValueError("attempt sklearn version differs from reviewed runtime")
+    if model in NGRAM_MODELS and backend["version"] != NGRAM_BACKEND_VERSION:
+        raise ValueError("attempt NGram version differs from reviewed CPU floor protocol")
+
+
+def reviewed_ngram_parameters(model, parameters):
+    return model in NGRAM_MODELS and (
+        not parameters
+        or (set(parameters) == {"alpha"} and type(parameters["alpha"]) in {int, float} and parameters["alpha"] == 1.0)
+    )
 
 
 def artifact_json(bundle, name: str):
@@ -20,12 +54,22 @@ def artifact_json(bundle, name: str):
     return json.loads(read_verified_artifact(bundle.root, references[name], max_bytes=16 * 1024 * 1024))
 
 
-def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = False,
-                    dashboard_present: bool = False, output_levels: dict | None = None, cache_roots: dict | None = None) -> dict:
+def benchmark_audit(
+    pack_name: str,
+    bundles: list,
+    *,
+    decision_grade: bool = False,
+    dashboard_present: bool = False,
+    output_levels: dict | None = None,
+    cache_roots: dict | None = None,
+) -> dict:
     pack = load_parity_pack(pack_name)
     definitions = [get_benchmark(name) for name in pack.benchmarks]
     blockers, warnings, runs = [], [], []
-    floor = {definition.id: {"successful": set(), "enhanced": set(), "enhanced_seeds": {}, "weak": [], "cache": False} for definition in definitions}
+    floor = {
+        definition.id: {"successful": set(), "enhanced": set(), "enhanced_seeds": {}, "weak": [], "cache": False}
+        for definition in definitions
+    }
     runtime_payload = read_document(resolve_data_root(), "runtime/tier1_core_v1.json")
     runtime_hash = hashlib.sha256(runtime_payload).hexdigest()
     runtime_manifest = json.loads(runtime_payload)
@@ -49,8 +93,15 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
             seen_attempts = set()
             for attempt in ledger["attempts"]:
                 charged += attempt["charged"]
-                outcome = attempt["outcome_id"] if "outcome_id" in attempt else (
-                    attempt["contender_id"] + "_not_run" if attempt["contender_id"] is not None else "dataset_unavailable")
+                outcome = (
+                    attempt["outcome_id"]
+                    if "outcome_id" in attempt
+                    else (
+                        attempt["contender_id"] + "_not_run"
+                        if attempt["contender_id"] is not None
+                        else "dataset_unavailable"
+                    )
+                )
                 key = (attempt["benchmark_id"], outcome)
                 if key in seen_attempts:
                     raise ValueError("duplicate attempt identity")
@@ -58,12 +109,19 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
                 if key not in exported:
                     raise ValueError("attempt absent from exported results")
                 record = exported[key]
-                if (record.status.value != attempt["status"] or record.evaluation_count != attempt["charged"]
-                        or record.reason != attempt["reason"]):
+                if (
+                    record.status.value != attempt["status"]
+                    or record.evaluation_count != attempt["charged"]
+                    or record.reason != attempt["reason"]
+                ):
                     raise ValueError("attempt status/reason/charge differs from exported result")
                 if attempt["status"] != "ok":
                     continue
-                if key not in exported or exported[key].status.value != "ok" or exported[key].metric.value != attempt["score"]:
+                if (
+                    key not in exported
+                    or exported[key].status.value != "ok"
+                    or exported[key].metric.value != attempt["score"]
+                ):
                     raise ValueError("successful floor attempt is absent from exported results")
                 if exported[key].evaluation_count != attempt["charged"] or attempt["charged"] != 1:
                     raise ValueError("successful floor fit must be charged once")
@@ -72,29 +130,48 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
                 if attempt["family"] != model["model"] or attempt["parameters"] != model["parameters"]:
                     raise ValueError("attempt and configured contender disagree")
                 backend = attempt["backend"]
-                expected_package = {"xgboost": "xgboost", "lightgbm": "lightgbm", "catboost": "catboost", "cnn_small": "torch", "transformer_lm_tiny": "torch"}
-                package = expected_package[model["model"]] if model["model"] in expected_package else "scikit-learn"
-                if backend["package"] != package or backend["device"] != "cpu" or not backend["version"]:
-                    raise ValueError("attempt backend provenance differs from CPU model protocol")
-                if package == "scikit-learn" and backend["version"] != runtime_manifest["versions"]["scikit-learn"]:
-                    raise ValueError("attempt sklearn version differs from reviewed runtime")
-                model_seed = int(canonical_sha256({"stream": str(derive_stream(manifest.seed, StreamName.INIT)),
-                    "benchmark": attempt["benchmark_id"], "outcome": outcome}, schema_version="evonn-contender-init-v1", digest_field=None)[:8], 16)
+                validate_floor_backend(model["model"], backend, runtime_manifest["versions"])
+                model_seed = int(
+                    canonical_sha256(
+                        {
+                            "stream": str(derive_stream(manifest.seed, StreamName.INIT)),
+                            "benchmark": attempt["benchmark_id"],
+                            "outcome": outcome,
+                        },
+                        schema_version="evonn-contender-init-v1",
+                        digest_field=None,
+                    )[:8],
+                    16,
+                )
                 if attempt["model_seed"] != model_seed:
                     raise ValueError("attempt initialization seed provenance differs")
                 state = candidate_floor[attempt["benchmark_id"]]
                 if "extra" in model:
                     state["enhanced"].add(name)
-                    strength_key = canonical_sha256({"name": name, "configuration": model, "backend": backend,
-                        "runtime": manifest.runtime.model_dump(mode="json"), "git_commit": manifest.git_commit,
-                        "budget": manifest.budget.model_dump(mode="json")}, schema_version="evonn-enhanced-repeat-v1", digest_field=None)
+                    strength_key = canonical_sha256(
+                        {
+                            "name": name,
+                            "configuration": model,
+                            "backend": backend,
+                            "runtime": manifest.runtime.model_dump(mode="json"),
+                            "git_commit": manifest.git_commit,
+                            "budget": manifest.budget.model_dump(mode="json"),
+                        },
+                        schema_version="evonn-enhanced-repeat-v1",
+                        digest_field=None,
+                    )
                     if strength_key not in state["enhanced_seeds"]:
                         state["enhanced_seeds"][strength_key] = set()
                     state["enhanced_seeds"][strength_key].add(manifest.seed)
                 else:
                     state["successful"].add(name)
                 parameters = model["parameters"]
-                if "extra" not in model and parameters and name != "hist_gb_leaf63":
+                if (
+                    "extra" not in model
+                    and parameters
+                    and name != "hist_gb_leaf63"
+                    and not reviewed_ngram_parameters(model["model"], parameters)
+                ):
                     state["weak"].append(f"{name}: custom parameters require independent adequacy assessment")
                 for parameter, minimum in (("n_estimators", 64), ("max_iter", 100)):
                     if parameter in parameters and parameters[parameter] < minimum:
@@ -112,18 +189,34 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
                 if name in seen or name not in floor:
                     raise ValueError("duplicate or foreign dataset provenance")
                 seen.add(name)
+                runtime_payload, runtime_manifest = read_runtime_manifest(name)
+                runtime_hash = hashlib.sha256(runtime_payload).hexdigest()
                 definition = get_benchmark(name)
-                if dataset["definition_sha256"] != canonical_sha256(definition.model_dump(mode="json"), schema_version="evonn.catalog.benchmark/v1", digest_field=None):
+                if dataset["definition_sha256"] != canonical_sha256(
+                    definition.model_dump(mode="json"), schema_version="evonn.catalog.benchmark/v1", digest_field=None
+                ):
                     raise ValueError("dataset definition provenance differs")
-                if dataset["runtime_manifest_sha256"] != runtime_hash or dataset["split_policy"] != runtime_manifest["split_policy"]:
+                if (
+                    dataset["runtime_manifest_sha256"] != runtime_hash
+                    or dataset["split_policy"] != runtime_manifest["split_policy"]
+                ):
                     raise ValueError("runtime/split policy provenance differs")
                 if dataset["seed"] != manifest.seed:
                     raise ValueError("dataset seed differs from run")
                 if len(dataset["cache_artifacts"]) != 4 or {item["path"] for item in dataset["cache_artifacts"]} != {
-                    "x_train.npy", "y_train.npy", "x_validation.npy", "y_validation.npy"}:
+                    "x_train.npy",
+                    "y_train.npy",
+                    "x_validation.npy",
+                    "y_validation.npy",
+                }:
                     raise ValueError("four distinct split cache artifacts required")
                 binding = runtime_manifest["benchmarks"][name]
-                if not binding["loader"].startswith("make_") and dataset["raw_sha256"] != binding["reference_raw_sha256"]:
+                if dataset["definition_sha256"] != binding["definition_sha256"]:
+                    raise ValueError("dataset definition differs from pinned runtime")
+                if (
+                    not binding["loader"].startswith("make_")
+                    and dataset["raw_sha256"] != binding["reference_raw_sha256"]
+                ):
                     raise ValueError("raw dataset reference differs")
                 checked_dataset = dataset
                 if cache_roots is not None:
@@ -131,20 +224,46 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
                     if original not in cache_roots:
                         raise ValueError("transport is missing an exact dataset-cache root")
                     checked_dataset = {**dataset, "cache_directory": str(cache_roots[original])}
-                digest = verify_split_cache(checked_dataset, feature_count=math.prod(definition.input_shape), regression=definition.task_kind.value == "regression")
+                digest = verify_split_cache(
+                    checked_dataset,
+                    feature_count=math.prod(definition.input_shape),
+                    regression=definition.task_kind.value == "regression",
+                )
                 if manifest.seed == 42 and digest != binding["reference_split_sha256"]:
                     raise ValueError("reference split differs from reviewed runtime")
                 candidate_floor[name]["cache"] = True
             if seen != set(pack.benchmarks):
                 raise ValueError("every admitted run requires complete checked dataset provenance")
-            if manifest.status.value == "completed" and not manifest.accounting.partial_run and not bundle.results.coverage.failed:
-                runs.append({"budget": manifest.accounting.evaluation_count, "seed": manifest.seed,
-                             "run_id": manifest.run_id, "dirty": config["code_dirty"],
-                             "envelope_sha256": canonical_sha256(manifest.budget.model_dump(mode="json"), schema_version="evonn-compare-envelope-v1", digest_field=None),
-                             "protocol_sha256": canonical_sha256({"pools": config["pools"], "dataset_versions": config["dataset_versions"],
-                                 "git_commit": manifest.git_commit, "runtime": manifest.runtime.model_dump(mode="json"),
-                                 "enhanced": config["enhanced"], "fit_timeout_seconds": config["fit_timeout_seconds"]},
-                                 schema_version="evonn-admission-protocol-v1", digest_field=None)})
+            if (
+                manifest.status.value == "completed"
+                and not manifest.accounting.partial_run
+                and not bundle.results.coverage.failed
+            ):
+                runs.append(
+                    {
+                        "budget": manifest.accounting.evaluation_count,
+                        "seed": manifest.seed,
+                        "run_id": manifest.run_id,
+                        "dirty": config["code_dirty"],
+                        "envelope_sha256": canonical_sha256(
+                            manifest.budget.model_dump(mode="json"),
+                            schema_version="evonn-compare-envelope-v1",
+                            digest_field=None,
+                        ),
+                        "protocol_sha256": canonical_sha256(
+                            {
+                                "pools": config["pools"],
+                                "dataset_versions": config["dataset_versions"],
+                                "git_commit": manifest.git_commit,
+                                "runtime": manifest.runtime.model_dump(mode="json"),
+                                "enhanced": config["enhanced"],
+                                "fit_timeout_seconds": config["fit_timeout_seconds"],
+                            },
+                            schema_version="evonn-admission-protocol-v1",
+                            digest_field=None,
+                        ),
+                    }
+                )
             floor = candidate_floor
         except (ValueError, OSError, KeyError, TypeError) as error:
             blockers.append(f"{manifest.run_id}: {error}")
@@ -165,14 +284,27 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
             label = "weak_floor"
         elif state["enhanced"]:
             # Enhanced fit alone is not reproducibility proof of a strong floor.
-            label = "strong_floor" if any(len(seeds) >= 2 for seeds in state["enhanced_seeds"].values()) else "acceptable_floor"
+            label = (
+                "strong_floor"
+                if any(len(seeds) >= 2 for seeds in state["enhanced_seeds"].values())
+                else "acceptable_floor"
+            )
         else:
             label = "missing_enhanced_pressure"
             warnings.append(f"{definition.id}: optional enhanced pressure absent")
-        labels.append({"benchmark": definition.id, "adequacy": label, "required": list(definition.required_contenders),
-                       "successful": sorted(state["successful"]), "enhanced": sorted(state["enhanced"]),
-                       "missing": missing, "cache_verified": state["cache"], "runtime_class": definition.runtime_class,
-                       "ceiling": definition.ceiling.model_dump(mode="json")})
+        labels.append(
+            {
+                "benchmark": definition.id,
+                "adequacy": label,
+                "required": list(definition.required_contenders),
+                "successful": sorted(state["successful"]),
+                "enhanced": sorted(state["enhanced"]),
+                "missing": missing,
+                "cache_verified": state["cache"],
+                "runtime_class": definition.runtime_class,
+                "ceiling": definition.ceiling.model_dump(mode="json"),
+            }
+        )
     budgets = sorted({run["budget"] for run in runs})
     low_groups = {}
     for run in runs:
@@ -184,8 +316,11 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
     admitted_ids = set()
     for key, seeds in low_groups.items():
         if len(seeds) >= 2 and any(run["budget"] > budgets[0] and run["protocol_sha256"] == key[0] for run in runs):
-            admitted_ids.update(run["run_id"] for run in runs if run["protocol_sha256"] == key[0]
-                                and (run["budget"] > budgets[0] or run["envelope_sha256"] == key[1]))
+            admitted_ids.update(
+                run["run_id"]
+                for run in runs
+                if run["protocol_sha256"] == key[0] and (run["budget"] > budgets[0] or run["envelope_sha256"] == key[1])
+            )
     repeated = bool(admitted_ids)
     if decision_grade:
         if not repeated:
@@ -194,26 +329,54 @@ def benchmark_audit(pack_name: str, bundles: list, *, decision_grade: bool = Fal
             blockers.append("uncommitted runtime code cannot support decision-grade admission")
         if not dashboard_present:
             blockers.append("required dashboard evidence is missing")
-        if not output_levels or any((output_levels[run["run_id"]] if run["run_id"] in output_levels else "L0") < "L3" for run in runs):
+        if not output_levels or any(
+            (output_levels[run["run_id"]] if run["run_id"] in output_levels else "L0") < "L3" for run in runs
+        ):
             blockers.append("measurable L3 output required for all admission runs")
-    return {"schema_version": "1.0.0", "pack": pack_name,
-            "scope": "decision_grade" if decision_grade else "phase1_contract",
-            "status": "blocked" if blockers else "passed", "blocker_count": len(set(blockers)),
-            "blockers": sorted(set(blockers)), "warnings": sorted(set(warnings)), "benchmarks": labels,
-            "budgets": budgets, "repeatability": "low_and_mid_repeated" if repeated else "incomplete",
-            "clean_runs": runs, "admitted_run_ids": sorted(admitted_ids), "extended_coverage_complete": False, "scientific_qualification": False,
-            "note": "Runtime admission is separate from the immutable planned catalog snapshot; Tier A does not establish broad capability."}
+    return {
+        "schema_version": "1.0.0",
+        "pack": pack_name,
+        "scope": "decision_grade" if decision_grade else "phase1_contract",
+        "status": "blocked" if blockers else "passed",
+        "blocker_count": len(set(blockers)),
+        "blockers": sorted(set(blockers)),
+        "warnings": sorted(set(warnings)),
+        "benchmarks": labels,
+        "budgets": budgets,
+        "repeatability": "low_and_mid_repeated" if repeated else "incomplete",
+        "clean_runs": runs,
+        "admitted_run_ids": sorted(admitted_ids),
+        "extended_coverage_complete": False,
+        "scientific_qualification": False,
+        "note": "Runtime admission is separate from the immutable planned catalog snapshot; Tier A does not establish broad capability.",
+    }
 
 
 def apply_admission(acceptance: dict, audit: dict, *, extended_complete: bool = False) -> dict:
     result = dict(acceptance)
     case = result["case"]
-    admitted = {run["run_id"] for run in audit["clean_runs"]
-                if run["budget"] == case["budget"] and run["seed"] == case["seed"] and run["run_id"] in audit["admitted_run_ids"]}
-    bound = audit["pack"] == case["pack"] and bool(result["contender_run_ids"]) and set(result["contender_run_ids"]) <= admitted
-    if (bound and result["operating_state"] == "contract-fair" and not result["engine_only"]
-            and audit["scope"] == "decision_grade" and audit["status"] == "passed"):
-        result["operating_state"] = "trusted-extended" if extended_complete and audit["extended_coverage_complete"] else "trusted-core"
+    admitted = {
+        run["run_id"]
+        for run in audit["clean_runs"]
+        if run["budget"] == case["budget"]
+        and run["seed"] == case["seed"]
+        and run["run_id"] in audit["admitted_run_ids"]
+    }
+    bound = (
+        audit["pack"] == case["pack"]
+        and bool(result["contender_run_ids"])
+        and set(result["contender_run_ids"]) <= admitted
+    )
+    if (
+        bound
+        and result["operating_state"] == "contract-fair"
+        and not result["engine_only"]
+        and audit["scope"] == "decision_grade"
+        and audit["status"] == "passed"
+    ):
+        result["operating_state"] = (
+            "trusted-extended" if extended_complete and audit["extended_coverage_complete"] else "trusted-core"
+        )
         result["external_floor_claim"] = True
         result["repeatability_state"] = audit["repeatability"]
     return result
