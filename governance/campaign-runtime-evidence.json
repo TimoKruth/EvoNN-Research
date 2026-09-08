@@ -1,0 +1,358 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-08",
+  "scope": "bounded campaign planning/resume and incremental journal contract qualification; no scientific advancement claim",
+  "consumer": {
+    "git_commit": "f3c8d3e86ad7bff99d0d9d04ec12e1a7d27ecd05",
+    "source_sha256": "4efefce0158f885370f75b22828817c4c252358e034bc4e10c5f53041e090f68",
+    "code_dirty": false
+  },
+  "qualification": {
+    "new_runs": 5,
+    "actual_evaluations": 80,
+    "replayed_winners": 16,
+    "total_run_seconds": 234.762418,
+    "invocations": [
+      {
+        "status": "paused",
+        "completed": 2,
+        "total": 5,
+        "new_runs": 2,
+        "scientific_decision": "not_evaluated"
+      },
+      {
+        "status": "complete",
+        "completed": 5,
+        "total": 5,
+        "new_runs": 3,
+        "scientific_decision": "not_evaluated"
+      },
+      {
+        "status": "complete",
+        "completed": 5,
+        "total": 5,
+        "new_runs": 0,
+        "scientific_decision": "not_evaluated"
+      }
+    ],
+    "completed_run_and_event_bytes_unchanged_on_final_resume": true
+  },
+  "campaign_manifest_sha256": "5dc4d58132f7f8ffb4dff7ebde071e4e769d7935dad2fa90f9d055f41a8dbe32",
+  "runs": [
+    {
+      "run_id": "stratograph_20260908T125705_ba14d39ecc",
+      "system": "stratograph",
+      "producer": "f3c8d3e86ad7bff99d0d9d04ec12e1a7d27ecd05",
+      "source_sha256": "4efefce0158f885370f75b22828817c4c252358e034bc4e10c5f53041e090f68",
+      "status": "completed",
+      "elapsed_seconds": 31.375056,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "documents": [
+        {
+          "path": "manifest.json",
+          "sha256": "68c55c1a0be3a02c599acc853d619cdb7f84f26e736f915e5e8b024b9085cec6"
+        },
+        {
+          "path": "results.json",
+          "sha256": "162ea77da1f553cfbe4ccc8633757ec292ccf8a703a9d702587e4f02e93ea80b"
+        },
+        {
+          "path": "summary.json",
+          "sha256": "826c297b5f6bcdb95769a1827b461c6dc1d89d913565e1db0c8b90b52be4108f"
+        }
+      ],
+      "replay": {
+        "status": "passed",
+        "winner_count": 4
+      }
+    },
+    {
+      "run_id": "primordia_20260908T125740_387fcbee29",
+      "system": "primordia",
+      "producer": "f3c8d3e86ad7bff99d0d9d04ec12e1a7d27ecd05",
+      "source_sha256": "4efefce0158f885370f75b22828817c4c252358e034bc4e10c5f53041e090f68",
+      "status": "completed",
+      "elapsed_seconds": 31.451617,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "documents": [
+        {
+          "path": "manifest.json",
+          "sha256": "c8b1e14266bf559aaf9788e903175d3680981510a6b942a2eea104e57fc5222f"
+        },
+        {
+          "path": "results.json",
+          "sha256": "2ec49de16c212c689c97476b7575e87da36a0bd4423ed8821730fa03ef13b3c0"
+        },
+        {
+          "path": "summary.json",
+          "sha256": "c741c801c9b2acc08a9acfe113630e5e18289a75dee1e36bf99486f890178ad3"
+        }
+      ],
+      "replay": {
+        "status": "passed",
+        "winner_count": 4
+      }
+    },
+    {
+      "run_id": "prism_20260908T125832_129983a9d4",
+      "system": "prism",
+      "producer": "f3c8d3e86ad7bff99d0d9d04ec12e1a7d27ecd05",
+      "source_sha256": "4efefce0158f885370f75b22828817c4c252358e034bc4e10c5f53041e090f68",
+      "status": "completed",
+      "elapsed_seconds": 35.819771,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "documents": [
+        {
+          "path": "manifest.json",
+          "sha256": "f24697b0ed66cf51b75ffd0a981125c24c3c915e66f8d4b6265cd7492771cefd"
+        },
+        {
+          "path": "results.json",
+          "sha256": "a3f87bec02dd0f18bd416a3faf77b1d208a78d5ce74d8123b1935b4b0b4c7724"
+        },
+        {
+          "path": "summary.json",
+          "sha256": "8de04eb8ee795fbf10edf31b70f2de0ef59f94568f34fba626c67f09b1570423"
+        }
+      ],
+      "replay": {
+        "status": "passed",
+        "winner_count": 4
+      }
+    },
+    {
+      "run_id": "topograph_20260908T125911_3d6bcd8164",
+      "system": "topograph",
+      "producer": "f3c8d3e86ad7bff99d0d9d04ec12e1a7d27ecd05",
+      "source_sha256": "4efefce0158f885370f75b22828817c4c252358e034bc4e10c5f53041e090f68",
+      "status": "completed",
+      "elapsed_seconds": 93.454036,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "documents": [
+        {
+          "path": "manifest.json",
+          "sha256": "7167bf4dfecaad825876845fff02a1bd428e853ab11fd62d1c0c8e56332707b0"
+        },
+        {
+          "path": "results.json",
+          "sha256": "a77bd6b86205f46378dd21b65eb420b0857470df62cff05010a46f0ffa675a97"
+        },
+        {
+          "path": "summary.json",
+          "sha256": "7b5696ea88d50c2bdb19fa7a127fea0b845ccbfe81f19ca55946bf58e5f35d31"
+        }
+      ],
+      "replay": {
+        "status": "passed",
+        "winner_count": 4
+      }
+    },
+    {
+      "run_id": "contenders_20260908T130048_80d3ce4b375c",
+      "system": "contenders",
+      "producer": "f3c8d3e86ad7bff99d0d9d04ec12e1a7d27ecd05",
+      "source_sha256": null,
+      "status": "completed",
+      "elapsed_seconds": 42.661938,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "documents": [
+        {
+          "path": "manifest.json",
+          "sha256": "9f1c6392b7cff9d1ef8d2c95f599c7dc9360bfec246ed2f39654008bc51082e4"
+        },
+        {
+          "path": "results.json",
+          "sha256": "a6950c5a0c27f13f431ae1c3cf461684e7c05ff89af61829923536987df1b770"
+        },
+        {
+          "path": "summary.json",
+          "sha256": "6ef91f0d0c3b19d4a6e0c33998063253a56eb552515855846dbd5c11df2ace71"
+        }
+      ],
+      "replay": null
+    }
+  ],
+  "contract_audit": {
+    "schema_version": "1.0.0",
+    "pack": "tier_b_core_v2",
+    "scope": "phase1_contract",
+    "status": "passed",
+    "blocker_count": 0,
+    "blockers": [],
+    "warnings": [
+      "banknote_classification: optional enhanced pressure absent",
+      "diabetes_regression: optional enhanced pressure absent",
+      "digits_image: optional enhanced pressure absent",
+      "shakespeare_byte_lm: optional enhanced pressure absent"
+    ],
+    "benchmarks": [
+      {
+        "benchmark": "banknote_classification",
+        "adequacy": "missing_enhanced_pressure",
+        "required": [
+          "extra_trees",
+          "hist_gb",
+          "mlp_wide"
+        ],
+        "successful": [
+          "extra_trees",
+          "hist_gb",
+          "linear_svc",
+          "mlp_wide"
+        ],
+        "enhanced": [],
+        "missing": [],
+        "cache_verified": true,
+        "runtime_class": "local",
+        "ceiling": {
+          "value": 1.0,
+          "tie_policy": "not_evidence"
+        }
+      },
+      {
+        "benchmark": "digits_image",
+        "adequacy": "missing_enhanced_pressure",
+        "required": [
+          "extra_trees",
+          "mlp_wide"
+        ],
+        "successful": [
+          "extra_trees",
+          "hist_gb",
+          "linear_svc",
+          "mlp_wide"
+        ],
+        "enhanced": [],
+        "missing": [],
+        "cache_verified": true,
+        "runtime_class": "local",
+        "ceiling": {
+          "value": 1.0,
+          "tie_policy": "not_evidence"
+        }
+      },
+      {
+        "benchmark": "diabetes_regression",
+        "adequacy": "missing_enhanced_pressure",
+        "required": [
+          "extra_trees",
+          "hist_gb",
+          "ridge_or_linear",
+          "svr_or_nystroem_svr"
+        ],
+        "successful": [
+          "extra_trees",
+          "hist_gb",
+          "ridge_or_linear",
+          "svr_or_nystroem_svr"
+        ],
+        "enhanced": [],
+        "missing": [],
+        "cache_verified": true,
+        "runtime_class": "ci",
+        "ceiling": {
+          "value": null,
+          "tie_policy": "best_observed"
+        }
+      },
+      {
+        "benchmark": "shakespeare_byte_lm",
+        "adequacy": "missing_enhanced_pressure",
+        "required": [
+          "bigram_lm",
+          "trigram_lm",
+          "unigram_lm"
+        ],
+        "successful": [
+          "bigram_lm",
+          "trigram_lm",
+          "unigram_lm"
+        ],
+        "enhanced": [],
+        "missing": [],
+        "cache_verified": true,
+        "runtime_class": "local",
+        "ceiling": {
+          "value": 1.0,
+          "tie_policy": "not_evidence"
+        }
+      }
+    ],
+    "budgets": [
+      16
+    ],
+    "repeatability": "incomplete",
+    "clean_runs": [
+      {
+        "budget": 16,
+        "seed": 42,
+        "run_id": "contenders_20260908T130048_80d3ce4b375c",
+        "dirty": false,
+        "envelope_sha256": "5ce393d9ed9743e223dcd59f9b67c4849b437f7e515152396f01507866d80f13",
+        "protocol_sha256": "e0109898f6fa2f4ee88350b38da1210a2481bdfa5d86d99fcf2cfdd4824cafd9"
+      }
+    ],
+    "admitted_run_ids": [],
+    "extended_coverage_complete": false,
+    "scientific_qualification": false,
+    "note": "Runtime admission is separate from the immutable planned catalog snapshot; Tier A does not establish broad capability."
+  },
+  "decision": {
+    "category": "needs more seeds",
+    "before_revision": "9e5ac0964b72f0ee9d5b938c2a84aa406bfeafb2",
+    "after_revision": "f3c8d3e86ad7bff99d0d9d04ec12e1a7d27ecd05",
+    "claim_scope": "contract_validation"
+  },
+  "verification": {
+    "foundation_tests": 831,
+    "compare_tests": 86,
+    "campaign_tests": 22,
+    "independent_reviews": [
+      "campaign identity, adoption and inherited worker ownership",
+      "journal integrity, cache deltas and crash-time accounting"
+    ],
+    "hosted_checks": "required Linux NumPy and macOS MLX lanes gate integration"
+  },
+  "remaining": [
+    "Repeated low/mid-budget scientific campaign remains unstarted.",
+    "Per-run limits remain 256 proposals / 1800 seconds; larger-runtime qualification is separate.",
+    "Incomplete Contenders runs have no resume contract and stop for inspection.",
+    "Search traces and integrity hashing still grow with history; no unbounded linear-storage claim."
+  ],
+  "registry": {
+    "records": 10,
+    "transport": {
+      "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-campaign-20260908/campaign-dependencies.tar.gz",
+      "descriptor": {
+        "schema_version": 1,
+        "archive_sha256": "bcf186c8ee27bbee98a77f18a3cd81b9afd2dab2230780bd29d2c61f42e75442",
+        "archive_size_bytes": 22341921,
+        "index_sha256": "45e3dec9ec360b910f2bb6a4b08ed5d9419eacf88c8087e9c8bd57baf5479d9c",
+        "transport_manifest_sha256": "1e34797bfe3f1b318dd4e3df42d905aa47133344a10397d9d33ca77091990786",
+        "run_ids": [
+          "contenders_20260908T091833_91c4a0b330bb",
+          "contenders_20260908T130048_80d3ce4b375c",
+          "primordia_20260908T091556_6c14140ece",
+          "primordia_20260908T125740_387fcbee29",
+          "prism_20260908T091634_e1981c3106",
+          "prism_20260908T125832_129983a9d4",
+          "stratograph_20260908T091514_2fe487e2a0",
+          "stratograph_20260908T125705_ba14d39ecc",
+          "topograph_20260908T091713_302d848a77",
+          "topograph_20260908T125911_3d6bcd8164"
+        ]
+      },
+      "registry_snapshot": {
+        "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-campaign-20260908/campaign-registry.tar.gz",
+        "archive_sha256": "2c7b7abacbe5532872b588830d355a0849ec8146e6f2f486285618fa0efb0488",
+        "archive_size_bytes": 2089552,
+        "index_sha256": "45e3dec9ec360b910f2bb6a4b08ed5d9419eacf88c8087e9c8bd57baf5479d9c"
+      }
+    }
+  }
+}

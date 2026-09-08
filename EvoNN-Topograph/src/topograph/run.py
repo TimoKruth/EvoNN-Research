@@ -16,7 +16,9 @@ import numpy as np
 from evonn_shared.artifact_io import create_artifact_directory, publish_artifact, read_verified_artifact
 from evonn_shared.active_catalog import get_benchmark, load_parity_pack
 from evonn_shared.canonical import canonical_sha256
-from evonn_shared.checkpoints import CheckpointPublication, load_latest_checkpoint, publish_checkpoint
+from evonn_shared.runtime_clock import InvocationClock
+from evonn_shared.runtime_journal import (JournalPublication, load_runtime_checkpoint, publish_initial,
+                                          load_transaction, publish_transaction)
 from evonn_shared.datasets import shared_root
 from evonn_shared.export_reader import read_document
 from evonn_shared.rng import StreamName, derive_stream
@@ -218,7 +220,7 @@ def run_engine(
             "elapsed": time.monotonic() - invocation_start,
             "dataset_sha256": hashlib.sha256(encode(provenance)).hexdigest(),
         }
-        publish_checkpoint(workspace.checkpoint_directory, identifier, "step_0", encode_snapshot(state))
+        publish_initial(workspace.checkpoint_directory, identifier, "step_0", state)
         with open_run_store(workspace.root, identifier, create=True):
             pass
     else:
@@ -233,9 +235,8 @@ def run_engine(
             snapshot_bytes=8 * 1024**2,
         ) as evaluator,
     ):
-        clock_started = time.monotonic()
         with open_run_store(workspace.root, workspace.run_id) as store:
-            _, payload = load_latest_checkpoint(workspace.checkpoint_directory)
+            _, payload = load_runtime_checkpoint(workspace.checkpoint_directory)
             state = json.loads(payload)
             saved_config = json.loads(read_document(workspace.root, "config.yaml"))
             if saved_config != configuration or state["config"] != configuration:
@@ -251,8 +252,9 @@ def run_engine(
                         ArtifactReference(path=artifact["path"], sha256=artifact["sha256"]),
                         size_bytes=artifact["size_bytes"],
                     )
-            if resume:
-                deadline = invocation_start + max(0, timeout - state["elapsed"])
+            clock = InvocationClock(workspace.root, state["elapsed"],
+                                    setup_seconds=max(0, time.monotonic() - invocation_start - (0 if resume else state["elapsed"])))
+            deadline = min(deadline, time.monotonic() + max(0, timeout - clock.base))
             inherited = state["completed"] if resume else 0
             target = budget if stop_after is None else stop_after
             if type(target) is not int or not state["completed"] <= target <= budget:
@@ -267,7 +269,7 @@ def run_engine(
                 step = state["completed"] + 1
                 transaction_path = workspace.root / f"transaction_{step:06d}.json"
                 if transaction_path.exists():
-                    transaction = json.loads(read_document(workspace.root, transaction_path.name, limit=128 * 1024**2))
+                    transaction = load_transaction(transaction_path, state)
                     if transaction["before_sha256"] != hashlib.sha256(encode_snapshot(state)).hexdigest():
                         raise ValueError("pending transaction does not extend checkpoint")
                     next_state = transaction["state"]
@@ -386,13 +388,9 @@ def run_engine(
                         "completed": step,
                         "search": search.state(),
                         "attempts": state["attempts"] + [attempt],
-                        "elapsed": state["elapsed"] + (time.monotonic() - clock_started),
+                        "elapsed": clock.elapsed(),
                     }
-                    transaction = {
-                        "before_sha256": hashlib.sha256(encode_snapshot(state)).hexdigest(),
-                        "state": next_state,
-                    }
-                    publish_artifact(transaction_path, encode_snapshot(transaction))
+                    publish_transaction(transaction_path, state, next_state)
                     _crash("transaction", step, crash_at, crash_step)
                 attempt = next_state["attempts"][-1]
                 metric = (
@@ -415,8 +413,8 @@ def run_engine(
                         raise ValueError("pending transaction disagrees with committed row")
                 _crash("row", step, crash_at, crash_step)
                 next_state["tip"] = row.row_sha256
-                publication = CheckpointPublication(
-                    workspace.checkpoint_directory, workspace.run_id, f"step_{step}", encode_snapshot(next_state)
+                publication = JournalPublication(
+                    workspace.checkpoint_directory, workspace.run_id, f"step_{step}", next_state, previous=state
                 )
                 publication.stage()
                 _crash("stage", step, crash_at, crash_step)
@@ -425,7 +423,6 @@ def run_engine(
                 publication.commit_manifest()
                 _crash("manifest", step, crash_at, crash_step)
                 state = next_state
-                clock_started = time.monotonic()
             search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"])
             derived(workspace.state_path, encode_snapshot(state))
             status = (
@@ -450,8 +447,11 @@ def run_engine(
                 encode({"run_id": workspace.run_id, "status": status, "completed_attempts": state["completed"]}),
             )
         if stop_after is not None and state["completed"] < budget:
+            clock.finish()
             return workspace.root
-        return export_run(workspace, state, definitions, pack, selection, device_class, inherited)
+        exported = export_run(workspace, state, definitions, pack, selection, device_class, inherited)
+        clock.finish()
+        return exported
 
 
 def perplexity_from_logits(predicted, targets, backend):

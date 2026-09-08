@@ -62,7 +62,7 @@ remain open because repeated low/mid-budget and L4 portfolio evidence are absent
 The single-seed contract decision is `needs more seeds`, with no pre-change
 Tier-B pairing or superiority claim. Native cross-engine ingestion stays Phase 5.
 Engine runs currently cap 256 proposals / 1800 seconds; higher per-run budgets
-first need an append-only attempt journal and separate resume qualification.
+still need separate larger-runtime qualification after the journal work below.
 Short validation and baseline runs up to 30 minutes are allowed.
 
 Supporting work: CodeRabbit automatic review is currently skipped by its
@@ -71,6 +71,31 @@ Two independent review agents cover the authorized review scope; measured policy
 is dominated by Git subprocesses. Optimize only with equivalent verdicts and
 comparable measurements. The evidence-retention proposal below is still a
 proposal; obsolete copies may be removed after its tested policy migration.
+
+### Implemented prerequisite — bounded campaign control and durable journal
+
+**Requirements:** campaign planning/preflight, whole-campaign resume, scalable
+attempt persistence requested before the larger comparison. This infrastructure
+precedes the scientific Phase 4 exit; it does not claim that exit or Phase 5.
+**Produces:** immutable campaign manifests, read-only preflight, locked stable
+case/system slots with verified recovery, and versioned per-attempt journals
+with periodic compact checkpoints. Existing exports and accounting stay intact.
+**Tests:** reject manifest/source/data/backend drift and malformed matrices;
+adopt completed runs after supervisor failure without fitting again; reject
+live concurrent workers and unsupported incomplete Contenders recovery; resume
+all four engines across transaction/row/checkpoint failures; reject broken
+journal chains and measure storage growth without training.
+**Verification:** 831 foundation tests and 86 Compare tests pass. A real
+five-system Tier-B@16 campaign completed 80 fits with pause/resume counts 2/3/0;
+the final resume changed no completed-run or event bytes. All exports are L3
+and 16 neural winners replay. Two independent reviewers found no remaining
+blockers. The compact campaign receipt binds producer and release evidence;
+existing real resume/replay cases and both required CI lanes gate integration.
+No large training campaign. Existing 256-proposal/1800-second run limits remain until separately
+qualified; persistence scalability alone does not qualify a larger runtime.
+**Failure conditions:** duplicate fits/charges, changed comparison settings,
+unbound cache or code, non-atomic state, weakened validation or a scientific
+claim from implementation-only evidence.
 
 ## Execution Rules And Evidence
 

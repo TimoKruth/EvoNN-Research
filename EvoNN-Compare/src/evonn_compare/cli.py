@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import webbrowser
 
-from evonn_shared.export_reader import read_export
+from evonn_shared.export_reader import read_document, read_export
 from .cases import Case, evaluate_case, resolve_preset
 from .evidence import trend_rows, winners
 from .quality import classify
@@ -14,6 +14,19 @@ from .workspace import fair_matrix, workspace_audit, workspace_report
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    campaign = commands.add_parser("campaign", help="plan, preflight and resume bounded campaigns")
+    campaign_actions = campaign.add_subparsers(dest="campaign_command", required=True)
+    planning = campaign_actions.add_parser("plan", help="prepare data and freeze settings; no model fits")
+    planning.add_argument("--workspace", type=Path, required=True)
+    planning.add_argument("--spec", type=Path, required=True)
+    planning.add_argument("--cache", type=Path, required=True)
+    planning.add_argument("--preparation-timeout", type=float, default=1800)
+    checking = campaign_actions.add_parser("preflight", help="read-only validation; no downloads or training")
+    checking.add_argument("workspace", type=Path)
+    execution = campaign_actions.add_parser("run", aliases=["resume"])
+    execution.add_argument("workspace", type=Path)
+    execution.add_argument("--session-timeout", type=float, default=1800)
+    execution.add_argument("--max-runs", type=int)
     matrix = commands.add_parser("fair-matrix")
     matrix.add_argument("--workspace", type=Path, required=True)
     selection = matrix.add_mutually_exclusive_group()
@@ -78,6 +91,17 @@ def main(argv=None):
         action.add_argument("--require-artifacts", action="store_true")
     args = parser.parse_args(argv)
     try:
+        if args.command == "campaign":
+            from .campaign import CampaignSpec, preflight, prepare_plan, run_campaign
+            if args.campaign_command == "plan":
+                spec = CampaignSpec.model_validate_json(read_document(args.spec.parent, args.spec.name))
+                result = prepare_plan(args.workspace, spec, args.cache, timeout=args.preparation_timeout)
+            elif args.campaign_command == "preflight":
+                result = preflight(args.workspace.absolute())
+            else:
+                result = run_campaign(args.workspace, session_timeout=args.session_timeout, max_runs=args.max_runs)
+            print(json.dumps(result, indent=2, allow_nan=False))
+            return 0
         if args.command == "evidence":
             from .registry import promote, registry_report, supersede, validate_registry
             if args.evidence_command == "pr-policy":
