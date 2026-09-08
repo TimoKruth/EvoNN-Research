@@ -1,0 +1,772 @@
+{
+  "schema_version": 1,
+  "phase": 4,
+  "date": "2026-09-08",
+  "scope": "independent engine implementation and short contract qualification; no scientific advancement or transfer claim",
+  "consumer": {
+    "git_commit": "62f1c39420d08bbde4660acd228105dbe7e3d06c",
+    "source_sha256": "916d90da43d777d28858364d17508f22e639555a8368e651c0efbadaf8062d7f",
+    "code_dirty": false
+  },
+  "producer_revisions": [
+    "9e5ac0964b72f0ee9d5b938c2a84aa406bfeafb2",
+    "a2f0b3b849a40263fb94d7505528cfe08e18c41a",
+    "c9723e0a3f86c82545ec0d523dbe96ac53ab7a0b"
+  ],
+  "qualification": {
+    "runs": 13,
+    "actual_evaluations": 304,
+    "native_engine_evaluations": 288,
+    "cpu_contender_evaluations": 16,
+    "replayed_winners": 80,
+    "final_five_system_batch_seconds": 279.4537022919976,
+    "batch_time_limit_seconds": 1800
+  },
+  "runtime_presets": {
+    "tier_b_tiny": {
+      "pack": "tier_b_core_v2",
+      "budget": 16,
+      "run_ids": [
+        "stratograph_20260908T091514_2fe487e2a0",
+        "primordia_20260908T091556_6c14140ece",
+        "prism_20260908T091634_e1981c3106",
+        "topograph_20260908T091713_302d848a77",
+        "contenders_20260908T091833_91c4a0b330bb"
+      ]
+    }
+  },
+  "runs": [
+    {
+      "run_id": "stratograph_20260908T082654_6edb74b505",
+      "system": "stratograph",
+      "pack": "tier1_core",
+      "budget": 64,
+      "seed": 42,
+      "variant": "shared",
+      "status": "completed",
+      "producer_revision": "c9723e0a3f86c82545ec0d523dbe96ac53ab7a0b",
+      "source_sha256": "73eb58ba5b1b65f46d2e94c04f0ad57ba55e06773a0fb8c8899df021eec55739",
+      "backend": "mlx_native",
+      "elapsed_seconds": 113.095346,
+      "actual_evaluations": 64,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "d5f05cbcf21a818c079af6df8f188e605bc0c48fee3caa9c71d14de83e120870",
+        "results.json": "1a073dbfeba9760fe9e222b0674a327936c6efa0bae55725bc771a21b008de52",
+        "summary.json": "dca2515d46ec22778f13f39fefdad0ae751563db3756eaa640f3f18cb9c1f73f"
+      },
+      "replay": {
+        "status": "passed",
+        "winner_count": 8
+      }
+    },
+    {
+      "run_id": "stratograph_20260908T083036_7a14e0d517",
+      "system": "stratograph",
+      "pack": "tier_a_contract",
+      "budget": 16,
+      "seed": 42,
+      "variant": "shared",
+      "status": "completed",
+      "producer_revision": "c9723e0a3f86c82545ec0d523dbe96ac53ab7a0b",
+      "source_sha256": "73eb58ba5b1b65f46d2e94c04f0ad57ba55e06773a0fb8c8899df021eec55739",
+      "backend": "mlx_native",
+      "elapsed_seconds": 34.692456,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "1829645e92c2b1c2af3d35114a09292769ff91b56bb5d340033e47e7f9b5f96f",
+        "results.json": "f46334ab6eae8fc7e7facead587c2dbf4cd8dfac42b12dd78fa36f1a06b23a5c",
+        "summary.json": "3aaf872399ec3d40438c23f94dc35a9a645de6729bc89b6fc4418b1aa08b65f3"
+      },
+      "replay": {
+        "status": "passed",
+        "winner_count": 8
+      }
+    },
+    {
+      "run_id": "stratograph_20260908T083112_15cbb0c57c",
+      "system": "stratograph",
+      "pack": "tier_a_contract",
+      "budget": 16,
+      "seed": 42,
+      "variant": "flat",
+      "status": "completed",
+      "producer_revision": "c9723e0a3f86c82545ec0d523dbe96ac53ab7a0b",
+      "source_sha256": "73eb58ba5b1b65f46d2e94c04f0ad57ba55e06773a0fb8c8899df021eec55739",
+      "backend": "mlx_native",
+      "elapsed_seconds": 34.498862,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "ac69fe346687a93639c6ef36f47d60207257d80acb0f8412eff5c5771eac4c32",
+        "results.json": "87e953132268c5708f0d81e2e3ffd0ad888fc260e598c6f26e169164ceeb3966",
+        "summary.json": "49da943ab270d5af2efd8e04b2d9429a361a58bd233a5023099619337a2a2a37"
+      },
+      "replay": {
+        "status": "passed",
+        "winner_count": 8
+      }
+    },
+    {
+      "run_id": "stratograph_20260908T083148_c8baf45e93",
+      "system": "stratograph",
+      "pack": "tier_a_contract",
+      "budget": 16,
+      "seed": 42,
+      "variant": "unshared",
+      "status": "completed",
+      "producer_revision": "c9723e0a3f86c82545ec0d523dbe96ac53ab7a0b",
+      "source_sha256": "73eb58ba5b1b65f46d2e94c04f0ad57ba55e06773a0fb8c8899df021eec55739",
+      "backend": "mlx_native",
+      "elapsed_seconds": 34.917193,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "2afe6f8eb6f06f56fdb22bd0db50f05f535199ae265ec4456cb44732c0deb6ef",
+        "results.json": "767142477fec2f634ac51ad8d62af21ed85a04bd17c99d023f64b591d8b3a926",
+        "summary.json": "ccff38cb2f0e47ed1f263eeb77ff4aa4cbc5c9345aa840d9727244f95f09e7cf"
+      },
+      "replay": {
+        "status": "passed",
+        "winner_count": 8
+      }
+    },
+    {
+      "run_id": "stratograph_20260908T083225_fac23ede8a",
+      "system": "stratograph",
+      "pack": "tier_a_contract",
+      "budget": 16,
+      "seed": 42,
+      "variant": "no-clone",
+      "status": "completed",
+      "producer_revision": "c9723e0a3f86c82545ec0d523dbe96ac53ab7a0b",
+      "source_sha256": "73eb58ba5b1b65f46d2e94c04f0ad57ba55e06773a0fb8c8899df021eec55739",
+      "backend": "mlx_native",
+      "elapsed_seconds": 36.511988,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "2eb9a6237bd9e85110cb3dbaff4c0484e6b1310b77ae639080e496700e2db297",
+        "results.json": "26bc6a001a0595e338fe320bb3c588f391847e7d9d260c27fd07caa3746d8619",
+        "summary.json": "a40198bea7f36c084dca284e19c82ed7d7d3aa9b260efeb7a87a5f83f4a2c9bc"
+      },
+      "replay": {
+        "status": "passed",
+        "winner_count": 8
+      }
+    },
+    {
+      "run_id": "stratograph_20260908T083303_e4954e2c89",
+      "system": "stratograph",
+      "pack": "tier_a_contract",
+      "budget": 16,
+      "seed": 42,
+      "variant": "no-motif-bias",
+      "status": "completed",
+      "producer_revision": "c9723e0a3f86c82545ec0d523dbe96ac53ab7a0b",
+      "source_sha256": "73eb58ba5b1b65f46d2e94c04f0ad57ba55e06773a0fb8c8899df021eec55739",
+      "backend": "mlx_native",
+      "elapsed_seconds": 35.435578,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "12af8b8990ef89b32ab6d76b21f11dfc15b7b54317126fb6a6517b08d399a7fd",
+        "results.json": "01b836496bdee646cc033a0c364005632d44ba6dcb44eb509ad04a6f6e310a60",
+        "summary.json": "86c5aafe134a0feb44e4890c1c9b2cbe267d661d381895bf1369b4d3312c635d"
+      },
+      "replay": {
+        "status": "passed",
+        "winner_count": 8
+      }
+    },
+    {
+      "run_id": "primordia_20260908T090346_bc8a858b68",
+      "system": "primordia",
+      "pack": "tier1_core",
+      "budget": 64,
+      "seed": 42,
+      "variant": null,
+      "status": "completed",
+      "producer_revision": "a2f0b3b849a40263fb94d7505528cfe08e18c41a",
+      "source_sha256": "2b4cdbc3cf970021e1ec71e5fc17df6876caf038241d9fa008c329a80ea17459",
+      "backend": "mlx_native",
+      "elapsed_seconds": 140.684942,
+      "actual_evaluations": 64,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "7af6090324f7d9b80572959f0f4d2748c75389eb85704a6e77fbe8d9090a6d91",
+        "results.json": "3047c5f1ad27da5b787b63e937600f47467acdfbe1246ba16d6d0adcb8cf68ec",
+        "summary.json": "6251253bbf6f486bdff7ecc91373a2a2665b296fa20a5d0fab7a6ddf0a8139ad"
+      },
+      "replay": {
+        "status": "passed",
+        "winner_count": 8
+      }
+    },
+    {
+      "run_id": "primordia_20260908T090609_90a4b08d8e",
+      "system": "primordia",
+      "pack": "tier_a_contract",
+      "budget": 16,
+      "seed": 42,
+      "variant": null,
+      "status": "completed",
+      "producer_revision": "a2f0b3b849a40263fb94d7505528cfe08e18c41a",
+      "source_sha256": "2b4cdbc3cf970021e1ec71e5fc17df6876caf038241d9fa008c329a80ea17459",
+      "backend": "mlx_native",
+      "elapsed_seconds": 38.789569,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "9b1e20d85cafb4dfc69c92d7c0207d4fe7d5207942e62402827d6a7c744fcfa7",
+        "results.json": "3e50523a690f7dd94eb2c0db21d918acbf9085f8eb181f155fc4540175980ca3",
+        "summary.json": "cec532898e26d3524bc7a37ecbb142bb0d1cf27a2e43d663188d5859d52a2b71"
+      },
+      "replay": {
+        "status": "passed",
+        "winner_count": 8
+      }
+    },
+    {
+      "run_id": "stratograph_20260908T091514_2fe487e2a0",
+      "system": "stratograph",
+      "pack": "tier_b_core_v2",
+      "budget": 16,
+      "seed": 42,
+      "variant": "shared",
+      "status": "completed",
+      "producer_revision": "9e5ac0964b72f0ee9d5b938c2a84aa406bfeafb2",
+      "source_sha256": "916d90da43d777d28858364d17508f22e639555a8368e651c0efbadaf8062d7f",
+      "backend": "mlx_native",
+      "elapsed_seconds": 39.269603,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "d8ed7dafc2a05ac2040d1ec1099fe87bf1f3fb96d792a3316680aa382b8c5b7f",
+        "results.json": "94e9f91192ea35c6a406c6aed2a112586e4554a03fe70c699c7eedc879c29d88",
+        "summary.json": "23fb313bf98f4b5c8c05c602ccc168c2897773ce3fd2568c1e02988c9d65768e"
+      },
+      "replay": {
+        "status": "passed",
+        "winner_count": 4
+      }
+    },
+    {
+      "run_id": "primordia_20260908T091556_6c14140ece",
+      "system": "primordia",
+      "pack": "tier_b_core_v2",
+      "budget": 16,
+      "seed": 42,
+      "variant": null,
+      "status": "completed",
+      "producer_revision": "9e5ac0964b72f0ee9d5b938c2a84aa406bfeafb2",
+      "source_sha256": "916d90da43d777d28858364d17508f22e639555a8368e651c0efbadaf8062d7f",
+      "backend": "mlx_native",
+      "elapsed_seconds": 35.721206,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "521d0bff3c19b69eb0fb59b028891cb2f2ec1e0290bd40d5c01a978bb94887d4",
+        "results.json": "3e8ddcabc1142a4a32692e6ddbc21304ed6155e9991650f9eaf5553095d650d9",
+        "summary.json": "1deec4b8ecf8e59cf5ed1e3ccf147267288a3ef6cdc40561158b7ceda120255e"
+      },
+      "replay": {
+        "status": "passed",
+        "winner_count": 4
+      }
+    },
+    {
+      "run_id": "prism_20260908T091634_e1981c3106",
+      "system": "prism",
+      "pack": "tier_b_core_v2",
+      "budget": 16,
+      "seed": 42,
+      "variant": null,
+      "status": "completed",
+      "producer_revision": "9e5ac0964b72f0ee9d5b938c2a84aa406bfeafb2",
+      "source_sha256": "916d90da43d777d28858364d17508f22e639555a8368e651c0efbadaf8062d7f",
+      "backend": "mlx_native",
+      "elapsed_seconds": 36.673787,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "d9f1b9ab8d6453d2f9689cc72ac66e06cbe594aa5e09d8deda8be49c020ab8ca",
+        "results.json": "91b38d1d01afbcbe41ee4cc7164753efbbcb9cd3882991600f4bbf63493b1c0f",
+        "summary.json": "317d8ea8fecce49ced506db6f15f8cc9373425ff31ebb6a36e8ced09573e9aea"
+      },
+      "replay": {
+        "status": "passed",
+        "winner_count": 4
+      }
+    },
+    {
+      "run_id": "topograph_20260908T091713_302d848a77",
+      "system": "topograph",
+      "pack": "tier_b_core_v2",
+      "budget": 16,
+      "seed": 42,
+      "variant": null,
+      "status": "completed",
+      "producer_revision": "9e5ac0964b72f0ee9d5b938c2a84aa406bfeafb2",
+      "source_sha256": "916d90da43d777d28858364d17508f22e639555a8368e651c0efbadaf8062d7f",
+      "backend": "mlx_native",
+      "elapsed_seconds": 78.392096,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "888ad381c8561c5fd8dad0a7bfb95b8ad121991f2a739dfaab4c05bc21fde47d",
+        "results.json": "4bbe80f1c0160f2e8d393d92aee6471a0a653920c459fe6e0c8cdce72c42bad2",
+        "summary.json": "7102eae21836a82da86a58eefc91544de30b2750413b91d3521248b34810dfed"
+      },
+      "replay": {
+        "status": "passed",
+        "winner_count": 4
+      }
+    },
+    {
+      "run_id": "contenders_20260908T091833_91c4a0b330bb",
+      "system": "contenders",
+      "pack": "tier_b_core_v2",
+      "budget": 16,
+      "seed": 42,
+      "variant": null,
+      "status": "completed",
+      "producer_revision": "9e5ac0964b72f0ee9d5b938c2a84aa406bfeafb2",
+      "source_sha256": null,
+      "backend": "sklearn_contender",
+      "elapsed_seconds": 38.408674,
+      "actual_evaluations": 16,
+      "output_quality": "L3",
+      "export_documents": {
+        "manifest.json": "5d7946fd6c892a032467f2b6ede29c7ab832a3125c1b41eabc62b092314c7f45",
+        "results.json": "96285a387aa001cd5871ecf54b421aac9dde145d9e9bbc28454dc095ac904f9c",
+        "summary.json": "5cf1814392d7615d09146d8240044c5e5b46271f87add5448f6a36ee00f231b8"
+      },
+      "replay": null
+    }
+  ],
+  "tier_b_case": {
+    "schema_version": "1.0.0",
+    "case": {
+      "pack": "tier_b_core_v2",
+      "budget": 16,
+      "seed": 42
+    },
+    "operating_state": "contract-fair",
+    "accounting_state": "complete",
+    "repeatability_state": "single_seed",
+    "engine_only": false,
+    "external_floor_claim": false,
+    "cohort": "current",
+    "blockers": [],
+    "run_ids": [
+      "stratograph_20260908T091514_2fe487e2a0",
+      "primordia_20260908T091556_6c14140ece",
+      "prism_20260908T091634_e1981c3106",
+      "topograph_20260908T091713_302d848a77",
+      "contenders_20260908T091833_91c4a0b330bb"
+    ],
+    "contender_run_ids": [
+      "contenders_20260908T091833_91c4a0b330bb"
+    ],
+    "budget_fingerprints": [
+      "5ce393d9ed9743e223dcd59f9b67c4849b437f7e515152396f01507866d80f13",
+      "5ce393d9ed9743e223dcd59f9b67c4849b437f7e515152396f01507866d80f13",
+      "5ce393d9ed9743e223dcd59f9b67c4849b437f7e515152396f01507866d80f13",
+      "5ce393d9ed9743e223dcd59f9b67c4849b437f7e515152396f01507866d80f13",
+      "5ce393d9ed9743e223dcd59f9b67c4849b437f7e515152396f01507866d80f13"
+    ],
+    "observed_seeds": [
+      42
+    ]
+  },
+  "tier_b_contract_audit": {
+    "schema_version": "1.0.0",
+    "pack": "tier_b_core_v2",
+    "scope": "phase1_contract",
+    "status": "passed",
+    "blocker_count": 0,
+    "blockers": [],
+    "warnings": [
+      "banknote_classification: optional enhanced pressure absent",
+      "diabetes_regression: optional enhanced pressure absent",
+      "digits_image: optional enhanced pressure absent",
+      "shakespeare_byte_lm: optional enhanced pressure absent"
+    ],
+    "benchmarks": [
+      {
+        "benchmark": "banknote_classification",
+        "adequacy": "missing_enhanced_pressure",
+        "required": [
+          "extra_trees",
+          "hist_gb",
+          "mlp_wide"
+        ],
+        "successful": [
+          "extra_trees",
+          "hist_gb",
+          "linear_svc",
+          "mlp_wide"
+        ],
+        "enhanced": [],
+        "missing": [],
+        "cache_verified": true,
+        "runtime_class": "local",
+        "ceiling": {
+          "value": 1.0,
+          "tie_policy": "not_evidence"
+        }
+      },
+      {
+        "benchmark": "digits_image",
+        "adequacy": "missing_enhanced_pressure",
+        "required": [
+          "extra_trees",
+          "mlp_wide"
+        ],
+        "successful": [
+          "extra_trees",
+          "hist_gb",
+          "linear_svc",
+          "mlp_wide"
+        ],
+        "enhanced": [],
+        "missing": [],
+        "cache_verified": true,
+        "runtime_class": "local",
+        "ceiling": {
+          "value": 1.0,
+          "tie_policy": "not_evidence"
+        }
+      },
+      {
+        "benchmark": "diabetes_regression",
+        "adequacy": "missing_enhanced_pressure",
+        "required": [
+          "extra_trees",
+          "hist_gb",
+          "ridge_or_linear",
+          "svr_or_nystroem_svr"
+        ],
+        "successful": [
+          "extra_trees",
+          "hist_gb",
+          "ridge_or_linear",
+          "svr_or_nystroem_svr"
+        ],
+        "enhanced": [],
+        "missing": [],
+        "cache_verified": true,
+        "runtime_class": "ci",
+        "ceiling": {
+          "value": null,
+          "tie_policy": "best_observed"
+        }
+      },
+      {
+        "benchmark": "shakespeare_byte_lm",
+        "adequacy": "missing_enhanced_pressure",
+        "required": [
+          "bigram_lm",
+          "trigram_lm",
+          "unigram_lm"
+        ],
+        "successful": [
+          "bigram_lm",
+          "trigram_lm",
+          "unigram_lm"
+        ],
+        "enhanced": [],
+        "missing": [],
+        "cache_verified": true,
+        "runtime_class": "local",
+        "ceiling": {
+          "value": 1.0,
+          "tie_policy": "not_evidence"
+        }
+      }
+    ],
+    "budgets": [
+      16
+    ],
+    "repeatability": "incomplete",
+    "clean_runs": [
+      {
+        "budget": 16,
+        "seed": 42,
+        "run_id": "contenders_20260908T091833_91c4a0b330bb",
+        "dirty": false,
+        "envelope_sha256": "5ce393d9ed9743e223dcd59f9b67c4849b437f7e515152396f01507866d80f13",
+        "protocol_sha256": "9edbf4be8c89fa407db14106eda04946efc7f6eaf52bdf1b22214a855ee14d05"
+      }
+    ],
+    "admitted_run_ids": [],
+    "extended_coverage_complete": false,
+    "scientific_qualification": false,
+    "note": "Runtime admission is separate from the immutable planned catalog snapshot; Tier A does not establish broad capability."
+  },
+  "tier_b_decision_audit": {
+    "schema_version": "1.0.0",
+    "pack": "tier_b_core_v2",
+    "scope": "decision_grade",
+    "status": "blocked",
+    "blocker_count": 1,
+    "blockers": [
+      "requires two independent low-budget seeds and one clean mid-budget run"
+    ],
+    "warnings": [
+      "banknote_classification: optional enhanced pressure absent",
+      "diabetes_regression: optional enhanced pressure absent",
+      "digits_image: optional enhanced pressure absent",
+      "shakespeare_byte_lm: optional enhanced pressure absent"
+    ],
+    "benchmarks": [
+      {
+        "benchmark": "banknote_classification",
+        "adequacy": "missing_enhanced_pressure",
+        "required": [
+          "extra_trees",
+          "hist_gb",
+          "mlp_wide"
+        ],
+        "successful": [
+          "extra_trees",
+          "hist_gb",
+          "linear_svc",
+          "mlp_wide"
+        ],
+        "enhanced": [],
+        "missing": [],
+        "cache_verified": true,
+        "runtime_class": "local",
+        "ceiling": {
+          "value": 1.0,
+          "tie_policy": "not_evidence"
+        }
+      },
+      {
+        "benchmark": "digits_image",
+        "adequacy": "missing_enhanced_pressure",
+        "required": [
+          "extra_trees",
+          "mlp_wide"
+        ],
+        "successful": [
+          "extra_trees",
+          "hist_gb",
+          "linear_svc",
+          "mlp_wide"
+        ],
+        "enhanced": [],
+        "missing": [],
+        "cache_verified": true,
+        "runtime_class": "local",
+        "ceiling": {
+          "value": 1.0,
+          "tie_policy": "not_evidence"
+        }
+      },
+      {
+        "benchmark": "diabetes_regression",
+        "adequacy": "missing_enhanced_pressure",
+        "required": [
+          "extra_trees",
+          "hist_gb",
+          "ridge_or_linear",
+          "svr_or_nystroem_svr"
+        ],
+        "successful": [
+          "extra_trees",
+          "hist_gb",
+          "ridge_or_linear",
+          "svr_or_nystroem_svr"
+        ],
+        "enhanced": [],
+        "missing": [],
+        "cache_verified": true,
+        "runtime_class": "ci",
+        "ceiling": {
+          "value": null,
+          "tie_policy": "best_observed"
+        }
+      },
+      {
+        "benchmark": "shakespeare_byte_lm",
+        "adequacy": "missing_enhanced_pressure",
+        "required": [
+          "bigram_lm",
+          "trigram_lm",
+          "unigram_lm"
+        ],
+        "successful": [
+          "bigram_lm",
+          "trigram_lm",
+          "unigram_lm"
+        ],
+        "enhanced": [],
+        "missing": [],
+        "cache_verified": true,
+        "runtime_class": "local",
+        "ceiling": {
+          "value": 1.0,
+          "tie_policy": "not_evidence"
+        }
+      }
+    ],
+    "budgets": [
+      16
+    ],
+    "repeatability": "incomplete",
+    "clean_runs": [
+      {
+        "budget": 16,
+        "seed": 42,
+        "run_id": "contenders_20260908T091833_91c4a0b330bb",
+        "dirty": false,
+        "envelope_sha256": "5ce393d9ed9743e223dcd59f9b67c4849b437f7e515152396f01507866d80f13",
+        "protocol_sha256": "9edbf4be8c89fa407db14106eda04946efc7f6eaf52bdf1b22214a855ee14d05"
+      }
+    ],
+    "admitted_run_ids": [],
+    "extended_coverage_complete": false,
+    "scientific_qualification": false,
+    "note": "Runtime admission is separate from the immutable planned catalog snapshot; Tier A does not establish broad capability."
+  },
+  "decision": {
+    "category": "needs more seeds",
+    "claim_scope": "contract_validation",
+    "before_revision": "8c87b2d92f51f4150a7f40abadba493ec10abb92",
+    "after_revision": "9e5ac0964b72f0ee9d5b938c2a84aa406bfeafb2",
+    "panels": [
+      {
+        "engine": "primordia",
+        "pack": "tier_b_core_v2",
+        "budget": 16,
+        "seeds": [
+          42
+        ],
+        "n": 0,
+        "level": "L3",
+        "statistical_label": "needs_more_runs",
+        "aggregation_label": "blocked",
+        "blockers": [
+          "at least 3 paired independent seeds required",
+          "missing paired seed/benchmark observations",
+          "one explicit source revision required per cohort"
+        ]
+      },
+      {
+        "engine": "prism",
+        "pack": "tier_b_core_v2",
+        "budget": 16,
+        "seeds": [
+          42
+        ],
+        "n": 0,
+        "level": "L3",
+        "statistical_label": "needs_more_runs",
+        "aggregation_label": "blocked",
+        "blockers": [
+          "at least 3 paired independent seeds required",
+          "missing paired seed/benchmark observations",
+          "one explicit source revision required per cohort"
+        ]
+      },
+      {
+        "engine": "stratograph",
+        "pack": "tier_b_core_v2",
+        "budget": 16,
+        "seeds": [
+          42
+        ],
+        "n": 0,
+        "level": "L3",
+        "statistical_label": "needs_more_runs",
+        "aggregation_label": "blocked",
+        "blockers": [
+          "at least 3 paired independent seeds required",
+          "missing paired seed/benchmark observations",
+          "one explicit source revision required per cohort"
+        ]
+      },
+      {
+        "engine": "topograph",
+        "pack": "tier_b_core_v2",
+        "budget": 16,
+        "seeds": [
+          42
+        ],
+        "n": 0,
+        "level": "L3",
+        "statistical_label": "needs_more_runs",
+        "aggregation_label": "blocked",
+        "blockers": [
+          "at least 3 paired independent seeds required",
+          "missing paired seed/benchmark observations",
+          "one explicit source revision required per cohort"
+        ]
+      }
+    ],
+    "reference": "Prior Contenders core export is provenance context only; no pre-change Tier-B engine baseline exists."
+  },
+  "registry": {
+    "index_sha256": "3ad1e11f510d859804c663c22b7919b2d7d091ee0af2068dad49731d3611da69",
+    "records": 14,
+    "transport": {
+      "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-phase4-20260908/phase4-dependencies.tar.gz",
+      "descriptor": {
+        "schema_version": 1,
+        "archive_sha256": "ca7980f002f05e790bf37eb236dc0fdb69765653b1ee58ddefe1158fc6f57ea9",
+        "archive_size_bytes": 21848672,
+        "index_sha256": "3ad1e11f510d859804c663c22b7919b2d7d091ee0af2068dad49731d3611da69",
+        "transport_manifest_sha256": "c0f59013cc23777935528abe8282e2978cd15f303230013c7dfcacd1258cd088",
+        "run_ids": [
+          "contenders_20260907T211155_84a32ed3a865",
+          "contenders_20260908T091833_91c4a0b330bb",
+          "primordia_20260908T090346_bc8a858b68",
+          "primordia_20260908T090609_90a4b08d8e",
+          "primordia_20260908T091556_6c14140ece",
+          "prism_20260908T091634_e1981c3106",
+          "stratograph_20260908T082654_6edb74b505",
+          "stratograph_20260908T083036_7a14e0d517",
+          "stratograph_20260908T083112_15cbb0c57c",
+          "stratograph_20260908T083148_c8baf45e93",
+          "stratograph_20260908T083225_fac23ede8a",
+          "stratograph_20260908T083303_e4954e2c89",
+          "stratograph_20260908T091514_2fe487e2a0",
+          "topograph_20260908T091713_302d848a77"
+        ]
+      },
+      "registry_snapshot": {
+        "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-phase4-20260908/phase4-registry.tar.gz",
+        "archive_sha256": "36cb2382c59d79b92477469af110b284172c4b153650b0911bee23e675cf20f4",
+        "archive_size_bytes": 2672474,
+        "index_sha256": "3ad1e11f510d859804c663c22b7919b2d7d091ee0af2068dad49731d3611da69"
+      }
+    }
+  },
+  "verification": {
+    "foundation_tests": 810,
+    "policy_tests": 682,
+    "focused_tests": 185,
+    "new_engine_real_resume_tests": 4,
+    "new_engine_real_resume_seconds": 429.87,
+    "native_ablation_cli_tests": 1,
+    "native_ablation_cli_seconds": 175.73,
+    "native_ablation_cli_additional_evaluations": 40
+  },
+  "independent_review": {
+    "engine_numerics_and_search": "reviewed; deterministic cost proxy, gradients, LM causality/perplexity and batch invariance checked",
+    "artifacts_and_transport": "reviewed; strict seed/bank/motif binding, NGram floor protocol and snapshot rehydration checked",
+    "cli": "reviewed; equal per-variant budgets and bounded incomplete batches checked",
+    "coderabbit": "automatic review skipped by repository policy; green skipped status is not a review"
+  },
+  "remaining": [
+    "Full Phase 4 scientific exit and repeated five-system Tier-B comparison have not run.",
+    "Stratograph uses deterministic hierarchy features with a trained head; end-to-end hierarchy learning is unproven.",
+    "Optional enhanced contender pressure is absent.",
+    "Native cross-engine ingestion and transfer benefit remain Phase 5.",
+    "Per-run budgets above 256 require a separate journal/resume implementation."
+  ]
+}

@@ -9,11 +9,60 @@ authoritative: false
 **Updated:** 2026-09-08. Foundation acceptance is merged through #28;
 Phase 1 implementation and runtime evidence are recorded in #29/#30, with
 required hosted checks attached to those revisions. Phase2 implementation and
-its source-bound acceptance cohort are recorded in #31.
+its source-bound acceptance cohort are recorded in #31. Phase 3 is merged in
+#32; Phase 4 implementation is bound by its compact runtime receipt.
 This is the compact record of completed work, review decisions and verification.
 Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
+
+## Phase 4 implementation and short qualification — 2026-09-08
+
+Stratograph now has an independent hierarchical genome, reusable cell compiler,
+crossover-first search, bounded niches/lineage, five matched ablations and
+verified `motifs analyze`. Its declared fidelity is deterministic hierarchy
+features with a trained GELU head; end-to-end hierarchy learning is unproven.
+Primordia trains its own small primitive circuits, caps architecture/epochs and
+emits strict ranked banks and transfer seeds. Its deterministic selection-cost
+proxy is parameter count × optimizer updates; real time remains in the ledger.
+Bank reconstruction rejects changes to export-bound source inputs.
+
+The additive Tier-B pack combines OpenML banknote, digits, diabetes and pinned
+real Shakespeare text. Raw text is split before context generation; the final
+15% remains unused. All four engines train and replay next-token metrics.
+Review fixes covered causal prefix inputs, Topograph's batch-dependent activation
+quantization, truthful NGram backend/default-smoothing admission, and snapshot
+rehydration with immutable analysis inputs and safe directory creation.
+
+The [receipt](governance/phase4-runtime-evidence.json) records 13 L3 qualification
+runs / 304 real fits and 80 replayed winners. Both new engines reached Tier A
+and core@64; all five systems completed Tier-B@16. The contract audit has zero
+blockers; repeated low/mid-budget evidence still blocks scientific admission.
+The registry decision is `needs more seeds`, without a paired pre-change Tier-B
+baseline or advancement claim. Original producers and consumer are recorded
+separately; final Tier-B runs bind the complete reviewed runtime source.
+
+Validation includes 810 foundation tests, 682 policy tests, 185 focused tests,
+four unchanged strict process-death/reproduction tests for the new engines and
+a real five-variant MLX CLI test (40 additional tiny fits, under three minutes).
+Two independent reviewers checked engine numerics/search, artifact semantics and
+transport. Raw models/caches and the registry snapshot are checksum-pinned release
+assets; Git keeps one compact declaration and receipt. No multi-hour training
+or larger repeated comparison campaign was started.
+
+## 2026-09-08 — Phase 3 registry and statistical decisions (#32)
+
+Append-only source-bound registry, paired independent-seed inference, conservative
+PR decisions and versioned dependency transport implemented. The
+[Phase 3 receipt](governance/phase3-runtime-evidence.json) records 384 short native
+Prism evaluations across two unchanged producer revisions: three matched seeds,
+L4, no material change. Initial host-fingerprint drift was correctly blocked;
+reference measurements were repeated without rewriting old evidence. A fabricated
+PR run ID, missing cache relocation and same-shape cache substitution were rejected.
+Independent reviews covered registry integrity and statistics; CodeRabbit skipped
+automatic review under its repository-star policy. Full source artifacts live in
+the versioned release, with checksums and hosted revalidation; no large comparison
+campaign was started.
 
 ## Phase 2 implementation and acceptance — 2026-09-07
 
@@ -21,8 +70,8 @@ Prism and Topograph now have separate genome/compiler/training/search modules.
 Shared owns data preprocessing, cache and persistence infrastructure. The
 Contenders dataset loader moved without changing canonical manifest or split
 bytes; its original dataset tests moved with it. Current capability declarations
-advance independently of immutable B0 bootstrap receipts. The active bootstrap
-probe uses the still-unimplemented Stratograph declaration; real engine tests
+advance independently of immutable B0 bootstrap receipts. At that revision, the active bootstrap
+probe used the then-unimplemented Stratograph declaration; real engine tests
 now execute separately on Linux NumPy and macOS MLX.
 
 Independent reviews caught and corrected normalization/replay, stable CE,
@@ -340,17 +389,3 @@ This closes contract foundations only. Catalog entries remain planned metadata;
 regular export composition and actual no-op integrity are separate evidence.
 Engine-specific resume and Topograph speciation/reproduction are explicitly
 pending. No backend is scientifically qualified and no multi-hour training ran.
-
-## 2026-09-08 — Phase 3 registry and statistical decisions (#32)
-
-Append-only source-bound registry, paired independent-seed inference, conservative
-PR decisions and versioned dependency transport implemented. The
-[Phase 3 receipt](governance/phase3-runtime-evidence.json) records 384 short native
-Prism evaluations across two unchanged producer revisions: three matched seeds,
-L4, no material change. Initial host-fingerprint drift was correctly blocked;
-reference measurements were repeated without rewriting old evidence. A fabricated
-PR run ID, missing cache relocation and same-shape cache substitution were rejected.
-Independent reviews covered registry integrity and statistics; CodeRabbit skipped
-automatic review under its repository-star policy. Full source artifacts live in
-the versioned release, with checksums and hosted revalidation; no large comparison
-campaign was started.

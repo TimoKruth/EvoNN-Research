@@ -46,13 +46,21 @@ reach L3; the recorded verification consumer replays 64 neural winners and core 
 passes as `trusted-core`. Independent reviews and real process-death tests
 cover both engines; both required hosted lanes gate merge of the final revision.
 
-Phase 3 registry/statistics is implemented in #32. Its runtime receipt
+Phase 3 registry/statistics is merged in #32 (both hosted lanes green). Its runtime receipt
 `governance/phase3-runtime-evidence.json` binds a real three-seed before/after
 comparison: L4, no material change, no advancement claim. Full dependencies
 are versioned release assets, rehydrated and revalidated on both CI hosts.
-The authorized next implementation is Phase 4: independent Stratograph and
-Primordia runtimes and their catalog integration. Complete short qualification before proposing
-the larger five-system comparison campaign. Do not start that campaign here.
+Phase 4 implementation and short qualification are complete: independent
+Stratograph/Primordia runtimes, matched ablation and motif commands, strict banks,
+real-text Tier B and four-engine LM integration. The compact receipt
+`governance/phase4-runtime-evidence.json` binds 13 L3 runs / 304 fits and 80
+replayed winners. The five-system Tier-B@16 contract audit has zero blockers.
+
+**Next:** review the larger repeated five-system campaign; do not start it in
+this implementation task. WP-4.7's decision-grade audit and the full Phase 4 exit
+remain open because repeated low/mid-budget and L4 portfolio evidence are absent.
+The single-seed contract decision is `needs more seeds`, with no pre-change
+Tier-B pairing or superiority claim. Native cross-engine ingestion stays Phase 5.
 Engine runs currently cap 256 proposals / 1800 seconds; higher per-run budgets
 first need an append-only attempt journal and separate resume qualification.
 Short validation and baseline runs up to 30 minutes are allowed.
@@ -751,20 +759,20 @@ packs). **Joint:** WP-4.8 (integration, CLI conformance, telemetry rows)
 catalog schema (Phase 0; B extends data, not schema), seed-candidate
 artifact shape (B→Phase 5, co-signed here because Primordia emits it).
 
-- [ ] **WP-4.1 Stratograph genome + codec** (invariants, structural
+- [x] **WP-4.1 Stratograph genome + codec** (invariants, structural
   metrics, digesting).
-- [ ] **WP-4.2 Stratograph compiler + proxy evaluator** (cell reuse,
+- [x] **WP-4.2 Stratograph compiler + proxy evaluator** (cell reuse,
   trained heads, fidelity-regime labels).
-- [ ] **WP-4.3 Stratograph search ops** (clone/specialize/rewire/motif
+- [x] **WP-4.3 Stratograph search ops** (clone/specialize/rewire/motif
   rewrite; crossover preserving macro edges; task/dimension seed
   profiles; crossover-first — no broad exploitation slot).
-- [ ] **WP-4.4 Ablation harness + motif mining** (flat/unshared/shared/
+- [x] **WP-4.4 Ablation harness + motif mining** (flat/unshared/shared/
   no-clone/no-motif-bias; `motifs analyze`).
-- [ ] **WP-4.5 [epic] Primordia engine.** Split ≥: (a) primitive genome +
+- [x] **WP-4.5 [epic] Primordia engine.** Split ≥: (a) primitive genome +
   mutation; (b) MLX lane + runtime caps (epoch/family caps, architecture
   clamps); (c) `numpy_fallback` compare-grade lane; (d) bounded
   elite/archive search + budget-matched scheduling.
-- [ ] **WP-4.6 Primordia artifacts — strict schemas.** Primitive bank
+- [x] **WP-4.6 Primordia artifacts — strict schemas.** Primitive bank
   (ranked, diversity descriptors), `seed_candidates.json`
   (benchmark-conditioned), `search_leaders.json`, usage/coverage/failure
   telemetry; **reconstruction test**: inspect rebuilds the bank view from
@@ -774,12 +782,18 @@ artifact shape (B→Phase 5, co-signed here because Primordia emits it).
   small image, real LM caches); `tier_b_core`, `tier_b_core_v2`
   (+cumulative); presets; **decision-grade audit with zero blockers and
   adequacy labels** (exact command in exit).
-- [ ] **WP-4.8 Integration + CLI conformance.** Both engines: full verb
+- [x] **WP-4.8 Integration + CLI conformance.** Both engines: full verb
   set with tiny-config e2e tests (evolve, resume, inspect, report,
   benchmarks/cache discovery, symbiosis export); engine-specific resume
   tests; telemetry conformance rows (Stratograph: macro depth/reuse/
   clone+specialize counts/motif frequency; Primordia: primitive counts/
   bank size/promotion counts); CI scripts in the Linux lane.
+
+WP-4.7 data and `tier_b_tiny` are implemented and contract-qualified. Its parent
+checkbox remains open for the required repeated decision-grade audit. The other
+checked work packages mean implemented + short-qualified; they do not close the
+full scientific exit. Independent reviews covered numerical/search behavior,
+artifact semantics, transport and the bounded command surface.
 
 ### Active Phase 4 implementation contract
 
