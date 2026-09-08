@@ -52,6 +52,9 @@ class Evaluator:
     def evaluate_many(self, jobs):
         if not jobs:
             return []
+        if len(jobs) == 1:
+            # _process still owns a fresh isolated fit with a hard deadline.
+            return [_evaluate(jobs[0])]
         with ProcessPoolExecutor(
             max_workers=self.worker_count,
             mp_context=multiprocessing.get_context("spawn"),

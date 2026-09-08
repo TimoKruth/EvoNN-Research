@@ -17,7 +17,7 @@ from evonn_shared.active_catalog import get_benchmark, load_parity_pack
 from evonn_shared.canonical import canonical_sha256
 from evonn_shared.runtime_clock import InvocationClock
 from evonn_shared.runtime_journal import (JournalPublication, load_runtime_checkpoint, publish_initial,
-                                          load_transaction, publish_transaction)
+                                          load_transaction, publish_transaction, runner_search_snapshot)
 from .datasets import shared_root
 from evonn_shared.export_reader import read_document
 from evonn_shared.rng import StreamName, derive_stream
@@ -248,17 +248,18 @@ def run_engine(
             tip = rows[state["completed"] - 1].row_sha256 if state["completed"] else "0" * 64
             if tip != state["tip"]:
                 raise ValueError("checkpoint does not bind committed row prefix")
+            search = None
             while state["completed"] < target and time.monotonic() < deadline:
                 step = state["completed"] + 1
                 transaction_path = workspace.root / f"transaction_{step:06d}.json"
                 if transaction_path.exists():
                     transaction = load_transaction(transaction_path, state)
-                    if transaction["before_sha256"] != hashlib.sha256(encode_snapshot(state)).hexdigest():
-                        raise ValueError("pending transaction does not extend checkpoint")
+                    search = None  # Rebuild from committed state after transaction recovery.
                     next_state = transaction["state"]
                     inherited = max(inherited, step)
                 else:
-                    search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"])
+                    if search is None:
+                        search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"])
                     counts = {d.id: sum(a["benchmark_id"] == d.id for a in state["attempts"]) for d in definitions}
                     definition = min(definitions, key=lambda d: (counts[d.id], d.id))
                     genome = search.candidate(definition.id)
@@ -360,7 +361,7 @@ def run_engine(
                     next_state = {
                         **state,
                         "completed": step,
-                        "search": search.state(),
+                        "search": runner_search_snapshot(search),
                         "attempts": state["attempts"] + [attempt],
                         "elapsed": clock.elapsed(),
                     }

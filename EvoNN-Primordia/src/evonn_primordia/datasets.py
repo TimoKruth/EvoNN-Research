@@ -10,9 +10,6 @@ import urllib.request
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
-from sklearn import datasets as sklearn_datasets
-from sklearn.model_selection import train_test_split
 
 from evonn_shared.artifact_io import create_artifact_directory, publish_artifact, read_verified_artifact
 from evonn_shared.benchmarks import resolve_data_root
@@ -55,6 +52,7 @@ def _raw_data(binding: dict, seed: int) -> tuple[np.ndarray, np.ndarray]:
     loader = binding["loader"]
     if loader in {"openml_31", "openml_1462"}:
         import openml
+        import pandas as pd
         dataset_id = 31 if loader == "openml_31" else 1462
         target_name = "class" if loader == "openml_31" else "Class"
         dataset = openml.datasets.get_dataset(dataset_id, download_data=True)
@@ -72,6 +70,8 @@ def _raw_data(binding: dict, seed: int) -> tuple[np.ndarray, np.ndarray]:
         else:
             y = y.astype(np.int64, copy=False)
         return x, y
+    from sklearn import datasets as sklearn_datasets
+
     loaders = {
         "load_iris": sklearn_datasets.load_iris, "load_wine": sklearn_datasets.load_wine,
         "load_breast_cancer": sklearn_datasets.load_breast_cancer,
@@ -88,6 +88,8 @@ def _raw_data(binding: dict, seed: int) -> tuple[np.ndarray, np.ndarray]:
 
 
 def _split(x: np.ndarray, y: np.ndarray, task: str, seed: int) -> dict[str, np.ndarray]:
+    from sklearn.model_selection import train_test_split
+
     train_x, validation_x, train_y, validation_y = train_test_split(
         x, y, test_size=0.2, random_state=seed, stratify=y if task == "classification" else None,
     )

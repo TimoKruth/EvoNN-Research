@@ -56,14 +56,18 @@ real-text Tier B and four-engine LM integration. The compact receipt
 `governance/phase4-runtime-evidence.json` binds 13 L3 runs / 304 fits and 80
 replayed winners. The five-system Tier-B@16 contract audit has zero blockers.
 
-**Next:** review the larger repeated five-system campaign; do not start it in
-this implementation task. WP-4.7's decision-grade audit and the full Phase 4 exit
-remain open because repeated low/mid-budget and L4 portfolio evidence are absent.
-The single-seed contract decision is `needs more seeds`, with no pre-change
-Tier-B pairing or superiority claim. Native cross-engine ingestion stays Phase 5.
-Engine runs currently cap 256 proposals / 1800 seconds; higher per-run budgets
-still need separate larger-runtime qualification after the journal work below.
-Short validation and baseline runs up to 30 minutes are allowed.
+**Next:** qualify the optimized runtime before replanning the paused larger
+five-system campaign. The first campaign completed three 64-fit engine slots;
+Topograph exhausted its 1500-second allowance after 51 committed attempts
+(and one durable result). Preserve that producer and its clock unchanged.
+The performance pass removes a redundant Topograph supervisor, avoids eager
+preparation imports, reuses runner-owned search/cache state and deduplicates
+journal hashes. Short native 64/128-fit qualification, crash recovery and
+both hosted lanes must pass before declaring the next campaign ready.
+Run requested macOS jobs with Standard launchd priority; do not restart the
+full comparison during this optimization task. Existing 256-proposal/1800-second
+limits remain. WP-4.7 and the Phase 4 exit still require repeated low/mid-budget
+and L4 portfolio evidence; native cross-engine ingestion stays Phase 5.
 
 Supporting work: CodeRabbit automatic review is currently skipped by its
 repository star-count policy; a green skipped status is not review evidence.
@@ -91,8 +95,9 @@ the final resume changed no completed-run or event bytes. All exports are L3
 and 16 neural winners replay. Two independent reviewers found no remaining
 blockers. The compact campaign receipt binds producer and release evidence;
 existing real resume/replay cases and both required CI lanes gate integration.
-No large training campaign. Existing 256-proposal/1800-second run limits remain until separately
-qualified; persistence scalability alone does not qualify a larger runtime.
+The prerequisite qualification started no large training campaign. Existing
+256-proposal/1800-second limits remain; persistence scalability alone does not
+qualify a larger runtime.
 **Failure conditions:** duplicate fits/charges, changed comparison settings,
 unbound cache or code, non-atomic state, weakened validation or a scientific
 claim from implementation-only evidence.

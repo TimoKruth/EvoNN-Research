@@ -52,3 +52,18 @@ def test_two_spawn_workers_train_and_return_in_submission_order(tmp_path):
     import json
 
     assert results == [json.loads((tmp_path / str(seed) / "result.json").read_text()) for seed in (42, 43)]
+
+
+def test_single_job_keeps_isolated_process_without_pool(tmp_path, monkeypatch):
+    import topograph.parallel as parallel
+    monkeypatch.setattr(parallel, "ProcessPoolExecutor", lambda **kwargs: (_ for _ in ()).throw(AssertionError("serial job created pool")))
+    calls = []
+    def process(*args):
+        calls.append(args)
+        return {"status": "ok", "charged": 1}
+    monkeypatch.setattr(parallel, "_process", process)
+    job = {"request": {"benchmark": "iris_classification"}, "directory": tmp_path, "timeout": 7}
+    evaluator = Evaluator(data_bytes=1024, snapshot_bytes=1024, memory_bytes=4 * 1024**3)
+    assert evaluator.evaluate_many([job]) == [{"status": "ok", "charged": 1}]
+    assert calls == [("topograph", "_worker", job["request"], tmp_path, 7)]
+    assert evaluator.evaluate_many([]) == []

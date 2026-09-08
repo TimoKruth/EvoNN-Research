@@ -20,12 +20,10 @@ import time
 import uuid
 from .artifact_io import create_artifact_directory, publish_artifact, publish_artifact_directory, read_verified_artifact
 from .canonical import canonical_sha256
-from .datasets import load_dataset
 from .export_reader import read_document, read_export
 from ._run_io import open_directory, open_regular_at
 from .exports import Manifest, Results, RunSummary, write_export
 from .rng import StreamName, derive_stream
-from .run_store import STORE_FILENAME
 from .runtime_budget import execution_budget
 from .telemetry import ArtifactReference
 
@@ -174,7 +172,10 @@ def _process(system, verb, request, directory, timeout, *, worker_module=None):
         return terminal_worker_failure(directory, "isolated worker wall-clock cap exceeded", 0)
 
 
-def prepare_worker(request, output, *, dataset_loader=load_dataset):
+def prepare_worker(request, output, *, dataset_loader=None):
+    if dataset_loader is None:
+        from .datasets import load_dataset
+        dataset_loader = load_dataset
     dataset = dataset_loader(
         request["benchmark"], seed=request["seed"], cache_root=Path(request["cache"]), root=Path(request["shared_root"])
     )
@@ -196,6 +197,8 @@ def vars_free_training(config):
 
 
 def export_run(workspace, state, definitions, pack, selection, device_class, inherited, *, extra_artifacts=(), artifact_builder=None):
+    from .run_store import STORE_FILENAME
+
     configuration, attempts = state["config"], state["attempts"]
     directory = workspace.root / (
         "symbiosis" if state["completed"] == configuration["total"] else f"symbiosis_step_{state['completed']}"

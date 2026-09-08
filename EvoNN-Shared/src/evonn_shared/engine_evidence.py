@@ -60,7 +60,10 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
     if config["backend"] != manifest.runtime.backend.value or config["source_sha256"] is None:
         raise ValueError("engine backend/source fingerprint missing or inconsistent")
     topology = manifest.runtime.worker_topology
-    supervisors = 1 if system == "topograph" else 0
+    mode = config.get("evaluation_mode")
+    if mode is not None and (system != "topograph" or mode != "isolated-serial/v1"):
+        raise ValueError("unsupported engine evaluation mode")
+    supervisors = 1 if system == "topograph" and mode is None else 0
     if (
         (config["training_worker_count"], config["supervisor_count"], config["evaluation_process_count"])
         != (1, supervisors, 1 + supervisors)

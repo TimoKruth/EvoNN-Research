@@ -101,7 +101,20 @@ def test_real_resume_kill_boundaries_export_and_report(system, tmp_path, monkeyp
         name: reader(bundle, name)
         for name in ("config.yaml", "state.json", "attempts.json", "engine_telemetry.json", "dataset_provenance.json")
     }
+    if system == "topograph":
+        assert documents["config.yaml"]["evaluation_mode"] == "isolated-serial/v1"
+        assert (documents["config.yaml"]["supervisor_count"], documents["config.yaml"]["evaluation_process_count"]) == (0, 1)
+        historical = deepcopy(documents)
+        for name in ("config.yaml", "state.json"):
+            config = historical[name] if name == "config.yaml" else historical[name]["config"]
+            del config["evaluation_mode"]
+            config.update(supervisor_count=1, evaluation_process_count=2)
+        with monkeypatch.context() as patched:
+            patched.setattr(engine_evidence, "artifact_json", lambda current, name: historical[name] if name in historical else reader(current, name))
+            engine_evidence.validate_engine_bundle(bundle, verify_cache=True)
     for attack in (
+        "false_process_disclosure",
+        "unsupported_evaluation_mode",
         "empty_telemetry",
         "false_raw",
         "boolean_charge",
@@ -110,7 +123,14 @@ def test_real_resume_kill_boundaries_export_and_report(system, tmp_path, monkeyp
         "fake_cache_credits",
     ):
         altered = deepcopy(documents)
-        if attack == "empty_telemetry":
+        if attack in {"false_process_disclosure", "unsupported_evaluation_mode"}:
+            for name in ("config.yaml", "state.json"):
+                config = altered[name] if name == "config.yaml" else altered[name]["config"]
+                if attack == "false_process_disclosure":
+                    config["supervisor_count"] = 9
+                else:
+                    config["evaluation_mode"] = "unrecognized/v2"
+        elif attack == "empty_telemetry":
             for key in engine_evidence.MANDATORY_TELEMETRY[system]:
                 altered["engine_telemetry.json"][key] = None
         elif attack == "false_raw":

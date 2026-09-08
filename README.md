@@ -96,6 +96,13 @@ Preflight only reads and validates those inputs, probes the requested backend
 and checks free space (1 GiB by default). It neither downloads nor trains.
 Use a new workspace if planning is interrupted or settings change.
 
+For an explicitly requested macOS training job launched through `launchd`, use
+`ProcessType = Standard` (the default), with `KeepAlive = false`. `Background`
+and `Adaptive` without an active XPC transaction throttle worker startup and
+journal work substantially. Keep the computer awake with `caffeinate -i -m`
+around the bounded command. Preserve the launch configuration beside the run;
+changing execution priority or source requires a newly planned campaign.
+
 `run` and `resume` share the same recovery path. Each invocation is capped at
 30 minutes and pauses before a slot whose full time allowance no longer fits;
 it never reduces later slots' configured budgets. Stable case/system slots,

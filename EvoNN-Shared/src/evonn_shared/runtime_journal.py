@@ -33,6 +33,8 @@ def digest(value):
 
 def same(left, right):
     """Equality of canonical JSON, preserving bool/int/float and signed zero."""
+    if left is right:
+        return True
     if type(left) in (list, tuple) and type(right) in (list, tuple):
         return len(left) == len(right) and all(same(a, b) for a, b in zip(left, right))
     if type(left) is not type(right):
@@ -125,6 +127,17 @@ def restore(before, change):
     return result
 
 
+def runner_search_snapshot(search):
+    """Detach runner metadata; share only runner-owned, replacement-only cache entries.
+
+    The runner must not expose these entries to callers or mutate their payloads.
+    Public Search.state()/WeightCache.state() retain their existing semantics.
+    """
+    state = search.state()
+    return {**deepcopy({key: value for key, value in state.items() if key != "cache"}),
+            "cache": list(state["cache"])}
+
+
 def publish_transaction(path, before, after):
     publish_artifact(path, encode({"format": FORMAT, "before_sha256": digest(before), "after_sha256": digest(after), **transition(before, after)}))
 
@@ -174,7 +187,8 @@ class JournalPublication(CheckpointPublication):
             _, committed_payload = load_bounded_checkpoint(directory)
             committed = json.loads(committed_payload)
             expected = committed["after"] if "format" in committed else digest(committed)
-            if digest(previous) != expected:
+            previous_digest = digest(previous)
+            if previous_digest != expected:
                 raise ValueError("journal predecessor differs from committed logical state")
             change = transition(previous, state)
             snapshot = current if state["completed"] % INTERVAL == 0 else None
@@ -183,7 +197,7 @@ class JournalPublication(CheckpointPublication):
                 change = {"delta": None, "attempt": change["attempt"]}
             record = {"format": FORMAT, "previous": manifest.latest.model_dump(mode="json"),
                       "snapshot": snapshot, "change": change, "run_id": run_id,
-                      "before": digest(previous), "after": digest(state)}
+                      "before": previous_digest, "after": digest(state)}
         if checkpoint_id != f"step_{state['completed']}":
             raise ValueError("journal checkpoint ID differs from logical progress")
         super().__init__(directory, run_id, checkpoint_id, encode(record))
@@ -237,11 +251,12 @@ def load_runtime_checkpoint(directory):
         if previous.payload_path != previous.checkpoint_id + ".ckpt":
             raise ValueError("journal payload name differs from checkpoint identity")
         current = previous
+    state_digest = digest(state)
     for record in reversed(records):
         payload = read_verified_artifact(directory, ArtifactReference(path=record.payload_path, sha256=record.sha256),
                                          size_bytes=record.size_bytes, max_bytes=LIMIT)
         value = json.loads(payload)
-        if value["before"] != digest(state):
+        if value["before"] != state_digest:
             raise ValueError("journal prior logical state hash mismatch")
         change = value["change"]
         if value["snapshot"] is not None:
@@ -257,7 +272,8 @@ def load_runtime_checkpoint(directory):
             state = restore(state, change)
             if state["completed"] % INTERVAL == 0:
                 raise ValueError("missing periodic compact snapshot")
-        if digest(state) != value["after"]:
+        state_digest = digest(state)
+        if state_digest != value["after"]:
             raise ValueError("journal logical state hash mismatch")
         if record.checkpoint_id != f"step_{state['completed']}":
             raise ValueError("journal checkpoint and attempt progress disagree")

@@ -5,13 +5,16 @@ from pathlib import Path
 import sys
 
 from evonn_shared.artifact_io import publish_artifact
-from evonn_shared.datasets import load_dataset
 from evonn_shared.export_reader import read_document
-from .workspace import encoded
+
+
+def encoded(value):
+    return (json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n").encode()
 
 
 def main():
     if sys.argv[1] == "prepare":
+        from evonn_shared.datasets import load_dataset
         name, seed, cache, output = sys.argv[2:]
         data = load_dataset(name, seed=int(seed), cache_root=Path(cache))
         publish_artifact(Path(output), encoded(data.provenance))
