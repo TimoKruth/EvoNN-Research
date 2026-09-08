@@ -235,6 +235,10 @@ def _phase4_artifact_checks(system,root,bundle,monkeypatch):
             patched.setattr(engine_evidence,"artifact_json",lambda current,name:changed[name] if name in changed else reader(current,name))
             with pytest.raises(ValueError):
                 engine_evidence.validate_engine_bundle(bundle)
+    if system == "stratograph":
+        inspected = invoke(system, "motifs", "analyze", root)
+        assert inspected.returncode == 0, inspected.stderr
+        assert json.loads(inspected.stdout) == original["motif_analysis.json"]
     if system=="primordia":
         bank=root/"primitive_bank.json"
         expected=bank.read_bytes()
@@ -252,3 +256,24 @@ def _phase4_artifact_checks(system,root,bundle,monkeypatch):
             assert rejected.returncode!=0 and "differs from immutable export" in rejected.stderr
         finally:
             context.write_bytes(saved)
+
+
+def test_stratograph_matched_ablation_cli(tmp_path):
+    result = invoke("stratograph", "ablate", "--pack", "tier1_core_smoke", "--budget", 8,
+        "--epochs", 1, "--population-size", 2, "--timeout", 220, "--run-timeout", 40,
+        "--fit-timeout", 15, "--backend", os.environ.get("EVONN_TEST_BACKEND", "numpy_fallback"),
+        "--output", tmp_path / "ablations", "--cache", tmp_path / "cache")
+    assert result.returncode == 0, result.stderr
+    index = json.loads(Path(result.stdout.strip().splitlines()[-1]).read_text())
+    assert index["status"] == "completed" and index["planned_runs"] == len(index["cases"]) == 5
+    assert index["decision_grade"] is False
+    assert [case["variant"] for case in index["cases"]] == ["shared", "flat", "unshared", "no-clone", "no-motif-bias"]
+    envelopes = []
+    for case in index["cases"]:
+        bundle = read_export(Path(case["export"]))
+        assert bundle.manifest.status.value == "completed" and bundle.manifest.accounting.evaluation_count == 8
+        config = engine_evidence.artifact_json(bundle, "config.yaml")
+        assert config["variant"] == case["variant"] and config["timeout"] == 40
+        assert classify(bundle.root, propagated=True)["level"] == "L3"
+        envelopes.append(bundle.manifest.budget.model_dump(mode="json"))
+    assert all(envelope == envelopes[0] for envelope in envelopes)
