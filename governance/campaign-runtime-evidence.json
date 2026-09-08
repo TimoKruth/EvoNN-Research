@@ -323,5 +323,36 @@
     "Per-run limits remain 256 proposals / 1800 seconds; larger-runtime qualification is separate.",
     "Incomplete Contenders runs have no resume contract and stop for inspection.",
     "Search traces and integrity hashing still grow with history; no unbounded linear-storage claim."
-  ]
+  ],
+  "registry": {
+    "records": 10,
+    "transport": {
+      "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-campaign-20260908/campaign-dependencies.tar.gz",
+      "descriptor": {
+        "schema_version": 1,
+        "archive_sha256": "bcf186c8ee27bbee98a77f18a3cd81b9afd2dab2230780bd29d2c61f42e75442",
+        "archive_size_bytes": 22341921,
+        "index_sha256": "45e3dec9ec360b910f2bb6a4b08ed5d9419eacf88c8087e9c8bd57baf5479d9c",
+        "transport_manifest_sha256": "1e34797bfe3f1b318dd4e3df42d905aa47133344a10397d9d33ca77091990786",
+        "run_ids": [
+          "contenders_20260908T091833_91c4a0b330bb",
+          "contenders_20260908T130048_80d3ce4b375c",
+          "primordia_20260908T091556_6c14140ece",
+          "primordia_20260908T125740_387fcbee29",
+          "prism_20260908T091634_e1981c3106",
+          "prism_20260908T125832_129983a9d4",
+          "stratograph_20260908T091514_2fe487e2a0",
+          "stratograph_20260908T125705_ba14d39ecc",
+          "topograph_20260908T091713_302d848a77",
+          "topograph_20260908T125911_3d6bcd8164"
+        ]
+      },
+      "registry_snapshot": {
+        "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-campaign-20260908/campaign-registry.tar.gz",
+        "archive_sha256": "2c7b7abacbe5532872b588830d355a0849ec8146e6f2f486285618fa0efb0488",
+        "archive_size_bytes": 2089552,
+        "index_sha256": "45e3dec9ec360b910f2bb6a4b08ed5d9419eacf88c8087e9c8bd57baf5479d9c"
+      }
+    }
+  }
 }

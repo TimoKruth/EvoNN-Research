@@ -1,32 +1,28 @@
 {
-  "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-phase4-20260908/phase4-dependencies.tar.gz",
+  "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-campaign-20260908/campaign-dependencies.tar.gz",
   "descriptor": {
     "schema_version": 1,
-    "archive_sha256": "ca7980f002f05e790bf37eb236dc0fdb69765653b1ee58ddefe1158fc6f57ea9",
-    "archive_size_bytes": 21848672,
-    "index_sha256": "3ad1e11f510d859804c663c22b7919b2d7d091ee0af2068dad49731d3611da69",
-    "transport_manifest_sha256": "c0f59013cc23777935528abe8282e2978cd15f303230013c7dfcacd1258cd088",
+    "archive_sha256": "bcf186c8ee27bbee98a77f18a3cd81b9afd2dab2230780bd29d2c61f42e75442",
+    "archive_size_bytes": 22341921,
+    "index_sha256": "45e3dec9ec360b910f2bb6a4b08ed5d9419eacf88c8087e9c8bd57baf5479d9c",
+    "transport_manifest_sha256": "1e34797bfe3f1b318dd4e3df42d905aa47133344a10397d9d33ca77091990786",
     "run_ids": [
-      "contenders_20260907T211155_84a32ed3a865",
       "contenders_20260908T091833_91c4a0b330bb",
-      "primordia_20260908T090346_bc8a858b68",
-      "primordia_20260908T090609_90a4b08d8e",
+      "contenders_20260908T130048_80d3ce4b375c",
       "primordia_20260908T091556_6c14140ece",
+      "primordia_20260908T125740_387fcbee29",
       "prism_20260908T091634_e1981c3106",
-      "stratograph_20260908T082654_6edb74b505",
-      "stratograph_20260908T083036_7a14e0d517",
-      "stratograph_20260908T083112_15cbb0c57c",
-      "stratograph_20260908T083148_c8baf45e93",
-      "stratograph_20260908T083225_fac23ede8a",
-      "stratograph_20260908T083303_e4954e2c89",
+      "prism_20260908T125832_129983a9d4",
       "stratograph_20260908T091514_2fe487e2a0",
-      "topograph_20260908T091713_302d848a77"
+      "stratograph_20260908T125705_ba14d39ecc",
+      "topograph_20260908T091713_302d848a77",
+      "topograph_20260908T125911_3d6bcd8164"
     ]
   },
   "registry_snapshot": {
-    "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-phase4-20260908/phase4-registry.tar.gz",
-    "archive_sha256": "36cb2382c59d79b92477469af110b284172c4b153650b0911bee23e675cf20f4",
-    "archive_size_bytes": 2672474,
-    "index_sha256": "3ad1e11f510d859804c663c22b7919b2d7d091ee0af2068dad49731d3611da69"
+    "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-campaign-20260908/campaign-registry.tar.gz",
+    "archive_sha256": "2c7b7abacbe5532872b588830d355a0849ec8146e6f2f486285618fa0efb0488",
+    "archive_size_bytes": 2089552,
+    "index_sha256": "45e3dec9ec360b910f2bb6a4b08ed5d9419eacf88c8087e9c8bd57baf5479d9c"
   }
 }
