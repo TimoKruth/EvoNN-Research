@@ -45,6 +45,7 @@ class CampaignSpec(BaseModel):
     systems: list[str] = Field(default_factory=lambda: list(SYSTEMS), min_length=1)
     backend: str = "mlx_native"
     epochs: int = Field(default=12, ge=1, le=100)
+    enhanced: bool = False
     timeout: float = Field(default=300.0, gt=0, le=1740)
     fit_timeout: float = Field(default=90.0, gt=0, le=1800)
     min_free_bytes: int = Field(default=1024**3, ge=0)
@@ -261,7 +262,7 @@ def match_config(config, manifest, case, system):
             expected.update(benchmark_pooling=False, novelty_weight=0.0)
         if any(config[key] != value for key, value in expected.items()):
             raise ValueError("campaign export training settings mismatch")
-    elif config["fit_timeout_seconds"] != spec.fit_timeout or config["enhanced"]:
+    elif config["fit_timeout_seconds"] != spec.fit_timeout or config["enhanced"] != spec.enhanced:
         raise ValueError("campaign contender settings mismatch")
     if system == "contenders":
         pool_path = "EvoNN-Contenders/src/evonn_contenders/pools.yaml"
@@ -366,6 +367,8 @@ def run_campaign(root, *, session_timeout=1800, max_runs=None):
                        "--timeout", str(spec.timeout), "--fit-timeout", str(spec.fit_timeout)]
             if system != "contenders":
                 command += ["--backend", spec.backend, "--epochs", str(spec.epochs)]
+            elif spec.enhanced:
+                command.append("--enhanced")
             if run is not None:
                 if system == "contenders":
                     raise ValueError("incomplete Contenders run has no resume contract; retained without restarting")

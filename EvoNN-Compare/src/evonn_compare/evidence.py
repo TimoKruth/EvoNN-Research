@@ -53,7 +53,7 @@ def comparison_groups(rows):
     return list(groups.values())
 
 
-def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
+def trend_rows(bundle, case_id: str, acceptance: dict, *, legacy_clock: bool = False) -> list[dict]:
     manifest = bundle.manifest
     elapsed = manifest.timing.elapsed_seconds
     successes = bundle.results.coverage.ok
@@ -98,13 +98,24 @@ def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
             "seeding": manifest.seeding.model_dump(mode="json"), "started_at": manifest.timing.started_at.isoformat()})
     if manifest.system.value in {"prism", "topograph", "stratograph", "primordia"}:
         protocol, comparison, active = None, None, None
+        clock_gap = None
         try:
             protocol = protocol_fingerprint(bundle)
             comparison = comparison_fingerprint(bundle)
-            if any(ref.path == "state.json" for ref in bundle.summary.artifact_digests):
+            if legacy_clock and any(ref.path == "state.json" for ref in bundle.summary.artifact_digests):
                 active = artifact_json(bundle, "state.json")["elapsed"]
         except (ValueError, OSError, KeyError, TypeError):
             protocol, comparison, active = None, None, None  # Invalid evidence remains diagnostic and blocked by admission.
+        if not legacy_clock:
+            # Native validation permits bounded 128 MiB states. Clock availability
+            # must not discard independently verified config/runtime identities.
+            from evonn_shared.engine_evidence import artifact_json as native_artifact_json
+            try:
+                active = native_artifact_json(bundle, "state.json")["elapsed"]
+                if type(active) not in (int, float) or not math.isfinite(active) or active < 0:
+                    raise ValueError("finite nonnegative active clock required")
+            except (ValueError, OSError, KeyError, TypeError) as error:
+                active, clock_gap = None, str(error)
         for row in rows:
             key = (row["benchmark"], row["outcome_id"])
             attempt = attempts[key] if key in attempts else {}
@@ -112,6 +123,8 @@ def trend_rows(bundle, case_id: str, acceptance: dict) -> list[dict]:
             row["comparison_fingerprint"] = comparison
             row["backend_version"] = manifest.runtime.backend_version
             row["active_run_seconds"] = active
+            if not legacy_clock:
+                row["active_run_seconds_gap"] = clock_gap
             row["wall_clock_note"] = "timestamp span includes resume pauses; active_run_seconds is the consumed execution budget"
             row["inheritance"] = attempt["inheritance"] if "inheritance" in attempt else None
             row["latency_seconds"] = attempt["latency_seconds"] if "latency_seconds" in attempt else None

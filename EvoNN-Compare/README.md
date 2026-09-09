@@ -116,3 +116,37 @@ its full dependency archive. `evidence hydrate-declared` verifies both versions
 and publishes the unchanged index last, allowing receipt-only Git checkouts.
 Snapshot traversal, declaration replacement, conflicts and missing dependencies
 are rejected; CI revalidates all evidence after hydration.
+
+## Within-cohort inference
+
+For a single source revision, use explicit arms instead of inventing before/after
+revisions:
+
+```bash
+uv run evonn-compare evidence cohort-report --registry .artifacts/evidence \
+  --request cohort-request.json --require-artifacts
+```
+
+`evonn_compare.cohort.CohortRequest` declares a label, source revision and
+panels with an ID, pack, benchmarks, seeds, reference and target. Each arm names
+an engine and budget. Native arms select `winner`; Contenders arms explicitly
+select `required_floor` or `named_contender` with a contender ID. A contrast
+changes engine or budget, never both. A budget change permits its exact derived
+training-total cap to change; all other dimensions remain matched. Missing
+named baselines block the report instead of falling back to an easier floor.
+Optional `campaigns` entries bind absolute campaign-manifest paths and SHA256s:
+they prove a shared host when historical native and Contenders exporters used
+different JSON encodings for the host hash. Unbound host differences block L4.
+
+The separate `cohort_report.json`/`.md` files recompute observations from current
+verified exports. They preserve original engine/run identities, seed effects,
+ceiling exclusions, bootstrap intervals, Holm-adjusted signed-rank tests and
+arm-specific runtime costs. L4 denotes evidence quality; this command never
+authorizes an engine-advancement PR, a protected-test claim or transfer.
+
+New registry receipts record `split-clock-v2`: native states use the same
+checksum-verified 128 MiB reader as admission, and optional clock failures no
+longer erase verified protocol identities. Historical receipts retain their
+`legacy-clock-v1` interpretation and bytes. Rebuilding old append-only workspace
+trends still rejects changed observations; use `cohort-report` for a corrected
+analytical projection rather than rewriting historical rows.

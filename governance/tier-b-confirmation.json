@@ -1,0 +1,548 @@
+{
+  "schema_version": 1,
+  "id": "tier-b-confirmation-v1",
+  "status": "protocol_frozen_execution_not_started",
+  "discovery": {
+    "receipt": "governance/tier-b-comparison-20260909.json",
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "excluded_from_confirmation": true
+  },
+  "confirmation_seeds": [
+    45,
+    46,
+    47,
+    48,
+    49,
+    50
+  ],
+  "scope": "bounded Tier B validation surface; no broad superiority, protected-test or transfer claim",
+  "hypotheses": [
+    {
+      "id": "prism-lm",
+      "panels": [
+        "prism-lm-neural",
+        "prism-lm-required"
+      ],
+      "metric": "perplexity",
+      "acceptance": "Both direction-aware symmetric effect CI95 lower bounds >0.05 and Holm-adjusted signed-rank p<=0.05."
+    },
+    {
+      "id": "topograph-regression",
+      "panels": [
+        "topograph-regression-enhanced",
+        "topograph-regression-required"
+      ],
+      "metric": "mse",
+      "acceptance": "Both symmetric effect CI95 lower bounds >0.01 and Holm-adjusted signed-rank p<=0.05."
+    },
+    {
+      "id": "primordia-efficiency",
+      "panels": [
+        "primordia-tabular-quality"
+      ],
+      "metric": "paired tabular quality and full-pack run wall time",
+      "acceptance": "Quality symmetric effect CI95 lower bound >=-0.03 AND paired-seed mean runtime-ratio CI95 upper bound <=0.75. Joint noninferiority/efficiency hypothesis; nonsignificance alone is not equivalence.",
+      "runtime_comparator": "Prism at 64 fits on the same complete four-task pack; benchmark-only timing is not substituted for full-run cost."
+    }
+  ],
+  "statistics": {
+    "bootstrap": "4096 independent paired-seed resamples, RNG0; fixed panel weights and ceiling exclusion",
+    "multiplicity": "Holm across the four primary superiority contrasts; report all five quality contrasts and the efficiency ratio even when negative. No pooling discovery seeds or treating tasks/fits as independent repeats.",
+    "minimum_seeds": 6,
+    "missing": "Any missing/failed expected seed or named baseline blocks confirmation; no baseline substitution.",
+    "selection": "best validation outcome in the fixed run budget; selected-model generalization remains untested"
+  },
+  "baselines": {
+    "pool_sha256": "75cbb21024cbe9fad132a6d1b5a3ef42f2b11dd1af3984a55a1897a3335ac398",
+    "enhanced": true,
+    "required_models": [
+      "transformer_lm_tiny",
+      "catboost",
+      "cnn_small"
+    ],
+    "configurations": {
+      "transformer_lm_tiny": {
+        "model": "transformer_lm_tiny",
+        "parameters": {
+          "epochs": 20
+        },
+        "extra": "torch"
+      },
+      "catboost": {
+        "model": "catboost",
+        "parameters": {},
+        "extra": "boosted"
+      },
+      "cnn_small": {
+        "model": "cnn_small",
+        "parameters": {
+          "epochs": 20
+        },
+        "extra": "torch"
+      }
+    },
+    "no_tuning_after_start": true
+  },
+  "controls": {
+    "epochs_max": 12,
+    "fit_timeout": 90,
+    "run_timeout": 1500,
+    "backend": "mlx_native",
+    "priority": "Standard",
+    "ordering": "For each budget, alternate the declared three-system order across the six seeds.",
+    "warmup": "Prepare all datasets and verify/import optional libraries before timing; record host and environment; no host changes during campaign.",
+    "holdout": "Last 15 percent of text remains unused. These runs confirm the validation-surface finding only."
+  },
+  "execution": {
+    "planned_runs": 36,
+    "planned_fits": 3456,
+    "max_session_seconds": 1800,
+    "automatic_start": false,
+    "source_revision": "must be bound by clean campaign manifests before execution",
+    "required_packages": [
+      "torch",
+      "xgboost",
+      "lightgbm",
+      "catboost"
+    ],
+    "readiness": "install locked optional dependencies, prove imports and bounded enhanced-floor run, then plan twelve immutable campaigns without executing them"
+  },
+  "analysis_request_template": {
+    "schema_version": 1,
+    "policy": "within-cohort-relative-v1",
+    "label": "tier-b-confirmation-v1",
+    "materiality": 0.01,
+    "panels": [
+      {
+        "id": "prism-lm-neural",
+        "pack": "tier_b_core_v2",
+        "reference": {
+          "engine": "contenders",
+          "budget": 128,
+          "selection": "named_contender",
+          "contender": "transformer_lm_tiny"
+        },
+        "target": {
+          "engine": "prism",
+          "budget": 128,
+          "selection": "winner",
+          "contender": null
+        },
+        "benchmarks": [
+          "shakespeare_byte_lm"
+        ],
+        "seeds": [
+          45,
+          46,
+          47,
+          48,
+          49,
+          50
+        ]
+      },
+      {
+        "id": "prism-lm-required",
+        "pack": "tier_b_core_v2",
+        "reference": {
+          "engine": "contenders",
+          "budget": 128,
+          "selection": "required_floor",
+          "contender": null
+        },
+        "target": {
+          "engine": "prism",
+          "budget": 128,
+          "selection": "winner",
+          "contender": null
+        },
+        "benchmarks": [
+          "shakespeare_byte_lm"
+        ],
+        "seeds": [
+          45,
+          46,
+          47,
+          48,
+          49,
+          50
+        ]
+      },
+      {
+        "id": "topograph-regression-enhanced",
+        "pack": "tier_b_core_v2",
+        "reference": {
+          "engine": "contenders",
+          "budget": 128,
+          "selection": "named_contender",
+          "contender": "catboost"
+        },
+        "target": {
+          "engine": "topograph",
+          "budget": 128,
+          "selection": "winner",
+          "contender": null
+        },
+        "benchmarks": [
+          "diabetes_regression"
+        ],
+        "seeds": [
+          45,
+          46,
+          47,
+          48,
+          49,
+          50
+        ]
+      },
+      {
+        "id": "topograph-regression-required",
+        "pack": "tier_b_core_v2",
+        "reference": {
+          "engine": "contenders",
+          "budget": 128,
+          "selection": "required_floor",
+          "contender": null
+        },
+        "target": {
+          "engine": "topograph",
+          "budget": 128,
+          "selection": "winner",
+          "contender": null
+        },
+        "benchmarks": [
+          "diabetes_regression"
+        ],
+        "seeds": [
+          45,
+          46,
+          47,
+          48,
+          49,
+          50
+        ]
+      },
+      {
+        "id": "primordia-tabular-quality",
+        "pack": "tier_b_core_v2",
+        "reference": {
+          "engine": "prism",
+          "budget": 64,
+          "selection": "winner",
+          "contender": null
+        },
+        "target": {
+          "engine": "primordia",
+          "budget": 64,
+          "selection": "winner",
+          "contender": null
+        },
+        "benchmarks": [
+          "banknote_classification",
+          "diabetes_regression"
+        ],
+        "seeds": [
+          45,
+          46,
+          47,
+          48,
+          49,
+          50
+        ]
+      }
+    ]
+  },
+  "campaigns": [
+    {
+      "id": "confirmation-b128-s45",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          45
+        ],
+        "systems": [
+          "prism",
+          "topograph",
+          "contenders"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b128-s46",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          46
+        ],
+        "systems": [
+          "contenders",
+          "topograph",
+          "prism"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b128-s47",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          47
+        ],
+        "systems": [
+          "prism",
+          "topograph",
+          "contenders"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b128-s48",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          48
+        ],
+        "systems": [
+          "contenders",
+          "topograph",
+          "prism"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b128-s49",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          49
+        ],
+        "systems": [
+          "prism",
+          "topograph",
+          "contenders"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b128-s50",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          50
+        ],
+        "systems": [
+          "contenders",
+          "topograph",
+          "prism"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b64-s45",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          64
+        ],
+        "seeds": [
+          45
+        ],
+        "systems": [
+          "primordia",
+          "prism",
+          "contenders"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b64-s46",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          64
+        ],
+        "seeds": [
+          46
+        ],
+        "systems": [
+          "contenders",
+          "prism",
+          "primordia"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b64-s47",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          64
+        ],
+        "seeds": [
+          47
+        ],
+        "systems": [
+          "primordia",
+          "prism",
+          "contenders"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b64-s48",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          64
+        ],
+        "seeds": [
+          48
+        ],
+        "systems": [
+          "contenders",
+          "prism",
+          "primordia"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b64-s49",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          64
+        ],
+        "seeds": [
+          49
+        ],
+        "systems": [
+          "primordia",
+          "prism",
+          "contenders"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b64-s50",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          64
+        ],
+        "seeds": [
+          50
+        ],
+        "systems": [
+          "contenders",
+          "prism",
+          "primordia"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    }
+  ]
+}

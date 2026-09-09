@@ -196,3 +196,29 @@ def test_slow_second_preflight_cannot_overrun_session(planned, monkeypatch):
     assert result["status"] == "paused" and result["new_runs"] == 0
     assert len(calls) == 2
     assert not (planned / "events").exists()
+
+
+def test_enhanced_policy_is_explicit_and_cannot_adopt_plain_floor(binding):
+    manifest,case,_,contender=binding
+    manifest['spec']['enhanced']=True
+    with pytest.raises(ValueError):c.match_config(contender,manifest,case,'contenders')
+    c.match_config({**contender,'enhanced':True},manifest,case,'contenders')
+    legacy={**manifest['spec']};legacy.pop('enhanced')
+    assert c.CampaignSpec.model_validate(legacy).enhanced is False
+
+
+def test_enhanced_dispatch_reaches_contender_cli(planned,monkeypatch):
+    manifest=c.read_manifest(planned)
+    manifest['spec'].update(systems=['contenders'],budgets=[64],enhanced=True)
+    manifest['sha256']=c.sha({k:v for k,v in manifest.items() if k!='sha256'})
+    (planned/'campaign.json').write_bytes(c.encoded(manifest))
+    monkeypatch.setattr(c,'preflight',lambda root:None)
+    finished={}
+    monkeypatch.setattr(c,'adopted',lambda root,manifest,case,system:(None,finished.get(c.slot_id(case,system))))
+    def dispatch(command,*args,**kwargs):
+        event=json.loads(Path(command[-2]).read_bytes())
+        assert event['details']['command'][-1]=='--enhanced'
+        finished[event['slot']]={'system':'contenders','run_id':event['slot'],'export':'fixture','documents':[]}
+    monkeypatch.setattr(c,'_bounded_process',dispatch)
+    monkeypatch.setattr(c,'workspace_report',lambda root:{})
+    assert c.run_campaign(planned,max_runs=1)['new_runs']==1

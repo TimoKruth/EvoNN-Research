@@ -113,6 +113,8 @@ class RegistryRow(BaseModel):
     def nested_contract(self):
         from evonn_shared.telemetry import RuntimeMetadata
         RuntimeMetadata.model_validate_json(json.dumps(self.runtime))
+        if self.verification.get('observation_policy', 'legacy-clock-v1') not in ('legacy-clock-v1', 'split-clock-v2'):
+            raise ValueError('unknown registry observation policy')
         CaseDocument.model_validate(self.case_document)
         for binding in self.case_runs+self.audit_sources:
             parsed=SourceBinding.model_validate(binding)
@@ -229,11 +231,11 @@ def _data_bindings(bundle):
         for item in artifact_json(bundle,'dataset_provenance.json')}
 
 
-def _observations(bundle,case_id,acceptance,label,level):
+def _observations(bundle,case_id,acceptance,label,level, *, legacy_clock=False):
     config=artifact_json(bundle,bundle.manifest.config_snapshot.path)
     policy=_policy(bundle)
     bindings=_data_bindings(bundle)
-    rows=trend_rows(bundle,case_id,acceptance)
+    rows=trend_rows(bundle,case_id,acceptance,legacy_clock=legacy_clock)
     contender_ids={}
     if bundle.manifest.system.value=='contenders' and any(ref.path=='attempts.json' for ref in bundle.summary.artifact_digests):
         contender_ids={(item['benchmark_id'],item['outcome_id']):item['contender_id'] for item in artifact_json(bundle,'attempts.json')['attempts'] if 'outcome_id' in item}
@@ -385,7 +387,7 @@ def promote(source, *, registry, label, copy_artifacts=False):
                     artifacts=inventory,observations=rows,comparison_policy=policy,
                     producer=dict(git_commit=manifest.git_commit,source_sha256=config.get('source_sha256'),code_dirty=config.get('code_dirty'),branch_provenance='not_recorded',preset_provenance='not_recorded'),
                     verification=dict(timestamp=datetime.now(timezone.utc).isoformat(),consumer_commit=consumer_commit,consumer_dirty=consumer_dirty,
-                        consumer_source_sha256=source_identity(),policy='registry-v1',kind='promotion_time_receipt',external_dependencies_required=True),
+                        consumer_source_sha256=source_identity(),policy='registry-v1',observation_policy='split-clock-v2',kind='promotion_time_receipt',external_dependencies_required=True),
                     case_document={key:document[key] for key in ('case','systems','cohort','no_contenders','failures')},audit_sources=audit_sources)
                 RegistryRow.model_validate(row)
                 _append(root,row=row)
@@ -442,7 +444,8 @@ def validate_registry(registry, *, require_artifacts=False):
                 bundle=own[0]
                 manifest=bundle.manifest
                 original=next(binding['path'] for binding in row['case_runs'] if binding['run_id']==row['run_id'])
-                expected=_observations(bundle,row['case_id'],current,row['label'],levels[row['run_id']])
+                expected=_observations(bundle,row['case_id'],current,row['label'],levels[row['run_id']],
+                    legacy_clock=row['verification'].get('observation_policy', 'legacy-clock-v1') == 'legacy-clock-v1')
                 config=artifact_json(bundle,manifest.config_snapshot.path)
                 producer=dict(git_commit=manifest.git_commit,source_sha256=config.get('source_sha256'),code_dirty=config.get('code_dirty'),branch_provenance='not_recorded',preset_provenance='not_recorded')
                 semantic=dict(observations=expected,per_system_score_summaries=best_rows(expected),comparison_policy=_policy(bundle),
