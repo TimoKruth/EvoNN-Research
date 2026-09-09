@@ -7699,5 +7699,3008 @@
       ".venv/bin/python .artifacts/comparison-analysis-20260909/validate.py",
       ".venv/bin/python .artifacts/comparison-analysis-20260909/analyze.py"
     ]
+  },
+  "follow_up": {
+    "date": "2026-09-09",
+    "scope": "Report repair, explicit within-cohort L4 inference, bounded Stratograph diagnosis and confirmation preparation",
+    "cohort": {
+      "consumer": {
+        "code_dirty": false,
+        "git_commit": "116defc4adf751b13db0882b8d6e16025c76a0a1",
+        "source_sha256": "596fc474f9b1c835af32c46d68bf2b263e5935725cc4ae7b39b7c8ea4a9f5a6f"
+      },
+      "request": {
+        "campaigns": [
+          {
+            "path": "/Users/timokruth/Projekte/EvoNN-training-optimized-20260908/.artifacts/training-optimized-20260908/workspace/campaign.json",
+            "sha256": "747d7d669dabb6d5230d09ef4a316f9bbfbf54e0c64789aa49ccac5fad7aa3bb"
+          }
+        ],
+        "label": "tier-b-comparison-20260909",
+        "materiality": 0.01,
+        "panels": [
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "prism-vs-contenders-64",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "contenders",
+              "selection": "required_floor"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 64,
+              "contender": null,
+              "engine": "prism",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "topograph-vs-contenders-64",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "contenders",
+              "selection": "required_floor"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 64,
+              "contender": null,
+              "engine": "topograph",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "stratograph-vs-contenders-64",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "contenders",
+              "selection": "required_floor"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 64,
+              "contender": null,
+              "engine": "stratograph",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "primordia-vs-contenders-64",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "contenders",
+              "selection": "required_floor"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 64,
+              "contender": null,
+              "engine": "primordia",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "topograph-vs-prism-64",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "prism",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 64,
+              "contender": null,
+              "engine": "topograph",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "stratograph-vs-prism-64",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "prism",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 64,
+              "contender": null,
+              "engine": "stratograph",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "primordia-vs-prism-64",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "prism",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 64,
+              "contender": null,
+              "engine": "primordia",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "stratograph-vs-topograph-64",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "topograph",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 64,
+              "contender": null,
+              "engine": "stratograph",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "primordia-vs-topograph-64",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "topograph",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 64,
+              "contender": null,
+              "engine": "primordia",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "primordia-vs-stratograph-64",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "stratograph",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 64,
+              "contender": null,
+              "engine": "primordia",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "prism-vs-contenders-128",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 128,
+              "contender": null,
+              "engine": "contenders",
+              "selection": "required_floor"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "prism",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "topograph-vs-contenders-128",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 128,
+              "contender": null,
+              "engine": "contenders",
+              "selection": "required_floor"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "topograph",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "stratograph-vs-contenders-128",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 128,
+              "contender": null,
+              "engine": "contenders",
+              "selection": "required_floor"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "stratograph",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "primordia-vs-contenders-128",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 128,
+              "contender": null,
+              "engine": "contenders",
+              "selection": "required_floor"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "primordia",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "topograph-vs-prism-128",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 128,
+              "contender": null,
+              "engine": "prism",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "topograph",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "stratograph-vs-prism-128",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 128,
+              "contender": null,
+              "engine": "prism",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "stratograph",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "primordia-vs-prism-128",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 128,
+              "contender": null,
+              "engine": "prism",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "primordia",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "stratograph-vs-topograph-128",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 128,
+              "contender": null,
+              "engine": "topograph",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "stratograph",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "primordia-vs-topograph-128",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 128,
+              "contender": null,
+              "engine": "topograph",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "primordia",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "primordia-vs-stratograph-128",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 128,
+              "contender": null,
+              "engine": "stratograph",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "primordia",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "prism-budget-response",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "prism",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "prism",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "topograph-budget-response",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "topograph",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "topograph",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "stratograph-budget-response",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "stratograph",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "stratograph",
+              "selection": "winner"
+            }
+          },
+          {
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "id": "primordia-budget-response",
+            "pack": "tier_b_core_v2",
+            "reference": {
+              "budget": 64,
+              "contender": null,
+              "engine": "primordia",
+              "selection": "winner"
+            },
+            "seeds": [
+              42,
+              43,
+              44
+            ],
+            "target": {
+              "budget": 128,
+              "contender": null,
+              "engine": "primordia",
+              "selection": "winner"
+            }
+          }
+        ],
+        "policy": "within-cohort-relative-v1",
+        "schema_version": 1,
+        "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f"
+      },
+      "groups": [
+        {
+          "id": "prism-vs-contenders-64",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "contenders",
+            "selection": "required_floor"
+          },
+          "target": {
+            "budget": 64,
+            "contender": null,
+            "engine": "prism",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "likely_gain",
+          "aggregation_label": "inconclusive",
+          "effect_mean": 0.16510549720851528,
+          "bootstrap_ci95": [
+            0.09073331488645982,
+            0.21832103431254132
+          ],
+          "seed_effects": [
+            0.18626214242654474,
+            0.2183210343125413,
+            0.09073331488645982
+          ],
+          "excluded_benchmarks": [
+            "banknote_classification"
+          ],
+          "ceiling_ties": 3,
+          "blockers": []
+        },
+        {
+          "id": "topograph-vs-contenders-64",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "contenders",
+            "selection": "required_floor"
+          },
+          "target": {
+            "budget": 64,
+            "contender": null,
+            "engine": "topograph",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "inconclusive",
+          "aggregation_label": "inconclusive",
+          "effect_mean": 0.013641321244189444,
+          "bootstrap_ci95": [
+            -0.01667037380970239,
+            0.03192955038437173
+          ],
+          "seed_effects": [
+            0.025664787157898994,
+            -0.01667037380970239,
+            0.03192955038437173
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 1,
+          "blockers": []
+        },
+        {
+          "id": "stratograph-vs-contenders-64",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "contenders",
+            "selection": "required_floor"
+          },
+          "target": {
+            "budget": 64,
+            "contender": null,
+            "engine": "stratograph",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "regression",
+          "aggregation_label": "inconclusive",
+          "effect_mean": -0.4162392745321086,
+          "bootstrap_ci95": [
+            -0.44391848544341156,
+            -0.3898915741969294
+          ],
+          "seed_effects": [
+            -0.4149077639559849,
+            -0.3898915741969294,
+            -0.4439184854434116
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 0,
+          "blockers": []
+        },
+        {
+          "id": "primordia-vs-contenders-64",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "contenders",
+            "selection": "required_floor"
+          },
+          "target": {
+            "budget": 64,
+            "contender": null,
+            "engine": "primordia",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "inconclusive",
+          "aggregation_label": "inconclusive",
+          "effect_mean": 0.016595747823593267,
+          "bootstrap_ci95": [
+            -0.010090492944669753,
+            0.03153339306720355
+          ],
+          "seed_effects": [
+            0.028344343348246002,
+            -0.010090492944669753,
+            0.03153339306720355
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 1,
+          "blockers": []
+        },
+        {
+          "id": "topograph-vs-prism-64",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "prism",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 64,
+            "contender": null,
+            "engine": "topograph",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "regression",
+          "aggregation_label": "inconclusive",
+          "effect_mean": -0.11181728283007268,
+          "bootstrap_ci95": [
+            -0.18133607242872274,
+            -0.03936950745441433
+          ],
+          "seed_effects": [
+            -0.11474626860708097,
+            -0.18133607242872274,
+            -0.03936950745441433
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 1,
+          "blockers": []
+        },
+        {
+          "id": "stratograph-vs-prism-64",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "prism",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 64,
+            "contender": null,
+            "engine": "stratograph",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "regression",
+          "aggregation_label": "inconclusive",
+          "effect_mean": -0.5426328133648146,
+          "bootstrap_ci95": [
+            -0.5575055963441204,
+            -0.5147149038206809
+          ],
+          "seed_effects": [
+            -0.5575055963441204,
+            -0.5556779399296424,
+            -0.5147149038206809
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 0,
+          "blockers": []
+        },
+        {
+          "id": "primordia-vs-prism-64",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "prism",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 64,
+            "contender": null,
+            "engine": "primordia",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "regression",
+          "aggregation_label": "inconclusive",
+          "effect_mean": -0.11022450142377148,
+          "bootstrap_ci95": [
+            -0.17647119016225732,
+            -0.04078980163546458
+          ],
+          "seed_effects": [
+            -0.11341251247359252,
+            -0.17647119016225732,
+            -0.04078980163546458
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 1,
+          "blockers": []
+        },
+        {
+          "id": "stratograph-vs-topograph-64",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "topograph",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 64,
+            "contender": null,
+            "engine": "stratograph",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "regression",
+          "aggregation_label": "inconclusive",
+          "effect_mean": -0.43122998341710495,
+          "bootstrap_ci95": [
+            -0.4775434249992058,
+            -0.37468135861517665
+          ],
+          "seed_effects": [
+            -0.4414651666369323,
+            -0.3746813586151766,
+            -0.4775434249992058
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 0,
+          "blockers": []
+        },
+        {
+          "id": "primordia-vs-topograph-64",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "topograph",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 64,
+            "contender": null,
+            "engine": "primordia",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "no_material_change",
+          "aggregation_label": "no_material_change",
+          "effect_mean": 0.0030472750455246018,
+          "bootstrap_ci95": [
+            -0.00018620723422506217,
+            0.006630167292344814
+          ],
+          "seed_effects": [
+            0.002697865078454053,
+            0.006630167292344814,
+            -0.00018620723422506217
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 0,
+          "blockers": []
+        },
+        {
+          "id": "primordia-vs-stratograph-64",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "stratograph",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 64,
+            "contender": null,
+            "engine": "primordia",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "likely_gain",
+          "aggregation_label": "inconclusive",
+          "effect_mean": 0.4424466335625019,
+          "bootstrap_ci95": [
+            0.3928100588713807,
+            0.4844198532126161
+          ],
+          "seed_effects": [
+            0.4501099886035089,
+            0.3928100588713807,
+            0.4844198532126161
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 0,
+          "blockers": []
+        },
+        {
+          "id": "prism-vs-contenders-128",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 128,
+            "contender": null,
+            "engine": "contenders",
+            "selection": "required_floor"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "prism",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "likely_gain",
+          "aggregation_label": "inconclusive",
+          "effect_mean": 0.23504487870428678,
+          "bootstrap_ci95": [
+            0.21841074683236802,
+            0.25896438622727674
+          ],
+          "seed_effects": [
+            0.25896438622727674,
+            0.22775950305321552,
+            0.218410746832368
+          ],
+          "excluded_benchmarks": [
+            "banknote_classification"
+          ],
+          "ceiling_ties": 3,
+          "blockers": []
+        },
+        {
+          "id": "topograph-vs-contenders-128",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 128,
+            "contender": null,
+            "engine": "contenders",
+            "selection": "required_floor"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "topograph",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "likely_gain",
+          "aggregation_label": "inconclusive",
+          "effect_mean": 0.052115832154354357,
+          "bootstrap_ci95": [
+            0.03183463260007604,
+            0.08445345510451714
+          ],
+          "seed_effects": [
+            0.03183463260007604,
+            0.040059408758469875,
+            0.08445345510451714
+          ],
+          "excluded_benchmarks": [
+            "banknote_classification"
+          ],
+          "ceiling_ties": 3,
+          "blockers": []
+        },
+        {
+          "id": "stratograph-vs-contenders-128",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 128,
+            "contender": null,
+            "engine": "contenders",
+            "selection": "required_floor"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "stratograph",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "regression",
+          "aggregation_label": "inconclusive",
+          "effect_mean": -0.4130553507313777,
+          "bootstrap_ci95": [
+            -0.4353296275756331,
+            -0.38462646872939504
+          ],
+          "seed_effects": [
+            -0.4192099558891051,
+            -0.3846264687293951,
+            -0.4353296275756331
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 0,
+          "blockers": []
+        },
+        {
+          "id": "primordia-vs-contenders-128",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 128,
+            "contender": null,
+            "engine": "contenders",
+            "selection": "required_floor"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "primordia",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "likely_gain",
+          "aggregation_label": "inconclusive",
+          "effect_mean": 0.051132848495251605,
+          "bootstrap_ci95": [
+            0.030227605694852822,
+            0.06784760092693852
+          ],
+          "seed_effects": [
+            0.055323338863963484,
+            0.030227605694852826,
+            0.06784760092693852
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 2,
+          "blockers": []
+        },
+        {
+          "id": "topograph-vs-prism-128",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 128,
+            "contender": null,
+            "engine": "prism",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "topograph",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "regression",
+          "aggregation_label": "inconclusive",
+          "effect_mean": -0.1864779424689643,
+          "bootstrap_ci95": [
+            -0.22897858797100176,
+            -0.13967597187906028
+          ],
+          "seed_effects": [
+            -0.22897858797100176,
+            -0.19077926755683086,
+            -0.13967597187906028
+          ],
+          "excluded_benchmarks": [
+            "banknote_classification"
+          ],
+          "ceiling_ties": 3,
+          "blockers": []
+        },
+        {
+          "id": "stratograph-vs-prism-128",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 128,
+            "contender": null,
+            "engine": "prism",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "stratograph",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "regression",
+          "aggregation_label": "inconclusive",
+          "effect_mean": -0.5924267507489895,
+          "bootstrap_ci95": [
+            -0.6174875617330582,
+            -0.5574672788775258
+          ],
+          "seed_effects": [
+            -0.6174875617330582,
+            -0.5574672788775258,
+            -0.6023254116363848
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 0,
+          "blockers": []
+        },
+        {
+          "id": "primordia-vs-prism-128",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 128,
+            "contender": null,
+            "engine": "prism",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "primordia",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "regression",
+          "aggregation_label": "inconclusive",
+          "effect_mean": -0.13038984594980807,
+          "bootstrap_ci95": [
+            -0.14510951693620958,
+            -0.10185895799441375
+          ],
+          "seed_effects": [
+            -0.14510951693620958,
+            -0.1442010629188009,
+            -0.10185895799441375
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 2,
+          "blockers": []
+        },
+        {
+          "id": "stratograph-vs-topograph-128",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 128,
+            "contender": null,
+            "engine": "topograph",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "stratograph",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "regression",
+          "aggregation_label": "inconclusive",
+          "effect_mean": -0.45257167448223495,
+          "bootstrap_ci95": [
+            -0.49846302249355223,
+            -0.41600953364701015
+          ],
+          "seed_effects": [
+            -0.44324246730614236,
+            -0.4160095336470101,
+            -0.49846302249355223
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 0,
+          "blockers": []
+        },
+        {
+          "id": "primordia-vs-topograph-128",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 128,
+            "contender": null,
+            "engine": "topograph",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "primordia",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "inconclusive",
+          "aggregation_label": "inconclusive",
+          "effect_mean": 0.01242212983779542,
+          "bootstrap_ci95": [
+            0.0005970444054239727,
+            0.03154628178594293
+          ],
+          "seed_effects": [
+            0.03154628178594293,
+            0.0005970444054239727,
+            0.0051230633220193614
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 2,
+          "blockers": []
+        },
+        {
+          "id": "primordia-vs-stratograph-128",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 128,
+            "contender": null,
+            "engine": "stratograph",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "primordia",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "likely_gain",
+          "aggregation_label": "inconclusive",
+          "effect_mean": 0.47285247573527106,
+          "bootstrap_ci95": [
+            0.4280343533299682,
+            0.509189082287408
+          ],
+          "seed_effects": [
+            0.481333991588437,
+            0.4280343533299682,
+            0.509189082287408
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 0,
+          "blockers": []
+        },
+        {
+          "id": "prism-budget-response",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "prism",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "prism",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "likely_gain",
+          "aggregation_label": "inconclusive",
+          "effect_mean": 0.07613363856000953,
+          "bootstrap_ci95": [
+            0.010250249617188465,
+            0.1302320229045983
+          ],
+          "seed_effects": [
+            0.08791864315824184,
+            0.010250249617188465,
+            0.1302320229045983
+          ],
+          "excluded_benchmarks": [
+            "banknote_classification"
+          ],
+          "ceiling_ties": 3,
+          "blockers": []
+        },
+        {
+          "id": "topograph-budget-response",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "topograph",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "topograph",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "inconclusive",
+          "aggregation_label": "inconclusive",
+          "effect_mean": 0.027078422275603697,
+          "bootstrap_ci95": [
+            0.003056669559167271,
+            0.04673810300400616
+          ],
+          "seed_effects": [
+            0.0030566695591672704,
+            0.04673810300400616,
+            0.03144049426363766
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 1,
+          "blockers": []
+        },
+        {
+          "id": "stratograph-budget-response",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "stratograph",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "stratograph",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "no_material_change",
+          "aggregation_label": "no_material_change",
+          "effect_mean": 0.004836897718777377,
+          "bootstrap_ci95": [
+            0.0004651165230645618,
+            0.008754169466202623
+          ],
+          "seed_effects": [
+            0.00046511652306456183,
+            0.005291407167064946,
+            0.008754169466202623
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 0,
+          "blockers": []
+        },
+        {
+          "id": "primordia-budget-response",
+          "pack": "tier_b_core_v2",
+          "reference": {
+            "budget": 64,
+            "contender": null,
+            "engine": "primordia",
+            "selection": "winner"
+          },
+          "target": {
+            "budget": 128,
+            "contender": null,
+            "engine": "primordia",
+            "selection": "winner"
+          },
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            42,
+            43,
+            44
+          ],
+          "n": 3,
+          "level": "L4",
+          "statistical_label": "likely_gain",
+          "aggregation_label": "inconclusive",
+          "effect_mean": 0.03652943716008581,
+          "bootstrap_ci95": [
+            0.03199418348576577,
+            0.04077174020353391
+          ],
+          "seed_effects": [
+            0.03199418348576577,
+            0.04077174020353391,
+            0.03682238779095775
+          ],
+          "excluded_benchmarks": [],
+          "ceiling_ties": 1,
+          "blockers": []
+        }
+      ],
+      "registry": {
+        "index_sha256": "35a12cb2a369117da6be126fd6dbf009c5c3e40b3bef80fd660bd21ad5f6817e",
+        "record_ids": [
+          "0ca00b790b46da3686ef5f434a74bfe71de49f0d468482832f838347b31e1ebc",
+          "acc46c5b19280fc8ffd6e90c8fe102ce362656eb7c2126563ed219b8cacad26d",
+          "ea306370fd2c40c5474d8c3fe5286926ed8a115af02676ed222f1559ce143d09",
+          "3e85f1603aa7c4ebce8fabb2269bfe53dca4fc0065731fc9559dc74cf06f14b9",
+          "5798974b3e7cea5608af79caf758c8c4c343b7a895336423eabb297a17338f8c",
+          "4828fce159f13c0ff5dad600334043818da778a0722ee2a296ebf8ec165e222c",
+          "816d56910f65d9e0b1e66d2d05ffc7ea1ee7455bb855092c5941a20ce835d49b",
+          "9f0d57acc1f4023770c6d394c03baeca8c3f950d4b311632602376b7205b9d90",
+          "155fa5a86b06994849af7263b83d6e40c120595f97d83f505d1cfeba9f0089b6",
+          "bacc1eb9cd1f1dc839e938c2c8f9d5a5f53b61125c7b1b39da8090701f53acc1",
+          "701db9e9d0274aacbbef218dcf1b53470121eb042e078516791919480e626cbe",
+          "264bcdbb4a4c5c71e34eaf174cc41bea75c77973d9a914f18de51189aa431cf7",
+          "06e72e896cd4b216e045858d6374ea17baef9a8ee5ba3891fea9dcc4cea37e28",
+          "fc162e74f4ef5b716c6c238a215aa6aab2a59e380fa4bc720e7dcd67596a654f",
+          "88071c378f9602eb2831682975a9de8f9c3e7a8bf3d960f29e2d51a037e17871",
+          "a1741257e09c4630e8da60aa4e46ee7b737fe320619ade8769511365f106a2cf",
+          "bf22a3f2edb5e36c8baf13963f0e55a8e9465e304bbd2c2f41cdb96929c5365f",
+          "1549641b4012ae8064f2ec8373a30142149ea6110aca095c7dd2ca90a544573b",
+          "d1acd37a7cc25f14dd9ad8b4621f2a330f39d7f210219d8f0ebd71cfde03c8ec",
+          "3f133d6aadb55b369f462195bfed79f3301e2541798271bb3c4b1706f1974846",
+          "9bcf1c7d998e53aecd66d81971449806112ef67be41cfadecc84e02db7240883",
+          "5f7d9f9b8be13eef9d7b4b88b989bf2ce8bd22af122e18ddb17ebea86c73763d",
+          "f26275f1e827a9dcbcadbac9daacd392c9d93d13901b43e439ec2c5bb2fbf2c0",
+          "e9cfe31740d7b6f0c5c3e87df1eb91dcc615816578673e4deb4ff90744c58060",
+          "a6b667e4f6d19c70f1f4e9439241323d55f75c477d0ef0b9ed6db5c0045d57c8",
+          "6e0dd4900150a4e742bd0b0f3765a3e9488edb018f8494e4476f6e20c64b4d6a",
+          "a40131d84b707f70630d8aec836fbe9ecebce98a3ed9b25e856e22cfbb901665",
+          "052a3ba16d57100444c11f60eeabee88819d58876320e47ad9378449e4cc99c5",
+          "0d3b72fd149e051c1eef2416c08ca16433842cf5e01dc2937565643403983a8c",
+          "74ca2b9bda53f03ab3fb11e937aeed6e0f8742aa085e00e994c791482fdcf21e"
+        ],
+        "validation": {
+          "blockers": [],
+          "records": 30,
+          "require_artifacts": true,
+          "status": "passed"
+        }
+      },
+      "engine_advancement_authorized": false,
+      "report_path": "/Users/timokruth/Projekte/EvoNN/.artifacts/comparison-analysis-20260909/registry/cohort_report.json"
+    },
+    "stratograph_ablation": {
+      "status": "completed",
+      "runs": [
+        {
+          "seed": 42,
+          "variant": "shared",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T070700_085224120e/symbiosis",
+          "run_id": "stratograph_20260909T070700_085224120e",
+          "elapsed_seconds": 55.518121,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.7563636363636363,
+            "diabetes_regression": 3595.1059220930642,
+            "digits_image": 0.2361111111111111,
+            "shakespeare_byte_lm": 30.482336905122047
+          },
+          "documents": {
+            "manifest.json": "ecc3e17fa66c637802e8fcc7d8873b0958a345527ee6faad35214edc7684e8e7",
+            "summary.json": "8328b4db67bb9613adbd6055c00d5d593f58c0207d2a1ece8d5bf3963e18aaed",
+            "results.json": "447c38be3355676e852a967f2d0367b79ac65ecb803ab52c228cc2a44c85793a"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 42,
+          "variant": "flat",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T070757_57c707a9c5/symbiosis",
+          "run_id": "stratograph_20260909T070757_57c707a9c5",
+          "elapsed_seconds": 41.819626,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.9854545454545455,
+            "diabetes_regression": 2619.7287805619517,
+            "digits_image": 0.55,
+            "shakespeare_byte_lm": 29.53504955744485
+          },
+          "documents": {
+            "manifest.json": "807233bc6949aeff541671aad9d4195de4b214e12b95a1f95ac111d5f87b895c",
+            "summary.json": "9b38759788af6f2db6af9fb333add0c1d5189e52e52591c0759ff82380f8f0af",
+            "results.json": "a5a2c0037caeadc4deaf81042a507caeb36b57949eb5e6936df6e58488d5717d"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 42,
+          "variant": "unshared",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T070839_f2d62260d8/symbiosis",
+          "run_id": "stratograph_20260909T070839_f2d62260d8",
+          "elapsed_seconds": 52.620339,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.7563636363636363,
+            "diabetes_regression": 3355.8352429270294,
+            "digits_image": 0.2361111111111111,
+            "shakespeare_byte_lm": 30.48236597535772
+          },
+          "documents": {
+            "manifest.json": "777deca5c4914db9ba94e26a07c2c4c628527dd7753da5894c1b59fc27da9e11",
+            "summary.json": "d601d516ebe4224dc0ddfc3f37862be3497a1b4cc1ef901254c95aa46e129970",
+            "results.json": "0f149ac7153b2aa52709f576e04f40d0cfefad6ba8e8cdc3300505e6e60f01de"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 42,
+          "variant": "no-clone",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T070933_480b74e6cd/symbiosis",
+          "run_id": "stratograph_20260909T070933_480b74e6cd",
+          "elapsed_seconds": 60.266821,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.7563636363636363,
+            "diabetes_regression": 3595.1059220930642,
+            "digits_image": 0.2361111111111111,
+            "shakespeare_byte_lm": 30.482336905122047
+          },
+          "documents": {
+            "manifest.json": "c6d3f78e395242dbdf5e2928792108fb7c5cdd31a4628fd59f9efce1381eceac",
+            "summary.json": "9ee5d9cee115fb4adbf0b4d7242a85167fef0952912fb9cf61bf7b62175489fd",
+            "results.json": "00a990ef5ffa7329a4152a1bfb2a95ce1c15ee34870c0144f1adac4ce0427155"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 42,
+          "variant": "no-motif-bias",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T071034_c5c6edb8c1/symbiosis",
+          "run_id": "stratograph_20260909T071034_c5c6edb8c1",
+          "elapsed_seconds": 54.449719,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.7418181818181818,
+            "diabetes_regression": 2984.4875832303514,
+            "digits_image": 0.32222222222222224,
+            "shakespeare_byte_lm": 30.48067268035536
+          },
+          "documents": {
+            "manifest.json": "fb0a1f03fdcfbd37d7011c2ba4ea68a4ee6d3a33608d2046eb1cd5786e5ce175",
+            "summary.json": "91f0388a74150ffc27a2a0b1a5deb8f8c0532c516f5fe94276e94d8a69f611b3",
+            "results.json": "facf39c67f4f7ae4c5a92b2bfb060e43571b15a4fbb60f990bf1d34319c34dd3"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 43,
+          "variant": "shared",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T071130_e5d83b6b75/symbiosis",
+          "run_id": "stratograph_20260909T071130_e5d83b6b75",
+          "elapsed_seconds": 53.196222,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.6872727272727273,
+            "diabetes_regression": 3327.6778991592773,
+            "digits_image": 0.2777777777777778,
+            "shakespeare_byte_lm": 30.943744671249238
+          },
+          "documents": {
+            "manifest.json": "5c37e12fb05fbe0e56921d8b4f31cd8806ea4136fc67a05a7d51a577d28f1796",
+            "summary.json": "4b8ee7a10af283bf4588927c7f622a9632a0673968afcfdfcff0507a23d95040",
+            "results.json": "bed6c8f506f1c47303edafaa6b12e543d1c32384e7e42feacf3528f3afe98e22"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 43,
+          "variant": "flat",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T071224_a8f59f28ce/symbiosis",
+          "run_id": "stratograph_20260909T071224_a8f59f28ce",
+          "elapsed_seconds": 42.582242,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.9890909090909091,
+            "diabetes_regression": 2661.0285873086955,
+            "digits_image": 0.6305555555555555,
+            "shakespeare_byte_lm": 30.725800558654733
+          },
+          "documents": {
+            "manifest.json": "944472c6fb6af2b99c53699da9cef905e9c01c3a3a7805e2d11a45c478a1b2b9",
+            "summary.json": "e131e2dc474107a6331e37c31c663e85aa89f08cf3dc3a1b8a5d7c283bfcad75",
+            "results.json": "a9cced342a6a3b18187c4944e6bd085029917a5f33d0409a5db1e9a0d69b842f"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 43,
+          "variant": "unshared",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T071308_387b5ee4f0/symbiosis",
+          "run_id": "stratograph_20260909T071308_387b5ee4f0",
+          "elapsed_seconds": 58.513025,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.6872727272727273,
+            "diabetes_regression": 3770.2679586675276,
+            "digits_image": 0.25277777777777777,
+            "shakespeare_byte_lm": 30.959558829750478
+          },
+          "documents": {
+            "manifest.json": "b74aac5e185505dcee4a981c4a7cdd6b64788f0d5bfa50959ebb5e6821c441a5",
+            "summary.json": "d84ca68772cef912bd2243c7506f60ea5faf52cc68f147fcfb3a1db17cee98f9",
+            "results.json": "e722d41a9ee42b96facffd72ec1fa43826f0180d943fadab7a2cbeedf1bc7f74"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 43,
+          "variant": "no-clone",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T071408_d7779560d4/symbiosis",
+          "run_id": "stratograph_20260909T071408_d7779560d4",
+          "elapsed_seconds": 67.319013,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.6872727272727273,
+            "diabetes_regression": 3770.2679586675276,
+            "digits_image": 0.2777777777777778,
+            "shakespeare_byte_lm": 30.936072956227765
+          },
+          "documents": {
+            "manifest.json": "c1e4aff6129dc38aa323410e7730995eab07952a7a716885463a95298bea7145",
+            "summary.json": "6bb6483cd6fdc4cbb98674e9636f3fcd88ebfa06a6b7623ba81eae6ac67a2d33",
+            "results.json": "4c4f2cf5920503c308d7b2b156b000b273939ed7bc5986bd8a5668cb20634d94"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 43,
+          "variant": "no-motif-bias",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T071516_9b6db1fa7a/symbiosis",
+          "run_id": "stratograph_20260909T071516_9b6db1fa7a",
+          "elapsed_seconds": 50.378215,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.8363636363636363,
+            "diabetes_regression": 3381.206871785408,
+            "digits_image": 0.2777777777777778,
+            "shakespeare_byte_lm": 30.887983703714287
+          },
+          "documents": {
+            "manifest.json": "80c0eab2630de8eac66278d806e4437d371fdb77961dfd77a730fe1a3768f5b3",
+            "summary.json": "e1772159a15965234d0e9a90f7288623666da113958a34ef4ef8127b1fa43bb2",
+            "results.json": "b0ff5a46d16c1e9abd65646ab7bd8fc9e9797cb42e7aee54f9f6eef87256366f"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 44,
+          "variant": "shared",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T071607_9d851e31ee/symbiosis",
+          "run_id": "stratograph_20260909T071607_9d851e31ee",
+          "elapsed_seconds": 52.325826,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.7418181818181818,
+            "diabetes_regression": 3705.2518835567557,
+            "digits_image": 0.2388888888888889,
+            "shakespeare_byte_lm": 30.73391839753902
+          },
+          "documents": {
+            "manifest.json": "5e7a79c077dc84542ca945b047fc8a6202c0dcd84240e5dc530ef3729e1173bf",
+            "summary.json": "4d3640f2bc7efad7bf0ddfb9f604214a20f21bf07e7f93f0356997d60bc9b2f8",
+            "results.json": "ee96ab0823c6495b17812e211a5e6bdc48704d820b61e4df14bac6bbcf81e67a"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 44,
+          "variant": "flat",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T071701_a56276abec/symbiosis",
+          "run_id": "stratograph_20260909T071701_a56276abec",
+          "elapsed_seconds": 38.223735,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.96,
+            "diabetes_regression": 3319.475758344833,
+            "digits_image": 0.5583333333333333,
+            "shakespeare_byte_lm": 30.626720725231184
+          },
+          "documents": {
+            "manifest.json": "dddff8afb52f136b9a27b905b143056cb60b0773c34327888765a8fc7b944815",
+            "summary.json": "4e378d17f232c3e46af4866de23db0d5031f4590e6a6d842996d24267ae55f3c",
+            "results.json": "d945f41362ab813081a5a084280255b54e5511ff61799bb0ca04944361442108"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 44,
+          "variant": "unshared",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T071740_15e49e5caa/symbiosis",
+          "run_id": "stratograph_20260909T071740_15e49e5caa",
+          "elapsed_seconds": 51.648691,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.7418181818181818,
+            "diabetes_regression": 3705.2518835567557,
+            "digits_image": 0.2388888888888889,
+            "shakespeare_byte_lm": 30.731646944963398
+          },
+          "documents": {
+            "manifest.json": "81bbacb72337b351e7e539bc52ec2eade5dd03c948f210c41a32b0a276ad0dc5",
+            "summary.json": "a72fdcb0e7e5e660028c941d302ce8854574d9c2b4ba26f3b02af47a3a225c38",
+            "results.json": "c59733326eb3f9ebda2bddf70baa178fff74218666854e15928c630230787ee3"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 44,
+          "variant": "no-clone",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T071832_663a7e4125/symbiosis",
+          "run_id": "stratograph_20260909T071832_663a7e4125",
+          "elapsed_seconds": 51.286897,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.7418181818181818,
+            "diabetes_regression": 3705.2518835567557,
+            "digits_image": 0.2388888888888889,
+            "shakespeare_byte_lm": 30.733962362793395
+          },
+          "documents": {
+            "manifest.json": "ca0bb27a4715222e0fdea28cfa7902293d550b657b2f0ee994a3f7017234d9f9",
+            "summary.json": "4dca8e79da0273bcb96c3cf4f1c191047ac137c1b67b75c959f9a8380cb0e317",
+            "results.json": "fc378206be2e04ccebfcf76d1fb31281f8ef8cfe16314d9b408c142f8754737d"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        },
+        {
+          "seed": 44,
+          "variant": "no-motif-bias",
+          "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/next-steps-20260909/stratograph-ablation/ablation_20260909T070700_8ed454bccc/runs/stratograph_20260909T071925_9a3d803843/symbiosis",
+          "run_id": "stratograph_20260909T071925_9a3d803843",
+          "elapsed_seconds": 49.813615,
+          "actual_evaluations": 64,
+          "scores": {
+            "banknote_classification": 0.7418181818181818,
+            "diabetes_regression": 3602.0549854524807,
+            "digits_image": 0.29444444444444445,
+            "shakespeare_byte_lm": 30.714111122474154
+          },
+          "documents": {
+            "manifest.json": "962773749981e72e91e0054c5f21068ce9a1c37111b3e085f94fec12d77c7e8b",
+            "summary.json": "b229dc7867f874e9efedcf28e55422d7367b5cb2574d4180026bd43c556583b0",
+            "results.json": "92a26a57b8cbe24ae1e9e2f170a2ce953b97468253da00030b3c0f92b5789b2c"
+          },
+          "source_revision": "53a8c915ea97120bce062e1c872d7c836769047f",
+          "source_sha256": "7fa46a19d869d05f2e622a0148f1caadf37666386d8493cea51cac106619d218"
+        }
+      ],
+      "elapsed_seconds": 795.262968917028,
+      "fits": 960,
+      "shared_controls_exactly_reproduce_prior_three_seed_scores": true
+    },
+    "stratograph_features": [
+      {
+        "seed": 42,
+        "input_feature_std": 0.9531264305114746,
+        "stages": [
+          {
+            "node": "m0",
+            "shape": [
+              1437,
+              20
+            ],
+            "mean_feature_std": 0.21927931904792786,
+            "rms": 0.2591975927352905,
+            "effective_rank": 13.165719985961914
+          },
+          {
+            "node": "m1",
+            "shape": [
+              1437,
+              24
+            ],
+            "mean_feature_std": 0.036853060126304626,
+            "rms": 0.05244860798120499,
+            "effective_rank": 6.535144805908203
+          }
+        ],
+        "trainable_parameter_keys": [
+          "head.b",
+          "head.w",
+          "readout.b",
+          "readout.w"
+        ],
+        "evaluator_fidelity": "hierarchy_features_trained_head"
+      },
+      {
+        "seed": 43,
+        "input_feature_std": 0.9531254768371582,
+        "stages": [
+          {
+            "node": "m0",
+            "shape": [
+              1437,
+              20
+            ],
+            "mean_feature_std": 0.0990273505449295,
+            "rms": 0.12399975210428238,
+            "effective_rank": 12.288447380065918
+          },
+          {
+            "node": "m1",
+            "shape": [
+              1437,
+              16
+            ],
+            "mean_feature_std": 0.006789749953895807,
+            "rms": 0.008360643871128559,
+            "effective_rank": 6.985837936401367
+          }
+        ],
+        "trainable_parameter_keys": [
+          "head.b",
+          "head.w",
+          "readout.b",
+          "readout.w"
+        ],
+        "evaluator_fidelity": "hierarchy_features_trained_head"
+      },
+      {
+        "seed": 44,
+        "input_feature_std": 0.9531248807907104,
+        "stages": [
+          {
+            "node": "m0",
+            "shape": [
+              1437,
+              16
+            ],
+            "mean_feature_std": 0.43866103887557983,
+            "rms": 0.49456238746643066,
+            "effective_rank": 13.524320602416992
+          },
+          {
+            "node": "m1",
+            "shape": [
+              1437,
+              16
+            ],
+            "mean_feature_std": 0.1299867182970047,
+            "rms": 0.1841842532157898,
+            "effective_rank": 5.004748821258545
+          }
+        ],
+        "trainable_parameter_keys": [
+          "head.b",
+          "head.w",
+          "readout.b",
+          "readout.w"
+        ],
+        "evaluator_fidelity": "hierarchy_features_trained_head"
+      }
+    ],
+    "stratograph_head_intervention": {
+      "scope": "exploratory fixed-genome fresh-head intervention; training-only normalization statistics",
+      "new_fits": 6,
+      "epochs_cap": 12,
+      "fit_timeout": 90,
+      "results": [
+        {
+          "seed": 42,
+          "genome_source": "/Users/timokruth/Projekte/EvoNN-training-optimized-20260908/.artifacts/training-optimized-20260908/workspace/runs/tier_b_core_v2_b128_s42_stratograph/stratograph_20260908T213354_2ab9eb32d2/symbiosis/model_digits_image.json",
+          "feature_normalization": false,
+          "score": 0.23333333333333334,
+          "epochs": 12,
+          "updates": 276,
+          "train_seconds": 0.22146508295554668,
+          "weights_changed": true
+        },
+        {
+          "seed": 42,
+          "genome_source": "/Users/timokruth/Projekte/EvoNN-training-optimized-20260908/.artifacts/training-optimized-20260908/workspace/runs/tier_b_core_v2_b128_s42_stratograph/stratograph_20260908T213354_2ab9eb32d2/symbiosis/model_digits_image.json",
+          "feature_normalization": true,
+          "score": 0.4305555555555556,
+          "epochs": 12,
+          "updates": 276,
+          "train_seconds": 0.17581595899537206,
+          "weights_changed": true
+        },
+        {
+          "seed": 43,
+          "genome_source": "/Users/timokruth/Projekte/EvoNN-training-optimized-20260908/.artifacts/training-optimized-20260908/workspace/runs/tier_b_core_v2_b128_s43_stratograph/stratograph_20260908T214925_abfdd005ea/symbiosis/model_digits_image.json",
+          "feature_normalization": false,
+          "score": 0.24722222222222223,
+          "epochs": 12,
+          "updates": 276,
+          "train_seconds": 0.15962270891759545,
+          "weights_changed": true
+        },
+        {
+          "seed": 43,
+          "genome_source": "/Users/timokruth/Projekte/EvoNN-training-optimized-20260908/.artifacts/training-optimized-20260908/workspace/runs/tier_b_core_v2_b128_s43_stratograph/stratograph_20260908T214925_abfdd005ea/symbiosis/model_digits_image.json",
+          "feature_normalization": true,
+          "score": 0.5444444444444444,
+          "epochs": 12,
+          "updates": 276,
+          "train_seconds": 0.17097400000784546,
+          "weights_changed": true
+        },
+        {
+          "seed": 44,
+          "genome_source": "/Users/timokruth/Projekte/EvoNN-training-optimized-20260908/.artifacts/training-optimized-20260908/workspace/runs/tier_b_core_v2_b128_s44_stratograph/stratograph_20260908T220748_1f563e61ed/symbiosis/model_digits_image.json",
+          "feature_normalization": false,
+          "score": 0.2388888888888889,
+          "epochs": 12,
+          "updates": 276,
+          "train_seconds": 0.14730862504802644,
+          "weights_changed": true
+        },
+        {
+          "seed": 44,
+          "genome_source": "/Users/timokruth/Projekte/EvoNN-training-optimized-20260908/.artifacts/training-optimized-20260908/workspace/runs/tier_b_core_v2_b128_s44_stratograph/stratograph_20260908T220748_1f563e61ed/symbiosis/model_digits_image.json",
+          "feature_normalization": true,
+          "score": 0.3638888888888889,
+          "epochs": 12,
+          "updates": 276,
+          "train_seconds": 0.1599124170606956,
+          "weights_changed": true
+        }
+      ]
+    },
+    "validation_profile": {
+      "profiled": true,
+      "seconds": {
+        "inference": 4.38240795803722,
+        "projection": 262.9228403749876,
+        "validation": 650.5071788750356
+      },
+      "catalog_calls": 29076,
+      "catalog_cumulative_seconds": 883.674,
+      "total_profile_seconds": 919.666,
+      "note": "cProfile perturbs runtime; this locates repeated catalog parsing, not an unprofiled speedup measurement. No global cache or relaxed validation was introduced."
+    },
+    "confirmation_protocol": "governance/tier-b-confirmation.json",
+    "tests": {
+      "compare_suite_passed": 115,
+      "additional_multiplicity_tests_passed": 2,
+      "contenders_with_optional_dependencies_passed": 48
+    },
+    "confirmation_readiness": {
+      "protocol_sha256": "98365b3a2f52483bb53734ecadafca0d72db65335ae8b8522a0a5c99206728ae",
+      "campaigns": [
+        {
+          "id": "confirmation-b128-s45",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b128-s45",
+          "manifest_sha256": "dd60189775117ac7fb9bddc98d249b94d0a244e7129a61096d3f373eafd3a9b7",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "a6227bb834fc5280c38d79eb21b418861924a30bf32fecd5399b4ce3c9c41078",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b128-s46",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b128-s46",
+          "manifest_sha256": "0b9ba1f82011a47725b85389a0f694a2a4cf0a2e575f8a617d709ae05c0ca585",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "3e415e88af9043dbf845190239c5d2445a40b2db8a7caf16dd09fd258317efb9",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b128-s47",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b128-s47",
+          "manifest_sha256": "8e7d85cf33959e840503c23f5ac05e2445ed2e0f56d2963f625dd5bd09c7e432",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "a40d005ff9c9a4a367f180af80e18252bb97cae32b690e204ebe9427a7725be9",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b128-s48",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b128-s48",
+          "manifest_sha256": "9aae058d47b9ef90e9956d87d46de63322ef3f145d37cf467aebfcf8b9c6aff1",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "9e77ee53edb297e6f87279f7e41ce7931c2add13dc15dde91f6bd8d5a666a6a6",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b128-s49",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b128-s49",
+          "manifest_sha256": "d657dcdbbf11e52c8694b24cf620ea024cb9595945999ad97f9c7bc0e32de8f3",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "5e2417f9b92ed01a4907a06ad5d09a971e9027e065058abb9607774a1019a380",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b128-s50",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b128-s50",
+          "manifest_sha256": "39a0edb0bdbc3ba69b56fc61324df38bba990f14d2832027c38a6b75b79cbdd7",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "acdbcd7024131f17dbe1702ec79637738f66f1cb655d927021918be2fd3f8d23",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b128-s51",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b128-s51",
+          "manifest_sha256": "d8e68bec1ea94af713fb6ebf04c999a6bb4f3f6ed28c2f3dab4433af5f4909d5",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "8fcf4ae27486936eb0e103528000e37d8bbe9f01e184139f7a1cc8be5ca4052c",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b128-s52",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b128-s52",
+          "manifest_sha256": "34596806c12dc55b5f73af265c826d524e46acc644975a3581ded32e02151562",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "3c97677dcf4ba097e2999544a9d6bc47b7ee43e9be2527ed1d0aebca7fd3db89",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b64-s45",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b64-s45",
+          "manifest_sha256": "139c28aa1a7da8e6d0953c6e3b62bf7da61031ac364774cce7df2a2e725f8ebe",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "4d14590ed2dc9b926c8df9fca962c74626d9ac90167734ddfb83af255e17b35e",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b64-s46",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b64-s46",
+          "manifest_sha256": "6a759d0e0598b92636adf78c5ddcf0f3d092a1e6104c248a7fd1ed5985111f08",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "f5fe3379482fd061c2d891cf7dd0813dd7dae43fb9ee09d546091033a7517cc6",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b64-s47",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b64-s47",
+          "manifest_sha256": "a0a4d21b67d4522dc783c0e2a99cec9d5302cc9b7db2543bf8c02b77160e6c3a",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "2c88c49d78e1464a085be9b0eca2dd43109f960738f297c785fe995dc5b5a96f",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b64-s48",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b64-s48",
+          "manifest_sha256": "8466cd26ec00a558ac8ae76db8ab024f6bea13f8ba5b18689730b47745e79eea",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "c52bea2615c5a0f256e588e645d847512c927e2a43bc5674d29a07ed081cd3d3",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b64-s49",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b64-s49",
+          "manifest_sha256": "b4888a8f5effdaef79400f59c9ddc749bd276a2d4fbbb0d5e3e70d106fbd833a",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "e2d4bdc733106aeed0e99f041de330a6bbae9c5e4b05b98cad97ef0390393c28",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b64-s50",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b64-s50",
+          "manifest_sha256": "404f774d2202b0179569e35a859175c37825fa6c84cab089e07996f0c9705860",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "480a3f864594317b8427e693d2be30778c0a0d711e0cdf5685b45961faf41108",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b64-s51",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b64-s51",
+          "manifest_sha256": "f7250907295442239c7641f286e93a4f9a4a8c1e44a2ff84854fc78e2a308535",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "6942f9c5c3efaefa437c6e49f36ddda41d10f55e934b0a6045b1b86147f703c6",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        },
+        {
+          "id": "confirmation-b64-s52",
+          "workspace": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/campaigns/confirmation-b64-s52",
+          "manifest_sha256": "b936227e9f9b601ff0221112f798358806adc99031746c0c9652e4bdf8d7cfba",
+          "preflight": {
+            "status": "passed",
+            "slots": 3,
+            "manifest_sha256": "74542aae89181457cbaa1f4bdcc29192c792ba099ca3f824a451c297d776a043",
+            "maximum_dispatch_seconds": 4560.0,
+            "training_started": false
+          }
+        }
+      ],
+      "training_started": false
+    },
+    "enhanced_floor_qualification": {
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/floor-qualification/contenders_20260909T074221_ab71080e1cee/symbiosis",
+      "source_revision": "7da8e769e7cee64ad325bdbd0e45ad07957aa381",
+      "quality": {
+        "path": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation/floor-qualification/contenders_20260909T074221_ab71080e1cee/symbiosis",
+        "run_id": "contenders_20260909T074221_ab71080e1cee",
+        "level": "L3",
+        "gaps": [
+          "parameter_count unavailable for some successful outcomes"
+        ],
+        "next_level": "L4 requires multi-seed effect sizes and decision support (Phase 3)"
+      },
+      "contract_audit": {
+        "schema_version": "1.0.0",
+        "pack": "tier_b_core_v2",
+        "scope": "phase1_contract",
+        "status": "passed",
+        "blocker_count": 0,
+        "blockers": [],
+        "warnings": [],
+        "benchmarks": [
+          {
+            "benchmark": "banknote_classification",
+            "adequacy": "acceptable_floor",
+            "required": [
+              "extra_trees",
+              "hist_gb",
+              "mlp_wide"
+            ],
+            "successful": [
+              "extra_trees",
+              "hist_gb",
+              "linear_svc",
+              "logistic",
+              "mlp_wide",
+              "random_forest",
+              "rbf_svm",
+              "svm_nystroem_rbf"
+            ],
+            "enhanced": [
+              "catboost",
+              "lightgbm",
+              "xgboost"
+            ],
+            "missing": [],
+            "cache_verified": true,
+            "runtime_class": "local",
+            "ceiling": {
+              "value": 1.0,
+              "tie_policy": "not_evidence"
+            }
+          },
+          {
+            "benchmark": "digits_image",
+            "adequacy": "acceptable_floor",
+            "required": [
+              "extra_trees",
+              "mlp_wide"
+            ],
+            "successful": [
+              "extra_trees",
+              "hist_gb",
+              "linear_svc",
+              "logistic",
+              "mlp_wide",
+              "random_forest",
+              "rbf_svm",
+              "svm_nystroem_rbf"
+            ],
+            "enhanced": [
+              "cnn_small"
+            ],
+            "missing": [],
+            "cache_verified": true,
+            "runtime_class": "local",
+            "ceiling": {
+              "value": 1.0,
+              "tie_policy": "not_evidence"
+            }
+          },
+          {
+            "benchmark": "diabetes_regression",
+            "adequacy": "acceptable_floor",
+            "required": [
+              "extra_trees",
+              "hist_gb",
+              "ridge_or_linear",
+              "svr_or_nystroem_svr"
+            ],
+            "successful": [
+              "extra_trees",
+              "hist_gb",
+              "hist_gb_leaf63",
+              "mlp_wide",
+              "random_forest",
+              "rbf_svm",
+              "ridge_or_linear",
+              "svr_or_nystroem_svr"
+            ],
+            "enhanced": [
+              "catboost",
+              "lightgbm",
+              "xgboost"
+            ],
+            "missing": [],
+            "cache_verified": true,
+            "runtime_class": "ci",
+            "ceiling": {
+              "value": null,
+              "tie_policy": "best_observed"
+            }
+          },
+          {
+            "benchmark": "shakespeare_byte_lm",
+            "adequacy": "acceptable_floor",
+            "required": [
+              "bigram_lm",
+              "trigram_lm",
+              "unigram_lm"
+            ],
+            "successful": [
+              "bigram_lm",
+              "trigram_lm",
+              "unigram_lm"
+            ],
+            "enhanced": [
+              "transformer_lm_tiny"
+            ],
+            "missing": [],
+            "cache_verified": true,
+            "runtime_class": "local",
+            "ceiling": {
+              "value": 1.0,
+              "tie_policy": "not_evidence"
+            }
+          }
+        ],
+        "budgets": [
+          64
+        ],
+        "repeatability": "incomplete",
+        "clean_runs": [
+          {
+            "budget": 64,
+            "seed": 42,
+            "run_id": "contenders_20260909T074221_ab71080e1cee",
+            "dirty": false,
+            "envelope_sha256": "8f9ab6930238fff20a0b78b619e888b78bc4a38652e4210638c720899627c630",
+            "protocol_sha256": "bc0964dbf6bd7e82f4a9ce2deaf4d9186c4ec89914a117cb20ef8144192fd35a"
+          }
+        ],
+        "admitted_run_ids": [],
+        "extended_coverage_complete": false,
+        "scientific_qualification": false,
+        "note": "Runtime admission is separate from the immutable planned catalog snapshot; Tier A does not establish broad capability."
+      },
+      "elapsed_seconds": 203.056003,
+      "accounting": {
+        "evaluation_count": 64,
+        "actual_evaluations": 64,
+        "cached_evaluations": 0,
+        "failed_evaluations": 0,
+        "invalid_evaluations": 0,
+        "resumed_from_run_id": null,
+        "resumed_evaluations": 0,
+        "partial_run": false,
+        "evaluation_semantics": "one contender fit/eval attempt; failed started fits count, invalid pre-fit configurations and optional skips do not"
+      },
+      "enhanced_results": [
+        {
+          "backend": {
+            "device": "cpu",
+            "package": "catboost",
+            "version": "1.2.10"
+          },
+          "benchmark_id": "banknote_classification",
+          "charged": 1,
+          "contender_id": "catboost",
+          "family": "catboost",
+          "group": "tabular",
+          "invalid": 0,
+          "memory_scope": "isolated worker process peak RSS, including interpreter and imported libraries",
+          "model_bytes": 186758,
+          "model_seed": 1574382452,
+          "outcome_id": "catboost_r0000",
+          "parameter_count": null,
+          "parameters": {},
+          "peak_memory_bytes": 220053504,
+          "reason": null,
+          "score": 0.9963636363636363,
+          "status": "ok",
+          "train_seconds": 0.20494116691406816,
+          "training_iterations_or_trees": null,
+          "training_rows": 1097,
+          "warnings": [],
+          "worker_model_sha256": "985a2e405e3275399e6b72c1237e909df776b2d820a98b8eb768724cbe6b6cbd"
+        },
+        {
+          "backend": {
+            "device": "cpu",
+            "package": "lightgbm",
+            "version": "4.7.0"
+          },
+          "benchmark_id": "banknote_classification",
+          "charged": 1,
+          "contender_id": "lightgbm",
+          "family": "lightgbm",
+          "group": "tabular",
+          "invalid": 0,
+          "memory_scope": "isolated worker process peak RSS, including interpreter and imported libraries",
+          "model_bytes": 825142,
+          "model_seed": 1927534648,
+          "outcome_id": "lightgbm_r0000",
+          "parameter_count": null,
+          "parameters": {},
+          "peak_memory_bytes": 214089728,
+          "reason": null,
+          "score": 0.9963636363636363,
+          "status": "ok",
+          "train_seconds": 0.08954445796553046,
+          "training_iterations_or_trees": 160,
+          "training_rows": 1097,
+          "warnings": [],
+          "worker_model_sha256": "03dd3cbe3b1aef3d8a68b22e7ed6f33129cb596aa266cac835ec0551ca39e73a"
+        },
+        {
+          "backend": {
+            "device": "cpu",
+            "package": "xgboost",
+            "version": "3.4.1"
+          },
+          "benchmark_id": "banknote_classification",
+          "charged": 1,
+          "contender_id": "xgboost",
+          "family": "xgboost",
+          "group": "tabular",
+          "invalid": 0,
+          "memory_scope": "isolated worker process peak RSS, including interpreter and imported libraries",
+          "model_bytes": 247963,
+          "model_seed": 2829064383,
+          "outcome_id": "xgboost_r0000",
+          "parameter_count": null,
+          "parameters": {},
+          "peak_memory_bytes": 206225408,
+          "reason": null,
+          "score": 0.9963636363636363,
+          "status": "ok",
+          "train_seconds": 0.051374000031501055,
+          "training_iterations_or_trees": 160,
+          "training_rows": 1097,
+          "warnings": [],
+          "worker_model_sha256": "6c6791ab72bd8aaf4b1397a28038571dc65a5c135371a5b065bf293d9ddb796a"
+        },
+        {
+          "backend": {
+            "device": "cpu",
+            "package": "torch",
+            "version": "2.14.0"
+          },
+          "benchmark_id": "digits_image",
+          "charged": 1,
+          "contender_id": "cnn_small",
+          "family": "cnn_small",
+          "group": "image",
+          "invalid": 0,
+          "memory_scope": "isolated worker process peak RSS, including interpreter and imported libraries",
+          "model_bytes": 610116,
+          "model_seed": 2609819593,
+          "outcome_id": "cnn_small_r0000",
+          "parameter_count": 151306,
+          "parameters": {
+            "epochs": 20
+          },
+          "peak_memory_bytes": 453574656,
+          "reason": null,
+          "score": 0.975,
+          "status": "ok",
+          "train_seconds": 4.448607333004475,
+          "training_iterations_or_trees": 20,
+          "training_rows": 1437,
+          "warnings": [],
+          "worker_model_sha256": "fbd5580d6b13534f55945d73aa6277e2f341af4d14670b0671fcd609347e8e37"
+        },
+        {
+          "backend": {
+            "device": "cpu",
+            "package": "catboost",
+            "version": "1.2.10"
+          },
+          "benchmark_id": "diabetes_regression",
+          "charged": 1,
+          "contender_id": "catboost",
+          "family": "catboost",
+          "group": "tabular",
+          "invalid": 0,
+          "memory_scope": "isolated worker process peak RSS, including interpreter and imported libraries",
+          "model_bytes": 184166,
+          "model_seed": 1629150042,
+          "outcome_id": "catboost_r0000",
+          "parameter_count": null,
+          "parameters": {},
+          "peak_memory_bytes": 219906048,
+          "reason": null,
+          "score": 2682.9022869774662,
+          "status": "ok",
+          "train_seconds": 0.19468062499072403,
+          "training_iterations_or_trees": null,
+          "training_rows": 353,
+          "warnings": [],
+          "worker_model_sha256": "a3208cdd919d34d1f58e5180d6df0886d7dac5a01cdec7c656a4066f85e47044"
+        },
+        {
+          "backend": {
+            "device": "cpu",
+            "package": "lightgbm",
+            "version": "4.7.0"
+          },
+          "benchmark_id": "diabetes_regression",
+          "charged": 1,
+          "contender_id": "lightgbm",
+          "family": "lightgbm",
+          "group": "tabular",
+          "invalid": 0,
+          "memory_scope": "isolated worker process peak RSS, including interpreter and imported libraries",
+          "model_bytes": 210273,
+          "model_seed": 2872225574,
+          "outcome_id": "lightgbm_r0000",
+          "parameter_count": null,
+          "parameters": {},
+          "peak_memory_bytes": 208814080,
+          "reason": null,
+          "score": 3114.9946375796258,
+          "status": "ok",
+          "train_seconds": 0.03922174999024719,
+          "training_iterations_or_trees": 160,
+          "training_rows": 353,
+          "warnings": [],
+          "worker_model_sha256": "9c2a220ab0b629266e1f0e54b80b1c33c7bda6d78c0f3e56c73e4ad1613a0b09"
+        },
+        {
+          "backend": {
+            "device": "cpu",
+            "package": "xgboost",
+            "version": "3.4.1"
+          },
+          "benchmark_id": "diabetes_regression",
+          "charged": 1,
+          "contender_id": "xgboost",
+          "family": "xgboost",
+          "group": "tabular",
+          "invalid": 0,
+          "memory_scope": "isolated worker process peak RSS, including interpreter and imported libraries",
+          "model_bytes": 532526,
+          "model_seed": 2356212738,
+          "outcome_id": "xgboost_r0000",
+          "parameter_count": null,
+          "parameters": {},
+          "peak_memory_bytes": 209190912,
+          "reason": null,
+          "score": 3295.13037109375,
+          "status": "ok",
+          "train_seconds": 0.09188737499061972,
+          "training_iterations_or_trees": 160,
+          "training_rows": 353,
+          "warnings": [],
+          "worker_model_sha256": "9672745081474e279b8fd17507005e8b96c227daf1bacd774de30f5b50c4f5af"
+        },
+        {
+          "backend": {
+            "device": "cpu",
+            "package": "torch",
+            "version": "2.14.0"
+          },
+          "benchmark_id": "shakespeare_byte_lm",
+          "charged": 1,
+          "contender_id": "transformer_lm_tiny",
+          "family": "transformer_lm_tiny",
+          "group": "text",
+          "invalid": 0,
+          "memory_scope": "isolated worker process peak RSS, including interpreter and imported libraries",
+          "model_bytes": 417588,
+          "model_seed": 4036870636,
+          "outcome_id": "transformer_lm_tiny_r0000",
+          "parameter_count": 100992,
+          "parameters": {
+            "epochs": 20
+          },
+          "peak_memory_bytes": 461062144,
+          "reason": null,
+          "score": 35.33432388305664,
+          "status": "ok",
+          "train_seconds": 6.739657959085889,
+          "training_iterations_or_trees": 20,
+          "training_rows": 1536,
+          "warnings": [],
+          "worker_model_sha256": "05346e403a881f3728277ed7bdbad0a08b48114f619603044ac311d970057c7b"
+        },
+        {
+          "backend": {
+            "device": "cpu",
+            "package": "torch",
+            "version": "2.14.0"
+          },
+          "benchmark_id": "shakespeare_byte_lm",
+          "charged": 1,
+          "contender_id": "transformer_lm_tiny",
+          "family": "transformer_lm_tiny",
+          "group": "text",
+          "invalid": 0,
+          "memory_scope": "isolated worker process peak RSS, including interpreter and imported libraries",
+          "model_bytes": 417588,
+          "model_seed": 3743071332,
+          "outcome_id": "transformer_lm_tiny_r0001",
+          "parameter_count": 100992,
+          "parameters": {
+            "epochs": 20
+          },
+          "peak_memory_bytes": 460783616,
+          "reason": null,
+          "score": 57.749114990234375,
+          "status": "ok",
+          "train_seconds": 6.590856165974401,
+          "training_iterations_or_trees": 20,
+          "training_rows": 1536,
+          "warnings": [],
+          "worker_model_sha256": "deb8ca9e2b9ce9c534ac9f6e24fc15e9b334829e18be154f43aebb9001f24b6f"
+        },
+        {
+          "backend": {
+            "device": "cpu",
+            "package": "torch",
+            "version": "2.14.0"
+          },
+          "benchmark_id": "shakespeare_byte_lm",
+          "charged": 1,
+          "contender_id": "transformer_lm_tiny",
+          "family": "transformer_lm_tiny",
+          "group": "text",
+          "invalid": 0,
+          "memory_scope": "isolated worker process peak RSS, including interpreter and imported libraries",
+          "model_bytes": 417588,
+          "model_seed": 3639836254,
+          "outcome_id": "transformer_lm_tiny_r0002",
+          "parameter_count": 100992,
+          "parameters": {
+            "epochs": 20
+          },
+          "peak_memory_bytes": 459538432,
+          "reason": null,
+          "score": 35.88640213012695,
+          "status": "ok",
+          "train_seconds": 6.614513957989402,
+          "training_iterations_or_trees": 20,
+          "training_rows": 1536,
+          "warnings": [],
+          "worker_model_sha256": "362589c0cc9ac633bf471e3b6786ddb60b14c3d23fb173b8f5c3ce4614b876b0"
+        },
+        {
+          "backend": {
+            "device": "cpu",
+            "package": "torch",
+            "version": "2.14.0"
+          },
+          "benchmark_id": "shakespeare_byte_lm",
+          "charged": 1,
+          "contender_id": "transformer_lm_tiny",
+          "family": "transformer_lm_tiny",
+          "group": "text",
+          "invalid": 0,
+          "memory_scope": "isolated worker process peak RSS, including interpreter and imported libraries",
+          "model_bytes": 417586,
+          "model_seed": 135773667,
+          "outcome_id": "transformer_lm_tiny_r0003",
+          "parameter_count": 100992,
+          "parameters": {
+            "epochs": 20
+          },
+          "peak_memory_bytes": 461291520,
+          "reason": null,
+          "score": 43.24551010131836,
+          "status": "ok",
+          "train_seconds": 6.86560212506447,
+          "training_iterations_or_trees": 20,
+          "training_rows": 1536,
+          "warnings": [],
+          "worker_model_sha256": "61dbcbdcadc40016c869d2e4697fe89a66fb3a1c3205f0515bb27ca4c89c979d"
+        }
+      ],
+      "documents": {
+        "manifest.json": "d0628b04e5dc22b6c90f9d62d5341f90fc4f86881dab21a9420bd64e587275fb",
+        "results.json": "57d8aaba50beb401e284c170e468419eeba01c9310b4966adf970f793b75eaff",
+        "summary.json": "4247a06ecac0086ac03bd72bbe5fb9342d7a6f3ea704edc2c0324092b6023e30"
+      }
+    },
+    "preserved_failed_floor_producer": {
+      "path": "/Users/timokruth/Projekte/EvoNN-confirmation-20260909",
+      "source_revision": "adcda4f",
+      "run_id": "contenders_20260909T073252_40d24d98bb6b",
+      "actual_evaluations": 60,
+      "pre_fit_worker_crashes": 4,
+      "reason": "External estimators inherited sklearn private validator without its constraint metadata"
+    },
+    "execution_producer": {
+      "path": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909",
+      "source_revision": "7da8e769e7cee64ad325bdbd0e45ad07957aa381",
+      "status": "prepared_and_paused",
+      "planned_runs": 48,
+      "planned_fits": 4608,
+      "dispatch_events": 0
+    }
   }
 }

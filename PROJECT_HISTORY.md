@@ -16,6 +16,69 @@ Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
+## Comparison follow-up and Stratograph diagnosis — 2026-09-09
+
+The [follow-up receipt](governance/tier-b-comparison-20260909.json) records the
+large-state fix, explicit within-cohort inference and bounded diagnostics.
+`cohort-report` now evaluates actual engine/floor/budget arms, checks full source,
+data, runtime and accounting bindings, and leaves historical registry/trend bytes
+unchanged. New observations use `split-clock-v2`; legacy receipts retain their
+old interpretation. All 24 declared contrasts reach **L4 evidence quality**,
+with no blockers or automatic advancement. The host proof binds immutable
+campaign manifests because native and Contenders used different JSON codecs
+for the same host. Budget-response checks retain every independent dimension
+while allowing the exact fit-derived training-total cap to scale.
+
+A five-variant × three-seed Stratograph @64 ablation completed 960 successful
+fits in 13m15s on the preserved original producer. Its shared controls reproduce
+all twelve prior benchmark scores exactly. The image results are:
+
+| Variant | Mean validation accuracy |
+| --- | ---: |
+| Shared | 25.09% |
+| Flat | 57.96% |
+| Unshared | 24.26% |
+| No clone | 25.09% |
+| No motif bias | 29.81% |
+
+Flat also raises banknote accuracy from 72.85% to 97.82% and reduces mean
+regression MSE from 3542.7 to 2866.7. The feature probe shows image feature
+standard deviations shrinking from about 0.95 at the input to 0.0068–0.130
+at the hierarchy output, with effective ranks around 5–7. Six fresh-head,
+fixed-genome diagnostic fits isolate normalization: using training-only feature
+statistics raises mean image accuracy from 23.98% to 44.63%, under identical
+initialization/training streams and 12-epoch limits. This supports a scaling
+limitation in the current deterministic-feature proxy, but normalization alone
+still trails the flat variant and other engines. No Stratograph training or
+replay default was silently changed; end-to-end hierarchy learning remains
+unproven.
+
+The [confirmation protocol](governance/tier-b-confirmation.json) fixes eight new
+seeds 45–52, named neural/boosted floors, effect margins, the joint Primordia
+quality/runtime criterion and balanced system order. Six pairs cannot clear
+five-way Holm correction at their minimum exact two-sided p-value; eight can.
+The campaign is **prepared and paused**, with 16 preflight-passed manifests,
+48 planned runs / 4,608 fits, and no dispatch events. Discovery seeds stay
+outside confirmation; the protected text test split remains untouched.
+
+Preparing the expanded baseline pool exposed an inherited private sklearn
+helper that XGBoost and LightGBM could not use without `_parameter_constraints`.
+The correction skips only that unsupported inherited helper, retaining sklearn
+constraints, recursive pipeline checks and explicit external validators. The
+first failed qualification (60 charged fits, four pre-fit worker crashes) is
+preserved. A fresh source-pinned qualification then completes all **64 fits in
+203 seconds**, reaches L3 and passes the contract audit, with successful
+XGBoost, LightGBM, CatBoost, CNN and Transformer results. The additional model
+classes are not assumed to be empirically stronger on every task.
+
+Validation: 115 Compare tests plus two additional multiplicity tests pass;
+48 Contenders tests pass with optional dependencies installed. Profiling the
+fully revalidated report took 920 seconds under cProfile: 29,076 catalog lookups
+consume roughly 96% of cumulative time through repeated YAML parsing. This is
+an identified validation bottleneck, not evidence of a measured optimization.
+The next implementation should reuse definitions within one validation call
+while continuing to detect changed catalog bytes on the next call.
+
 ## Tier-B comparison — 2026-09-09
 
 The optimized campaign completed at **00:30 CEST on 2026-09-09**, after

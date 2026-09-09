@@ -63,46 +63,66 @@ budgets 64/128 × seeds 42/43/44 × five systems. The
 [interpretation](PROJECT_HISTORY.md#tier-b-comparison--2026-09-09) bind the exact
 producer and per-seed measurements. Decision-grade benchmark admission now
 passes with zero blockers. Three seeds meet the local coverage minimum, but
-this post-run within-cohort analysis does not close the L4 scientific exit.
+the initial post-run analysis did not close the scientific exit; the explicit
+L4 follow-up below remains distinct from automatic scientific promotion.
 The original timed-out campaign remains untouched; existing limits remain.
 
-**Next, in priority order (no new training is scheduled):**
+**Completed follow-up (2026-09-09):** large-state reporting now preserves valid
+protocol identities and uses the bounded native state reader. Historical registry
+rows still validate with their original observation policy; a separate
+`evidence cohort-report` projection revalidates exports and evaluates explicit
+engine/floor/budget contrasts. All **24 declared contrasts reach L4 evidence
+quality** with three seeds and zero blockers. L4 does not authorize advancement,
+protected-test performance or a broad superiority claim. Source-bound campaign
+manifests reconcile the two historical host-hash encodings; budget contrasts
+permit only the mathematically derived training-total cap to scale.
 
-1. **Repair large-state reporting and implement the explicit within-cohort L4
-   decision path.** Compare's optional 16 MiB state-telemetry read clears valid
-   Topograph protocol fingerprints for three 128-fit exports. Preserve source
-   evidence, retain integrity/size validation, separate optional clock gaps
-   from verified protocol identity, and test valid large states plus corrupted
-   states. A source-bound analytical projection already verifies matching
-   shared policies and data; do not edit historical rows to manufacture a pass.
-   The existing formal L4 request supports same-engine before/after revisions,
-   not this same-revision cross-engine/budget experiment. Add the proper request
-   and validation surface instead of relabeling engines or budgets as revisions.
-2. **Diagnose Stratograph before increasing its budget.** Image accuracy stays
-   at 25.09% on average when doubling 64→128 fits; LM changes by only 0.11%.
-   Use its existing shared/flat ablations to distinguish representation,
-   pooling/compiler and search-policy limitations. Its trained-head proxy does
-   not establish that end-to-end hierarchical learning would fail. No archive
-   decision is supported yet.
-3. **Prepare a targeted, preregistered confirmation protocol.** Prioritize
-   Prism's LM signal, Topograph's regression signal and Primordia's runtime/
-   quality tradeoff. Use matched seeds and stronger task-appropriate baselines;
-   keep the protected text test split unused until the protocol is fixed.
-   Three additional seeds would reach the existing six-nonzero-seed signed-rank
-   minimum only where all six effects are nonzero; they do not guarantee a
-   significant result or convert post-hoc selection into confirmation. Start
-   no replication run under this analysis task.
-4. **Profile comparison overhead without training.** Exported runs account for
-   43.6 of 77.6 campaign minutes; 34.0 minutes fall outside those spans. Fits
-   themselves report 8.8 minutes across the cohort. Measure validation,
-   orchestration and persistence separately before optimizing their costs;
-   these differences alone do not identify one bottleneck.
+Stratograph's matched five-variant × three-seed @64 ablation completed **960
+fits in 13m15s**. Shared controls reproduce all twelve prior scores exactly.
+Flat image accuracy averages **57.96% versus 25.09% shared**. Unsharing alone
+reaches 24.26%; removing cloning stays at 25.09%. A separate six-fit fixed-genome
+probe improves image accuracy from **23.98% to 44.63%** by normalizing hierarchy
+features with training-only statistics. This identifies an actionable proxy
+limitation; no new default or end-to-end hierarchy claim has been introduced.
 
-WP-4.7's repeated low/mid admission requirement is now met. Its full parent and
-Phase 4 exit remain open for the specified trusted-extended/L4 decision surface
-and remaining preset/acceptance work. Native cross-engine ingestion stays
-Phase 5. Research priorities are provisional; formal portfolio status changes
-and broad superiority claims remain unmade.
+The [confirmation protocol](governance/tier-b-confirmation.json) is frozen before
+execution: **eight fresh seeds 45–52**, 48 runs / 4,608 fits. Discovery seeds
+42–44 are excluded. Eight nonzero same-sign pairs can clear the five-contrast
+Holm family; six cannot, even at their minimum exact two-sided p-value. The
+protocol fixes named neural/boosted baselines, quality margins, the joint
+Primordia quality/runtime criterion and balanced engine order. Stronger model
+classes are additional pressure, not assumed empirically stronger scores.
+
+The isolated execution checkout is
+`/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909`, pinned to
+`7da8e76` with locked optional dependencies. Its **16 manifests passed preflight**
+and contain **zero dispatch events**. A 64-fit enhanced-floor qualification
+completed in 203 seconds with no failed fits; XGBoost, LightGBM, CatBoost, CNN
+and Transformer all ran. The initial qualification exposed a private sklearn
+validation assumption in external estimators; the fix preserves sklearn and
+explicit third-party validation, and the failed producer remains retained.
+
+**Next, in priority order:**
+
+1. Implement and qualify training-only hierarchy-feature normalization with
+   explicit versioned preprocessing/replay semantics; consider a shallower or
+   residual-preserving proxy after a matched ablation. Preserve legacy model
+   behavior. Do not spend a larger Stratograph budget before this work.
+2. The prepared confirmation campaign stays **paused**. On a separate start
+   instruction, execute its immutable manifests under Standard priority with
+   bounded sessions; never pool discovery seeds into confirmation or substitute
+   a missing named baseline. Preserve the protected text test split.
+3. Optimize catalog parsing within individual validation calls, then remeasure
+   with identical verdicts. Profiling the source-revalidated report found
+   **29,076 catalog lookups**, accounting for roughly 96% of profiled cumulative
+   time. Avoid a global cache that could hide changed catalog bytes. No timing
+   from cProfile is a claimed unprofiled speedup.
+
+The repeated low/mid admission and explicit L4 aggregate surfaces are now
+available. WP-4.7's remaining preset/trusted-extended integration and the formal
+Phase 4 exit still need their explicit acceptance; no automatic scientific,
+portfolio or transfer promotion was made. Native cross-engine ingestion remains
+Phase 5.
 
 Supporting work: CodeRabbit automatic review is currently skipped by its
 repository star-count policy; a green skipped status is not review evidence.
@@ -856,8 +876,8 @@ artifact shape (B→Phase 5, co-signed here because Primordia emits it).
 
 WP-4.7 data and `tier_b_tiny` are implemented and contract-qualified. The
 2026-09-09 repeated 64/128 cohort passes decision-grade benchmark admission
-with zero blockers. Its parent remains open for the complete specified preset
-surface and trusted-extended/L4 exit; admission alone is not that exit. The other
+with zero blockers. The follow-up provides 24 L4 contrasts. Its parent remains
+open for the complete specified preset surface and trusted-extended exit; admission alone is not that exit. The other
 checked work packages mean implemented + short-qualified; they do not close the
 full scientific exit. Independent reviews covered numerical/search behavior,
 artifact semantics, transport and the bounded command surface.

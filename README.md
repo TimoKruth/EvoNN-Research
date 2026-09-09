@@ -29,7 +29,7 @@ Exact integrations and review decisions are recorded in project history.
 | Shared | Canonical identities/RNG, strict budgets/telemetry/three-file exports, catalog/pack loaders, checkpoints, LM-cache validation, transactional DuckDB/workspace and verified read-only access | Producer interoperability and future contract extensions |
 | Shared benchmarks | Eight frozen definitions plus two additive runtime definitions, four packs, verified tabular/image/real-text caches | Repeated Tier-B scientific qualification and optional enhanced pressure |
 | Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Broader scientific qualification and future producer interoperability |
-| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality, append-only evidence registry, paired-seed L4 analysis and evidence dashboard | Formal within-cohort L4 decisions and scientific qualification |
+| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality, append-only evidence registry, paired-seed L4 analysis and evidence dashboard | Scientific acceptance, targeted confirmation and native transfer |
 | Prism + Topograph | Package-local MLX/NumPy models including real next-token LM, bounded search, inheritance, atomic resume, portable exports and Compare ingestion | Targeted confirmation, stronger baselines and native transfer evidence |
 | Stratograph | Hierarchical cell search, trained-head proxy, five ablations, winner motifs, resume/replay | End-to-end hierarchy learning and scientific comparison claims |
 | Primordia | Trained primitive circuits, bounded archive/cost policy, verified motif/seed bank | Native cross-engine ingestion and proven transfer gains |
@@ -62,10 +62,13 @@ in 78 minutes. Its decision-grade benchmark-admission audit passes with zero
 blockers; all exports are L3. [Results and scope](PROJECT_HISTORY.md#tier-b-comparison--2026-09-09)
 show Prism leading language modeling, Primordia offering the lowest runtime,
 Topograph showing a regression signal and Stratograph needing a proxy diagnostic.
-These are validation-set observations from three seeds, not an L4 promotion or
-transfer proof. The original failed producer remains preserved. No campaign is
+The explicit follow-up now gives all 24 declared contrasts L4 evidence quality.
+These remain validation-set observations from three seeds, with no automatic
+engine promotion or transfer proof. The original failed producer remains preserved. No campaign is
 running or scheduled; [next actions](CONSOLIDATED_PLAN.md#immediate-next-actions)
-prioritize reporting and diagnostic work before further training.
+record the diagnosed Stratograph proxy limitation and the paused eight-seed
+confirmation protocol. Its 48 runs have passed planning/preflight; an expanded
+64-fit baseline qualification passed, including neural and boosted models.
 
 Run a verified short preset and rebuild its dashboard:
 
