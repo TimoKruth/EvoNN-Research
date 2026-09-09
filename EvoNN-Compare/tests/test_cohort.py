@@ -156,3 +156,14 @@ def test_different_floor_host_needs_verified_campaign_binding():
     assert analyze_cohort(rows,r,artifacts_verified=True)['groups'][0]['level']!='L4'
     for row in rows:row['matched_host_fingerprint']='validated-common-host'
     assert analyze_cohort(rows,r,artifacts_verified=True)['groups'][0]['level']=='L4'
+
+
+@pytest.mark.parametrize('count,expected',[(6,'likely_gain'),(8,'clear_gain')])
+def test_preregistered_five_contrast_family_needs_eight_for_clear_gain(count,expected):
+    r=request(range(count));base=r['panels'][0]
+    for name,benchmarks,budget in [('one-only',['one'],64),('two-only',['two'],64),('higher-budget',['one','two'],128)]:
+        panel=deepcopy(base);panel.update(id=name,benchmarks=benchmarks)
+        panel['reference']['budget']=panel['target']['budget']=budget;r['panels'].append(panel)
+    panel=deepcopy(base);panel['id']='budget-response';panel['target'].update(engine='prism',budget=128);r['panels'].append(panel)
+    groups=analyze_cohort(data(range(count)),r,artifacts_verified=True)['groups']
+    assert len(groups)==5 and all(g['statistical_label']==expected for g in groups)

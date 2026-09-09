@@ -17,7 +17,9 @@
     47,
     48,
     49,
-    50
+    50,
+    51,
+    52
   ],
   "scope": "bounded Tier B validation surface; no broad superiority, protected-test or transfer claim",
   "hypotheses": [
@@ -51,8 +53,8 @@
   ],
   "statistics": {
     "bootstrap": "4096 independent paired-seed resamples, RNG0; fixed panel weights and ceiling exclusion",
-    "multiplicity": "Holm across the four primary superiority contrasts; report all five quality contrasts and the efficiency ratio even when negative. No pooling discovery seeds or treating tasks/fits as independent repeats.",
-    "minimum_seeds": 6,
+    "multiplicity": "Holm across all five declared quality contrasts (conservative inclusion of the efficiency quality check); report all five quality contrasts and the efficiency ratio even when negative. No pooling discovery seeds or treating tasks/fits as independent repeats.",
+    "minimum_seeds": 8,
     "missing": "Any missing/failed expected seed or named baseline blocks confirmation; no baseline substitution.",
     "selection": "best validation outcome in the fixed run budget; selected-model generalization remains untested"
   },
@@ -93,13 +95,13 @@
     "run_timeout": 1500,
     "backend": "mlx_native",
     "priority": "Standard",
-    "ordering": "For each budget, alternate the declared three-system order across the six seeds.",
+    "ordering": "For each budget, alternate the declared three-system order across the eight seeds.",
     "warmup": "Prepare all datasets and verify/import optional libraries before timing; record host and environment; no host changes during campaign.",
     "holdout": "Last 15 percent of text remains unused. These runs confirm the validation-surface finding only."
   },
   "execution": {
-    "planned_runs": 36,
-    "planned_fits": 3456,
+    "planned_runs": 48,
+    "planned_fits": 4608,
     "max_session_seconds": 1800,
     "automatic_start": false,
     "source_revision": "must be bound by clean campaign manifests before execution",
@@ -109,7 +111,7 @@
       "lightgbm",
       "catboost"
     ],
-    "readiness": "install locked optional dependencies, prove imports and bounded enhanced-floor run, then plan twelve immutable campaigns without executing them"
+    "readiness": "install locked optional dependencies, prove imports and bounded enhanced-floor run, then plan sixteen immutable campaigns without executing them"
   },
   "analysis_request_template": {
     "schema_version": 1,
@@ -141,7 +143,9 @@
           47,
           48,
           49,
-          50
+          50,
+          51,
+          52
         ]
       },
       {
@@ -168,7 +172,9 @@
           47,
           48,
           49,
-          50
+          50,
+          51,
+          52
         ]
       },
       {
@@ -195,7 +201,9 @@
           47,
           48,
           49,
-          50
+          50,
+          51,
+          52
         ]
       },
       {
@@ -222,7 +230,9 @@
           47,
           48,
           49,
-          50
+          50,
+          51,
+          52
         ]
       },
       {
@@ -250,10 +260,13 @@
           47,
           48,
           49,
-          50
+          50,
+          51,
+          52
         ]
       }
-    ]
+    ],
+    "campaigns": []
   },
   "campaigns": [
     {
@@ -401,6 +414,54 @@
       }
     },
     {
+      "id": "confirmation-b128-s51",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          51
+        ],
+        "systems": [
+          "prism",
+          "topograph",
+          "contenders"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b128-s52",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          52
+        ],
+        "systems": [
+          "contenders",
+          "topograph",
+          "prism"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
       "id": "confirmation-b64-s45",
       "spec": {
         "pack": "tier_b_core_v2",
@@ -529,6 +590,54 @@
         ],
         "seeds": [
           50
+        ],
+        "systems": [
+          "contenders",
+          "prism",
+          "primordia"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b64-s51",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          64
+        ],
+        "seeds": [
+          51
+        ],
+        "systems": [
+          "primordia",
+          "prism",
+          "contenders"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "confirmation-b64-s52",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          64
+        ],
+        "seeds": [
+          52
         ],
         "systems": [
           "contenders",
