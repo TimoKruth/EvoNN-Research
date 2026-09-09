@@ -142,3 +142,22 @@ def test_overflowing_optional_probe_keeps_dataset_and_other_candidates_available
     assert result["available_optional"] == ["good"]
     invalid = result["optional_results"]["bad"]
     assert invalid["status"] == "failed" and invalid["invalid"] == 1 and invalid["charged"] == 0
+
+
+def test_external_estimator_without_sklearn_constraints_and_custom_validator():
+    from sklearn.base import BaseEstimator
+    from sklearn.ensemble import ExtraTreesClassifier
+    from sklearn.pipeline import Pipeline
+    from evonn_contenders.worker import _validate_parameters
+    class ExternalEstimator(BaseEstimator):
+        pass
+    # The inherited private sklearn helper is unusable for this valid protocol.
+    with pytest.raises(AttributeError):ExternalEstimator()._validate_params()
+    _validate_parameters(ExternalEstimator())
+    class ExplicitValidator(ExternalEstimator):
+        def _validate_params(self):
+            raise ValueError('external validation retained')
+    with pytest.raises(ValueError,match='external validation retained'):
+        _validate_parameters(ExplicitValidator())
+    with pytest.raises(ValueError):
+        _validate_parameters(Pipeline([('estimator',ExtraTreesClassifier(n_estimators=-1))]))

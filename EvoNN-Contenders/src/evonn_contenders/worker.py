@@ -13,6 +13,7 @@ import time
 import warnings
 
 import numpy as np
+from sklearn.base import BaseEstimator
 from sklearn.metrics import accuracy_score, mean_squared_error
 from threadpoolctl import threadpool_limits
 
@@ -23,7 +24,12 @@ from .models import OptionalContenderUnavailable, build_model
 
 def _validate_parameters(model):
     if hasattr(model, "_validate_params"):
-        model._validate_params()
+        # XGBoost/LightGBM inherit BaseEstimator's private helper without
+        # sklearn's constraint metadata. Their own fit validates parameters.
+        # Keep sklearn constraints and explicit third-party validators active.
+        inherited_helper = getattr(type(model), "_validate_params", None) is BaseEstimator._validate_params
+        if not inherited_helper or hasattr(model, "_parameter_constraints"):
+            model._validate_params()
     if hasattr(model, "steps"):
         for _, step in model.steps:
             _validate_parameters(step)
