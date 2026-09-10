@@ -108,7 +108,8 @@ and network available. No email, remote messages or automatic GitHub changes.
 Run a verified short preset and rebuild its dashboard:
 
 ```sh
-uv run evonn-compare fair-matrix --workspace .artifacts/compare --preset local
+uv run evonn-compare fair-matrix --workspace .artifacts/compare --preset local \
+  --systems prism topograph stratograph primordia contenders
 uv run evonn-compare workspace-report .artifacts/compare
 ```
 
@@ -116,6 +117,13 @@ uv run evonn-compare workspace-report .artifacts/compare
 run stays below 30 minutes; no overnight/weekend preset is admitted.
 
 ## Campaign planning and recovery
+
+Every new comparison must run **all four engines: Prism, Topograph, Stratograph
+and Primordia**, on each declared benchmark/budget/seed combination, with
+Contenders as additional baselines. This also applies to focused confirmation
+and generalization comparisons. Report every engine; weaknesses or execution
+failures do not justify omitting one. Failed or missing engine runs make the
+comparison incomplete. Historical frozen protocols remain unchanged.
 
 Create a JSON specification, for example `.artifacts/campaign-spec.json`:
 

@@ -18,6 +18,12 @@ Historical success is scoped to its recorded revision and evidence class.
 
 ## Eight-seed confirmation results — 2026-09-10
 
+After reviewing this focused confirmation, the user required **all four engines
+in every future comparison**. This is now recorded in AGENTS.md, README and the
+execution plan, including focused confirmation/generalization comparisons.
+Stratograph's omission from the completed run is historical; its results and
+frozen protocol are preserved rather than retroactively expanded.
+
 The [unchanged protocol](governance/tier-b-confirmation.json) and
 [result receipt](governance/tier-b-confirmation-results-20260910.json) bind the
 48-run / 4,608-fit confirmation on fresh seeds 45–52. The producer is the clean

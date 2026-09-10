@@ -119,12 +119,21 @@ Guardian state is `complete`; no new campaign is scheduled by this result.
 
 **Next, in priority order:**
 
+**Standing user requirement (2026-09-10):** every new comparison includes Prism,
+Topograph, Stratograph and Primordia on every declared benchmark/budget/seed
+combination, plus Contenders baselines. Focused research questions can restrict
+the predeclared statistical tests, not the engine roster. Report all four;
+failed or missing executions leave the comparison incomplete. Do not omit
+Stratograph while its proxy is being improved. The completed focused confirmation
+remains historical evidence and does not satisfy this new four-engine requirement.
+
 1. Implement and qualify training-only hierarchy-feature normalization with
    explicit versioned preprocessing/replay semantics; consider a shallower or
    residual-preserving proxy after a matched ablation. Preserve legacy model
    behavior. Do not spend a larger Stratograph budget before this work.
 2. Use the confirmed bounded Prism LM finding to design a separate, frozen
-   generalization check before accessing the protected text test split. Keep
+   generalization comparison with all four engines and Contenders before
+   accessing the protected text test split. Keep
    validation selection separate from final testing. Retain Primordia as a
    candidate for efficient tabular search, with its narrow tolerance margin and
    weaker image/LM outcomes explicit. Do not present Topograph as a confirmed
