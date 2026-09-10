@@ -10,6 +10,7 @@ import numpy as np
 
 from evonn_contenders import runner
 from evonn_shared.export_reader import read_export
+from evonn_shared.runtime_host import host_fields
 
 
 def test_real_isolated_fit_portable_export_and_missing_data_accounting(tmp_path, monkeypatch):
@@ -23,6 +24,7 @@ def test_real_isolated_fit_portable_export_and_missing_data_accounting(tmp_path,
         output_parent=tmp_path / "runs", cache_root=tmp_path / "cache", timeout=30, fit_timeout=20)
     before = {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in exported.iterdir()}
     bundle = read_export(exported)
+    assert bundle.manifest.runtime.host_fingerprint == hashlib.sha256(runner.json_bytes(host_fields())).hexdigest()
     assert bundle.manifest.status.value == "failed"
     assert bundle.manifest.accounting.actual_evaluations == 1
     assert bundle.manifest.accounting.failed_evaluations == 0

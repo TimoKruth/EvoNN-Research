@@ -1,6 +1,7 @@
 """Coordinator failure accounting and bounded transport, without optimizer work."""
 
 from concurrent.futures.process import BrokenProcessPool
+import hashlib
 import json
 from pathlib import Path
 
@@ -19,6 +20,8 @@ from evonn_primordia.search import Search as PrimordiaSearch
 from evonn_shared.runtime_journal import load_runtime_checkpoint
 from evonn_shared.datasets import load_dataset
 from evonn_shared.runtime_io import encode_snapshot, terminal_worker_failure, encode
+from evonn_shared.runtime_host import host_fields
+from evonn_shared.export_reader import read_export
 from evonn_shared.weight_cache import WeightCache
 
 
@@ -80,6 +83,9 @@ def test_failed_candidate_advances_once_and_preserves_charge(tmp_path, monkeypat
     assert resumed["completed"] == 2 and resumed["attempts"][0] == first
     assert [(a["charged"], a["invalid"]) for a in resumed["attempts"]] == [expected, expected]
     assert resumed["tip"] != state["tip"]
+    if failure == "transport":
+        exported = read_export(runtime.run_engine(search, pack_name="tier1_core_smoke", budget=8, resume=root))
+        assert exported.manifest.runtime.host_fingerprint == hashlib.sha256(encode(host_fields())).hexdigest()
 
 
 @pytest.mark.parametrize(

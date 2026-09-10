@@ -13,6 +13,8 @@ import pytest
 from evonn_compare import campaign as c
 from evonn_shared.datasets import load_dataset
 
+REAL_IDENTITY = c.identity
+
 
 @pytest.fixture
 def planned(tmp_path, monkeypatch):
@@ -222,3 +224,23 @@ def test_enhanced_dispatch_reaches_contender_cli(planned,monkeypatch):
     monkeypatch.setattr(c,'_bounded_process',dispatch)
     monkeypatch.setattr(c,'workspace_report',lambda root:{})
     assert c.run_campaign(planned,max_runs=1)['new_runs']==1
+
+
+def test_new_campaign_preflight_survives_hostname_rename_but_not_machine_change(planned, monkeypatch):
+    from evonn_shared import runtime_host
+    # Use the actual identity builder while holding irrelevant Git state constant.
+    monkeypatch.setattr(c, 'identity', REAL_IDENTITY)
+    monkeypatch.setattr(c, 'code_identity', lambda: ('a' * 40, False))
+    monkeypatch.setattr(runtime_host, '_machine_id', lambda system: '00112233445566778899aabbccddeeff')
+    monkeypatch.setattr(c.platform, 'node', lambda: 'first.router')
+    manifest = c.read_manifest(planned)
+    manifest['identity'] = c.identity()
+    manifest['sha256'] = c.sha({k: v for k, v in manifest.items() if k != 'sha256'})
+    (planned / 'campaign.json').write_bytes(c.encoded(manifest))
+    before = (planned / 'campaign.json').read_bytes()
+    monkeypatch.setattr(c.platform, 'node', lambda: 'renamed.router')
+    assert c.preflight(planned)['status'] == 'passed'
+    assert (planned / 'campaign.json').read_bytes() == before
+    monkeypatch.setattr(runtime_host, '_machine_id', lambda system: '112233445566778899aabbccddeeff00')
+    with pytest.raises(ValueError, match='drift'):
+        c.preflight(planned)

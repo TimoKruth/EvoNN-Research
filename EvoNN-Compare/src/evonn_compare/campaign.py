@@ -25,6 +25,7 @@ from evonn_shared.artifact_io import create_artifact_directory, publish_artifact
 from evonn_shared.datasets import array_digest, shared_root
 from evonn_shared.export_reader import read_document, read_export
 from evonn_shared.runtime_io import code_identity, source_identity, encode
+from evonn_shared.runtime_host import host_fields
 from evonn_shared.runtime_budget import execution_budget
 from evonn_shared.runtime_journal import load_runtime_checkpoint
 from evonn_shared.telemetry import ArtifactReference
@@ -98,7 +99,7 @@ def identity():
     files = sorted(p for p in (ROOT / "shared-benchmarks").rglob("*") if p.is_file() and p.suffix in {".json", ".yaml"})
     files += sorted((ROOT / "EvoNN-Contenders" / "src" / "evonn_contenders").rglob("*.yaml"))
     return {"commit": commit, "source_sha256": source_identity(), "python": sys.executable,
-            "prefix": sys.prefix, "host": [platform.node(), platform.system(), platform.machine(), platform.processor()],
+            "prefix": sys.prefix, "host": list(host_fields().values()),
             "versions": versions(),
             "data_files": {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in files}}
 

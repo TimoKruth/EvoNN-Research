@@ -39,8 +39,9 @@ exports, fit models, scan the entire artifact tree or install dependencies.
   training. The script does not report it as a current failure without supporting
   state. Historical repair events and the hourly check's old alerts have their own
   timestamps; do not present them as new interruptions.
-- Hostname drift is checked directly against the frozen identity, even between
-  guardian polls. A matching hostname alone does not validate code, libraries or
+- Host identity is checked directly against the frozen identity, even between
+  guardian polls: new `machine-v1` campaigns use the shared machine-ID helper;
+  historical campaigns retain their hostname check. A matching host alone does not validate code, libraries or
   data. Preserve unknown/error output and investigate only the specific file or
   short log tail needed; never call an incomplete query “healthy”.
 - Do not infer ETA from mixed budgets or wall time containing manual pauses.

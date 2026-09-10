@@ -8,6 +8,7 @@ from pathlib import Path
 import platform
 import re
 import subprocess
+import sys
 import time
 
 SYSTEMS = ('prism', 'topograph', 'stratograph', 'primordia', 'contenders')
@@ -110,6 +111,20 @@ def history(root, errors):
         return []
 
 
+def host_identity(source):
+    frozen = source.get('host', [None])[0]
+    if isinstance(frozen, str) and frozen.startswith('machine-v1:'):
+        helper = Path(__file__).resolve().parents[4] / 'EvoNN-Shared/src/evonn_shared/runtime_host.py'
+        code, output = run([sys.executable, str(helper)])
+        if code:
+            raise ValueError('Stable machine identity unavailable to status query')
+        current = json.loads(output)['host']
+        return dict(scheme='machine-v1', current=current, frozen=frozen, matches=current == frozen)
+    current = platform.node()
+    return dict(scheme='legacy_hostname', current=current, frozen=frozen,
+                matches=current == frozen if frozen else None)
+
+
 def counts(base, errors):
     ready = read(base / 'readiness.json', errors, True)
     entries = ready.get('campaigns', [])
@@ -180,9 +195,7 @@ def summarize(root, hourly, rows, now, errors):
             engines.append(item)
     progress = counts(base, errors)
     warnings = []
-    frozen_host = control.get('source', {}).get('host', [None])[0]
-    host = dict(current=platform.node(), frozen=frozen_host)
-    host['matches'] = host['current'] == frozen_host if frozen_host else None
+    host = host_identity(control.get('source', {}))
     state = status.get('state', 'unknown')
     paused = (root / 'PAUSE').exists()
     if paused:
@@ -198,7 +211,7 @@ def summarize(root, hourly, rows, now, errors):
     elif state in ('progress', 'resuming_by_user', 'repaired') and scheduler['loaded']:
         state = 'between_runs'
     if host['matches'] is False and state != 'complete':
-        warnings.append('hostname_drift')
+        warnings.append('hostname_drift' if host['scheme'] == 'legacy_hostname' else 'machine_identity_drift')
     if state in PROBLEMS:
         warnings.append('guardian_' + state)
     fresh = age(status.get('updated_at'), now)
@@ -238,7 +251,7 @@ def summarize(root, hourly, rows, now, errors):
                 guardian_status=dict(state=status.get('state'), updated_at=status.get('updated_at'), age_seconds=fresh,
                                      mode=control.get('mode'), scheduler=scheduler, repair_attempts=control.get('repairs', 0)),
                 current_error=str(status.get('error', ''))[-800:] if status.get('state') in PROBLEMS else None,
-                hostname=host, warnings=warnings, historical_errors=problems, latest_training_progress_at=latest_progress,
+                host_identity=host, warnings=warnings, historical_errors=problems, latest_training_progress_at=latest_progress,
                 hourly=hourly_status, completion=dict(receipt_matches=receipt_matches, completed_at=receipt.get('completed_at'),
                                                      scientific_evaluation='not assessed by status query'))
 

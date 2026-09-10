@@ -97,6 +97,15 @@ It discovers the current guardian, follows replacement targets, and reports
 journaled progress, active engines, hostname drift and monitoring health without
 loading models or revalidating exports.
 
+New runs identify the machine with a versioned SHA-256 token derived from the
+OS-provided machine ID (`IOPlatformUUID` on macOS, machine-id on Linux, MachineGuid
+on Windows), plus OS and architecture fields. Campaign checks and all five
+systems' exports use this identity; DHCP, network changes and hostname renames
+do not change it. Missing machine IDs fail explicitly rather than falling back
+to a hostname. Raw identifiers are not stored. Historical producers and their
+frozen hostname-based identities remain unchanged, including the active
+September 10 comparison; keep its current hostname setting until it finishes.
+
 An independent LaunchAgent checks this guardian and its current training target
 every hour, including failures repaired between checks. It sends macOS
 notifications only for problems and records results in

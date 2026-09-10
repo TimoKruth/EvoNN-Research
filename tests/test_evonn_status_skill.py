@@ -113,3 +113,16 @@ def test_duplicate_completion_and_malformed_json_not_silent(env):
     errors = []
     s.counts(env[1], errors)
     assert len(errors) == 1
+
+
+def test_new_machine_identity_does_not_report_network_rename(env, monkeypatch):
+    control = s.read(env[0] / 'control.json', [])
+    token = 'machine-v1:' + 'a' * 64
+    control['source']['host'] = [token, 'Darwin', 'arm64', 'arm']
+    write(env[0] / 'control.json', control)
+    monkeypatch.setattr(s.platform, 'node', lambda: 'new.router')
+    monkeypatch.setattr(s, 'run', lambda command: (0, json.dumps({'host': token})))
+    result = summary(env)
+    assert result['host_identity']['scheme'] == 'machine-v1' and not result['warnings']
+    monkeypatch.setattr(s, 'run', lambda command: (0, json.dumps({'host': 'machine-v1:' + 'b' * 64})))
+    assert 'machine_identity_drift' in summary(env)['warnings']

@@ -18,6 +18,13 @@ Historical success is scoped to its recorded revision and evidence class.
 
 ## All-engine higher-budget comparison started — 2026-09-10
 
+Following two hostname reversions during pause/resume, future campaign and export
+identities now use a versioned hash of the OS machine ID. All four engines and
+Contenders share this provider. Renames no longer invalidate a new campaign;
+machine changes remain detectable. The status skill handles both schemes.
+Historical manifests, exports and the running producer retain their original
+hostname identity; no evidence is relabeled or mixed across revisions.
+
 At the user's request, independent hourly oversight was added to the minute
 guardian. A separate pinned LaunchAgent checks guardian availability, progress,
 repair history and completion evidence, recording local status and issuing macOS
