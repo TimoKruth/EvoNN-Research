@@ -139,6 +139,11 @@ def validate_config(config):
     assert Path(config['codex']).is_file()
 
 
+def require_systems(protocol, spec):
+    required = protocol.get('comparison_policy', {}).get('required_systems', [])
+    assert set(required) <= set(spec['systems']), 'Required comparison engine omitted'
+
+
 def probe(target, protocol_path, *, final=False):
     # Invoked with the target interpreter; no imports from the editing environment.
     from evonn_compare.campaign import CampaignSpec, adopted, events, preflight, read_manifest, slots, slot_id
@@ -156,6 +161,7 @@ def probe(target, protocol_path, *, final=False):
         assert digest(workspace / 'campaign.json') == entry['manifest_sha256']
         manifest = read_manifest(workspace)
         assert manifest['spec'] == CampaignSpec.model_validate(planned['spec']).model_dump()
+        require_systems(protocol, manifest['spec'])
         preflight(workspace)
         assert manifest['identity']['data_files'][
             'EvoNN-Contenders/src/evonn_contenders/pools.yaml'] == protocol['baselines']['pool_sha256']
@@ -318,7 +324,7 @@ def tick(config):
                 state['mode'] = 'complete'
                 write(root / 'control.json', state)
                 note(root, 'complete', completed=checked['completed'], total=checked['total'], target=target)
-                notify('Vergleich vollständig abgeschlossen und Exporte geprüft: 48/48 Runs.')
+                notify(f"Vergleich vollständig abgeschlossen und Exporte geprüft: {checked['completed']}/{checked['total']} Runs.")
                 return
             if state['mode'] == 'observe':
                 raise RuntimeError('Original supervisor stopped before completion. Inspect its status, invocation logs and partial runs.')

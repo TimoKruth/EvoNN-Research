@@ -18,6 +18,7 @@ def main():
     parser.add_argument('--producer', type=Path, required=True)
     parser.add_argument('--base', type=Path, required=True)
     parser.add_argument('--state-root', type=Path, required=True)
+    parser.add_argument('--protocol', type=Path, help='Frozen protocol; defaults to the historical confirmation protocol')
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--install-scheduler', action='store_true')
     args = parser.parse_args()
@@ -39,7 +40,7 @@ def main():
     for name in ('training_guardian.py', 'codex-maintenance-prompt.md'):
         shutil.copyfile(Path(__file__).parent / name, runtime / name)
     protocol = root / 'protocol.json'
-    shutil.copyfile(producer / 'governance/tier-b-confirmation.json', protocol)
+    shutil.copyfile(args.protocol.resolve() if args.protocol else producer / 'governance/tier-b-confirmation.json', protocol)
     target = dict(producer=str(producer), base=str(base))
     write(root / 'initial-target.json', target)
     result = subprocess.run([str(producer / '.venv/bin/python'), str(runtime / 'training_guardian.py'),

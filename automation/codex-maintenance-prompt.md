@@ -24,7 +24,7 @@ do not launch training, supervisors, scheduled jobs or other agents yourself.
    run meaningful regression and repository checks, commit the tested change,
    and install its locked environment (all packages/extras/dev). Read
    `evonn_compare.campaign.prepare_plan`, `CampaignSpec` and `preflight` there.
-   Prepare ALL sixteen campaigns afresh using EXACTLY the supplied protocol
+   Prepare ALL campaigns in the supplied protocol afresh using EXACTLY its
    specs, order and seeds. Use a new artifact base inside this clone, the original
    verified dataset cache, and its own Python executable. Do not copy outcomes.
    Write readiness.json with protocol_sha256 and campaign entries containing id,

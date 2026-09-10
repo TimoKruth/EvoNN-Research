@@ -50,8 +50,10 @@ def test_crash_triggers_repair_on_next_tick(env, monkeypatch, tmp_path):
     assert len(calls) == 1 and 'supervisor stopped' in calls[0]
 
 
-def test_managed_resume_then_complete_requires_final_validation(env, monkeypatch, tmp_path):
+@pytest.mark.parametrize('total', [48, 80])
+def test_managed_resume_then_complete_requires_final_validation(env, monkeypatch, tmp_path, total):
     config, state, checked = env
+    checked['total'] = total
     state['mode'] = 'managed'
     g.write(tmp_path / 'control.json', state)
     checks = []
@@ -62,7 +64,7 @@ def test_managed_resume_then_complete_requires_final_validation(env, monkeypatch
 
     def dispatch(command, **kwargs):
         assert command[-4:] == ['--session-timeout', '1800', '--max-runs', '1']
-        checked['completed'] = 48
+        checked['completed'] = total
         json.dump({'status': 'complete', 'new_runs': 1}, kwargs['stdout'])
         return 0
 
@@ -75,6 +77,16 @@ def test_managed_resume_then_complete_requires_final_validation(env, monkeypatch
     assert checks[-1] is True
     assert g.read(tmp_path / 'control.json')['mode'] == 'complete'
     assert (tmp_path / 'completion.json').exists()
+    assert g.read(tmp_path / 'completion.json')['verified']['completed'] == total
+
+
+def test_new_comparison_cannot_omit_stratograph_but_old_receipt_still_reads():
+    all_systems = ['prism', 'topograph', 'stratograph', 'primordia', 'contenders']
+    protocol = {'comparison_policy': {'required_systems': all_systems}}
+    g.require_systems(protocol, {'systems': all_systems[::-1]})
+    with pytest.raises(AssertionError, match='Required comparison engine omitted'):
+        g.require_systems(protocol, {'systems': [s for s in all_systems if s != 'stratograph']})
+    g.require_systems({}, {'systems': ['prism', 'contenders']})
 
 
 def test_incomplete_validation_never_claims_completion(env, monkeypatch, tmp_path):
