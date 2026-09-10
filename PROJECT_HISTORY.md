@@ -18,6 +18,13 @@ Historical success is scoped to its recorded revision and evidence class.
 
 ## All-engine higher-budget comparison started — 2026-09-10
 
+At the user's request, independent hourly oversight was added to the minute
+guardian. A separate pinned LaunchAgent checks guardian availability, progress,
+repair history and completion evidence, recording local status and issuing macOS
+problem notifications. Its state is `.artifacts/all-engines-hourly-20260910`.
+The combined guardian and health-check suite passes **27 tests**; the training
+producer and frozen protocol are unchanged.
+
 The user explicitly requested higher budgets for all four engines and Contenders.
 The [frozen protocol](governance/all-engines-high-budget-20260910.json) declares
 128/256 fits, eight fresh seeds 53–60 and all five systems in each case: **80 runs /

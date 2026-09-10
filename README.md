@@ -90,6 +90,19 @@ and Contenders at **128/256 fits**, eight fresh seeds **53–60**, **80 runs /
 proxy; the proposed normalization has not been silently introduced. Live
 guardian status is `.artifacts/all-engines-guardian-20260910/status.json`.
 
+An independent LaunchAgent checks this guardian and its current training target
+every hour, including failures repaired between checks. It sends macOS
+notifications only for problems and records results in
+`.artifacts/all-engines-hourly-20260910/status.json` and `history.jsonl`.
+It checks scheduler availability, stale status, stalled progress and the final
+completion receipt; bounded repair and validation periods are allowed.
+Install for another guardian with `automation/install-training-healthcheck.py
+--guardian-root <guardian-state> --state-root <new-hourly-state>
+--install-scheduler`. Both monitors use pinned runtime copies and load at login;
+hourly checks require the Mac awake and the user session active. Notification
+visibility depends on macOS notification settings; these are local alerts, not
+messages in this chat. The hourly checker does not launch or modify training.
+
 For an active campaign the guardian checks the dedicated supervisor every 60
 seconds; interruption triggers bounded Codex repair in an isolated clone.
 Verified unchanged runs resume through the campaign journal. Producer changes
