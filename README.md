@@ -90,6 +90,13 @@ and Contenders at **128/256 fits**, eight fresh seeds **53–60**, **80 runs /
 proxy; the proposed normalization has not been silently introduced. Live
 guardian status is `.artifacts/all-engines-guardian-20260910/status.json`.
 
+For a fast read-only snapshot, use the project skill
+[read-evonn-status](.agents/skills/read-evonn-status/SKILL.md), or run
+`.venv/bin/python .agents/skills/read-evonn-status/scripts/status.py --project .`.
+It discovers the current guardian, follows replacement targets, and reports
+journaled progress, active engines, hostname drift and monitoring health without
+loading models or revalidating exports.
+
 An independent LaunchAgent checks this guardian and its current training target
 every hour, including failures repaired between checks. It sends macOS
 notifications only for problems and records results in
