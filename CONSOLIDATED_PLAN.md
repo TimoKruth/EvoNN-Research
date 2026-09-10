@@ -95,8 +95,11 @@ classes are additional pressure, not assumed empirically stronger scores.
 
 The isolated execution checkout is
 `/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909`, pinned to
-`7da8e76` with locked optional dependencies. Its **16 manifests passed preflight**
-and contain **zero dispatch events**. A 64-fit enhanced-floor qualification
+`7da8e76` with locked optional dependencies. Its **16 manifests passed preflight**.
+Execution started on **2026-09-10 at 11:33 CEST**, using fresh manifests in
+`.artifacts/confirmation-execution-20260910` after a network hostname change;
+source, libraries, specifications and dataset provenance are unchanged. The
+original unused manifests remain retained. A 64-fit enhanced-floor qualification
 completed in 203 seconds with no failed fits; XGBoost, LightGBM, CatBoost, CNN
 and Transformer all ran. The initial qualification exposed a private sklearn
 validation assumption in external estimators; the fix preserves sklearn and
@@ -108,10 +111,15 @@ explicit third-party validation, and the failed producer remains retained.
    explicit versioned preprocessing/replay semantics; consider a shallower or
    residual-preserving proxy after a matched ablation. Preserve legacy model
    behavior. Do not spend a larger Stratograph budget before this work.
-2. The prepared confirmation campaign stays **paused**. On a separate start
-   instruction, execute its immutable manifests under Standard priority with
-   bounded sessions; never pool discovery seeds into confirmation or substitute
-   a missing named baseline. Preserve the protected text test split.
+2. Finish the authorized confirmation under Standard priority and bounded
+   sessions, then evaluate the frozen five-contrast family. A minute-based
+   guardian observes the current supervisor, invokes isolated Codex repair after
+   interruption and resumes only verified recoverable runs. Source changes or
+   unresumable attempts require a fresh full comparison with superseded evidence
+   retained. Never pool revisions/discovery seeds or substitute a missing named
+   baseline. Preserve the protected text test split. Operational controls and
+   circuit-breaker recovery are documented in README; local live status is
+   `.artifacts/training-guardian-20260910/status.json`.
 3. Optimize catalog parsing within individual validation calls, then remeasure
    with identical verdicts. Profiling the source-revalidated report found
    **29,076 catalog lookups**, accounting for roughly 96% of profiled cumulative

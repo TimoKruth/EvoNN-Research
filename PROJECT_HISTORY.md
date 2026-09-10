@@ -6,7 +6,7 @@ authoritative: false
 
 # EvoNN Project History
 
-**Updated:** 2026-09-09. Foundation acceptance is merged through #28;
+**Updated:** 2026-09-10. Foundation acceptance is merged through #28;
 Phase 1 implementation and runtime evidence are recorded in #29/#30, with
 required hosted checks attached to those revisions. Phase2 implementation and
 its source-bound acceptance cohort are recorded in #31. Phase 3 is merged in
@@ -15,6 +15,33 @@ This is the compact record of completed work, review decisions and verification.
 Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
+
+## Confirmation start and unattended recovery — 2026-09-10
+
+The user authorized the frozen 48-run / 4,608-fit confirmation and subsequently
+automatic Codex diagnosis, repair, resume or necessary restart until completion.
+Training started at 11:33 CEST in the clean producer `7da8e76`. Only the network
+hostname had drifted since planning; sixteen fresh manifests preserve the exact
+protocol and datasets, with the unused originals retained. Execution artifacts:
+`../EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910`.
+
+The repository-owned `automation/` guardian uses launchd minute polling, a
+process-inherited lease, bounded repair sessions, local notifications, retry
+backoff and a repeated-failure circuit breaker. It leaves the existing supervisor
+in control while healthy. Repairs run in dedicated clones; a changed producer
+requires a complete replacement cohort and cannot mix old results into it.
+Runtime state/logs and pinned automation copies live in
+`.artifacts/training-guardian-20260910`. A complete status requires source-bound
+validation of every completed export. No original training code or evidence was
+changed, and no fault was injected into the live comparison.
+
+Validation: 16 guardian regression tests cover crash/recovery transitions,
+final-validation rejection, provenance/path restrictions, retry/pause behavior,
+actual child-process timeout and inherited locking, PID-reuse-safe termination,
+and an executable CLI repair fixture. A real authenticated Codex invocation also
+created a disposable marker through a workspace-write shell tool. Ruff and shell
+syntax checks passed. These checks validate the mechanism, not a guarantee that
+arbitrary scientific failures, credentials or physical outages can be repaired.
 
 ## Comparison follow-up and Stratograph diagnosis — 2026-09-09
 

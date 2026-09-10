@@ -66,9 +66,33 @@ The explicit follow-up now gives all 24 declared contrasts L4 evidence quality.
 These remain validation-set observations from three seeds, with no automatic
 engine promotion or transfer proof. The original failed producer remains preserved. No campaign is
 running or scheduled; [next actions](CONSOLIDATED_PLAN.md#immediate-next-actions)
-record the diagnosed Stratograph proxy limitation and the paused eight-seed
-confirmation protocol. Its 48 runs have passed planning/preflight; an expanded
+record the diagnosed Stratograph proxy limitation and the eight-seed
+confirmation protocol, started on 2026-09-10. Its 48 runs passed planning/preflight; an expanded
 64-fit baseline qualification passed, including neural and boosted models.
+
+The active confirmation has a local, unattended training guardian. Every 60
+seconds it observes the dedicated supervisor; an interruption triggers a bounded
+Codex repair in an isolated clone. Verified unchanged runs resume through the
+campaign journal. A required producer change or unresumable attempt starts a
+fresh full comparison, retaining all superseded evidence. Frozen seeds, budgets,
+baselines, data and acceptance gates remain binding. Completion requires all 48
+exports to pass validation, not just a successful process exit.
+
+The reusable entry point is `automation/install-training-guardian.py` with
+`--producer`, `--base`, `--state-root`, first `--dry-run`, then
+`--install-scheduler`. Runtime snapshots, repair decisions and logs are stored in
+the supplied state directory. For this campaign it is
+`.artifacts/training-guardian-20260910`: inspect `status.json`, `control.json` and
+`history.jsonl`; `repairs/` contains individual Codex transcripts and fixes.
+Create a `PAUSE` file there to prevent new dispatches/repairs (an active bounded
+run finishes). Remove it to continue. Three failed repairs for the same error,
+or twelve total attempts, open a circuit breaker and issue a local notification;
+credentials/physical intervention cannot be repaired automatically. After fixing
+the cause, under `guardian.lock`, change `control.json` mode to `repair`, clear
+`failure_counts`, set `repairs` and `next_attempt_at` to zero, and remove `PAUSE`.
+Do not edit runtime control while a repair or training invocation is active.
+The LaunchAgent loads at user login and needs this Mac awake, Codex authenticated
+and network available. No email, remote messages or automatic GitHub changes.
 
 Run a verified short preset and rebuild its dashboard:
 
