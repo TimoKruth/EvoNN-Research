@@ -105,21 +105,30 @@ and Transformer all ran. The initial qualification exposed a private sklearn
 validation assumption in external estimators; the fix preserves sklearn and
 explicit third-party validation, and the failed producer remains retained.
 
+**Confirmation evaluated (2026-09-10):** all **48 runs / 4,608 fits** finished
+without failures or repairs in 108m09s; all exports validated and **128 native
+winner replays passed**. The unchanged frozen five-contrast family reaches L4.
+The [result receipt](governance/tier-b-confirmation-results-20260910.json) binds
+all per-seed measurements, criteria and source artifacts. Prism LM passes both
+predeclared comparisons (Holm p=0.0391); Topograph regression fails confirmation
+(Holm p=0.2344 against CatBoost and 1.0 against the required floor). Primordia's
+joint tabular-quality/full-pack-runtime criterion passes narrowly: quality CI
+[-2.831%, +4.595%] against a -3% tolerance, runtime ratio CI [0.6839, 0.7406]
+against an upper-bound requirement of 0.75. Image/LM parity is not claimed.
+Guardian state is `complete`; no new campaign is scheduled by this result.
+
 **Next, in priority order:**
 
 1. Implement and qualify training-only hierarchy-feature normalization with
    explicit versioned preprocessing/replay semantics; consider a shallower or
    residual-preserving proxy after a matched ablation. Preserve legacy model
    behavior. Do not spend a larger Stratograph budget before this work.
-2. Finish the authorized confirmation under Standard priority and bounded
-   sessions, then evaluate the frozen five-contrast family. A minute-based
-   guardian observes the current supervisor, invokes isolated Codex repair after
-   interruption and resumes only verified recoverable runs. Source changes or
-   unresumable attempts require a fresh full comparison with superseded evidence
-   retained. Never pool revisions/discovery seeds or substitute a missing named
-   baseline. Preserve the protected text test split. Operational controls and
-   circuit-breaker recovery are documented in README; local live status is
-   `.artifacts/training-guardian-20260910/status.json`.
+2. Use the confirmed bounded Prism LM finding to design a separate, frozen
+   generalization check before accessing the protected text test split. Keep
+   validation selection separate from final testing. Retain Primordia as a
+   candidate for efficient tabular search, with its narrow tolerance margin and
+   weaker image/LM outcomes explicit. Do not present Topograph as a confirmed
+   regression leader or extend the fixed eight-seed test after seeing results.
 3. Optimize catalog parsing within individual validation calls, then remeasure
    with identical verdicts. Profiling the source-revalidated report found
    **29,076 catalog lookups**, accounting for roughly 96% of profiled cumulative

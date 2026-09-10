@@ -64,19 +64,30 @@ show Prism leading language modeling, Primordia offering the lowest runtime,
 Topograph showing a regression signal and Stratograph needing a proxy diagnostic.
 The explicit follow-up now gives all 24 declared contrasts L4 evidence quality.
 These remain validation-set observations from three seeds, with no automatic
-engine promotion or transfer proof. The original failed producer remains preserved. No campaign is
-running or scheduled; [next actions](CONSOLIDATED_PLAN.md#immediate-next-actions)
-record the diagnosed Stratograph proxy limitation and the eight-seed
-confirmation protocol, started on 2026-09-10. Its 48 runs passed planning/preflight; an expanded
-64-fit baseline qualification passed, including neural and boosted models.
+engine promotion or transfer proof. The original failed producer remains preserved.
 
-The active confirmation has a local, unattended training guardian. Every 60
-seconds it observes the dedicated supervisor; an interruption triggers a bounded
-Codex repair in an isolated clone. Verified unchanged runs resume through the
-campaign journal. A required producer change or unresumable attempt starts a
-fresh full comparison, retaining all superseded evidence. Frozen seeds, budgets,
-baselines, data and acceptance gates remain binding. Completion requires all 48
-exports to pass validation, not just a successful process exit.
+The [eight-seed confirmation](governance/tier-b-confirmation-results-20260910.json)
+finished on **2026-09-10**: **48 runs / 4,608 successful fits**, no failures or
+repairs. The protocol file remains an immutable pre-execution snapshot; the
+result receipt records current completion. All five frozen contrasts reach L4;
+128 saved native winners replay.
+**Prism's bounded LM advantage is confirmed** against the tiny Transformer and
+required floor (mean perplexity 16.11 versus 36.96 / 33.65; Holm p=0.0391).
+**Topograph's regression advantage is not confirmed** (CatBoost comparison Holm
+p=0.2344; required-floor p=1.0). **Primordia's joint tabular-quality/runtime
+criterion passes narrowly**: its quality interval stays above the -3% tolerance,
+and paired full-pack runtime is 28.5% lower than Prism@64 (95% interval
+25.9–31.6% lower). This does not establish image/LM parity or protected-test
+performance. [Next actions](CONSOLIDATED_PLAN.md#immediate-next-actions) retain
+the Stratograph proxy work and scoped generalization validation.
+
+The local training guardian is now in terminal `complete` state and starts no
+new work. For an active campaign it checks the dedicated supervisor every 60
+seconds; interruption triggers bounded Codex repair in an isolated clone.
+Verified unchanged runs resume through the campaign journal. Producer changes
+or unresumable attempts require a fresh full comparison, retaining superseded
+evidence. Frozen seeds, budgets, baselines, data and admission gates remain
+binding; completion requires validated exports, not just process exit.
 
 The reusable entry point is `automation/install-training-guardian.py` with
 `--producer`, `--base`, `--state-root`, first `--dry-run`, then

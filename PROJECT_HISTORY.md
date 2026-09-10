@@ -16,6 +16,63 @@ Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
+## Eight-seed confirmation results — 2026-09-10
+
+The [unchanged protocol](governance/tier-b-confirmation.json) and
+[result receipt](governance/tier-b-confirmation-results-20260910.json) bind the
+48-run / 4,608-fit confirmation on fresh seeds 45–52. The producer is the clean
+`7da8e76` checkout; training finished at 13:21 CEST after 108m09s, with zero
+failed fits, invalid proposals or repairs. The guardian verified completion at
+13:22 CEST. All five contrasts reach L4 with no blockers. Thirty-two native runs
+replay all **128 saved winners**. Independent extraction agrees with the formal
+report, and exhaustive enumeration of 256 sign assignments reproduces all five
+signed-rank p-values. No additional training was started for this analysis.
+
+Positive quality effects favor the target. Intervals below are 95% paired-seed
+percentile intervals for the symmetric relative effect, not raw score changes.
+Holm correction covers all five declared quality comparisons.
+
+| Frozen comparison | Mean effect | CI95 | Holm p | Criterion result |
+| --- | ---: | ---: | ---: | --- |
+| Prism LM vs tiny Transformer | +77.92% | +69.55% to +85.26% | 0.0391 | Pass |
+| Prism LM vs required floor | +70.58% | +67.40% to +73.49% | 0.0391 | Pass |
+| Topograph regression vs CatBoost | +4.60% | +1.38% to +8.31% | 0.2344 | Not confirmed |
+| Topograph regression vs required floor | +1.07% | -3.17% to +5.61% | 1.0000 | Not confirmed |
+| Primordia vs Prism tabular quality @64 | +1.04% | -2.83% to +4.60% | 1.0000 | Predeclared -3% tolerance met |
+
+**Prism:** mean validation perplexity is **16.11**, versus **36.96** for the
+frozen tiny Transformer and **33.65** for the required floor. Both margins and
+corrected tests pass, and all eight paired seeds favor Prism. This confirms the
+bounded validation-surface result, not general Transformer/architecture superiority.
+
+**Topograph:** mean diabetes MSE is **2738.5**, versus **2870.3** for CatBoost
+and **2769.6** for the required floor. Its numerical advantage does not satisfy
+the complete predeclared significance/margin criteria. It is not a confirmed
+regression winner; this is not proof that it is worse either. The best outcome
+from the entire expanded contender pool averages MSE 2721.5.
+
+**Primordia:** the separate paired full-pack runtime ratio averages **0.7148**
+(CI95 **0.6839–0.7406**): **28.5% less runtime**, with an interval of
+25.9–31.6% less, compared with Prism@64. Its mean run takes 31.38s versus 44.13s.
+The quality lower bound (-2.831%) clears the -3% tolerance narrowly and the
+runtime upper bound clears 0.75, so the **joint predeclared criterion passes**.
+Nonsignificance is not used as proof of equivalence; the tolerance test is
+explicit. Quality covers banknote/diabetes only. Image accuracy is 88.13% versus
+97.12% for Prism@64, and LM perplexity is 28.73 versus 16.58; broader parity is
+not supported.
+
+The first report evaluated baseline admission per single-seed campaign and was
+blocked. Rebuilding a canonical aggregate workspace let the unchanged admission
+rule evaluate all existing low/mid-budget evidence jointly. The blocked report
+is retained; no outcome, original campaign manifest or test rule was changed.
+
+Artifacts, the separate 48-record aggregate registry and reproducible extraction scripts
+are retained under `.artifacts/confirmation-analysis-20260910`. The receipt
+records file hashes and original source paths. Discovery seeds were not pooled,
+no missing baseline was substituted, and the protected text test remains unused.
+Eight-seed uncertainty and validation selection still limit interpretation;
+Phase-4/portfolio/transfer promotion is not automatically authorized.
+
 ## Confirmation start and unattended recovery — 2026-09-10
 
 The user authorized the frozen 48-run / 4,608-fit confirmation and subsequently

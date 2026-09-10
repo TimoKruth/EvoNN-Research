@@ -1,0 +1,2369 @@
+{
+  "schema_version": 1,
+  "status": "completed_and_evaluated",
+  "protocol": {
+    "path": "governance/tier-b-confirmation.json",
+    "sha256": "98365b3a2f52483bb53734ecadafca0d72db65335ae8b8522a0a5c99206728ae",
+    "unchanged_since_planning": true
+  },
+  "source_revision": "7da8e769e7cee64ad325bdbd0e45ad07957aa381",
+  "consumer": {
+    "code_dirty": false,
+    "git_commit": "0acfd4c94d71d40868f2171729b47199c34d5804",
+    "source_sha256": "b1f372e5d72d417f703185bc8b8ed013090ff4d470c61f64544ac7feb34111b2"
+  },
+  "seeds": [
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52
+  ],
+  "scope": "bounded Tier B validation surface; no broad superiority, protected-test or transfer claim",
+  "execution": {
+    "completed_runs": 48,
+    "actual_fits": 4608,
+    "failed_fits": 0,
+    "invalid_proposals": 0,
+    "repairs": 0,
+    "started_at": "2026-09-10T09:32:59.962417+00:00",
+    "finished_at": "2026-09-10T11:21:08.718626+00:00",
+    "wall_seconds": 6488.756209,
+    "exports_verified_at": "2026-09-10T11:22:34.743659+00:00"
+  },
+  "hypotheses": [
+    {
+      "id": "prism-lm",
+      "confirmed": true,
+      "criterion": "Both effect CI95 lower bounds >0.05 and Holm p<=0.05"
+    },
+    {
+      "id": "topograph-regression",
+      "confirmed": false,
+      "criterion": "Both effect CI95 lower bounds >0.01 and Holm p<=0.05"
+    },
+    {
+      "id": "primordia-efficiency",
+      "confirmed": true,
+      "quality_criterion_pass": true,
+      "runtime_criterion_pass": true,
+      "criterion": "Tabular quality CI95 lower bound >=-0.03 AND full-pack paired mean time-ratio CI95 upper bound <=0.75"
+    }
+  ],
+  "quality_contrasts": [
+    {
+      "id": "prism-lm-neural",
+      "reference": {
+        "budget": 128,
+        "contender": "transformer_lm_tiny",
+        "engine": "contenders",
+        "selection": "named_contender"
+      },
+      "target": {
+        "budget": 128,
+        "contender": null,
+        "engine": "prism",
+        "selection": "winner"
+      },
+      "benchmarks": [
+        "shakespeare_byte_lm"
+      ],
+      "seeds": [
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52
+      ],
+      "n": 8,
+      "level": "L4",
+      "blockers": [],
+      "statistical_label": "clear_gain",
+      "effect_mean": 0.7792003854450819,
+      "bootstrap_ci95": [
+        0.6954700686494141,
+        0.852623103197946
+      ],
+      "wilcoxon": {
+        "assumption": "independent seed effects symmetric under the null; diagnostic, not causal proof",
+        "holm_pvalue": 0.0390625,
+        "method": "two-sided signed-rank permutation, <=8192 permutations",
+        "n": 8,
+        "pvalue": 0.0078125,
+        "statistic": 0.0,
+        "status": "available"
+      },
+      "seed_effects": [
+        0.8171925535171563,
+        0.7943297541040387,
+        0.9045351464445689,
+        0.8348588168660257,
+        0.6514723342356367,
+        0.9157167931079531,
+        0.5449114674086164,
+        0.7705862178766589
+      ],
+      "raw_deltas": [
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 22.225055457849944,
+          "effect": 0.8171925535171563,
+          "reference": 38.30936813354492,
+          "reference_outcome": "transformer_lm_tiny_r0003",
+          "reference_run_id": "contenders_20260910T093825_886e9cdf37eb",
+          "seed": 45,
+          "target": 16.084312675694978,
+          "target_outcome": "candidate_000056",
+          "target_run_id": "prism_20260910T093301_b17499b356"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 22.043992473113654,
+          "effect": 0.7943297541040387,
+          "reference": 38.773685455322266,
+          "reference_outcome": "transformer_lm_tiny_r0006",
+          "reference_run_id": "contenders_20260910T094240_73d3b2c26962",
+          "seed": 46,
+          "target": 16.72969298220861,
+          "target_outcome": "candidate_000100",
+          "target_run_id": "prism_20260910T094857_094c9c29de"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 25.230238721842845,
+          "effect": 0.9045351464445689,
+          "reference": 40.50816345214844,
+          "reference_outcome": "transformer_lm_tiny_r0000",
+          "reference_run_id": "contenders_20260910T095443_83a12ba04346",
+          "seed": 47,
+          "target": 15.277924730305593,
+          "target_outcome": "candidate_000068",
+          "target_run_id": "prism_20260910T095025_77668693bf"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 23.837066001118284,
+          "effect": 0.8348588168660257,
+          "reference": 40.47074508666992,
+          "reference_outcome": "transformer_lm_tiny_r0005",
+          "reference_run_id": "contenders_20260910T095935_53b24330a56e",
+          "seed": 48,
+          "target": 16.633679085551638,
+          "target_outcome": "candidate_000116",
+          "target_run_id": "prism_20260910T100646_5012605ba0"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 14.769268975117331,
+          "effect": 0.6514723342356367,
+          "reference": 30.055234909057617,
+          "reference_outcome": "transformer_lm_tiny_r0007",
+          "reference_run_id": "contenders_20260910T101250_48ef614432d3",
+          "seed": 49,
+          "target": 15.285965933940286,
+          "target_outcome": "candidate_000120",
+          "target_run_id": "prism_20260910T100826_66a9bc6105"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 24.670315365543257,
+          "effect": 0.9157167931079531,
+          "reference": 39.276145935058594,
+          "reference_outcome": "transformer_lm_tiny_r0000",
+          "reference_run_id": "contenders_20260910T101753_a70a83f5b703",
+          "seed": 50,
+          "target": 14.605830569515337,
+          "target_outcome": "candidate_000092",
+          "target_run_id": "prism_20260910T102606_cc10e8d9ef"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 13.264722484888004,
+          "effect": 0.5449114674086164,
+          "reference": 30.975255966186523,
+          "reference_outcome": "transformer_lm_tiny_r0004",
+          "reference_run_id": "contenders_20260910T103348_653c330b202d",
+          "seed": 51,
+          "target": 17.71053348129852,
+          "target_outcome": "candidate_000084",
+          "target_run_id": "prism_20260910T102904_c2e24aed2b"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 20.776454544678067,
+          "effect": 0.7705862178766589,
+          "reference": 37.3501091003418,
+          "reference_outcome": "transformer_lm_tiny_r0000",
+          "reference_run_id": "contenders_20260910T103852_f360bd85bacc",
+          "seed": 52,
+          "target": 16.57365455566373,
+          "target_outcome": "candidate_000112",
+          "target_run_id": "prism_20260910T104652_5c792cc006"
+        }
+      ],
+      "excluded_benchmarks": [],
+      "ceiling_ties": 0
+    },
+    {
+      "id": "prism-lm-required",
+      "reference": {
+        "budget": 128,
+        "contender": null,
+        "engine": "contenders",
+        "selection": "required_floor"
+      },
+      "target": {
+        "budget": 128,
+        "contender": null,
+        "engine": "prism",
+        "selection": "winner"
+      },
+      "benchmarks": [
+        "shakespeare_byte_lm"
+      ],
+      "seeds": [
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52
+      ],
+      "n": 8,
+      "level": "L4",
+      "blockers": [],
+      "statistical_label": "clear_gain",
+      "effect_mean": 0.7058138158402714,
+      "bootstrap_ci95": [
+        0.6739659271698673,
+        0.7348589889734976
+      ],
+      "wilcoxon": {
+        "assumption": "independent seed effects symmetric under the null; diagnostic, not causal proof",
+        "holm_pvalue": 0.0390625,
+        "method": "two-sided signed-rank permutation, <=8192 permutations",
+        "n": 8,
+        "pvalue": 0.0078125,
+        "statistic": 0.0,
+        "status": "available"
+      },
+      "seed_effects": [
+        0.7173499756390397,
+        0.6804354324418589,
+        0.741608939056175,
+        0.6801062916999862,
+        0.7379687987778867,
+        0.7750244156321596,
+        0.6189726777973062,
+        0.6950439956777584
+      ],
+      "raw_deltas": [
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 17.991004696435372,
+          "effect": 0.7173499756390397,
+          "reference": 34.07531737213035,
+          "reference_outcome": "unigram_lm_r0000",
+          "reference_run_id": "contenders_20260910T093825_886e9cdf37eb",
+          "seed": 45,
+          "target": 16.084312675694978,
+          "target_outcome": "candidate_000056",
+          "target_run_id": "prism_20260910T093301_b17499b356"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 17.25338215171056,
+          "effect": 0.6804354324418589,
+          "reference": 33.98307513391917,
+          "reference_outcome": "unigram_lm_r0000",
+          "reference_run_id": "contenders_20260910T094240_73d3b2c26962",
+          "seed": 46,
+          "target": 16.72969298220861,
+          "target_outcome": "candidate_000100",
+          "target_run_id": "prism_20260910T094857_094c9c29de"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 18.007511181339858,
+          "effect": 0.741608939056175,
+          "reference": 33.28543591164545,
+          "reference_outcome": "unigram_lm_r0000",
+          "reference_run_id": "contenders_20260910T095443_83a12ba04346",
+          "seed": 47,
+          "target": 15.277924730305593,
+          "target_outcome": "candidate_000068",
+          "target_run_id": "prism_20260910T095025_77668693bf"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 17.14178911387121,
+          "effect": 0.6801062916999862,
+          "reference": 33.775468199422846,
+          "reference_outcome": "unigram_lm_r0000",
+          "reference_run_id": "contenders_20260910T095935_53b24330a56e",
+          "seed": 48,
+          "target": 16.633679085551638,
+          "target_outcome": "candidate_000116",
+          "target_run_id": "prism_20260910T100646_5012605ba0"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 17.876841567000636,
+          "effect": 0.7379687987778867,
+          "reference": 33.16280750094092,
+          "reference_outcome": "unigram_lm_r0000",
+          "reference_run_id": "contenders_20260910T101250_48ef614432d3",
+          "seed": 49,
+          "target": 15.285965933940286,
+          "target_outcome": "candidate_000120",
+          "target_run_id": "prism_20260910T100826_66a9bc6105"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 18.48179742750168,
+          "effect": 0.7750244156321596,
+          "reference": 33.087627997017016,
+          "reference_outcome": "unigram_lm_r0000",
+          "reference_run_id": "contenders_20260910T101753_a70a83f5b703",
+          "seed": 50,
+          "target": 14.605830569515337,
+          "target_outcome": "candidate_000092",
+          "target_run_id": "prism_20260910T102606_cc10e8d9ef"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 15.875625569309697,
+          "effect": 0.6189726777973062,
+          "reference": 33.58615905060822,
+          "reference_outcome": "unigram_lm_r0000",
+          "reference_run_id": "contenders_20260910T103348_653c330b202d",
+          "seed": 51,
+          "target": 17.71053348129852,
+          "target_outcome": "candidate_000084",
+          "target_run_id": "prism_20260910T102904_c2e24aed2b"
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "ceiling_tie": false,
+          "delta": 17.6548773249015,
+          "effect": 0.6950439956777584,
+          "reference": 34.22853188056523,
+          "reference_outcome": "unigram_lm_r0000",
+          "reference_run_id": "contenders_20260910T103852_f360bd85bacc",
+          "seed": 52,
+          "target": 16.57365455566373,
+          "target_outcome": "candidate_000112",
+          "target_run_id": "prism_20260910T104652_5c792cc006"
+        }
+      ],
+      "excluded_benchmarks": [],
+      "ceiling_ties": 0
+    },
+    {
+      "id": "topograph-regression-enhanced",
+      "reference": {
+        "budget": 128,
+        "contender": "catboost",
+        "engine": "contenders",
+        "selection": "named_contender"
+      },
+      "target": {
+        "budget": 128,
+        "contender": null,
+        "engine": "topograph",
+        "selection": "winner"
+      },
+      "benchmarks": [
+        "diabetes_regression"
+      ],
+      "seeds": [
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52
+      ],
+      "n": 8,
+      "level": "L4",
+      "blockers": [],
+      "statistical_label": "likely_gain",
+      "effect_mean": 0.04600715699274036,
+      "bootstrap_ci95": [
+        0.013797674066883715,
+        0.08313620178803921
+      ],
+      "wilcoxon": {
+        "assumption": "independent seed effects symmetric under the null; diagnostic, not causal proof",
+        "holm_pvalue": 0.234375,
+        "method": "two-sided signed-rank permutation, <=8192 permutations",
+        "n": 8,
+        "pvalue": 0.078125,
+        "statistic": 5.0,
+        "status": "available"
+      },
+      "seed_effects": [
+        -0.0077481355721330135,
+        0.006542588663679391,
+        0.08438368868894026,
+        0.1468682894128545,
+        -0.01332494421148061,
+        0.05601848246349583,
+        0.03783787836965467,
+        0.057479408126911866
+      ],
+      "raw_deltas": [
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": -20.029070743904867,
+          "effect": -0.0077481355721330135,
+          "reference": 2575.003570911775,
+          "reference_outcome": "catboost_r0002",
+          "reference_run_id": "contenders_20260910T093825_886e9cdf37eb",
+          "seed": 45,
+          "target": 2595.03264165568,
+          "target_outcome": "candidate_000114",
+          "target_run_id": "topograph_20260910T093441_165b21f40d"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 22.457391243957773,
+          "effect": 0.006542588663679391,
+          "reference": 3443.721917858006,
+          "reference_outcome": "catboost_r0000",
+          "reference_run_id": "contenders_20260910T094240_73d3b2c26962",
+          "seed": 46,
+          "target": 3421.264526614048,
+          "target_outcome": "candidate_000126",
+          "target_run_id": "topograph_20260910T094637_424686960a"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 266.3897472301119,
+          "effect": 0.08438368868894026,
+          "reference": 3290.0816057427805,
+          "reference_outcome": "catboost_r0001",
+          "reference_run_id": "contenders_20260910T095443_83a12ba04346",
+          "seed": 47,
+          "target": 3023.6918585126687,
+          "target_outcome": "candidate_000098",
+          "target_run_id": "topograph_20260910T095151_478dcbc5af"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 378.42805374472255,
+          "effect": 0.1468682894128545,
+          "reference": 2765.8631814147784,
+          "reference_outcome": "catboost_r0001",
+          "reference_run_id": "contenders_20260910T095935_53b24330a56e",
+          "seed": 48,
+          "target": 2387.435127670056,
+          "target_outcome": "candidate_000098",
+          "target_run_id": "topograph_20260910T100400_68cd50003a"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": -27.644685247620146,
+          "effect": -0.01332494421148061,
+          "reference": 2060.8343920589377,
+          "reference_outcome": "catboost_r0002",
+          "reference_run_id": "contenders_20260910T101250_48ef614432d3",
+          "seed": 49,
+          "target": 2088.479077306558,
+          "target_outcome": "candidate_000074",
+          "target_run_id": "topograph_20260910T101005_295c2956ce"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 147.9158768746952,
+          "effect": 0.05601848246349583,
+          "reference": 2714.4414069262316,
+          "reference_outcome": "catboost_r0000",
+          "reference_run_id": "contenders_20260910T101753_a70a83f5b703",
+          "seed": 50,
+          "target": 2566.5255300515364,
+          "target_outcome": "candidate_000126",
+          "target_run_id": "topograph_20260910T102255_18e86f4bff"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 108.59918449772977,
+          "effect": 0.03783787836965467,
+          "reference": 2924.417822366768,
+          "reference_outcome": "catboost_r0002",
+          "reference_run_id": "contenders_20260910T103348_653c330b202d",
+          "seed": 51,
+          "target": 2815.8186378690384,
+          "target_outcome": "candidate_000042",
+          "target_run_id": "topograph_20260910T103044_024397c4d6"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 178.1245591091556,
+          "effect": 0.057479408126911866,
+          "reference": 3187.990485562977,
+          "reference_outcome": "catboost_r0001",
+          "reference_run_id": "contenders_20260910T103852_f360bd85bacc",
+          "seed": 52,
+          "target": 3009.8659264538214,
+          "target_outcome": "candidate_000114",
+          "target_run_id": "topograph_20260910T104343_3bbd2728fd"
+        }
+      ],
+      "excluded_benchmarks": [],
+      "ceiling_ties": 0
+    },
+    {
+      "id": "topograph-regression-required",
+      "reference": {
+        "budget": 128,
+        "contender": null,
+        "engine": "contenders",
+        "selection": "required_floor"
+      },
+      "target": {
+        "budget": 128,
+        "contender": null,
+        "engine": "topograph",
+        "selection": "winner"
+      },
+      "benchmarks": [
+        "diabetes_regression"
+      ],
+      "seeds": [
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52
+      ],
+      "n": 8,
+      "level": "L4",
+      "blockers": [],
+      "statistical_label": "inconclusive",
+      "effect_mean": 0.010683632422701934,
+      "bootstrap_ci95": [
+        -0.03166657538625237,
+        0.05612063250566961
+      ],
+      "wilcoxon": {
+        "assumption": "independent seed effects symmetric under the null; diagnostic, not causal proof",
+        "holm_pvalue": 1.0,
+        "method": "two-sided signed-rank permutation, <=8192 permutations",
+        "n": 8,
+        "pvalue": 0.7421875,
+        "statistic": 15.0,
+        "status": "available"
+      },
+      "seed_effects": [
+        -0.09371445297387135,
+        0.03223931002295166,
+        -0.009621393168975449,
+        0.1331227329471557,
+        0.0009772284045597912,
+        0.024646651816612145,
+        0.04630854694198507,
+        -0.048489564608802105
+      ],
+      "raw_deltas": [
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": -232.30681157755498,
+          "effect": -0.09371445297387135,
+          "reference": 2362.725830078125,
+          "reference_outcome": "ridge_or_linear_r0000",
+          "reference_run_id": "contenders_20260910T093825_886e9cdf37eb",
+          "seed": 45,
+          "target": 2595.03264165568,
+          "target_outcome": "candidate_000114",
+          "target_run_id": "topograph_20260910T093441_165b21f40d"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 112.10632299532699,
+          "effect": 0.03223931002295166,
+          "reference": 3533.370849609375,
+          "reference_outcome": "ridge_or_linear_r0000",
+          "reference_run_id": "contenders_20260910T094240_73d3b2c26962",
+          "seed": 46,
+          "target": 3421.264526614048,
+          "target_outcome": "candidate_000126",
+          "target_run_id": "topograph_20260910T094637_424686960a"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": -28.95284484079366,
+          "effect": -0.009621393168975449,
+          "reference": 2994.739013671875,
+          "reference_outcome": "ridge_or_linear_r0000",
+          "reference_run_id": "contenders_20260910T095443_83a12ba04346",
+          "seed": 47,
+          "target": 3023.6918585126687,
+          "target_outcome": "candidate_000098",
+          "target_run_id": "topograph_20260910T095151_478dcbc5af"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 340.48503834556914,
+          "effect": 0.1331227329471557,
+          "reference": 2727.920166015625,
+          "reference_outcome": "ridge_or_linear_r0000",
+          "reference_run_id": "contenders_20260910T095935_53b24330a56e",
+          "seed": 48,
+          "target": 2387.435127670056,
+          "target_outcome": "candidate_000098",
+          "target_run_id": "topograph_20260910T100400_68cd50003a"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 2.0419187871921167,
+          "effect": 0.0009772284045597912,
+          "reference": 2090.52099609375,
+          "reference_outcome": "ridge_or_linear_r0000",
+          "reference_run_id": "contenders_20260910T101250_48ef614432d3",
+          "seed": 49,
+          "target": 2088.479077306558,
+          "target_outcome": "candidate_000074",
+          "target_run_id": "topograph_20260910T101005_295c2956ce"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 64.0455148703386,
+          "effect": 0.024646651816612145,
+          "reference": 2630.571044921875,
+          "reference_outcome": "ridge_or_linear_r0000",
+          "reference_run_id": "contenders_20260910T101753_a70a83f5b703",
+          "seed": 50,
+          "target": 2566.5255300515364,
+          "target_outcome": "candidate_000126",
+          "target_run_id": "topograph_20260910T102255_18e86f4bff"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 133.4872703340866,
+          "effect": 0.04630854694198507,
+          "reference": 2949.305908203125,
+          "reference_outcome": "ridge_or_linear_r0000",
+          "reference_run_id": "contenders_20260910T103348_653c330b202d",
+          "seed": 51,
+          "target": 2815.8186378690384,
+          "target_outcome": "candidate_000042",
+          "target_run_id": "topograph_20260910T103044_024397c4d6"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": -142.49239129757143,
+          "effect": -0.048489564608802105,
+          "reference": 2867.37353515625,
+          "reference_outcome": "ridge_or_linear_r0000",
+          "reference_run_id": "contenders_20260910T103852_f360bd85bacc",
+          "seed": 52,
+          "target": 3009.8659264538214,
+          "target_outcome": "candidate_000114",
+          "target_run_id": "topograph_20260910T104343_3bbd2728fd"
+        }
+      ],
+      "excluded_benchmarks": [],
+      "ceiling_ties": 0
+    },
+    {
+      "id": "primordia-tabular-quality",
+      "reference": {
+        "budget": 64,
+        "contender": null,
+        "engine": "prism",
+        "selection": "winner"
+      },
+      "target": {
+        "budget": 64,
+        "contender": null,
+        "engine": "primordia",
+        "selection": "winner"
+      },
+      "benchmarks": [
+        "banknote_classification",
+        "diabetes_regression"
+      ],
+      "seeds": [
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52
+      ],
+      "n": 8,
+      "level": "L4",
+      "blockers": [],
+      "statistical_label": "inconclusive",
+      "effect_mean": 0.010415071570089134,
+      "bootstrap_ci95": [
+        -0.028313517033860723,
+        0.045950798122388135
+      ],
+      "wilcoxon": {
+        "assumption": "independent seed effects symmetric under the null; diagnostic, not causal proof",
+        "holm_pvalue": 1.0,
+        "method": "two-sided signed-rank permutation, <=8192 permutations",
+        "n": 8,
+        "pvalue": 0.7421875,
+        "statistic": 15.0,
+        "status": "available"
+      },
+      "seed_effects": [
+        0.0916736526302461,
+        -0.032757601591642135,
+        0.012138921156392224,
+        -0.010673521749908136,
+        -0.08547976809372664,
+        0.07231758418268627,
+        -0.012730727669999,
+        0.04883203369666438
+      ],
+      "raw_deltas": [
+        {
+          "benchmark": "banknote_classification",
+          "ceiling_tie": false,
+          "delta": -0.0036363636363636598,
+          "effect": -0.003656307129798927,
+          "reference": 0.9963636363636363,
+          "reference_outcome": "candidate_000033",
+          "reference_run_id": "prism_20260910T104914_f2cfdfb0fc",
+          "seed": 45,
+          "target": 0.9927272727272727,
+          "target_outcome": "candidate_000037",
+          "target_run_id": "primordia_20260910T104838_f765b4ca2f"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 446.78139495226606,
+          "effect": 0.18700361239029112,
+          "reference": 2612.5498652669585,
+          "reference_outcome": "candidate_000054",
+          "reference_run_id": "prism_20260910T104914_f2cfdfb0fc",
+          "seed": 45,
+          "target": 2165.7684703146924,
+          "target_outcome": "candidate_000046",
+          "target_run_id": "primordia_20260910T104838_f765b4ca2f"
+        },
+        {
+          "benchmark": "banknote_classification",
+          "ceiling_tie": false,
+          "delta": -0.0036363636363636598,
+          "effect": -0.00364298724954465,
+          "reference": 1.0,
+          "reference_outcome": "candidate_000041",
+          "reference_run_id": "prism_20260910T105506_d06060d2bf",
+          "seed": 46,
+          "target": 0.9963636363636363,
+          "target_outcome": "candidate_000061",
+          "target_run_id": "primordia_20260910T105550_52e6b3f63f"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": -229.6209405709169,
+          "effect": -0.06187221593373962,
+          "reference": 3596.4020199350834,
+          "reference_outcome": "candidate_000058",
+          "reference_run_id": "prism_20260910T105506_d06060d2bf",
+          "seed": 46,
+          "target": 3826.0229605060003,
+          "target_outcome": "candidate_000034",
+          "target_run_id": "primordia_20260910T105550_52e6b3f63f"
+        },
+        {
+          "benchmark": "banknote_classification",
+          "ceiling_tie": false,
+          "delta": -0.018181818181818188,
+          "effect": -0.018348623853211014,
+          "reference": 1.0,
+          "reference_outcome": "candidate_000025",
+          "reference_run_id": "prism_20260910T105708_e750cdbea0",
+          "seed": 47,
+          "target": 0.9818181818181818,
+          "target_outcome": "candidate_000049",
+          "target_run_id": "primordia_20260910T105633_0186472d79"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 135.77507055555998,
+          "effect": 0.04262646616599546,
+          "reference": 3253.116872066487,
+          "reference_outcome": "candidate_000058",
+          "reference_run_id": "prism_20260910T105708_e750cdbea0",
+          "seed": 47,
+          "target": 3117.341801510927,
+          "target_outcome": "candidate_000050",
+          "target_run_id": "primordia_20260910T105633_0186472d79"
+        },
+        {
+          "benchmark": "banknote_classification",
+          "ceiling_tie": true,
+          "delta": 0.0,
+          "effect": 0.0,
+          "reference": 1.0,
+          "reference_outcome": "candidate_000033",
+          "reference_run_id": "prism_20260910T110258_435855d101",
+          "seed": 48,
+          "target": 1.0,
+          "target_outcome": "candidate_000025",
+          "target_run_id": "primordia_20260910T110344_7f5c5c14a1"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": -56.987848790095995,
+          "effect": -0.02134704349981627,
+          "reference": 2641.095838261616,
+          "reference_outcome": "candidate_000050",
+          "reference_run_id": "prism_20260910T110258_435855d101",
+          "seed": 48,
+          "target": 2698.083687051712,
+          "target_outcome": "candidate_000062",
+          "target_run_id": "primordia_20260910T110344_7f5c5c14a1"
+        },
+        {
+          "benchmark": "banknote_classification",
+          "ceiling_tie": true,
+          "delta": 0.0,
+          "effect": 0.0,
+          "reference": 1.0,
+          "reference_outcome": "candidate_000045",
+          "reference_run_id": "prism_20260910T110501_a95bbc9334",
+          "seed": 49,
+          "target": 1.0,
+          "target_outcome": "candidate_000049",
+          "target_run_id": "primordia_20260910T110426_67e1fc0b7b"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": -418.4819815137462,
+          "effect": -0.17095953618745327,
+          "reference": 2238.6012931323985,
+          "reference_outcome": "candidate_000062",
+          "reference_run_id": "prism_20260910T110501_a95bbc9334",
+          "seed": 49,
+          "target": 2657.0832746461447,
+          "target_outcome": "candidate_000026",
+          "target_run_id": "primordia_20260910T110426_67e1fc0b7b"
+        },
+        {
+          "benchmark": "banknote_classification",
+          "ceiling_tie": false,
+          "delta": 0.0036363636363635488,
+          "effect": 0.003669724770642113,
+          "reference": 0.9890909090909091,
+          "reference_outcome": "candidate_000029",
+          "reference_run_id": "prism_20260910T111103_0fe6a2fed2",
+          "seed": 50,
+          "target": 0.9927272727272727,
+          "target_outcome": "candidate_000057",
+          "target_run_id": "primordia_20260910T111201_fb91a1a1bf"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 376.80642716221973,
+          "effect": 0.14096544359473043,
+          "reference": 2861.4443331162065,
+          "reference_outcome": "candidate_000050",
+          "reference_run_id": "prism_20260910T111103_0fe6a2fed2",
+          "seed": 50,
+          "target": 2484.637905953987,
+          "target_outcome": "candidate_000038",
+          "target_run_id": "primordia_20260910T111201_fb91a1a1bf"
+        },
+        {
+          "benchmark": "banknote_classification",
+          "ceiling_tie": true,
+          "delta": 0.0,
+          "effect": 0.0,
+          "reference": 1.0,
+          "reference_outcome": "candidate_000025",
+          "reference_run_id": "prism_20260910T111326_0284b71996",
+          "seed": 51,
+          "target": 1.0,
+          "target_outcome": "candidate_000025",
+          "target_run_id": "primordia_20260910T111247_88ec8c1955"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": -71.93021465468337,
+          "effect": -0.025461455339998,
+          "reference": 2789.0978631182834,
+          "reference_outcome": "candidate_000050",
+          "reference_run_id": "prism_20260910T111326_0284b71996",
+          "seed": 51,
+          "target": 2861.0280777729668,
+          "target_outcome": "candidate_000062",
+          "target_run_id": "primordia_20260910T111247_88ec8c1955"
+        },
+        {
+          "benchmark": "banknote_classification",
+          "ceiling_tie": true,
+          "delta": 0.0,
+          "effect": 0.0,
+          "reference": 1.0,
+          "reference_outcome": "candidate_000041",
+          "reference_run_id": "prism_20260910T111938_b7d729693c",
+          "seed": 52,
+          "target": 1.0,
+          "target_outcome": "candidate_000053",
+          "target_run_id": "primordia_20260910T112026_882c0fe8de"
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "ceiling_tie": false,
+          "delta": 281.9848662440859,
+          "effect": 0.09766406739332877,
+          "reference": 3028.286335273692,
+          "reference_outcome": "candidate_000054",
+          "reference_run_id": "prism_20260910T111938_b7d729693c",
+          "seed": 52,
+          "target": 2746.3014690296063,
+          "target_outcome": "candidate_000062",
+          "target_run_id": "primordia_20260910T112026_882c0fe8de"
+        }
+      ],
+      "excluded_benchmarks": [],
+      "ceiling_ties": 4
+    }
+  ],
+  "efficiency": {
+    "method": "paired-seed mean of full-run Primordia/Prism wall-time ratios; 4096 percentile resamples, RNG0",
+    "pairs": [
+      {
+        "seed": 45,
+        "prism_seconds": 42.531475,
+        "primordia_seconds": 30.982187,
+        "ratio": 0.7284531514601833
+      },
+      {
+        "seed": 46,
+        "prism_seconds": 39.935805,
+        "primordia_seconds": 31.10072,
+        "ratio": 0.778767825013168
+      },
+      {
+        "seed": 47,
+        "prism_seconds": 41.152659,
+        "primordia_seconds": 30.243742,
+        "ratio": 0.7349158653393454
+      },
+      {
+        "seed": 48,
+        "prism_seconds": 41.770544,
+        "primordia_seconds": 30.396866,
+        "ratio": 0.7277105608200841
+      },
+      {
+        "seed": 49,
+        "prism_seconds": 42.970141,
+        "primordia_seconds": 30.427537,
+        "ratio": 0.7081088470247282
+      },
+      {
+        "seed": 50,
+        "prism_seconds": 53.642789,
+        "primordia_seconds": 33.429393,
+        "ratio": 0.6231852150714982
+      },
+      {
+        "seed": 51,
+        "prism_seconds": 46.619304,
+        "primordia_seconds": 33.344623,
+        "ratio": 0.7152535567669565
+      },
+      {
+        "seed": 52,
+        "prism_seconds": 44.384259,
+        "primordia_seconds": 31.150289,
+        "ratio": 0.7018319039639707
+      }
+    ],
+    "mean_ratio": 0.7147783656824918,
+    "bootstrap_ci95": [
+      0.683925229531758,
+      0.740608349949336
+    ],
+    "maximum_allowed_upper_bound": 0.75,
+    "runtime_criterion_pass": true
+  },
+  "descriptive": [
+    {
+      "system": "prism",
+      "budget": 128,
+      "mean_winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2684.459409175591,
+        "digits_image": 0.9774305555555556,
+        "shakespeare_byte_lm": 16.112699251772337
+      },
+      "mean_run_seconds": 97.189545375,
+      "median_run_seconds": 91.9211265
+    },
+    {
+      "system": "topograph",
+      "budget": 128,
+      "mean_winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2738.514165766676,
+        "digits_image": 0.9729166666666667,
+        "shakespeare_byte_lm": 29.63452947935915
+      },
+      "mean_run_seconds": 173.187005375,
+      "median_run_seconds": 172.72959500000002
+    },
+    {
+      "system": "contenders",
+      "budget": 128,
+      "mean_winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2721.4511775911733,
+        "digits_image": 0.9892361111111112,
+        "shakespeare_byte_lm": 32.93324342124303
+      },
+      "mean_run_seconds": 271.444133625,
+      "median_run_seconds": 280.8687905
+    },
+    {
+      "system": "primordia",
+      "budget": 64,
+      "mean_winners": {
+        "banknote_classification": 0.9954545454545455,
+        "diabetes_regression": 2819.5334558482546,
+        "digits_image": 0.88125,
+        "shakespeare_byte_lm": 28.72706695663038
+      },
+      "mean_run_seconds": 31.384419625,
+      "median_run_seconds": 31.0414535
+    },
+    {
+      "system": "prism",
+      "budget": 64,
+      "mean_winners": {
+        "banknote_classification": 0.9981818181818182,
+        "diabetes_regression": 2877.5743025213405,
+        "digits_image": 0.9711805555555555,
+        "shakespeare_byte_lm": 16.57875627846132
+      },
+      "mean_run_seconds": 44.125872,
+      "median_run_seconds": 42.750808
+    },
+    {
+      "system": "contenders",
+      "budget": 64,
+      "mean_winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2725.530610231265,
+        "digits_image": 0.9885416666666667,
+        "shakespeare_byte_lm": 33.6458942344233
+      },
+      "mean_run_seconds": 147.95748975,
+      "median_run_seconds": 146.10565
+    }
+  ],
+  "run_inventory": [
+    {
+      "system": "prism",
+      "budget": 128,
+      "seed": 45,
+      "run_id": "prism_20260910T093301_b17499b356",
+      "wall_seconds": 95.654738,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2527.716803447373,
+        "digits_image": 0.9805555555555555,
+        "shakespeare_byte_lm": 16.084312675694978
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s45/runs/tier_b_core_v2_b128_s45_prism/prism_20260910T093301_b17499b356/symbiosis",
+      "summary_sha256": "070269087c1ce3e5b18a96e18037a1f20abbb42436e9012a8ed9ff1a2cb92c01",
+      "actual_fits": 128
+    },
+    {
+      "system": "topograph",
+      "budget": 128,
+      "seed": 45,
+      "run_id": "topograph_20260910T093441_165b21f40d",
+      "wall_seconds": 218.963909,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2595.03264165568,
+        "digits_image": 0.9722222222222222,
+        "shakespeare_byte_lm": 27.671740174810854
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s45/runs/tier_b_core_v2_b128_s45_topograph/topograph_20260910T093441_165b21f40d/symbiosis",
+      "summary_sha256": "72647f6e6ee680973ecbaeb96099baa56d318509448d25a8e45335e29fc065f0",
+      "actual_fits": 128
+    },
+    {
+      "system": "contenders",
+      "budget": 128,
+      "seed": 45,
+      "run_id": "contenders_20260910T093825_886e9cdf37eb",
+      "wall_seconds": 240.019554,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2362.725830078125,
+        "digits_image": 0.9888888888888889,
+        "shakespeare_byte_lm": 34.07531737213035
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 0.9963636363636363,
+          "catboost": 0.9963636363636363
+        },
+        "diabetes_regression": {
+          "required": 2362.725830078125,
+          "catboost": 2575.003570911775
+        },
+        "digits_image": {
+          "required": 0.9888888888888889,
+          "cnn_small": 0.9888888888888889
+        },
+        "shakespeare_byte_lm": {
+          "required": 34.07531737213035,
+          "transformer_lm_tiny": 38.30936813354492
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s45/runs/tier_b_core_v2_b128_s45_contenders/contenders_20260910T093825_886e9cdf37eb/symbiosis",
+      "summary_sha256": "35b787fc912869d5ac6cbf627252a33253f1e3fcdb9120baebc11b6168f66608",
+      "actual_fits": 128
+    },
+    {
+      "system": "contenders",
+      "budget": 128,
+      "seed": 46,
+      "run_id": "contenders_20260910T094240_73d3b2c26962",
+      "wall_seconds": 234.095401,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 3382.9333781786813,
+        "digits_image": 0.9861111111111112,
+        "shakespeare_byte_lm": 33.98307513391917
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 1.0
+        },
+        "diabetes_regression": {
+          "required": 3533.370849609375,
+          "catboost": 3443.721917858006
+        },
+        "digits_image": {
+          "required": 0.9805555555555555,
+          "cnn_small": 0.9861111111111112
+        },
+        "shakespeare_byte_lm": {
+          "required": 33.98307513391917,
+          "transformer_lm_tiny": 38.773685455322266
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s46/runs/tier_b_core_v2_b128_s46_contenders/contenders_20260910T094240_73d3b2c26962/symbiosis",
+      "summary_sha256": "ef330ee95bfc8f94cbd5eb710250f1a9bbe30a8ee089a203459f889a3e14fecd",
+      "actual_fits": 128
+    },
+    {
+      "system": "topograph",
+      "budget": 128,
+      "seed": 46,
+      "run_id": "topograph_20260910T094637_424686960a",
+      "wall_seconds": 134.378311,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 3421.264526614048,
+        "digits_image": 0.9638888888888889,
+        "shakespeare_byte_lm": 33.5534351750411
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s46/runs/tier_b_core_v2_b128_s46_topograph/topograph_20260910T094637_424686960a/symbiosis",
+      "summary_sha256": "fcd1b6e7ab0a7299ff993257ff453275f9028362e63de3f11849f7d9ed485983",
+      "actual_fits": 128
+    },
+    {
+      "system": "prism",
+      "budget": 128,
+      "seed": 46,
+      "run_id": "prism_20260910T094857_094c9c29de",
+      "wall_seconds": 74.157694,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 3432.8144158709265,
+        "digits_image": 0.9722222222222222,
+        "shakespeare_byte_lm": 16.72969298220861
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s46/runs/tier_b_core_v2_b128_s46_prism/prism_20260910T094857_094c9c29de/symbiosis",
+      "summary_sha256": "e1fe000e9b659452cdc375848761f0ef0b7cb8c9de1963f9a4b8456aebd10ae9",
+      "actual_fits": 128
+    },
+    {
+      "system": "prism",
+      "budget": 128,
+      "seed": 47,
+      "run_id": "prism_20260910T095025_77668693bf",
+      "wall_seconds": 81.637997,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2933.3211650399635,
+        "digits_image": 0.9805555555555555,
+        "shakespeare_byte_lm": 15.277924730305593
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s47/runs/tier_b_core_v2_b128_s47_prism/prism_20260910T095025_77668693bf/symbiosis",
+      "summary_sha256": "841807477bd64c3e3faca69403cb1eb3be6fac96f524f5ad77b05aa794d13940",
+      "actual_fits": 128
+    },
+    {
+      "system": "topograph",
+      "budget": 128,
+      "seed": 47,
+      "run_id": "topograph_20260910T095151_478dcbc5af",
+      "wall_seconds": 166.879499,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 3023.6918585126687,
+        "digits_image": 0.9833333333333333,
+        "shakespeare_byte_lm": 25.223342404812204
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s47/runs/tier_b_core_v2_b128_s47_topograph/topograph_20260910T095151_478dcbc5af/symbiosis",
+      "summary_sha256": "b2868861dc2c7c8880f9c9d1703afb3d48df10c8f5d737cb26a86704e345edf2",
+      "actual_fits": 128
+    },
+    {
+      "system": "contenders",
+      "budget": 128,
+      "seed": 47,
+      "run_id": "contenders_20260910T095443_83a12ba04346",
+      "wall_seconds": 275.235893,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2814.833251953125,
+        "digits_image": 0.9888888888888889,
+        "shakespeare_byte_lm": 33.28543591164545
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 1.0
+        },
+        "diabetes_regression": {
+          "required": 2994.739013671875,
+          "catboost": 3290.0816057427805
+        },
+        "digits_image": {
+          "required": 0.9888888888888889,
+          "cnn_small": 0.9861111111111112
+        },
+        "shakespeare_byte_lm": {
+          "required": 33.28543591164545,
+          "transformer_lm_tiny": 40.50816345214844
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s47/runs/tier_b_core_v2_b128_s47_contenders/contenders_20260910T095443_83a12ba04346/symbiosis",
+      "summary_sha256": "c28265f814261ac89f16b60d4c419ee8a362c3bf30ff3805759822bfc7050165",
+      "actual_fits": 128
+    },
+    {
+      "system": "contenders",
+      "budget": 128,
+      "seed": 48,
+      "run_id": "contenders_20260910T095935_53b24330a56e",
+      "wall_seconds": 261.9454,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2727.920166015625,
+        "digits_image": 0.9916666666666667,
+        "shakespeare_byte_lm": 33.775468199422846
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 1.0
+        },
+        "diabetes_regression": {
+          "required": 2727.920166015625,
+          "catboost": 2765.8631814147784
+        },
+        "digits_image": {
+          "required": 0.9888888888888889,
+          "cnn_small": 0.9916666666666667
+        },
+        "shakespeare_byte_lm": {
+          "required": 33.775468199422846,
+          "transformer_lm_tiny": 40.47074508666992
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s48/runs/tier_b_core_v2_b128_s48_contenders/contenders_20260910T095935_53b24330a56e/symbiosis",
+      "summary_sha256": "b4d641531f61fa9374e8d5527be7b0148cad50789cf0db8b6a786a5a24eb64e3",
+      "actual_fits": 128
+    },
+    {
+      "system": "topograph",
+      "budget": 128,
+      "seed": 48,
+      "run_id": "topograph_20260910T100400_68cd50003a",
+      "wall_seconds": 160.081605,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2387.435127670056,
+        "digits_image": 0.975,
+        "shakespeare_byte_lm": 28.36834672221936
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s48/runs/tier_b_core_v2_b128_s48_topograph/topograph_20260910T100400_68cd50003a/symbiosis",
+      "summary_sha256": "2f20c56681d493638c87a41f6bf2105c1de35eaffa35e2d29f52950c4d696063",
+      "actual_fits": 128
+    },
+    {
+      "system": "prism",
+      "budget": 128,
+      "seed": 48,
+      "run_id": "prism_20260910T100646_5012605ba0",
+      "wall_seconds": 84.997073,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2510.962348898328,
+        "digits_image": 0.9777777777777777,
+        "shakespeare_byte_lm": 16.633679085551638
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s48/runs/tier_b_core_v2_b128_s48_prism/prism_20260910T100646_5012605ba0/symbiosis",
+      "summary_sha256": "1640c8e20b66afbdbac1a67b3c5e7289c6c498a8aea3d9d16bb6f96087f520e4",
+      "actual_fits": 128
+    },
+    {
+      "system": "prism",
+      "budget": 128,
+      "seed": 49,
+      "run_id": "prism_20260910T100826_66a9bc6105",
+      "wall_seconds": 93.846659,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2036.7028658812455,
+        "digits_image": 0.9694444444444444,
+        "shakespeare_byte_lm": 15.285965933940286
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s49/runs/tier_b_core_v2_b128_s49_prism/prism_20260910T100826_66a9bc6105/symbiosis",
+      "summary_sha256": "5298abdcbb46ed3d7913037c1eda224694d06e858228c9e37c574daea7ad5407",
+      "actual_fits": 128
+    },
+    {
+      "system": "topograph",
+      "budget": 128,
+      "seed": 49,
+      "run_id": "topograph_20260910T101005_295c2956ce",
+      "wall_seconds": 159.920618,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2088.479077306558,
+        "digits_image": 0.9694444444444444,
+        "shakespeare_byte_lm": 27.02297967224008
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s49/runs/tier_b_core_v2_b128_s49_topograph/topograph_20260910T101005_295c2956ce/symbiosis",
+      "summary_sha256": "2cc760fba9bf91fd11f7ef70468e2f01fa535630eb3e4faf04ef702cb3c81ada",
+      "actual_fits": 128
+    },
+    {
+      "system": "contenders",
+      "budget": 128,
+      "seed": 49,
+      "run_id": "contenders_20260910T101250_48ef614432d3",
+      "wall_seconds": 286.501688,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2060.8343920589377,
+        "digits_image": 0.9916666666666667,
+        "shakespeare_byte_lm": 30.055234909057617
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 0.9890909090909091
+        },
+        "diabetes_regression": {
+          "required": 2090.52099609375,
+          "catboost": 2060.8343920589377
+        },
+        "digits_image": {
+          "required": 0.9861111111111112,
+          "cnn_small": 0.9916666666666667
+        },
+        "shakespeare_byte_lm": {
+          "required": 33.16280750094092,
+          "transformer_lm_tiny": 30.055234909057617
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s49/runs/tier_b_core_v2_b128_s49_contenders/contenders_20260910T101250_48ef614432d3/symbiosis",
+      "summary_sha256": "33dc4fc72c016659d385b6caa84ca6ea6e5f69af7ef767bf540de3571200d899",
+      "actual_fits": 128
+    },
+    {
+      "system": "contenders",
+      "budget": 128,
+      "seed": 50,
+      "run_id": "contenders_20260910T101753_a70a83f5b703",
+      "wall_seconds": 298.395277,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2630.571044921875,
+        "digits_image": 0.9916666666666667,
+        "shakespeare_byte_lm": 33.087627997017016
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 0.9927272727272727
+        },
+        "diabetes_regression": {
+          "required": 2630.571044921875,
+          "catboost": 2714.4414069262316
+        },
+        "digits_image": {
+          "required": 0.9888888888888889,
+          "cnn_small": 0.9916666666666667
+        },
+        "shakespeare_byte_lm": {
+          "required": 33.087627997017016,
+          "transformer_lm_tiny": 39.276145935058594
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s50/runs/tier_b_core_v2_b128_s50_contenders/contenders_20260910T101753_a70a83f5b703/symbiosis",
+      "summary_sha256": "643e4aaa31b093a527203ed322fa84e190d477b7ac8814e2ced04fb096bf8d3b",
+      "actual_fits": 128
+    },
+    {
+      "system": "topograph",
+      "budget": 128,
+      "seed": 50,
+      "run_id": "topograph_20260910T102255_18e86f4bff",
+      "wall_seconds": 183.463735,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2566.5255300515364,
+        "digits_image": 0.9694444444444444,
+        "shakespeare_byte_lm": 29.951403566928427
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s50/runs/tier_b_core_v2_b128_s50_topograph/topograph_20260910T102255_18e86f4bff/symbiosis",
+      "summary_sha256": "0095593fdeaeb811fdfafc116e15af1d7d798b3d4d2bdfaba6ffedb9f9bd89e1",
+      "actual_fits": 128
+    },
+    {
+      "system": "prism",
+      "budget": 128,
+      "seed": 50,
+      "run_id": "prism_20260910T102606_cc10e8d9ef",
+      "wall_seconds": 162.298403,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2534.3463586882035,
+        "digits_image": 0.9833333333333333,
+        "shakespeare_byte_lm": 14.605830569515337
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s50/runs/tier_b_core_v2_b128_s50_prism/prism_20260910T102606_cc10e8d9ef/symbiosis",
+      "summary_sha256": "eaccc2a6e3f091c1465415c0ac5f0c5723682fc95e0401cdbef07315f48b0846",
+      "actual_fits": 128
+    },
+    {
+      "system": "prism",
+      "budget": 128,
+      "seed": 51,
+      "run_id": "prism_20260910T102904_c2e24aed2b",
+      "wall_seconds": 94.928205,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2687.272366917906,
+        "digits_image": 0.9833333333333333,
+        "shakespeare_byte_lm": 17.71053348129852
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s51/runs/tier_b_core_v2_b128_s51_prism/prism_20260910T102904_c2e24aed2b/symbiosis",
+      "summary_sha256": "0b2919dd7ae052b3c44479cc9c91418365a7d5ab67063857ef146a4e16ff75af",
+      "actual_fits": 128
+    },
+    {
+      "system": "topograph",
+      "budget": 128,
+      "seed": 51,
+      "run_id": "topograph_20260910T103044_024397c4d6",
+      "wall_seconds": 178.579691,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2815.8186378690384,
+        "digits_image": 0.9833333333333333,
+        "shakespeare_byte_lm": 32.419721249980775
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s51/runs/tier_b_core_v2_b128_s51_topograph/topograph_20260910T103044_024397c4d6/symbiosis",
+      "summary_sha256": "c8c098b51d7cdf68a7b001c78d07c06ca0e449d714d0b88af4862f014d5a475b",
+      "actual_fits": 128
+    },
+    {
+      "system": "contenders",
+      "budget": 128,
+      "seed": 51,
+      "run_id": "contenders_20260910T103348_653c330b202d",
+      "wall_seconds": 288.452168,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2924.417822366768,
+        "digits_image": 0.9888888888888889,
+        "shakespeare_byte_lm": 30.975255966186523
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 0.9963636363636363
+        },
+        "diabetes_regression": {
+          "required": 2949.305908203125,
+          "catboost": 2924.417822366768
+        },
+        "digits_image": {
+          "required": 0.9888888888888889,
+          "cnn_small": 0.9888888888888889
+        },
+        "shakespeare_byte_lm": {
+          "required": 33.58615905060822,
+          "transformer_lm_tiny": 30.975255966186523
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s51/runs/tier_b_core_v2_b128_s51_contenders/contenders_20260910T103348_653c330b202d/symbiosis",
+      "summary_sha256": "1287c1138515f0143e48f161ca1ce683586e595383738b780214d3ca73985d0b",
+      "actual_fits": 128
+    },
+    {
+      "system": "contenders",
+      "budget": 128,
+      "seed": 52,
+      "run_id": "contenders_20260910T103852_f360bd85bacc",
+      "wall_seconds": 286.907688,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2867.37353515625,
+        "digits_image": 0.9861111111111112,
+        "shakespeare_byte_lm": 34.22853188056523
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 1.0
+        },
+        "diabetes_regression": {
+          "required": 2867.37353515625,
+          "catboost": 3187.990485562977
+        },
+        "digits_image": {
+          "required": 0.9833333333333333,
+          "cnn_small": 0.9861111111111112
+        },
+        "shakespeare_byte_lm": {
+          "required": 34.22853188056523,
+          "transformer_lm_tiny": 37.3501091003418
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s52/runs/tier_b_core_v2_b128_s52_contenders/contenders_20260910T103852_f360bd85bacc/symbiosis",
+      "summary_sha256": "209136dd0e2e1c3dc6aef7bf03de4f7462321bc8278ae5d41f29158e50103013",
+      "actual_fits": 128
+    },
+    {
+      "system": "topograph",
+      "budget": 128,
+      "seed": 52,
+      "run_id": "topograph_20260910T104343_3bbd2728fd",
+      "wall_seconds": 183.228675,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 3009.8659264538214,
+        "digits_image": 0.9666666666666667,
+        "shakespeare_byte_lm": 32.86526686884038
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s52/runs/tier_b_core_v2_b128_s52_topograph/topograph_20260910T104343_3bbd2728fd/symbiosis",
+      "summary_sha256": "47381c2c212889c0038fe4921ab9825adbd8a5bccb01f46509f0533c2041c733",
+      "actual_fits": 128
+    },
+    {
+      "system": "prism",
+      "budget": 128,
+      "seed": 52,
+      "run_id": "prism_20260910T104652_5c792cc006",
+      "wall_seconds": 89.995594,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2812.538948660784,
+        "digits_image": 0.9722222222222222,
+        "shakespeare_byte_lm": 16.57365455566373
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b128-s52/runs/tier_b_core_v2_b128_s52_prism/prism_20260910T104652_5c792cc006/symbiosis",
+      "summary_sha256": "7a7c79e9e1b1f20b58a05bb005df61324f3255b6179297ac02f414ad95abeedf",
+      "actual_fits": 128
+    },
+    {
+      "system": "primordia",
+      "budget": 64,
+      "seed": 45,
+      "run_id": "primordia_20260910T104838_f765b4ca2f",
+      "wall_seconds": 30.982187,
+      "winners": {
+        "banknote_classification": 0.9927272727272727,
+        "diabetes_regression": 2165.7684703146924,
+        "digits_image": 0.8694444444444445,
+        "shakespeare_byte_lm": 29.84231728126333
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s45/runs/tier_b_core_v2_b64_s45_primordia/primordia_20260910T104838_f765b4ca2f/symbiosis",
+      "summary_sha256": "8f7bd92a80acec445b8cc5bc2b13a1a351f2e6882d7f32ff211cdf8ceac6f4d1",
+      "actual_fits": 64
+    },
+    {
+      "system": "prism",
+      "budget": 64,
+      "seed": 45,
+      "run_id": "prism_20260910T104914_f2cfdfb0fc",
+      "wall_seconds": 42.531475,
+      "winners": {
+        "banknote_classification": 0.9963636363636363,
+        "diabetes_regression": 2612.5498652669585,
+        "digits_image": 0.9722222222222222,
+        "shakespeare_byte_lm": 16.084312675694978
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s45/runs/tier_b_core_v2_b64_s45_prism/prism_20260910T104914_f2cfdfb0fc/symbiosis",
+      "summary_sha256": "970241a7c2dbfbc789a1f6fd2e32ff7b17eb73c2b87e7ace8357e8fab9e442a7",
+      "actual_fits": 64
+    },
+    {
+      "system": "contenders",
+      "budget": 64,
+      "seed": 45,
+      "run_id": "contenders_20260910T105002_db1b192fbca8",
+      "wall_seconds": 144.975071,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2362.725830078125,
+        "digits_image": 0.9888888888888889,
+        "shakespeare_byte_lm": 34.07531737213035
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 0.9963636363636363,
+          "catboost": 0.9963636363636363
+        },
+        "diabetes_regression": {
+          "required": 2362.725830078125,
+          "catboost": 2598.7724956867232
+        },
+        "digits_image": {
+          "required": 0.9888888888888889,
+          "cnn_small": 0.9861111111111112
+        },
+        "shakespeare_byte_lm": {
+          "required": 34.07531737213035,
+          "transformer_lm_tiny": 38.30936813354492
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s45/runs/tier_b_core_v2_b64_s45_contenders/contenders_20260910T105002_db1b192fbca8/symbiosis",
+      "summary_sha256": "b7793ccbf5b84f5f2e0d2ff0eb6d1df3e998e8c910814e685ee1b7e831524cb7",
+      "actual_fits": 64
+    },
+    {
+      "system": "contenders",
+      "budget": 64,
+      "seed": 46,
+      "run_id": "contenders_20260910T105237_dd89e0e42d1e",
+      "wall_seconds": 145.337685,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 3382.9333781786813,
+        "digits_image": 0.9861111111111112,
+        "shakespeare_byte_lm": 33.98307513391917
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 0.9963636363636363
+        },
+        "diabetes_regression": {
+          "required": 3533.370849609375,
+          "catboost": 3443.721917858006
+        },
+        "digits_image": {
+          "required": 0.9777777777777777,
+          "cnn_small": 0.9861111111111112
+        },
+        "shakespeare_byte_lm": {
+          "required": 33.98307513391917,
+          "transformer_lm_tiny": 42.81813049316406
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s46/runs/tier_b_core_v2_b64_s46_contenders/contenders_20260910T105237_dd89e0e42d1e/symbiosis",
+      "summary_sha256": "c371569728bcd6ed1f240f79d8ed9d77b0a6df593164322bf05cb04e07ac2ca7",
+      "actual_fits": 64
+    },
+    {
+      "system": "prism",
+      "budget": 64,
+      "seed": 46,
+      "run_id": "prism_20260910T105506_d06060d2bf",
+      "wall_seconds": 39.935805,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 3596.4020199350834,
+        "digits_image": 0.9638888888888889,
+        "shakespeare_byte_lm": 17.965949628917766
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s46/runs/tier_b_core_v2_b64_s46_prism/prism_20260910T105506_d06060d2bf/symbiosis",
+      "summary_sha256": "1301307097e6851d76199de39a7f5d23467a1568a60f4fe6235dd36e01c003e7",
+      "actual_fits": 64
+    },
+    {
+      "system": "primordia",
+      "budget": 64,
+      "seed": 46,
+      "run_id": "primordia_20260910T105550_52e6b3f63f",
+      "wall_seconds": 31.10072,
+      "winners": {
+        "banknote_classification": 0.9963636363636363,
+        "diabetes_regression": 3826.0229605060003,
+        "digits_image": 0.9194444444444444,
+        "shakespeare_byte_lm": 28.429927869532158
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s46/runs/tier_b_core_v2_b64_s46_primordia/primordia_20260910T105550_52e6b3f63f/symbiosis",
+      "summary_sha256": "0a61dc91018067016631d3dff7612d5afa845a7b3c776e0d5ba27525342806ca",
+      "actual_fits": 64
+    },
+    {
+      "system": "primordia",
+      "budget": 64,
+      "seed": 47,
+      "run_id": "primordia_20260910T105633_0186472d79",
+      "wall_seconds": 30.243742,
+      "winners": {
+        "banknote_classification": 0.9818181818181818,
+        "diabetes_regression": 3117.341801510927,
+        "digits_image": 0.9222222222222223,
+        "shakespeare_byte_lm": 30.989933146929452
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s47/runs/tier_b_core_v2_b64_s47_primordia/primordia_20260910T105633_0186472d79/symbiosis",
+      "summary_sha256": "db6fbd4e5bef7ab2fe04bb04658760cab2d03cd386d0857cfe76676b47005a0d",
+      "actual_fits": 64
+    },
+    {
+      "system": "prism",
+      "budget": 64,
+      "seed": 47,
+      "run_id": "prism_20260910T105708_e750cdbea0",
+      "wall_seconds": 41.152659,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 3253.116872066487,
+        "digits_image": 0.9722222222222222,
+        "shakespeare_byte_lm": 15.293096156781244
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s47/runs/tier_b_core_v2_b64_s47_prism/prism_20260910T105708_e750cdbea0/symbiosis",
+      "summary_sha256": "b3ff0b992d0b8d89a087027587946b092599054a6c8cb72ccf5826aea1d13704",
+      "actual_fits": 64
+    },
+    {
+      "system": "contenders",
+      "budget": 64,
+      "seed": 47,
+      "run_id": "contenders_20260910T105754_329581b0ca60",
+      "wall_seconds": 144.894139,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2814.833251953125,
+        "digits_image": 0.9888888888888889,
+        "shakespeare_byte_lm": 33.28543591164545
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 0.9963636363636363
+        },
+        "diabetes_regression": {
+          "required": 2994.739013671875,
+          "catboost": 3382.2091641956213
+        },
+        "digits_image": {
+          "required": 0.9888888888888889,
+          "cnn_small": 0.9805555555555555
+        },
+        "shakespeare_byte_lm": {
+          "required": 33.28543591164545,
+          "transformer_lm_tiny": 40.50816345214844
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s47/runs/tier_b_core_v2_b64_s47_contenders/contenders_20260910T105754_329581b0ca60/symbiosis",
+      "summary_sha256": "037872fc841be8e05048e0140500c5b68040ca00cba9ee78c616361db6062768",
+      "actual_fits": 64
+    },
+    {
+      "system": "contenders",
+      "budget": 64,
+      "seed": 48,
+      "run_id": "contenders_20260910T110030_cf3797d91c80",
+      "wall_seconds": 145.21594,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2727.920166015625,
+        "digits_image": 0.9916666666666667,
+        "shakespeare_byte_lm": 33.775468199422846
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 1.0
+        },
+        "diabetes_regression": {
+          "required": 2727.920166015625,
+          "catboost": 2810.1236963696283
+        },
+        "digits_image": {
+          "required": 0.9861111111111112,
+          "cnn_small": 0.9916666666666667
+        },
+        "shakespeare_byte_lm": {
+          "required": 33.775468199422846,
+          "transformer_lm_tiny": 43.08571243286133
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s48/runs/tier_b_core_v2_b64_s48_contenders/contenders_20260910T110030_cf3797d91c80/symbiosis",
+      "summary_sha256": "289da317c749cffa552aada700d3f84a9a80af9fa4f5e55f9bc7881c8dd990db",
+      "actual_fits": 64
+    },
+    {
+      "system": "prism",
+      "budget": 64,
+      "seed": 48,
+      "run_id": "prism_20260910T110258_435855d101",
+      "wall_seconds": 41.770544,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2641.095838261616,
+        "digits_image": 0.975,
+        "shakespeare_byte_lm": 16.666504451629223
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s48/runs/tier_b_core_v2_b64_s48_prism/prism_20260910T110258_435855d101/symbiosis",
+      "summary_sha256": "ba475dbe3e2b4250e30b1f58dca416655e8e56bc54dcf3da5ee83de56eeb7bec",
+      "actual_fits": 64
+    },
+    {
+      "system": "primordia",
+      "budget": 64,
+      "seed": 48,
+      "run_id": "primordia_20260910T110344_7f5c5c14a1",
+      "wall_seconds": 30.396866,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2698.083687051712,
+        "digits_image": 0.8944444444444445,
+        "shakespeare_byte_lm": 27.70700624319488
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s48/runs/tier_b_core_v2_b64_s48_primordia/primordia_20260910T110344_7f5c5c14a1/symbiosis",
+      "summary_sha256": "15c9d46a53a200fbc22a9b6de50b49a10b910352b8660eb52f5c40753942faf5",
+      "actual_fits": 64
+    },
+    {
+      "system": "primordia",
+      "budget": 64,
+      "seed": 49,
+      "run_id": "primordia_20260910T110426_67e1fc0b7b",
+      "wall_seconds": 30.427537,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2657.0832746461447,
+        "digits_image": 0.9,
+        "shakespeare_byte_lm": 28.49141173641242
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s49/runs/tier_b_core_v2_b64_s49_primordia/primordia_20260910T110426_67e1fc0b7b/symbiosis",
+      "summary_sha256": "6dad847797930725ff5676f4b1db6ca13b7fb9bc4cc44b8497080bf066a9607e",
+      "actual_fits": 64
+    },
+    {
+      "system": "prism",
+      "budget": 64,
+      "seed": 49,
+      "run_id": "prism_20260910T110501_a95bbc9334",
+      "wall_seconds": 42.970141,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2238.6012931323985,
+        "digits_image": 0.9638888888888889,
+        "shakespeare_byte_lm": 16.441466599239828
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s49/runs/tier_b_core_v2_b64_s49_prism/prism_20260910T110501_a95bbc9334/symbiosis",
+      "summary_sha256": "7ddb09f06b8794ca5684672265ce2bcba0e638e8aae3871452a4fdb3f5360649",
+      "actual_fits": 64
+    },
+    {
+      "system": "contenders",
+      "budget": 64,
+      "seed": 49,
+      "run_id": "contenders_20260910T110549_dd9d134812cc",
+      "wall_seconds": 146.873615,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2068.5817673433157,
+        "digits_image": 0.9861111111111112,
+        "shakespeare_byte_lm": 33.145538330078125
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 0.9890909090909091
+        },
+        "diabetes_regression": {
+          "required": 2090.52099609375,
+          "catboost": 2141.890893540485
+        },
+        "digits_image": {
+          "required": 0.9805555555555555,
+          "cnn_small": 0.9861111111111112
+        },
+        "shakespeare_byte_lm": {
+          "required": 33.16280750094092,
+          "transformer_lm_tiny": 33.145538330078125
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s49/runs/tier_b_core_v2_b64_s49_contenders/contenders_20260910T110549_dd9d134812cc/symbiosis",
+      "summary_sha256": "695781302ce47a6136adad0b9eeeba7e0122fe26eb1239de54731ff5ffc383bb",
+      "actual_fits": 64
+    },
+    {
+      "system": "contenders",
+      "budget": 64,
+      "seed": 50,
+      "run_id": "contenders_20260910T110828_90bd9a4feb06",
+      "wall_seconds": 151.778676,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2630.571044921875,
+        "digits_image": 0.9916666666666667,
+        "shakespeare_byte_lm": 33.087627997017016
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 0.9927272727272727
+        },
+        "diabetes_regression": {
+          "required": 2630.571044921875,
+          "catboost": 2714.4414069262316
+        },
+        "digits_image": {
+          "required": 0.9888888888888889,
+          "cnn_small": 0.9916666666666667
+        },
+        "shakespeare_byte_lm": {
+          "required": 33.087627997017016,
+          "transformer_lm_tiny": 39.276145935058594
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s50/runs/tier_b_core_v2_b64_s50_contenders/contenders_20260910T110828_90bd9a4feb06/symbiosis",
+      "summary_sha256": "a19ec70e42544f864c76e5d3b034d9daac86ac48ade0ff908c19955596ead697",
+      "actual_fits": 64
+    },
+    {
+      "system": "prism",
+      "budget": 64,
+      "seed": 50,
+      "run_id": "prism_20260910T111103_0fe6a2fed2",
+      "wall_seconds": 53.642789,
+      "winners": {
+        "banknote_classification": 0.9890909090909091,
+        "diabetes_regression": 2861.4443331162065,
+        "digits_image": 0.9777777777777777,
+        "shakespeare_byte_lm": 14.712862830173163
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s50/runs/tier_b_core_v2_b64_s50_prism/prism_20260910T111103_0fe6a2fed2/symbiosis",
+      "summary_sha256": "e888662cd3071766b5046682918819d17832f37d4996591afab194c6b46ec0bc",
+      "actual_fits": 64
+    },
+    {
+      "system": "primordia",
+      "budget": 64,
+      "seed": 50,
+      "run_id": "primordia_20260910T111201_fb91a1a1bf",
+      "wall_seconds": 33.429393,
+      "winners": {
+        "banknote_classification": 0.9927272727272727,
+        "diabetes_regression": 2484.637905953987,
+        "digits_image": 0.8861111111111111,
+        "shakespeare_byte_lm": 25.096861436385623
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s50/runs/tier_b_core_v2_b64_s50_primordia/primordia_20260910T111201_fb91a1a1bf/symbiosis",
+      "summary_sha256": "bb336e45a04ffa6b9ca4dac3e324ca05731c733d90d87adebc9c05b30ad219cf",
+      "actual_fits": 64
+    },
+    {
+      "system": "primordia",
+      "budget": 64,
+      "seed": 51,
+      "run_id": "primordia_20260910T111247_88ec8c1955",
+      "wall_seconds": 33.344623,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2861.0280777729668,
+        "digits_image": 0.825,
+        "shakespeare_byte_lm": 29.236995469714508
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s51/runs/tier_b_core_v2_b64_s51_primordia/primordia_20260910T111247_88ec8c1955/symbiosis",
+      "summary_sha256": "ab2541f38a7d00a46907b5f0637c8e970e62d2f55406100b318b6425daf06934",
+      "actual_fits": 64
+    },
+    {
+      "system": "prism",
+      "budget": 64,
+      "seed": 51,
+      "run_id": "prism_20260910T111326_0284b71996",
+      "wall_seconds": 46.619304,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2789.0978631182834,
+        "digits_image": 0.9777777777777777,
+        "shakespeare_byte_lm": 17.755717093983467
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s51/runs/tier_b_core_v2_b64_s51_prism/prism_20260910T111326_0284b71996/symbiosis",
+      "summary_sha256": "2173c264982b663a961c02a0e58a7e7965a01499fc6ec69a2b844470abd12465",
+      "actual_fits": 64
+    },
+    {
+      "system": "contenders",
+      "budget": 64,
+      "seed": 51,
+      "run_id": "contenders_20260910T111418_ae3036180b62",
+      "wall_seconds": 155.992901,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2949.305908203125,
+        "digits_image": 0.9888888888888889,
+        "shakespeare_byte_lm": 33.58615905060822
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 0.9963636363636363
+        },
+        "diabetes_regression": {
+          "required": 2949.305908203125,
+          "catboost": 2974.9242565059762
+        },
+        "digits_image": {
+          "required": 0.9861111111111112,
+          "cnn_small": 0.9888888888888889
+        },
+        "shakespeare_byte_lm": {
+          "required": 33.58615905060822,
+          "transformer_lm_tiny": 39.93339538574219
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s51/runs/tier_b_core_v2_b64_s51_contenders/contenders_20260910T111418_ae3036180b62/symbiosis",
+      "summary_sha256": "c2b2f1239acf3610ebfeca3cdccd803fe99ead0aa9e66fcb3a4ac39f4be06049",
+      "actual_fits": 64
+    },
+    {
+      "system": "contenders",
+      "budget": 64,
+      "seed": 52,
+      "run_id": "contenders_20260910T111706_3ae20f79bbff",
+      "wall_seconds": 148.591891,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2867.37353515625,
+        "digits_image": 0.9861111111111112,
+        "shakespeare_byte_lm": 34.22853188056523
+      },
+      "selected": {
+        "banknote_classification": {
+          "required": 1.0,
+          "catboost": 1.0
+        },
+        "diabetes_regression": {
+          "required": 2867.37353515625,
+          "catboost": 3316.7861062656466
+        },
+        "digits_image": {
+          "required": 0.9833333333333333,
+          "cnn_small": 0.9805555555555555
+        },
+        "shakespeare_byte_lm": {
+          "required": 34.22853188056523,
+          "transformer_lm_tiny": 37.3501091003418
+        }
+      },
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s52/runs/tier_b_core_v2_b64_s52_contenders/contenders_20260910T111706_3ae20f79bbff/symbiosis",
+      "summary_sha256": "a73fd09169af1d07fac747db8bc538a5ac4802aa7ad05ed75ab202d0b389ae49",
+      "actual_fits": 64
+    },
+    {
+      "system": "prism",
+      "budget": 64,
+      "seed": 52,
+      "run_id": "prism_20260910T111938_b7d729693c",
+      "wall_seconds": 44.384259,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 3028.286335273692,
+        "digits_image": 0.9666666666666667,
+        "shakespeare_byte_lm": 17.710140791270902
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s52/runs/tier_b_core_v2_b64_s52_prism/prism_20260910T111938_b7d729693c/symbiosis",
+      "summary_sha256": "48c5d2587de7fc9a3929f9697846cc192bdb1167a908179ec4c4c875306fea99",
+      "actual_fits": 64
+    },
+    {
+      "system": "primordia",
+      "budget": 64,
+      "seed": 52,
+      "run_id": "primordia_20260910T112026_882c0fe8de",
+      "wall_seconds": 31.150289,
+      "winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2746.3014690296063,
+        "digits_image": 0.8333333333333334,
+        "shakespeare_byte_lm": 30.022082469610666
+      },
+      "selected": {},
+      "export": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/campaigns/confirmation-b64-s52/runs/tier_b_core_v2_b64_s52_primordia/primordia_20260910T112026_882c0fe8de/symbiosis",
+      "summary_sha256": "628a7d80e9de539a847b646c1c2f2ec95e3bdc572ff3fdd9c68d32ea2257b3f6",
+      "actual_fits": 64
+    }
+  ],
+  "validation": {
+    "registry": {
+      "index_sha256": "b01636235ad124a66ee7fc895321993c4a04d94c183b4d263ab61954d12e5d57",
+      "record_ids": [
+        "d4f95ff6c9a5a4c72af91701a5c8317fbce870286a21a214d1c496b535abfe8e",
+        "b1da899b9cad018a0e4105ec5cd0dd70ec0bfd3f87d674617a616967b65103bd",
+        "11bf4934207b04e282d48c5e94d23df0d08a7941da13aa4789180643a627d3e4",
+        "a035916193b6011947fd855bfa45959479ec955f16ba05c473ddd231bee241f1",
+        "dcf3b97028c95dee8f4e58e3d44b772bce2520df386936e7805c161b82a4b55b",
+        "a916517c18e59858daf8699aa60e773394f3160e9fba16224e3a7f0c6d864ef3",
+        "664cd57b453afa4cf01d99bd7ae143f544d3eba63f4ddf3136fd5bfdb07712e8",
+        "92806193a695c541c71b8466f40e302623ae42570530a53ca7f795a45cfb23b4",
+        "872e6c854839931660ba5322fe585df31cda07a7625b6cf4498cfc9b937ea8ea",
+        "3408048f54e4bfa6b154a4e92dd846d006e7d1632566a8dabca625066c39e54a",
+        "7358e0bbbc40cf4f271a0b360939ed4d45ea01385fc70cd6bdd16aeb57e2f4ab",
+        "f1881fd99b390fce1f4401ac05e6f4c42173f188c3d6c6e9bfeb0eebdcc56f21",
+        "256a656d9ba3bb80d4f1277357ab23df871b7073f6907d4bbc38984f2e21d8f6",
+        "e6aa0813623593cb8a889bfa727744c17db5ee7e859d801bae4bb08a258229df",
+        "e8fd4318a2fd8a036e28589eff90a6950d574b00007f10d3d94b441b00eb7be3",
+        "8300d0d0be5a19058382b83a218671029173c13a1ff608427f5cf8db2cb110e4",
+        "05249a095440af1deef903d75d1f06a8b4c8507c5f183d26257ab799e7eabc3d",
+        "f15515c578dd36eef912be981f39f8135d57ff28d22c1d9183c38e163a9d3119",
+        "2393a3f4ccbc18b21a7e18ad2703a8314f4a36efbff637b838b41c1a3e5d5b56",
+        "a400e93f90dab424bdcf769badbd138d95ca070ff67828b756737c31284a89a2",
+        "6eda7593cdbf9bc36f7427456df13e0e06ba035f68c23cf091fe322de48b76f9",
+        "424c0d48aa3dbb8ae0977d88fe0fe60c3d7d2c0f24009e90a7d065a37dceb880",
+        "69cd86c37afa72a6329a4d12c7f41c5ee4943dd015ae9f595ef240947b4cc61b",
+        "14254b1eaa808e5917cbe06d337df339473aa17817d7b7212aa526eee76bad38",
+        "436a58290bf6d14c31f9a6fee895ac98935ebb8d052f68466124c0f1a30d30d3",
+        "3a6900c43f20259aae14da56945b174142c9a0d401cbafeaf4338f79be3cab8a",
+        "2591da2d4bb37f2e5bad892269324e5f875977822821bba798e60dbb7a5cc3ae",
+        "1deef757a6c9c47917c45f281887f7b870197a679a4b53147054095292d72044",
+        "658a8b49eb8552c84e7f3ab316d1ca3a5bd2274ba862c089c80d772dae549f04",
+        "fd83b26830742a216d1b3a50c92ef2c69da6fd6a7b7a12eeceeb0ab416402ce8",
+        "260b1d6a9162d0b0ef89af28f3ac7d9f777e63e3e17cf22cf8c85a7fd00ecec2",
+        "84c1ca59c35553b1cc9ad5b491192d46f3ea909c2fc523666fd400f22e6ac29f",
+        "06318f1e5e48470887f0e21e9b18430f8db879f3fda2cdc26746c1bc0d0e870c",
+        "12d0ce0cad9c48c97b0cf5e9180e9b7107cbb13bab713662425762013324e68f",
+        "3925ef80a08261cc5ce529d40f06573008d7853537e90c730c5014fde1c9bca6",
+        "f3f5dc1a43574f9ca8ba123b00f2ebe27d67f1d0166edc0b91649950a56bd269",
+        "51187962a1769f2ace8cd1dd6ee53bb4d2e5fd14a9922fbf1b140673da38d157",
+        "ef6bcc0d8dab8aab38a214a97fb0574572f8ac4a270c038dcc570ff90733074d",
+        "bb286109691b35d6830884b0016dd77af961ae9fcafabeeda50bf2bd85eb93fb",
+        "9ca5d410eb4c011411abca1b181ee0eab6b9c383fe2ab58a4f83d395e7329dc2",
+        "e671b666cd00a5c363459af40e63c455433c67953a1ba5d07c43f0d5ead2bf1e",
+        "f5d34ba5638c39b5967c2f13584aab4dee5a9f305bfc52061ecdcffb5e855912",
+        "3d0883f51d7f4a9de7c2ee06e2585bcaa3df5ceac9de94585c72da487c8594cc",
+        "c44511246bf326d1486952c4a29de98fd6061498ac53fdd1ac55cbe902497c01",
+        "1719919139b378be78bace531f82b7a250b54426bf954e05201b125a502c9d10",
+        "778c86c18154f3bed23a9c1fd5c70a857936fdca0aa9062f0bcccb460e9e873e",
+        "512f040c6a17234189be3f9a57c99c612d42ccf15fead96baaf2ff0bcf5996ce",
+        "e78ed881b90128188c71db6b64fa97dd43f1d924a50498e74c6a2d749ce0fbd1"
+      ],
+      "validation": {
+        "blockers": [],
+        "records": 48,
+        "require_artifacts": true,
+        "status": "passed"
+      }
+    },
+    "trained_winner_replays": 128,
+    "replayed_native_runs": 32,
+    "exhaustive_signed_rank_crosscheck": [
+      {
+        "panel": "prism-lm-neural",
+        "exhaustive_sign_permutations": 256,
+        "pvalue": 0.0078125
+      },
+      {
+        "panel": "prism-lm-required",
+        "exhaustive_sign_permutations": 256,
+        "pvalue": 0.0078125
+      },
+      {
+        "panel": "topograph-regression-enhanced",
+        "exhaustive_sign_permutations": 256,
+        "pvalue": 0.078125
+      },
+      {
+        "panel": "topograph-regression-required",
+        "exhaustive_sign_permutations": 256,
+        "pvalue": 0.7421875
+      },
+      {
+        "panel": "primordia-tabular-quality",
+        "exhaustive_sign_permutations": 256,
+        "pvalue": 0.7421875
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/confirmation-analysis-20260910/request.json",
+      "sha256": "9eacf9daa9725eca4a2deea3aef4ba522166e947d3d0d0aa64fc566aed857471"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/confirmation-analysis-20260910/registry-aggregate/cohort_report.json",
+      "sha256": "8faf4724326be63d19a185a08140f921a785a0b494094bf95783fa186c0a778d"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/confirmation-analysis-20260910/registry-aggregate/index.jsonl",
+      "sha256": "b01636235ad124a66ee7fc895321993c4a04d94c183b4d263ab61954d12e5d57"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/confirmation-analysis-20260910/descriptive.json",
+      "sha256": "7a696a756a58e024feba8c40f0bb4e6322d2574f8d84933c5b08194212aa6bc3"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/confirmation-analysis-20260910/replays.json",
+      "sha256": "a097d82e92ce88a617e733fc4478e73e23933efe2148f985c5cd13c9768ec3cc"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/confirmation-analysis-20260910/exact-test-crosscheck.json",
+      "sha256": "7ea7498a634c4a30db1a0ce293c2ce48b36ea3477615703b3fa7f579379d630c"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/confirmation-analysis-20260910/evaluate.py",
+      "sha256": "cb08b99a4edd9160172cc5579caf8d2c72babfb172508f39e16b115ddd03147e"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/confirmation-analysis-20260910/evaluate_aggregate.py",
+      "sha256": "2361dc0aab6f7e950c4cdab17658e4f222e070cd05b4adf47494b9f016660432"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/confirmation-analysis-20260910/registry/cohort_report.json",
+      "sha256": "a6b5ccaa78e5cdaaec1ebc7ad497756f2757f73b37fa7659da15217b0f13f31f"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/confirmation-analysis-20260910/describe.py",
+      "sha256": "d41c31031127eb88f5a868a86bef8d5b4dd4515c98dc6c3fb4c085bb185dbdc5"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/confirmation-analysis-20260910/replay.py",
+      "sha256": "b2e04a3a8789acf8d01c6645a18adc328151d5f4bdeb56ef961eb7622b647927"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/confirmation-analysis-20260910/finalize.py",
+      "sha256": "4fdde52ea9f63db0c71669438d720034a0ae1f102e496bf2b81f2effde42a8d1"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910/readiness.json",
+      "sha256": "9e04edb316d9705e571aeaebb84b686f756b6d9f3f1a3ef7d8b20b6342b607a8"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/training-guardian-20260910/completion.json",
+      "sha256": "23e45d8a3eb8b75588e9fb58e2b63512a3abc5cc2f2b2e91048c7b76952c5dfc"
+    }
+  ],
+  "analysis_assembly": {
+    "initial_report": "registry/cohort_report.json",
+    "initial_blocker": "Per-campaign admission saw only one seed; original failed report retained",
+    "resolution": "Canonical aggregate workspace binds all sixteen case documents and qualifies the existing low/mid-budget runs jointly; no source exports, manifests, values, protocol or admission rules changed"
+  },
+  "limitations": [
+    "Validation-selected best outcomes on a bounded four-task Tier-B pack; independent seed repetitions do not replace a protected test set.",
+    "Prism confirmation applies to this bounded language-model configuration against the frozen baselines, not general architecture superiority.",
+    "Primordia confirmation covers the tabular quality aggregate and full-pack runtime. It does not claim image or language-model parity.",
+    "Primordia quality interval clears the predeclared tolerance narrowly; no equivalence or superiority claim is inferred from nonsignificance.",
+    "Eight-seed percentile intervals and signed-rank symmetry assumptions remain limitations.",
+    "No Phase-4, portfolio or transfer promotion is automatically authorized."
+  ],
+  "engine_advancement_authorized": false
+}
