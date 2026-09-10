@@ -81,8 +81,16 @@ and paired full-pack runtime is 28.5% lower than Prism@64 (95% interval
 performance. [Next actions](CONSOLIDATED_PLAN.md#immediate-next-actions) retain
 the Stratograph proxy work and scoped generalization validation.
 
-The local training guardian is now in terminal `complete` state and starts no
-new work. For an active campaign it checks the dedicated supervisor every 60
+The guardian for that completed confirmation is in terminal `complete` state.
+The new [all-engine comparison](governance/all-engines-high-budget-20260910.json)
+started on **2026-09-10 at 14:47 CEST**: Prism, Topograph, Stratograph, Primordia
+and Contenders at **128/256 fits**, eight fresh seeds **53–60**, **80 runs /
+15,360 fits**. All sixteen manifests passed preflight in the clean producer
+`../EvoNN-all-engines-20260910` at `e1d005a`. Stratograph uses its current shared
+proxy; the proposed normalization has not been silently introduced. Live
+guardian status is `.artifacts/all-engines-guardian-20260910/status.json`.
+
+For an active campaign the guardian checks the dedicated supervisor every 60
 seconds; interruption triggers bounded Codex repair in an isolated clone.
 Verified unchanged runs resume through the campaign journal. Producer changes
 or unresumable attempts require a fresh full comparison, retaining superseded
@@ -90,10 +98,10 @@ evidence. Frozen seeds, budgets, baselines, data and admission gates remain
 binding; completion requires validated exports, not just process exit.
 
 The reusable entry point is `automation/install-training-guardian.py` with
-`--producer`, `--base`, `--state-root`, first `--dry-run`, then
+`--producer`, `--base`, `--state-root` and `--protocol`, first `--dry-run`, then
 `--install-scheduler`. Runtime snapshots, repair decisions and logs are stored in
-the supplied state directory. For this campaign it is
-`.artifacts/training-guardian-20260910`: inspect `status.json`, `control.json` and
+the supplied state directory. For the active all-engine campaign it is
+`.artifacts/all-engines-guardian-20260910`: inspect `status.json`, `control.json` and
 `history.jsonl`; `repairs/` contains individual Codex transcripts and fixes.
 Create a `PAUSE` file there to prevent new dispatches/repairs (an active bounded
 run finishes). Remove it to continue. Three failed repairs for the same error,

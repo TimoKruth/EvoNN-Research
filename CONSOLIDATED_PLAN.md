@@ -119,6 +119,17 @@ Guardian state is `complete`; no new campaign is scheduled by this result.
 
 **Next, in priority order:**
 
+**Running by explicit user request:** the new
+[all-engine high-budget protocol](governance/all-engines-high-budget-20260910.json)
+started on 2026-09-10 at 14:47 CEST. All five systems run at 128 and 256 fits on
+fresh seeds 53–60: 80 runs / 15,360 fits, unchanged 12 native epochs and existing
+1500s run / 90s fit limits. The clean producer is `../EvoNN-all-engines-20260910`
+at `e1d005a`; all sixteen manifests passed preflight. A separate guardian watches
+this execution. Combine all sixteen cases for baseline admission before evidence
+promotion and analysis. Primary inference is the four predeclared engine-vs-floor
+quality contrasts at 256 (one four-test Holm family); all 128 results, individual
+tasks, named enhanced baselines and budget scaling are also reported descriptively.
+
 **Standing user requirement (2026-09-10):** every new comparison includes Prism,
 Topograph, Stratograph and Primordia on every declared benchmark/budget/seed
 combination, plus Contenders baselines. Focused research questions can restrict
@@ -127,10 +138,11 @@ failed or missing executions leave the comparison incomplete. Do not omit
 Stratograph while its proxy is being improved. The completed focused confirmation
 remains historical evidence and does not satisfy this new four-engine requirement.
 
-1. Implement and qualify training-only hierarchy-feature normalization with
+1. After the authorized all-engine comparison, implement and qualify training-only hierarchy-feature normalization with
    explicit versioned preprocessing/replay semantics; consider a shallower or
    residual-preserving proxy after a matched ablation. Preserve legacy model
-   behavior. Do not spend a larger Stratograph budget before this work.
+   behavior. The user's higher-budget comparison explicitly includes the current
+   Stratograph implementation; its known proxy limitation remains documented.
 2. Use the confirmed bounded Prism LM finding to design a separate, frozen
    generalization comparison with all four engines and Contenders before
    accessing the protected text test split. Keep

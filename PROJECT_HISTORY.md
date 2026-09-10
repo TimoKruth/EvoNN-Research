@@ -16,6 +16,26 @@ Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
+## All-engine higher-budget comparison started — 2026-09-10
+
+The user explicitly requested higher budgets for all four engines and Contenders.
+The [frozen protocol](governance/all-engines-high-budget-20260910.json) declares
+128/256 fits, eight fresh seeds 53–60 and all five systems in each case: **80 runs /
+15,360 fits**. Four primary engine-vs-required-floor contrasts at 256 use a single
+Holm family; other budgets, per-task results and scaling remain descriptive.
+The protected text test is unused, and no normalization or other engine change
+was introduced into Stratograph for this run. Existing runtime limits remain.
+
+Execution started at **14:47 CEST** in the clean isolated producer
+`../EvoNN-all-engines-20260910`, pinned to `e1d005a`. All sixteen manifests passed
+preflight and all locked optional baseline libraries imported successfully.
+Artifacts and sequential supervisor: `.artifacts/all-engines-high-budget-20260910`
+inside that producer. Guardian state lives in this checkout at
+`.artifacts/all-engines-guardian-20260910`. It uses the supplied frozen protocol,
+supports the 80-run total, and checks the required five-system roster before
+accepting any repaired replacement. Eighteen guardian tests and repository
+governance/import checks passed. No completed comparison was modified or restarted.
+
 ## Eight-seed confirmation results — 2026-09-10
 
 After reviewing this focused confirmation, the user required **all four engines
