@@ -246,3 +246,22 @@ def test_new_campaign_preflight_survives_hostname_rename_but_not_machine_change(
     monkeypatch.setattr(runtime_host, '_machine_id', lambda system: '112233445566778899aabbccddeeff00')
     with pytest.raises(ValueError, match='drift'):
         c.preflight(planned)
+
+
+def test_stratograph_research_campaign_requires_full_roster_and_explicit_budget():
+    from evonn_shared.hierarchy_policy import HierarchyResearchPolicy
+    policy = HierarchyResearchPolicy(evaluator='trainable', screen_epochs=2)
+    with pytest.raises(ValueError, match='every engine'):
+        c.CampaignSpec(systems=['stratograph'], stratograph_research=policy)
+    with pytest.raises(ValueError, match='screening'):
+        c.CampaignSpec(epochs=1, stratograph_research=policy)
+    spec = c.CampaignSpec(stratograph_research=policy)
+    assert set(spec.systems) == set(c.SYSTEMS)
+    assert spec.model_dump(mode='json')['stratograph_research']['evaluator'] == 'trainable'
+
+
+def test_stratograph_campaign_rejects_undeclared_research_policy(binding):
+    from evonn_shared.hierarchy_policy import HierarchyResearchPolicy
+    manifest, case, native, _ = binding
+    with pytest.raises(ValueError, match='research policy'):
+        c.match_config({**native, 'research': HierarchyResearchPolicy().model_dump(mode='json')}, manifest, case, 'stratograph')

@@ -69,7 +69,7 @@ EXPECTED_MANIFESTS["EvoNN-Topograph/backend-capabilities.json"] = {
 }
 
 for directory, system, fidelity in (
-    ("EvoNN-Stratograph", "stratograph", "Deterministic hierarchy features with a differentiated GELU head; no end-to-end hierarchy claim."),
+    ("EvoNN-Stratograph", "stratograph", "Legacy deterministic hierarchy features with a differentiated GELU head; opt-in v2 supports trainable shared cells. V2 scientific qualification is pending."),
     ("EvoNN-Primordia", "primordia", "Package-local differentiated primitive circuits with architecture and epoch caps."),
 ):
     manifest = deepcopy(EXPECTED_MANIFESTS["EvoNN-Prism/backend-capabilities.json"])

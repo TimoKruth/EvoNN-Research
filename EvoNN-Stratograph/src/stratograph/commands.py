@@ -63,6 +63,7 @@ def ablation(*, configs, output, cache, timeout):
                     epochs=config.epochs,
                     population_size=config.population_size,
                     variant=variant,
+                    research=config.research,
                 )
                 bundle = read_export(exported)
                 validate_engine_bundle(bundle, verify_cache=True)
@@ -78,6 +79,7 @@ def ablation(*, configs, output, cache, timeout):
                         budget=config.budget,
                         seed=config.seed,
                         variant=variant,
+                        **({"research": config.research.model_dump(mode="json")} if config.research else {}),
                         run_id=bundle.manifest.run_id,
                         export=str(exported),
                         source_commit=bundle.manifest.git_commit,
@@ -110,6 +112,7 @@ def main(argv):
     batch.add_argument("--output", type=Path, default=Path(".artifacts/stratograph-ablations"))
     batch.add_argument("--cache", type=Path, default=Path(".artifacts/dataset-cache"))
     batch.add_argument("--backend", choices=["numpy_fallback", "mlx_native"], default="numpy_fallback")
+    batch.add_argument("--research", type=json.loads, help="versioned research policy; results remain exploratory")
     batch.add_argument("--epochs", type=int, default=12)
     batch.add_argument("--population-size", type=int, default=4)
     batch.add_argument("--timeout", type=float, default=1800, help="whole-batch wall-clock limit, at most 1800 seconds")
@@ -131,6 +134,7 @@ def main(argv):
                 seed=seed,
                 backend=options.backend,
                 epochs=options.epochs,
+                research=options.research,
                 population_size=options.population_size,
                 timeout=options.run_timeout,
                 fit_timeout=options.fit_timeout,

@@ -1,0 +1,14 @@
+schema_version: 1.0.0
+id: shakespeare_context64_lm
+display_name: Shakespeare Byte Next Token Context 64
+status: experimental
+task_kind: language_modeling
+input_modality: text
+input_shape: [64]
+output_dim: 256
+primary_metric: {name: perplexity, direction: min}
+ceiling: {value: 1.0, tie_policy: not_evidence}
+budget_epochs: 8
+runtime_class: local
+required_contenders: [bigram_lm, trigram_lm, unigram_lm]
+tags: [byte_lm, context64, exploratory, real_text]

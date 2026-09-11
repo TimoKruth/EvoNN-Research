@@ -1,0 +1,14 @@
+schema_version: 1.0.0
+id: delayed_copy_lm
+display_name: Delayed Copy 64 Token Memory Diagnostic
+status: experimental
+task_kind: language_modeling
+input_modality: text
+input_shape: [64]
+output_dim: 16
+primary_metric: {name: perplexity, direction: min}
+ceiling: {value: 1.0, tie_policy: not_evidence}
+budget_epochs: 8
+runtime_class: local
+required_contenders: [bigram_lm, trigram_lm, unigram_lm]
+tags: [context64, exploratory, synthetic_memory]

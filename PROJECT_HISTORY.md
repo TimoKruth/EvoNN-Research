@@ -16,6 +16,43 @@ Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
+## Prism exploration implementation — 2026-09-11
+
+The [implementation receipt](governance/prism-exploration-implementation-20260911.json)
+binds the tested source, 1,049 package/benchmark tests and three native MLX CPU
+integration tests covering process recovery, trained-model replay and fixed-finalist
+warm/cold controls. Governance and import checks pass in an independent clone;
+existing artifact backups in the maintained workspace contain duplicate active plans.
+
+The new `open` default combines archive reuse, protected weak lineages,
+coverage/progress-aware training and broader reversible/compositional proposals.
+Historical families and the explicit `legacy` control remain available. The
+[operating instructions](README.md#prism-exploration-policies) document the policy
+variants, provenance, diagnostics and additive experimental language tasks.
+The optional native optimizer was slower in a tiny CPU probe; NumPy remains the
+optimizer default. No scientific improvement, speedup, benchmark admission or
+protected-test claim follows. Remaining qualification and workload development
+are recorded in the consolidated plan.
+
+## Topograph research implementation — 2026-09-11
+
+The [implementation receipt](governance/topograph-research-implementation-20260911.json)
+records opt-in v2 Topograph mechanics, parent-directed inheritance, protected
+training, multiple archive views, broader mutation/representation support and
+stage profiling. Legacy genome identities and replay behavior remain available.
+The modes and operation are documented in [README](README.md#topograph-research-modes);
+scientific qualification remains in the consolidated plan.
+
+Verification used an isolated copy because other engines were being edited
+concurrently: the final Topograph package check passed 71 tests; campaign,
+policy-matching, journal and worker integration checks passed 51 tests. Two
+32-fit contract runs (NumPy and native MLX CPU) had no failed fits; 16 trained
+winners replayed. NumPy recovery includes SIGKILL immediately after checkpoint
+publication, with the absent post-commit timing recorded explicitly. Four
+historical winners from the original seed-53/256-fit Topograph export also replayed.
+The maintained tree's import-boundary validator passes. No new scientific
+comparison, protected-test access, speedup or engine-promotion claim was made.
+
 ## All-engine higher-budget results evaluated — 2026-09-11
 
 All 80 runs and 15,360 fits completed on the original `e1d005a` producer; final
@@ -764,3 +801,57 @@ This closes contract foundations only. Catalog entries remain planned metadata;
 regular export composition and actual no-op integrity are separate evidence.
 Engine-specific resume and Topograph speciation/reproduction are explicitly
 pending. No backend is scientifically qualified and no multi-hour training ran.
+
+
+## Stratograph breadth-preserving v2 — 2026-09-11
+
+Implemented an explicit opt-in `research` policy, leaving absent-policy v1
+execution and historical replay intact. V2 adds training-only normalization and
+optional information paths, persistent projection/parameter identities, learned
+clone equivalence, compatible inheritance without epoch discounts, trainable
+shared cells, bidirectional macro edits, full-envelope width mutation, a primitive
+registry, protected exploration and charged archive revisits. Representation and
+selection controls support focused ablations without deleting experimental paths.
+Compare campaigns accept `stratograph_research`, require the full engine roster
+for that policy, and bind it into configuration checks and protocol fingerprints.
+
+The isolated implementation check passed 39 package tests, including forced
+SIGKILL/transaction recovery and replay after a 128-fit proxy and 32-fit native
+trainable run. An earlier combined pass covered 42 package/legacy-process tests;
+961 Shared/Compare tests passed. All four winners of the preserved September 10
+Stratograph seed-53/budget-128 run replayed successfully. A subsequent ablation
+forwarding test and 12 capability/dependency policy tests passed, as did scoped
+Ruff, lock and whitespace checks. The current backend capability declaration now
+includes opt-in trainable execution without a scientific evidence claim.
+
+Local logs and source hashes are in
+`.artifacts/stratograph-v2-validation-20260911/verification.json`. The snapshot
+isolates execution from concurrent engine edits; the receipt does not assert a
+clean global policy gate. Stratograph has zero remaining import-policy violations;
+concurrent other-engine/shared changes still produced repository-wide findings at
+verification time. These are implementation checks, not a new scientific
+comparison. Repeated all-engine/Contenders qualification, fresh-seed confirmation
+and any promotion remain open in CONSOLIDATED_PLAN.md.
+
+## PR 36 correctness review — 2026-09-11
+
+The merge review reproduced Primordia policy substitution during campaign
+adoption and repeated-seed fingerprint collisions, plus a Holm correction that
+shrunk when a declared contrast became unavailable. The fixes freeze explicit
+Primordia search/size controls in new plans, reject policy drift, and preserve
+the declared hypothesis family in both statistical report paths. Historical
+configurations and receipts remain unchanged. Regression tests include missing
+seeds, absent panels, saturated contrasts and explicit legacy controls.
+
+The bounded merge qualification is predeclared in
+`governance/pr36-contract-validation-protocol-20260911.json`: all four engines
+and Contenders before/after, Tier-B@16, seed 71, two native engine epochs,
+10 runs / 160 fits. This is contract validation with no performance or promotion
+claim; execution results and source revisions belong in the separate receipt.
+
+All ten qualification runs completed with 160 successful fits, zero failed fits,
+and 32 passing native winner replays. The separate
+`governance/pr36-contract-validation-results-20260911.json` receipt binds both
+source revisions and the versioned evidence transport. All exports reached L3;
+the recomputed decision remains `needs more seeds`. Historical registry events
+are preserved, with ten new rows appended under `pr36-before`/`pr36-after`.

@@ -142,14 +142,51 @@ failed or missing executions leave the comparison incomplete. Do not omit
 Stratograph while its proxy is being improved. The completed focused confirmation
 remains historical evidence and does not satisfy this new four-engine requirement.
 
-1. Implement and qualify training-only hierarchy-feature normalization with
-   explicit versioned preprocessing/replay semantics; consider a shallower or
-   residual-preserving proxy after a matched ablation. Preserve legacy model
-   behavior. The completed higher-budget comparison retains the original
-   Stratograph implementation as the reference; qualify changes in a new frozen
-   comparison with all four engines and Contenders, not by replacing old results.
-2. Use the confirmed bounded Prism LM finding to design a separate, frozen
-   generalization comparison with all four engines and Contenders before
+1. Qualify the opt-in Stratograph v2 implementation described in
+   [its runtime README](EvoNN-Stratograph/README.md#explicit-version-2-research-execution).
+   Implemented: training-only hierarchy normalization with saved replay buffers;
+   local projection identities and explicit randomization; representation-aware
+   inheritance without epoch discounts; bidirectional macro edits and wider
+   mutation support; protected exploration, behavioral novelty and archive
+   revisitation; charged screening/full-fit diagnostics; differentiable shared
+   cells and an extensible primitive registry. Legacy execution remains the
+   default when no research policy is declared. This is implementation progress,
+   not scientific qualification or an engine promotion.
+   Freeze separate normalization, inheritance, search and evaluator ablations
+   before their combined confirmation. Set `evolve_representation: false` for
+   fixed-representation diagnostics. Every new comparison includes all four
+   engines and Contenders on every declared combination, with fresh confirmation
+   seeds and matched work accounting. Preserve historical producers/results;
+   leave failed or missing runs visible and the comparison incomplete. Evaluate
+   quality together with coverage, revival of weak candidates and screening rank
+   reversals; never remove a supported direction solely on short-run performance.
+2. Qualify Prism's implemented exploration policies, documented in
+   [the central runtime instructions](README.md#prism-exploration-policies).
+   `open` combines archive parents, protected weak lineages and fresh starts;
+   transfer-coverage and learning-progress epoch allocation; broader reversible
+   mutations and composable blocks. `legacy`, `archive`, `training` and `broad`
+   remain explicit controls. Per-epoch and lineage telemetry, cold-initialization
+   controls, weight-bound optional Adam continuation, and an optional MLX optimizer
+   are implemented. Existing genome identities and frozen evidence remain intact.
+   Package/contract tests and native crash/resume/replay checks establish runtime
+   correctness, not scientific improvement. Keep the NumPy optimizer default:
+   the initial tiny MLX-CPU microbenchmark favored it over native optimizer arrays.
+   Freeze separate archive/training/proposal ablations with fresh seeds, complete
+   all-engine/Contenders matrices, per-task quality margins, diversity/revival
+   criteria and both work and wall-time accounting. A cold-search control does
+   not ensure identical later proposals; use the implemented `finalist-config`
+   and `fixed_genomes` mode to freeze architectures and per-fit training
+   allowances. Prior discovery remains explicitly `reported_prior`, not a
+   charged-prior gain claim. Retain negative/inconclusive
+   variants as research options instead of excluding their architectural paths.
+   Use the confirmed bounded Prism LM finding to design a separate, frozen
+   generalization comparison. The additive `language_breadth_v1` workload includes
+   longer contexts, Aesop and delayed memory alongside the original LM task;
+   runtime safety and contender adequacy remain unqualified. Follow-on workload
+   development includes context-removal diagnostics, distribution shifts and
+   harder image/tabular tasks; phase profiles should guide any worker-reuse or
+   transport optimization. These are not delivered or speedup claims. Include all four
+   engines and Contenders before
    accessing the protected text test split. Keep
    validation selection separate from final testing. Retain Primordia as a
    candidate for efficient tabular search, with its narrow tolerance margin and
@@ -163,18 +200,22 @@ remains historical evidence and does not satisfy this new four-engine requiremen
    parse-only wrapper, checked against all 17 catalog/pool YAML files and malformed
    input cases. It still reads and hash-checks source bytes; core integration is open.
 
-**Authorized PR #37 implementation comparison (2026-09-11):** the user requested
+**Superseded PR #37 implementation comparison (2026-09-11):** the user requested
 the source-bound before/after comparison needed for merge readiness. The frozen
 [protocol](governance/pr37-comparison-protocol-20260911.json) declares all four
 engines plus Contenders at Tier-B budgets 64/128 on fresh seeds 83/89/97, in
 both revisions: 60 runs / 5,760 fits, MLX CPU and 12 configured epochs. Execution
-is paused and incomplete after four runs / 256 successful fits, at the user's
-request to merge PR #36 first and then adapt this branch. The separate
+stopped incomplete after four runs / 256 successful fits, at the user's
+request to merge PR #36 first. PR #36 merged at `61543ef`; it includes the
+Primordia runtime implementation and its source-bound contract qualification.
+The remaining PR #37 changes cover CI, regression tests and this record, with
+no runtime difference from that main. The old comparison will not resume. The separate
 [status receipt](governance/pr37-comparison-status-20260911.json) records all five
 systems, including the unexecuted engines; eight saved Prism winners replay.
 Do not relabel the frozen revision pair after main changes. Historical evidence
 remains unchanged; known policy/host-identity differences remain blockers.
-This qualification does not close the scientific ablation/confirmation work below.
+The incomplete comparison supplies no merge qualification and does not close
+the scientific ablation/confirmation work below.
 
 4. Qualify Primordia's implemented `breadth_v2` policy, documented in
    [its runtime README](EvoNN-Primordia/README.md). Independent founders,
@@ -189,6 +230,20 @@ This qualification does not close the scientific ablation/confirmation work belo
    outcomes, behavioral coverage, lineage revival and fresh/inherited agreement.
    Do not eliminate a supported operator or representation for poor early scores.
    No new scientific campaign or protected-test access follows automatically.
+
+5. Qualify the implemented opt-in [Topograph research modes](README.md#topograph-research-modes).
+   `mechanics` is the common v2 control; test `training`, `archive` and `broad`
+   additions separately before combined `open` confirmation. Preserve the original
+   legacy evidence. Use fresh seeds and freeze quality/non-inferiority margins,
+   descriptor/coverage criteria and the statistical family before execution.
+   Include all four engines and Contenders on every declared combination, with
+   explicit Topograph policy in the campaign specification. Record effective
+   structural changes, resource rejections, lineage revival, late learning,
+   fresh/inherited agreement and matched-fit/matched-compute outcomes. Profile
+   runtime stages before changing process isolation or penalizing costly families.
+   Learned descriptors, broader dataset qualification and native cross-run seed
+   ingestion remain separately scoped work; this implementation does not close
+   WP-5.2, WP-6.2 or a scientific superiority gate.
 
 The repeated low/mid admission and explicit L4 aggregate surfaces are now
 available. WP-4.7's remaining preset/trusted-extended integration and the formal

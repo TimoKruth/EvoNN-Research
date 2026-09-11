@@ -157,6 +157,16 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
                     raise ValueError("primitive exploration accounting differs from ledger")
     if system in {"stratograph", "primordia"}:
         expected_fidelity = "hierarchy_features_trained_head" if system == "stratograph" else "end_to_end_primitive"
+        if system == "stratograph" and config.get("research") is not None:
+            from .hierarchy_policy import HierarchyResearchPolicy
+            research = config["research"]
+            if HierarchyResearchPolicy.model_validate(research).model_dump(mode="json") != research:
+                raise ValueError("noncanonical hierarchy research policy")
+            if research.get("version") != 2 or research.get("evaluator") not in ("proxy", "trainable"):
+                raise ValueError("unsupported Stratograph research policy")
+            expected_fidelity = "hierarchy_features_trained_head_v2" if research["evaluator"] == "proxy" else "end_to_end_hierarchy_v2"
+            if state["search"].get("research") != research:
+                raise ValueError("hierarchy research policy differs from checkpoint")
         if config.get("evaluator_fidelity") != expected_fidelity or telemetry.get("evaluator_fidelity") != expected_fidelity:
             raise ValueError("engine evaluator fidelity missing or inconsistent")
         if system == "stratograph":
@@ -188,6 +198,12 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
         "saved_epochs": sum(a["inherited_epoch_savings"] for a in attempts),
     }:
         raise ValueError("inheritance telemetry differs from ledger")
+    if system == "topograph" and config.get("variant", "legacy") != "legacy":
+        from .topograph_policy import validate_profile as validate_topograph_profile
+        profile = artifact_json(bundle, "runtime_profile.json")
+        if profile != telemetry.get("runtime_profile"):
+            raise ValueError("Topograph runtime profile differs from telemetry")
+        validate_topograph_profile(profile, attempts)
     if sum(a["charged"] for a in attempts[:prefix]) != manifest.accounting.resumed_evaluations:
         raise ValueError("engine resume prefix charge mismatch")
     if sum(a["charged"] for a in attempts[prefix:]) != manifest.accounting.actual_evaluations:
@@ -254,9 +270,77 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
         mode = attempt["inheritance"]["mode"]
         if mode not in {"none", "exact", "partial"}:
             raise ValueError("invalid inheritance mode")
-        if attempt["allocated_epochs"] != max(
-            1, math.ceil(attempt["full_epochs"] * (1 if breadth else {"none": 1, "exact": 0.3, "partial": 0.6}[mode]))
-        ):
+        upgraded = system == "stratograph" and config.get("research") is not None
+        expected_epochs = max(1, math.ceil(attempt["full_epochs"] * (1 if breadth else {"none": 1, "exact": 0.3, "partial": 0.6}[mode])))
+        if system == "topograph":
+            from .topograph_policy import expected_epochs as topograph_epochs
+            research_epochs = topograph_epochs(config, attempt, state, telemetry)
+            if research_epochs is not None:
+                expected_epochs = research_epochs
+        if system == "prism" and "variant" in config:
+            from .prism_policy import PrismResearchPolicy
+            prism_policy = PrismResearchPolicy.model_validate({key: config[key] if key in config else None for key in PrismResearchPolicy.model_fields})
+            if state["search"].get("variant") != prism_policy.variant or telemetry.get("research_variant") != prism_policy.variant:
+                raise ValueError("Prism search policy disagrees with frozen configuration")
+            if state["search"].get("fixed_genomes") != prism_policy.fixed_genomes:
+                raise ValueError("Prism fixed architecture control differs from saved search")
+            if prism_policy.fixed_genomes is not None:
+                if set(prism_policy.fixed_genomes) != set(pack.benchmarks) or prism_policy.variant not in {"training", "open"}:
+                    raise ValueError("Prism fixed architecture control must cover the complete pack at full training")
+                if attempt["genome"] != prism_policy.fixed_genomes[attempt["benchmark_id"]]:
+                    raise ValueError("Prism fixed architecture control changed its genome")
+            if prism_policy.prior_discovery is not None:
+                prior = prism_policy.prior_discovery
+                if (prism_policy.fixed_genomes is None or prior.get("accounting") != "reported_prior"
+                        or prior.get("fixed_genomes_sha256") != canonical_sha256(prism_policy.fixed_genomes, schema_version="prism.fixed-genomes/v1", digest_field=None)
+                        or manifest.seeding.seed_source_run_id != prior.get("source_run_id")
+                        or manifest.seeding.seed_source_evaluations != prior.get("source_fits")
+                        or getattr(manifest.seeding.seed_cost_accounting, "value", None) != "reported_prior"):
+                    raise ValueError("Prism finalist discovery provenance/accounting differs")
+            proposal = attempt.get("proposal", {})
+            if type(proposal.get("protected")) is not bool or not isinstance(proposal.get("parents"), list):
+                raise ValueError("Prism proposal provenance is missing")
+            if prism_policy.inheritance_policy == "disabled" and mode != "none":
+                raise ValueError("Prism fresh-initialization control inherited weights")
+            if prism_policy.variant in {"archive", "open"} and proposal.get("origin") in {"fresh", "initial"} and mode != "none":
+                raise ValueError("Prism fresh exploration inherited weights")
+            if prism_policy.variant in {"training", "open"}:
+                if attempt["full_epochs"] != config["epochs"]:
+                    raise ValueError("Prism full training allocation differs from declared cap")
+                copied = attempt["inheritance"]["copied_parameters"]
+                parameters = attempt.get("compiled_parameter_count", attempt.get("parameter_count", 0))
+                coverage = min(1.0, max(0.0, copied / max(1, parameters)))
+                patient = proposal["protected"] or mode == "none" or attempt["inheritance"].get("source_needs_more_training", False)
+                ratio = 1 if patient else .3 if mode == "exact" else 1 - .4 * coverage
+                expected_epochs = max(1, math.ceil(config["epochs"] * ratio))
+                if attempt["status"] == "ok" and proposal["protected"] and attempt["epochs"] != expected_epochs:
+                    raise ValueError("Prism protected lineage did not receive its full allowance")
+        if upgraded:
+            research = config["research"]
+            lane = attempt["research_evaluation"]["lane"]
+            cycle = ("quality", "niche", "novelty", "fresh", "quality", "revisit_random", "niche", "revisit_uncertain", "fresh", "novelty", "revisit_promising", "reservoir")
+            expected_lane = "initial" if current < config["population_size"] else (cycle[(current-config["population_size"]) % len(cycle)] if research["selection"] == "diverse" else "quality")
+            if lane != expected_lane:
+                raise ValueError("hierarchy protected exploration allocation differs")
+            if attempt["full_epochs"] != config["epochs"]:
+                raise ValueError("hierarchy full training allocation differs")
+            expected_epochs = research["screen_epochs"] if research["screen_epochs"] and not lane.startswith("revisit_") else config["epochs"]
+            if attempt["screen_epoch_reduction"] != config["epochs"] - expected_epochs or attempt["inherited_epoch_savings"] != 0:
+                raise ValueError("hierarchy screening/inheritance accounting differs")
+            genome = attempt["genome"]
+            if genome.get("schema_version") != 2 or genome["execution"]["evaluator"] != research["evaluator"]:
+                raise ValueError("hierarchy evaluator/genome mismatch")
+            mutable = {"head_width", "normalization", "readout", "residual"} if research["evolve_representation"] else set()
+            if {k: v for k, v in genome["execution"].items() if k not in mutable} != {k: v for k, v in research.items() if k not in mutable}:
+                raise ValueError("hierarchy genome policy drift")
+            if attempt["status"] == "ok":
+                if attempt.get("evaluator_fidelity") != config["evaluator_fidelity"]:
+                    raise ValueError("hierarchy attempt fidelity differs")
+                if genome["execution"]["normalization"] == "train_standard":
+                    buffers = attempt["buffers"].get("hierarchy_standard_v2")
+                    if not isinstance(buffers, list) or len(buffers) != 2 or len(buffers[0]) != len(buffers[1]) or not buffers[0] or any(not math.isfinite(v) for row in buffers for v in row) or any(v < .999e-5 for v in buffers[1]):
+                        raise ValueError("invalid hierarchy normalization buffers")
+        if attempt["allocated_epochs"] != expected_epochs:
             raise ValueError("inheritance ratio differs from declared training policy")
         if attempt["status"] == "ok":
             if breadth:
@@ -287,7 +371,7 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
                 raise ValueError("engine measurements absent/nonfinite")
             if not 1 <= attempt["epochs"] <= attempt["allocated_epochs"] <= attempt["full_epochs"]:
                 raise ValueError("engine epoch accounting invalid")
-            if attempt["inherited_epoch_savings"] != attempt["full_epochs"] - attempt["allocated_epochs"]:
+            if not upgraded and attempt["inherited_epoch_savings"] != attempt["full_epochs"] - attempt["allocated_epochs"]:
                 raise ValueError("engine inheritance saving mismatch")
     if any(r.status.value != "skipped" for key, r in records.items() if key not in seen):
         raise ValueError("unaccounted engine result")
@@ -462,16 +546,28 @@ def _validate_hierarchy_artifacts(bundle,config,attempts,state,telemetry):
         global_counts.update(counts)
         local[benchmark]=dict(candidate=row["genome_id"],quality=row["metric_value"],descriptors=_hierarchy_descriptor(genome),
             programs=dict(counts),cells=genome["cells"],lineage=state["search"]["benchmarks"][benchmark]["lineage"])
-    expected=dict(schema_version=1,evaluator_fidelity="hierarchy_features_trained_head",global_frequency=dict(global_counts),
+    upgraded = config.get("research") is not None
+    fidelity = config["evaluator_fidelity"]
+    interpretation = ("Versioned hierarchy research evaluator; no scientific superiority or transfer claim." if upgraded else
+                      "Deterministic cell programs with a trained GELU head; no end-to-end hierarchy or transfer claim.")
+    if upgraded:
+        from .hierarchy_diagnostics import research_diagnostics
+        if artifact_json(bundle,"research_diagnostics.json") != research_diagnostics(attempts):
+            raise ValueError("hierarchy research diagnostics differ from attempt ledger")
+        for benchmark, search in state["search"]["benchmarks"].items():
+            counts = dict(Counter(a["research_evaluation"]["lane"] for a in attempts if a["benchmark_id"] == benchmark))
+            if search["selection_counts"] != counts or telemetry["selection_counts"][benchmark] != counts or telemetry["reservoir_occupancy"][benchmark] != len(search["reservoir"]):
+                raise ValueError("hierarchy exploration accounting differs")
+    expected=dict(schema_version=1,evaluator_fidelity=fidelity,global_frequency=dict(global_counts),
         local_winners=local,variant=config["variant"],
-        interpretation="Deterministic cell programs with a trained GELU head; no end-to-end hierarchy or transfer claim.")
+        interpretation=interpretation)
     diagnostics=[]
     for name in load_parity_pack(bundle.manifest.pack_id).benchmarks:
         definition=get_benchmark(name)
         if definition.task_kind.value=="language_modeling":
             values=[row["metric_value"] for row in attempts if row["benchmark_id"]==name and row["status"]=="ok"]
             diagnostics.append(dict(benchmark=name,values=values,flatline=len(values)>1 and max(values)-min(values)<1e-8,
-                causal_input=True,evaluator_fidelity="hierarchy_features_trained_head",broad_claim_ready=False,
-                reason="proxy LM requires repeated real-text native qualification"))
+                causal_input=True,evaluator_fidelity=fidelity,broad_claim_ready=False,
+                reason=("hierarchy LM requires repeated real-text native qualification" if upgraded else "proxy LM requires repeated real-text native qualification")))
     if artifact_json(bundle,"motif_analysis.json")!=expected or artifact_json(bundle,"lm_diagnostics.json")!=diagnostics:
         raise ValueError("hierarchy motif/LM claims differ from measured winners")

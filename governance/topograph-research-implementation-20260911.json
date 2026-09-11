@@ -1,0 +1,475 @@
+{
+  "schema_version": 1,
+  "status": "implemented_and_contract_tested",
+  "evaluated_at": "2026-09-11T11:10:27.607303+00:00",
+  "scope": "Opt-in Topograph v2 research policies; implementation qualification only, no scientific superiority or transfer claim.",
+  "maintained_revision": "0b42a76254fa2058479ae4d671d4e18d119a78e7",
+  "working_tree_changes": true,
+  "isolated_validation_root": "/Users/timokruth/Projekte/EvoNN-topograph-final-check-20260911-130028",
+  "topograph_source_exactly_matches_maintained_tree": true,
+  "source_files": [
+    {
+      "path": "EvoNN-Topograph/src/topograph/__init__.py",
+      "sha256": "395c175b185c78e4beec14e26a33006e293af09530c1809fc454fd53150d07d6"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/cli.py",
+      "sha256": "3175113ccf2ad85920fe2432ba618b9bab32a0d282a2a8c3c2343ec392e43b8a"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/compiler.py",
+      "sha256": "3b79a334326330eb1f2c47f9ce95e7ffa06d0630b0c7e47644d5def9a68cfc00"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/compiler_v2.py",
+      "sha256": "32267ec319c87ecba8c7fac34c509a0bd266db5638489ae9977608f20a945f49"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/config.py",
+      "sha256": "9c62c2dfdd7bebf1005ef07d97568b4689a4f969d3291f1b5f655a454eea6676"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/genome.py",
+      "sha256": "99608533a91d044c3f901e4ae3f41350603deea66462b8e5bb29131a1c2655a0"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/genome_v2.py",
+      "sha256": "17e122b2f1e223e4bc405e1fdaa9427f6f77786e07ead6f672530a8ea473bab2"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/operators.py",
+      "sha256": "3b1a7113c23bb3445a2656343748b6d03e076cc1ae814eba55cfc26dc2b25740"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/parallel.py",
+      "sha256": "937819ea92e7e175021ad0b916759225a57fec997683c6a112ab32157d0d8222"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/research.py",
+      "sha256": "d58966815e9b48a2b677f8d9914330c245979bd21381ef23ad147ffb24f22a3a"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/run.py",
+      "sha256": "d70f934a420724778215f13cfbe1d2ff649e4caf393e6b1b9bba883e042ec36c"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/search.py",
+      "sha256": "72f1cdb2cde208127072ce9355c50a2b6879d024eccaf205c068951511954eca"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/search_v2.py",
+      "sha256": "ccab0cef828d39c6f0175b9d7707900814951b5ed709554abd9ea97bbd3fc921"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/tensors.py",
+      "sha256": "fe250afec8c73b16f76df4171ef1d6817448ddd781d7d33df0caa556a66565be"
+    },
+    {
+      "path": "EvoNN-Topograph/src/topograph/training.py",
+      "sha256": "4d63ec7cee2b22c84ab288f6f752ed5d9d0592ce3f8262a92926a1ac2a72c263"
+    }
+  ],
+  "tests": [
+    {
+      "command": "scripts/ci/topograph-checks.sh",
+      "passed": 71,
+      "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-review-20260911/final-ci.log"
+    },
+    {
+      "command": "pytest campaign, Topograph campaign policy, runtime journal and worker import checks",
+      "passed": 51,
+      "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-review-20260911/integration-tests.log"
+    }
+  ],
+  "import_boundary": "maintained tree: PASS (7 packages, shared-benchmarks data-only)",
+  "contract_runs": [
+    {
+      "export": "/Users/timokruth/Projekte/EvoNN-topograph-final-check-20260911-130028/.artifacts/final-package-tests/test_research_real_resume_expo0/runs/topograph_20260911T110714_2d460814ee/symbiosis",
+      "backend": "numpy_fallback",
+      "run_id": "topograph_20260911T110714_2d460814ee",
+      "fits": 32,
+      "failures": 0,
+      "manifest_sha256": "1a7e1e4827289af3c96bc4e9f22e9e0779fca3e420e3987b164b39ba73b768fb",
+      "missing_checkpoint_timings": [
+        17
+      ],
+      "profile": {
+        "checkpoint_publications": [
+          {
+            "attempt": 1,
+            "checkpoint_seconds": 0.01472258404828608,
+            "recovery": false
+          },
+          {
+            "attempt": 2,
+            "checkpoint_seconds": 0.016354957944713533,
+            "recovery": false
+          },
+          {
+            "attempt": 3,
+            "checkpoint_seconds": 0.016849541920237243,
+            "recovery": false
+          },
+          {
+            "attempt": 4,
+            "checkpoint_seconds": 0.019889082992449403,
+            "recovery": false
+          },
+          {
+            "attempt": 5,
+            "checkpoint_seconds": 0.0205590829718858,
+            "recovery": false
+          },
+          {
+            "attempt": 6,
+            "checkpoint_seconds": 0.021911917021498084,
+            "recovery": false
+          },
+          {
+            "attempt": 7,
+            "checkpoint_seconds": 0.021280958084389567,
+            "recovery": false
+          },
+          {
+            "attempt": 8,
+            "checkpoint_seconds": 0.022246957989409566,
+            "recovery": false
+          },
+          {
+            "attempt": 9,
+            "checkpoint_seconds": 0.022502750041894615,
+            "recovery": false
+          },
+          {
+            "attempt": 10,
+            "checkpoint_seconds": 0.023392000002786517,
+            "recovery": false
+          },
+          {
+            "attempt": 11,
+            "checkpoint_seconds": 0.024302874924615026,
+            "recovery": false
+          },
+          {
+            "attempt": 12,
+            "checkpoint_seconds": 0.026483415975235403,
+            "recovery": false
+          },
+          {
+            "attempt": 13,
+            "checkpoint_seconds": 0.026904957951046526,
+            "recovery": false
+          },
+          {
+            "attempt": 14,
+            "checkpoint_seconds": 0.02773700002580881,
+            "recovery": false
+          },
+          {
+            "attempt": 15,
+            "checkpoint_seconds": 0.028341833967715502,
+            "recovery": false
+          },
+          {
+            "attempt": 16,
+            "checkpoint_seconds": 0.031187625019811094,
+            "recovery": false
+          },
+          {
+            "attempt": 18,
+            "checkpoint_seconds": 0.21092300000600517,
+            "recovery": false
+          },
+          {
+            "attempt": 19,
+            "checkpoint_seconds": 0.03203354193829,
+            "recovery": false
+          },
+          {
+            "attempt": 20,
+            "checkpoint_seconds": 0.034705374971963465,
+            "recovery": false
+          },
+          {
+            "attempt": 21,
+            "checkpoint_seconds": 0.0360122499987483,
+            "recovery": false
+          },
+          {
+            "attempt": 22,
+            "checkpoint_seconds": 0.0379514170344919,
+            "recovery": false
+          },
+          {
+            "attempt": 23,
+            "checkpoint_seconds": 0.038765375036746264,
+            "recovery": false
+          },
+          {
+            "attempt": 24,
+            "checkpoint_seconds": 0.04032329097390175,
+            "recovery": false
+          },
+          {
+            "attempt": 25,
+            "checkpoint_seconds": 0.04502525005955249,
+            "recovery": false
+          },
+          {
+            "attempt": 26,
+            "checkpoint_seconds": 0.04316866700537503,
+            "recovery": false
+          },
+          {
+            "attempt": 27,
+            "checkpoint_seconds": 0.043016458046622574,
+            "recovery": false
+          },
+          {
+            "attempt": 28,
+            "checkpoint_seconds": 0.046816500020213425,
+            "recovery": false
+          },
+          {
+            "attempt": 29,
+            "checkpoint_seconds": 0.04738891695160419,
+            "recovery": false
+          },
+          {
+            "attempt": 30,
+            "checkpoint_seconds": 0.04743695794604719,
+            "recovery": false
+          },
+          {
+            "attempt": 31,
+            "checkpoint_seconds": 0.04973099997732788,
+            "recovery": false
+          },
+          {
+            "attempt": 32,
+            "checkpoint_seconds": 0.055894625023938715,
+            "recovery": false
+          }
+        ],
+        "coordinator": {
+          "compile_inherit_seconds": 0.03221729397773743,
+          "request_seconds": 0.0013529540738090873,
+          "search_seconds": 0.0730244170408696,
+          "snapshot_seconds": 0.09420774888712913,
+          "worker_roundtrip_seconds": 7.686552082421258
+        },
+        "missing_checkpoint_timings": [
+          17
+        ],
+        "scope": "Worker phases are nested in roundtrip. Checkpoint timing is optional after a crash; preparation and final export are outside these stage sums. Timing is diagnostic, not a compute-equivalence claim.",
+        "worker": {
+          "fit_seconds": 0.36484516609925777,
+          "model_publication_seconds": 0.03238945931661874,
+          "setup_seconds": 0.8052839554147795
+        }
+      }
+    },
+    {
+      "export": "/Users/timokruth/Projekte/EvoNN-topograph-final-check-20260911-130028/.artifacts/final-package-tests/test_research_real_resume_expo1/runs/topograph_20260911T110734_a139664e28/symbiosis",
+      "backend": "mlx_native",
+      "run_id": "topograph_20260911T110734_a139664e28",
+      "fits": 32,
+      "failures": 0,
+      "manifest_sha256": "e5d50d595f7cc3f9bca676dcd04c4587f2571f137278e692a0b9dd395ee0ca78",
+      "missing_checkpoint_timings": [],
+      "profile": {
+        "checkpoint_publications": [
+          {
+            "attempt": 1,
+            "checkpoint_seconds": 0.014330958016216755,
+            "recovery": false
+          },
+          {
+            "attempt": 2,
+            "checkpoint_seconds": 0.015519000007770956,
+            "recovery": false
+          },
+          {
+            "attempt": 3,
+            "checkpoint_seconds": 0.016352167003788054,
+            "recovery": false
+          },
+          {
+            "attempt": 4,
+            "checkpoint_seconds": 0.01870420901104808,
+            "recovery": false
+          },
+          {
+            "attempt": 5,
+            "checkpoint_seconds": 0.019633374991826713,
+            "recovery": false
+          },
+          {
+            "attempt": 6,
+            "checkpoint_seconds": 0.02000374998897314,
+            "recovery": false
+          },
+          {
+            "attempt": 7,
+            "checkpoint_seconds": 0.0209755830001086,
+            "recovery": false
+          },
+          {
+            "attempt": 8,
+            "checkpoint_seconds": 0.021631167037412524,
+            "recovery": false
+          },
+          {
+            "attempt": 9,
+            "checkpoint_seconds": 0.021903209039010108,
+            "recovery": false
+          },
+          {
+            "attempt": 10,
+            "checkpoint_seconds": 0.023990249959751964,
+            "recovery": false
+          },
+          {
+            "attempt": 11,
+            "checkpoint_seconds": 0.023374667041935027,
+            "recovery": false
+          },
+          {
+            "attempt": 12,
+            "checkpoint_seconds": 0.025633708923123777,
+            "recovery": false
+          },
+          {
+            "attempt": 13,
+            "checkpoint_seconds": 0.026213124976493418,
+            "recovery": false
+          },
+          {
+            "attempt": 14,
+            "checkpoint_seconds": 0.02689095796085894,
+            "recovery": false
+          },
+          {
+            "attempt": 15,
+            "checkpoint_seconds": 0.026947083068080246,
+            "recovery": false
+          },
+          {
+            "attempt": 16,
+            "checkpoint_seconds": 0.03037095896434039,
+            "recovery": false
+          },
+          {
+            "attempt": 17,
+            "checkpoint_seconds": 0.03082666697446257,
+            "recovery": false
+          },
+          {
+            "attempt": 18,
+            "checkpoint_seconds": 0.21763554099015892,
+            "recovery": false
+          },
+          {
+            "attempt": 19,
+            "checkpoint_seconds": 0.03108066599816084,
+            "recovery": false
+          },
+          {
+            "attempt": 20,
+            "checkpoint_seconds": 0.034720915951766074,
+            "recovery": false
+          },
+          {
+            "attempt": 21,
+            "checkpoint_seconds": 0.03593175008427352,
+            "recovery": false
+          },
+          {
+            "attempt": 22,
+            "checkpoint_seconds": 0.03782516601495445,
+            "recovery": false
+          },
+          {
+            "attempt": 23,
+            "checkpoint_seconds": 0.038622291991487145,
+            "recovery": false
+          },
+          {
+            "attempt": 24,
+            "checkpoint_seconds": 0.04011816589627415,
+            "recovery": false
+          },
+          {
+            "attempt": 25,
+            "checkpoint_seconds": 0.03964979201555252,
+            "recovery": false
+          },
+          {
+            "attempt": 26,
+            "checkpoint_seconds": 0.04137195798102766,
+            "recovery": false
+          },
+          {
+            "attempt": 27,
+            "checkpoint_seconds": 0.0413673750590533,
+            "recovery": false
+          },
+          {
+            "attempt": 28,
+            "checkpoint_seconds": 0.04485016700346023,
+            "recovery": false
+          },
+          {
+            "attempt": 29,
+            "checkpoint_seconds": 0.05001345800701529,
+            "recovery": false
+          },
+          {
+            "attempt": 30,
+            "checkpoint_seconds": 0.04661937500350177,
+            "recovery": false
+          },
+          {
+            "attempt": 31,
+            "checkpoint_seconds": 0.04704925010446459,
+            "recovery": false
+          },
+          {
+            "attempt": 32,
+            "checkpoint_seconds": 0.05353166698478162,
+            "recovery": false
+          }
+        ],
+        "coordinator": {
+          "compile_inherit_seconds": 0.06037274794653058,
+          "request_seconds": 0.0014290012186393142,
+          "search_seconds": 0.07159362500533462,
+          "snapshot_seconds": 0.09124203794635832,
+          "worker_roundtrip_seconds": 8.585695167304948
+        },
+        "missing_checkpoint_timings": [],
+        "scope": "Worker phases are nested in roundtrip. Checkpoint timing is optional after a crash; preparation and final export are outside these stage sums. Timing is diagnostic, not a compute-equivalence claim.",
+        "worker": {
+          "fit_seconds": 1.3565364594105631,
+          "model_publication_seconds": 0.03610079176723957,
+          "setup_seconds": 0.9249674148159102
+        }
+      }
+    }
+  ],
+  "trained_winner_replays": 16,
+  "legacy_replay": {
+    "run_id": "topograph_20260910T144932_5a84acd835",
+    "checks": 4,
+    "status": "passed",
+    "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-review-20260911/legacy-replay.log"
+  },
+  "limits": [
+    "Native tests ran on CPU; GPU not qualified.",
+    "Learned descriptors, cross-run seed ingestion and scientific breadth comparisons remain open.",
+    "Stage profiling is implemented; no speedup is claimed.",
+    "Default remains legacy; open and individual research modes require explicit selection."
+  ],
+  "scientific_comparison_started": false,
+  "protected_test_accessed": false
+}

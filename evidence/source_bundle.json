@@ -1,36 +1,46 @@
 {
-  "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-performance-20260908/performance-dependencies.tar.gz",
+  "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-pr36-contract-20260911/pr36-dependencies.tar.gz",
   "descriptor": {
-    "schema_version": 1,
-    "archive_sha256": "fd61fed4ce3ff0d697fc63c062235cb7e33d132d33b11f5d0f97e789dd13a5b8",
-    "archive_size_bytes": 44637367,
-    "index_sha256": "98c857fc71c64a1a9d6d6024cce101ddc9edc7ef69b3ff1ec3b6b2b3bf6a9d5f",
-    "transport_manifest_sha256": "3bf9a72d417fb2a56ecf47d39c4490f81985b2a2ee814b948073da669386e957",
+    "archive_sha256": "2e6fd36bf95f02cc5bf2e51beee118d4935cc37e0c6f8513e46f7d463771fbdb",
+    "archive_size_bytes": 62182307,
+    "index_sha256": "dfa70b079754e453f0b772a2358c1cab7b972569041e015445a972b0da68ca94",
     "run_ids": [
       "contenders_20260908T130048_80d3ce4b375c",
       "contenders_20260908T180234_3b4ee464a852",
+      "contenders_20260911T132446_1dd2297fd278",
+      "contenders_20260911T132812_7644691029f9",
       "primordia_20260908T125740_387fcbee29",
       "primordia_20260908T175220_62ee2fefb9",
       "primordia_20260908T175337_0de17f115a",
       "primordia_20260908T175732_dbedb3125e",
+      "primordia_20260911T132614_594b89cf26",
+      "primordia_20260911T132946_34e11e8539",
       "prism_20260908T125832_129983a9d4",
       "prism_20260908T175231_f787d48282",
       "prism_20260908T175404_43bdca6eeb",
       "prism_20260908T175822_38f4d39872",
+      "prism_20260911T132527_d10656fb62",
+      "prism_20260911T132859_4a80726a0d",
       "stratograph_20260908T125705_ba14d39ecc",
       "stratograph_20260908T175129_c771d22d7c",
       "stratograph_20260908T175257_16224a1363",
       "stratograph_20260908T175600_8b6a3bad47",
+      "stratograph_20260911T132558_cd97bd3c07",
+      "stratograph_20260911T132932_ad9d0dad2c",
       "topograph_20260908T125911_3d6bcd8164",
       "topograph_20260908T175243_860c1f4042",
       "topograph_20260908T175450_930b686cef",
-      "topograph_20260908T175956_031cfb5b33"
-    ]
+      "topograph_20260908T175956_031cfb5b33",
+      "topograph_20260911T132540_613aa31e8f",
+      "topograph_20260911T132914_255d552fa8"
+    ],
+    "schema_version": 1,
+    "transport_manifest_sha256": "80d3037831924cf51d0965d055ce7fca80c70cf6cdee7ac7f73aadc62625414d"
   },
   "registry_snapshot": {
-    "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-performance-20260908/performance-registry.tar.gz",
-    "archive_sha256": "930e8a7a01bad99a779f1425d1bebc391aa9dd44ce49d002f0adea927e026561",
-    "archive_size_bytes": 3740693,
-    "index_sha256": "98c857fc71c64a1a9d6d6024cce101ddc9edc7ef69b3ff1ec3b6b2b3bf6a9d5f"
+    "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-pr36-contract-20260911/pr36-registry.tar.gz",
+    "archive_sha256": "c467aef03ea8e7f0900b4810e61f4aece4c243f791ed5039d389d278d7ab2582",
+    "archive_size_bytes": 5852369,
+    "index_sha256": "dfa70b079754e453f0b772a2358c1cab7b972569041e015445a972b0da68ca94"
   }
 }

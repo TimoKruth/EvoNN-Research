@@ -44,13 +44,26 @@ from evonn_shared.runtime_io import (
 from .tensors import Backend
 from .training import TrainConfig, fit
 from .parallel import Evaluator
+from .research import policy, allocate_training, runtime_profile
+
+
+def select_runtime(search_type, genome_type=None, *, variant="legacy"):
+    policy(variant)
+    if variant != "legacy":
+        from .search_v2 import ResearchSearch
+        from .genome_v2 import GenomeV2
+        return ResearchSearch, GenomeV2
+    return search_type, genome_type
 
 
 def evaluation_worker(request, output, search_type, genome_type):
+    worker_start = time.monotonic()
+    variant = request.get("variant", "legacy")
+    search_type, genome_type = select_runtime(search_type, genome_type, variant=variant)
     if request["source_sha256"] != source_identity():
         raise ValueError("worker source changed since run began")
     definition = get_benchmark(request["benchmark"], shared_root=Path(request["shared_root"]))
-    search = search_type([definition], seed=0)
+    search = search_type([definition], seed=0, **({"variant": variant} if variant != "legacy" else {}))
     try:
         genome = genome_type.model_validate(request["genome"])
         model = search.compile(
@@ -82,7 +95,9 @@ def evaluation_worker(request, output, search_type, genome_type):
         )
         return
     publish_artifact(output.parent / "started", b"fit\n")
+    setup_seconds = time.monotonic() - worker_start
     try:
+        fit_start = time.monotonic()
         result = fit(
             model,
             arrays["x_train"],
@@ -93,6 +108,8 @@ def evaluation_worker(request, output, search_type, genome_type):
             config=config,
             seed=request["model_seed"],
         )
+        fit_seconds = time.monotonic() - fit_start
+        publication_start = time.monotonic()
         buffer = io.BytesIO()
         np.savez(buffer, **model.weights)
         artifact = publish_artifact(output.parent / "weights.npz", buffer.getvalue())
@@ -114,6 +131,9 @@ def evaluation_worker(request, output, search_type, genome_type):
             latent_weight_bytes=sum(v.nbytes for v in model.weights.values()),
             buffers={k: [np.asarray(a).tolist() for a in v] for k, v in model.buffers.items()},
         )
+        if variant != "legacy":
+            result["worker_profile"] = dict(setup_seconds=setup_seconds, fit_seconds=fit_seconds,
+                                             model_publication_seconds=time.monotonic()-publication_start)
     except (ValueError, TimeoutError, FloatingPointError, OverflowError) as error:
         result = {"status": "failed", "reason": str(error), "charged": 1, "invalid": 0}
     publish_artifact(output, encode(result))
@@ -139,7 +159,13 @@ def run_engine(
     crash_step=1,
     benchmark_pooling=False,
     novelty_weight=0.0,
+    variant="legacy",
 ):
+    search_type, _ = select_runtime(search_type, variant=variant)
+    research = variant != "legacy"
+    search_options = {"variant": variant} if research else {}
+    if research and (benchmark_pooling or novelty_weight):
+        raise ValueError("research variants use task-local archive selection; legacy pooling/novelty scalars are unavailable")
     if not all(math.isfinite(v) and 0 < v <= 1800 for v in (timeout, fit_timeout)):
         raise ValueError("run and fit limits must be in (0,1800] seconds")
     if type(seed) is not int or not 0 <= seed < 2**32:
@@ -183,6 +209,8 @@ def run_engine(
             name: importlib.metadata.version(name) for name in ("numpy", "scipy", "scikit-learn", "pandas", "openml")
         },
     }
+    if research:
+        configuration.update(variant=variant, search_policy_version=2, genome_schema="topograph.genome/v2")
     invocation_start = time.monotonic()
     invocation_started = utc()
     deadline = invocation_start + timeout
@@ -210,6 +238,7 @@ def run_engine(
             population_size=population_size,
             benchmark_pooling=benchmark_pooling,
             novelty_weight=novelty_weight,
+            **search_options,
         )
         state = {
             "config": configuration,
@@ -268,8 +297,10 @@ def run_engine(
                 raise ValueError("checkpoint does not bind committed row prefix")
             search = None
             while state["completed"] < target and time.monotonic() < deadline:
+                publication_start = time.monotonic()
                 step = state["completed"] + 1
                 transaction_path = workspace.root / f"transaction_{step:06d}.json"
+                recovering_transaction = transaction_path.exists()
                 if transaction_path.exists():
                     transaction = load_transaction(transaction_path, state)
                     search = None  # Rebuild from committed state after transaction recovery.
@@ -277,7 +308,7 @@ def run_engine(
                     inherited = max(inherited, step)
                 else:
                     if search is None:
-                        search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"])
+                        search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"], **search_options)
                     counts = {d.id: sum(a["benchmark_id"] == d.id for a in state["attempts"]) for d in definitions}
                     definition = min(definitions, key=lambda d: (counts[d.id], d.id))
                     genome = search.candidate(definition.id)
@@ -297,16 +328,34 @@ def run_engine(
                     )
                     generation = search.benchmarks[definition.id]["generation"]
                     full_epochs = max(1, math.ceil(epochs * (0.5 if generation == 0 else 1)))
+                    proposal = search.proposal(definition.id) if research else None
+                    if research and policy(variant)["training"]:
+                        full_epochs = epochs
                     allocated = full_epochs
                     inheritance = {"mode": "none", "source": None, "copied_parameters": 0}
+                    training_reason = "legacy_discount"
+                    compiled_parameters = 0
+                    profile = {}
                     directory = create_artifact_directory(workspace.root / f"attempt_{step:06d}")
+                    phase_start = time.monotonic()
                     try:
+                        if research:
+                            from .compiler_v2 import parameter_estimate
+                            if parameter_estimate(genome, definition) > 2_000_000:
+                                raise ValueError("compiled candidate exceeds local runtime parameter safety cap")
                         model = search.compile(genome, definition, backend=backend, device=device, seed=model_seed)
+                        compiled_parameters = model.parameter_count
                         if model.parameter_count > 2_000_000:
                             raise ValueError("compiled candidate exceeds local runtime parameter safety cap")
                         inheritance = search.inherit(model, definition.id, namespace)
                         ratio = {"exact": 0.3, "partial": 0.6, "none": 1.0}[inheritance["mode"]]
                         allocated = max(1, math.ceil(full_epochs * ratio))
+                        if research:
+                            full_epochs, allocated, training_reason = allocate_training(
+                                epochs, generation, inheritance, model.parameter_count,
+                                protected=proposal["protected"], variant=variant)
+                        profile["compile_inherit_seconds"] = time.monotonic() - phase_start
+                        phase_start = time.monotonic()
                         training = TrainConfig(
                             epochs=allocated,
                             learning_rate=genome.learning_rate,
@@ -326,6 +375,10 @@ def run_engine(
                             "training": {name: value for name, value in vars_free_training(training).items()},
                             "source_sha256": configuration["source_sha256"],
                         }
+                        if research:
+                            request["variant"] = variant
+                            request["training"]["protected"] = proposal["protected"] and policy(variant)["training"]
+                        profile["request_seconds"] = time.monotonic() - phase_start
                     except (ValueError, TypeError, OverflowError) as error:
                         result = {
                             "status": "failed",
@@ -334,6 +387,7 @@ def run_engine(
                             "invalid": 1,
                         }
                     else:
+                        phase_start = time.monotonic()
                         try:
                             result = evaluator.evaluate_many(
                                 [
@@ -353,7 +407,9 @@ def run_engine(
                             BrokenProcessPool,
                         ) as error:
                             result = terminal_worker_failure(directory, str(error), deadline - time.monotonic())
+                        profile["worker_roundtrip_seconds"] = time.monotonic() - phase_start
                     _crash("worker", step, crash_at, crash_step)
+                    phase_start = time.monotonic()
                     if result["status"] == "ok":
                         ref = ArtifactReference(**result["model_artifact"])
                         archive = np.load(io.BytesIO(read_verified_artifact(directory, ref)), allow_pickle=False)
@@ -364,7 +420,10 @@ def run_engine(
                         search.remember(model, namespace)
                     if system == "topograph":
                         search.progress = step / budget
+                    if research:
+                        result["outcome_id"] = f"candidate_{step:06d}"
                     search.observe(definition.id, genome, result)
+                    profile["search_seconds"] = time.monotonic() - phase_start
                     if result["status"] == "ok":
                         result["metric_value"] = (
                             -result["score"] if definition.primary_metric.direction.value == "min" else result["score"]
@@ -385,6 +444,11 @@ def run_engine(
                         "directory": directory.name,
                         **result,
                     }
+                    if research:
+                        attempt.update(proposal=proposal, training_reason=training_reason, profile=profile,
+                                       optimizer_state="reset_each_fit", fidelity="trained_dag/v2",
+                                       compiled_parameters=compiled_parameters)
+                    snapshot_start = time.monotonic()
                     next_state = {
                         **state,
                         "completed": step,
@@ -392,6 +456,9 @@ def run_engine(
                         "attempts": state["attempts"] + [attempt],
                         "elapsed": clock.elapsed(),
                     }
+                    if research:
+                        profile["snapshot_seconds"] = time.monotonic() - snapshot_start
+                    publication_start = time.monotonic()
                     publish_transaction(transaction_path, state, next_state)
                     _crash("transaction", step, crash_at, crash_step)
                 attempt = next_state["attempts"][-1]
@@ -425,7 +492,12 @@ def run_engine(
                 publication.commit_manifest()
                 _crash("manifest", step, crash_at, crash_step)
                 state = next_state
-            search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"])
+                if research:
+                    timing_path = workspace.root / f"timing_{step:06d}.json"
+                    if not timing_path.exists():
+                        publish_artifact(timing_path, encode(dict(attempt=step,
+                            checkpoint_seconds=time.monotonic()-publication_start, recovery=recovering_transaction)))
+            search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"], **search_options)
             derived(workspace.state_path, encode_snapshot(state))
             status = (
                 "completed"
@@ -443,6 +515,13 @@ def run_engine(
                 "saved_epochs": sum(a["inherited_epoch_savings"] for a in state["attempts"]),
             }
             telemetry["target_device"] = device
+            if research:
+                telemetry["runtime_profile"] = runtime_profile(state["attempts"])
+                timings = [json.loads(read_document(p.parent, p.name)) for p in sorted(workspace.root.glob("timing_*.json"))]
+                telemetry["runtime_profile"]["checkpoint_publications"] = timings
+                telemetry["runtime_profile"]["missing_checkpoint_timings"] = sorted(
+                    set(range(1, state["completed"]+1)) - {t["attempt"] for t in timings})
+                derived(workspace.root / "runtime_profile.json", encode(telemetry["runtime_profile"]))
             derived(workspace.root / "engine_telemetry.json", encode(telemetry))
             derived(
                 workspace.summary_path,
@@ -451,7 +530,8 @@ def run_engine(
         if stop_after is not None and state["completed"] < budget:
             clock.finish()
             return workspace.root
-        exported = export_run(workspace, state, definitions, pack, selection, device_class, inherited)
+        exported = export_run(workspace, state, definitions, pack, selection, device_class, inherited,
+                              extra_artifacts=("runtime_profile.json",) if research else ())
         clock.finish()
         return exported
 
@@ -478,6 +558,7 @@ def replay_export(root, search_type, genome_type):
     bundle = read_export(root)
     validate_engine_bundle(bundle, verify_cache=True)
     config = artifact_json(bundle, "config.yaml")
+    search_type, genome_type = select_runtime(search_type, genome_type, variant=config.get("variant", "legacy"))
     if bundle.manifest.system.value != search_type.system:
         raise ValueError("export belongs to a different engine")
     refs = {ref.path: ref for ref in bundle.summary.artifact_digests}

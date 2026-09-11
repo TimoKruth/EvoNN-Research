@@ -196,7 +196,7 @@ def vars_free_training(config):
     }
 
 
-def export_run(workspace, state, definitions, pack, selection, device_class, inherited, *, extra_artifacts=(), artifact_builder=None):
+def export_run(workspace, state, definitions, pack, selection, device_class, inherited, *, extra_artifacts=(), artifact_builder=None, seeding_override=None):
     from .run_store import STORE_FILENAME
 
     configuration, attempts = state["config"], state["attempts"]
@@ -257,6 +257,9 @@ def export_run(workspace, state, definitions, pack, selection, device_class, inh
         "seed_cost_accounting": None,
         "seed_source_evaluations": None,
     }
+    if seeding_override is not None:
+        from .telemetry import SeedingMetadata
+        seeding = SeedingMetadata.model_validate_json(json.dumps(seeding_override)).model_dump(mode="json")
     common = {
         "schema_version": "1.0.0",
         "system": configuration["system"],

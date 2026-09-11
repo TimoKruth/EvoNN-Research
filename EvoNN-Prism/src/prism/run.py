@@ -1,6 +1,7 @@
 """Package-local search coordinator and worker using the shared publication boundary."""
 
 from datetime import datetime, timezone
+from dataclasses import asdict
 import hashlib
 import importlib.metadata
 import io
@@ -38,13 +39,15 @@ from evonn_shared.runtime_io import (
     _crash,
     derived,
     export_run,
-    vars_free_training,
 )
 from .tensors import Backend
 from .training import TrainConfig, fit
+from .research import policy, allocate_training, summarize_attempts, architecture_identity, finalist_seeding
+from .genome import ModelGenome
 
 
 def evaluation_worker(request, output, search_type, genome_type):
+    worker_started = time.monotonic()
     if request["source_sha256"] != source_identity():
         raise ValueError("worker source changed since run began")
     definition = get_benchmark(request["benchmark"], shared_root=Path(request["shared_root"]))
@@ -64,6 +67,7 @@ def evaluation_worker(request, output, search_type, genome_type):
         model.buffers = {
             k: tuple(np.asarray(v, dtype=np.float32) for v in values) for k, values in request["buffers"].items()
         }
+        model.optimizer_state = request.get("optimizer_state")
         provenance = request["data"]
         arrays = {}
         for item in provenance["cache_artifacts"]:
@@ -71,6 +75,7 @@ def evaluation_worker(request, output, search_type, genome_type):
             payload = read_verified_artifact(Path(provenance["cache_directory"]), ref, size_bytes=item["size_bytes"])
             arrays[Path(ref.path).stem] = np.load(io.BytesIO(payload), allow_pickle=False)
         config = TrainConfig(**request["training"])
+        preparation_seconds = time.monotonic() - worker_started
     except (ValueError, TypeError, OverflowError) as error:
         publish_artifact(
             output,
@@ -109,6 +114,9 @@ def evaluation_worker(request, output, search_type, genome_type):
             packed_bytes_estimate=packed,
             latent_weight_bytes=sum(v.nbytes for v in model.weights.values()),
             buffers={k: [np.asarray(a).tolist() for a in v] for k, v in model.buffers.items()},
+            optimizer_state=model.optimizer_state if config.optimizer_policy == "continue" else None,
+            worker_preparation_seconds=preparation_seconds,
+            worker_publication_seconds=time.monotonic() - worker_started - preparation_seconds - result["train_seconds"],
         )
     except (ValueError, TimeoutError, FloatingPointError, OverflowError) as error:
         result = {"status": "failed", "reason": str(error), "charged": 1, "invalid": 0}
@@ -129,11 +137,20 @@ def run_engine(
     fit_timeout=120.0,
     epochs=12,
     population_size=4,
+    variant="open",
+    inheritance_policy="enabled",
+    optimizer_policy="restart",
+    optimizer_backend="numpy",
+    fixed_genomes=None,
+    prior_discovery=None,
     resume=None,
     stop_after=None,
     crash_at=None,
     crash_step=1,
 ):
+    research = policy(variant)
+    if inheritance_policy not in {"enabled", "disabled"} or optimizer_policy not in {"restart", "continue"} or optimizer_backend not in {"numpy", "native"}:
+        raise ValueError("invalid inheritance or optimizer policy")
     if not all(math.isfinite(v) and 0 < v <= 1800 for v in (timeout, fit_timeout)):
         raise ValueError("run and fit limits must be in (0,1800] seconds")
     if type(seed) is not int or not 0 <= seed < 2**32:
@@ -148,6 +165,18 @@ def run_engine(
     if type(budget) is not int or not 1 <= budget <= MAX_ENGINE_EVALUATIONS or budget % len(pack.benchmarks):
         raise ValueError("budget must be in [1,256] and divisible across the pack")
     definitions = [get_benchmark(name, shared_root=root) for name in pack.benchmarks]
+    if fixed_genomes is not None:
+        if not research["training"] or set(fixed_genomes) != set(pack.benchmarks):
+            raise ValueError("fixed architectures require training/open variant and the complete benchmark pack")
+        fixed_genomes = {key: ModelGenome.model_validate(value).model_dump(mode="json") for key, value in fixed_genomes.items()}
+    if prior_discovery is not None:
+        if fixed_genomes is None or not isinstance(prior_discovery, dict) or prior_discovery.get("accounting") != "reported_prior":
+            raise ValueError("prior discovery must accompany fixed architectures with reported_prior accounting")
+        if type(prior_discovery.get("source_fits")) is not int or prior_discovery["source_fits"] < 1:
+            raise ValueError("prior discovery requires a positive source fit count")
+        if prior_discovery.get("fixed_genomes_sha256") != canonical_sha256(fixed_genomes, schema_version="prism.fixed-genomes/v1", digest_field=None):
+            raise ValueError("fixed architectures differ from their discovery provenance")
+    seeding = finalist_seeding(prior_discovery)
     commit, dirty = code_identity()
     system = search_type.system
     device_class = platform.system().lower() + "_" + platform.machine() + "_" + device
@@ -160,6 +189,12 @@ def run_engine(
         "device": device,
         "epochs": epochs,
         "population_size": population_size,
+        "variant": variant,
+        "inheritance_policy": inheritance_policy,
+        "optimizer_policy": optimizer_policy,
+        "optimizer_backend": optimizer_backend,
+        "fixed_genomes": fixed_genomes,
+        "prior_discovery": prior_discovery,
         "evaluation_process_count": 1,
         "training_worker_count": 1,
         "supervisor_count": 0,
@@ -196,7 +231,8 @@ def run_engine(
             provenance.append(prepared["provenance"])
         publish_artifact(workspace.root / "dataset_provenance.json", encode(provenance))
         search = search_type(
-            definitions, seed=int(derive_stream(seed, StreamName.SEARCH)), population_size=population_size
+            definitions, seed=int(derive_stream(seed, StreamName.SEARCH)), population_size=population_size, variant=variant,
+            fixed_genomes=fixed_genomes
         )
         state = {
             "config": configuration,
@@ -255,10 +291,12 @@ def run_engine(
                     inherited = max(inherited, step)
                 else:
                     if search is None:
-                        search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"])
+                        search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"], variant=variant)
                     counts = {d.id: sum(a["benchmark_id"] == d.id for a in state["attempts"]) for d in definitions}
                     definition = min(definitions, key=lambda d: (counts[d.id], d.id))
                     genome = search.candidate(definition.id)
+                    proposal = search.proposal(definition.id, genome)
+                    proposal_started = time.monotonic()
                     data = next(p for p in provenance if p["benchmark_id"] == definition.id)
                     model_seed = init_seed(seed, definition.id, counts[definition.id])
                     namespace = canonical_sha256(
@@ -274,22 +312,34 @@ def run_engine(
                         digest_field=None,
                     )
                     generation = search.benchmarks[definition.id]["generation"]
-                    full_epochs = max(1, math.ceil(epochs * (0.5 if generation == 0 else 1)))
+                    full_epochs = epochs
                     allocated = full_epochs
+                    allocation_reason = "candidate_not_compiled"
+                    compiled_parameters = 0
                     inheritance = {"mode": "none", "source": None, "copied_parameters": 0}
+                    full_epochs, allocated, allocation_reason = allocate_training(
+                        epochs, generation, inheritance, 0, protected=proposal["protected"], variant=variant)
                     directory = create_artifact_directory(workspace.root / f"attempt_{step:06d}")
                     try:
                         model = search.compile(genome, definition, backend=backend, device=device, seed=model_seed)
+                        compiled_parameters = model.parameter_count
                         if model.parameter_count > 2_000_000:
                             raise ValueError("compiled candidate exceeds local runtime parameter safety cap")
-                        inheritance = search.inherit(model, definition.id, namespace)
-                        ratio = {"exact": 0.3, "partial": 0.6, "none": 1.0}[inheritance["mode"]]
-                        allocated = max(1, math.ceil(full_epochs * ratio))
+                        fresh_proposal = research["archive"] and proposal["origin"] in {"fresh", "initial"}
+                        if inheritance_policy == "enabled" and not fresh_proposal:
+                            inheritance = search.inherit(model, definition.id, namespace)
+                        full_epochs, allocated, allocation_reason = allocate_training(
+                            epochs, generation, inheritance, model.parameter_count,
+                            protected=proposal["protected"], variant=variant)
                         training = TrainConfig(
                             epochs=allocated,
                             learning_rate=genome.learning_rate,
                             weight_decay=genome.weight_decay,
                             timeout=min(fit_timeout, max(0.001, deadline - time.monotonic())),
+                            preserve_initial=research["training"] and inheritance["mode"] != "none",
+                            minimum_epochs=allocated if research["training"] and proposal["protected"] else 1,
+                            native_optimizer=optimizer_backend == "native",
+                            optimizer_policy=optimizer_policy,
                         )
                         request = {
                             "benchmark": definition.id,
@@ -301,8 +351,9 @@ def run_engine(
                             "data": data,
                             "weights": {k: v.tolist() for k, v in model.weights.items()},
                             "buffers": {k: [np.asarray(a).tolist() for a in v] for k, v in model.buffers.items()},
-                            "training": {name: value for name, value in vars_free_training(training).items()},
+                            "training": asdict(training),
                             "source_sha256": configuration["source_sha256"],
+                            "optimizer_state": getattr(model, "optimizer_state", None) if optimizer_policy == "continue" else None,
                         }
                     except (ValueError, TypeError, OverflowError) as error:
                         result = {
@@ -312,6 +363,8 @@ def run_engine(
                             "invalid": 1,
                         }
                     else:
+                        dispatch_started = time.monotonic()
+                        preparation_seconds = dispatch_started - proposal_started
                         try:
                             result = _process(
                                 system,
@@ -322,6 +375,10 @@ def run_engine(
                             )
                         except (ValueError, TypeError, OverflowError, OSError) as error:
                             result = terminal_worker_failure(directory, str(error), deadline - time.monotonic())
+                        result["dispatch_seconds"] = time.monotonic() - dispatch_started
+                        result["proposal_preparation_seconds"] = preparation_seconds
+                    result["proposal_to_result_seconds"] = time.monotonic() - proposal_started
+                    coordinator_started = time.monotonic()
                     _crash("worker", step, crash_at, crash_step)
                     if result["status"] == "ok":
                         ref = ArtifactReference(**result["model_artifact"])
@@ -330,7 +387,9 @@ def run_engine(
                         model.buffers = {
                             k: tuple(np.asarray(v) for v in values) for k, values in result["buffers"].items()
                         }
+                        model.optimizer_state = result.pop("optimizer_state", None)
                         search.remember(model, namespace)
+                    result["inheritance"] = inheritance
                     search.observe(definition.id, genome, result)
                     if result["status"] == "ok":
                         result["metric_value"] = (
@@ -340,6 +399,7 @@ def run_engine(
                         "benchmark_id": definition.id,
                         "outcome_id": f"candidate_{step:06d}",
                         "genome_id": genome.genome_id,
+                        "architecture_id": architecture_identity(genome),
                         "genome": genome.model_dump(mode="json"),
                         "model_seed": model_seed,
                         "generation": generation,
@@ -350,8 +410,13 @@ def run_engine(
                         "allocated_epochs": allocated,
                         "inherited_epoch_savings": full_epochs - allocated,
                         "directory": directory.name,
+                        "proposal": proposal,
+                        "allocation_reason": allocation_reason,
+                        "compiled_parameter_count": compiled_parameters,
+                        "lineage_updates": inheritance.get("source_updates", 0) + result.get("updates", 0),
                         **result,
                     }
+                    attempt["coordinator_update_seconds"] = time.monotonic() - coordinator_started
                     next_state = {
                         **state,
                         "completed": step,
@@ -392,7 +457,7 @@ def run_engine(
                 publication.commit_manifest()
                 _crash("manifest", step, crash_at, crash_step)
                 state = next_state
-            search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"])
+            search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"], variant=variant)
             derived(workspace.state_path, encode_snapshot(state))
             status = (
                 "completed"
@@ -410,6 +475,7 @@ def run_engine(
                 "saved_epochs": sum(a["inherited_epoch_savings"] for a in state["attempts"]),
             }
             telemetry["target_device"] = device
+            telemetry["research"] = summarize_attempts(state["attempts"])
             derived(workspace.root / "engine_telemetry.json", encode(telemetry))
             derived(
                 workspace.summary_path,
@@ -418,7 +484,7 @@ def run_engine(
         if stop_after is not None and state["completed"] < budget:
             clock.finish()
             return workspace.root
-        exported = export_run(workspace, state, definitions, pack, selection, device_class, inherited)
+        exported = export_run(workspace, state, definitions, pack, selection, device_class, inherited, seeding_override=seeding)
         clock.finish()
         return exported
 

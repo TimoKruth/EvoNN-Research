@@ -5,6 +5,8 @@ from random import Random
 import math
 
 from evonn_shared.weight_cache import WeightCache
+from .research import ResearchPolicy
+from . import search_v2
 from .compiler import compile_genome
 from .genome import HierarchicalGenome,CellGene,seed_genome,crossover,mutate
 
@@ -25,9 +27,13 @@ class Search:
     worker_module='stratograph.cli'
     evaluator_fidelity='hierarchy_features_trained_head'
 
-    def __init__(self,definitions,*,seed,population_size=4,state=None,budget=64,variant='shared'):
+    def __init__(self,definitions,*,seed,population_size=4,state=None,budget=64,variant='shared',research=None):
         if not 2<=population_size<=16:
             raise ValueError('population size must be in [2,16]')
+        research=state.get('research') if state is not None else research
+        self.research=ResearchPolicy.model_validate(research) if research is not None else None
+        if self.research:
+            self.evaluator_fidelity=self.research.fidelity
         self.rng=Random(seed)
         self.size=population_size
         self.budget=budget
@@ -43,12 +49,17 @@ class Search:
             self.operator_stats=state['operator_stats']
             self.budget,self.variant=state['budget'],state['variant']
             self.cache=WeightCache(2*population_size*len(definitions),state['cache'])
+            if self.research:
+                self.parameter_maps=state['parameter_maps']
         else:
             for definition in definitions:
                 genomes=[seed_genome(definition.task_kind.value,math.prod(definition.input_shape),budget=budget,
                     modality=definition.input_modality.value,variant=variant,index=index) for index in range(population_size)]
                 self.benchmarks[definition.id]=dict(population=[g.model_dump(mode='json') for g in genomes],
                     cursor=0,generation=0,evaluated=0,scores=[],archive=[],parents={},operators={},lineage=[],niches={})
+
+            if self.research:
+                search_v2.initialize(self)
 
     def candidate(self,benchmark):
         state=self.benchmarks[benchmark]
@@ -58,6 +69,8 @@ class Search:
         return compile_genome(genome,definition.input_shape,definition.output_dim,definition.input_modality.value,definition.task_kind.value,**options)
 
     def inherit(self,model,benchmark,namespace):
+        if self.research:
+            return search_v2.inherit(self,model,benchmark,namespace)
         state=self.benchmarks[benchmark]
         genome=model.genome
         parents=state['parents'][genome.genome_id] if genome.genome_id in state['parents'] else []
@@ -65,9 +78,13 @@ class Search:
             family=genome.profile,parents=parents,compatible_groups=[genome.profile])
 
     def remember(self,model,namespace):
+        if self.research:
+            return search_v2.remember(self,model,namespace)
         self.cache.put(namespace,model.genome.genome_id,'hierarchy_proxy',model.genome.profile,model.weights,model.buffers)
 
     def observe(self,benchmark,genome,result):
+        if self.research:
+            return search_v2.observe(self,benchmark,genome,result)
         state=self.benchmarks[benchmark]
         entry=dict(genome=genome.model_dump(mode='json'),identity=genome.genome_id,
             quality=result['score'] if result['status']=='ok' else -1e30,parameters=result.get('parameter_count',0))
@@ -117,7 +134,7 @@ class Search:
 
     def telemetry(self):
         descriptions={key:[descriptor(HierarchicalGenome.model_validate(g)) for g in state['population']] for key,state in self.benchmarks.items()}
-        return dict(schema_version='1.0.0',system=self.system,evaluator_fidelity=self.evaluator_fidelity,
+        result=dict(schema_version='1.0.0',system=self.system,evaluator_fidelity=self.evaluator_fidelity,
             hierarchy=descriptions,operator_success=self.operator_stats,
             motif_frequency={key:dict(Counter(cell['primitive'] for genome in state['population'] for gene in genome['cells'] for cell in gene['nodes'])) for key,state in self.benchmarks.items()},
             lineage={key:state['lineage'] for key,state in self.benchmarks.items()},
@@ -125,7 +142,14 @@ class Search:
             clone_specialize_counts={name:self.operator_stats[name]['uses'] if name in self.operator_stats else 0 for name in ('clone','specialize')},
             generations={key:state['generation'] for key,state in self.benchmarks.items()},
             evaluation_cache_hits=0,promotion_screen='disabled')
+        if self.research:
+            result.update(search_v2.telemetry(self))
+        return result
 
     def state(self):
-        return dict(rng=self.rng.getstate(),benchmarks=self.benchmarks,operator_stats=self.operator_stats,
+        result=dict(rng=self.rng.getstate(),benchmarks=self.benchmarks,operator_stats=self.operator_stats,
             cache=self.cache.state(),budget=self.budget,variant=self.variant)
+
+        if self.research:
+            result.update(research=self.research.model_dump(mode='json'),parameter_maps=self.parameter_maps)
+        return result

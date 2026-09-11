@@ -1,0 +1,14 @@
+# Explicit experimental upgrade. Scientific qualification is still pending.
+pack: tier_a_contract
+budget: 16
+seed: 42
+epochs: 12
+backend: numpy_fallback
+timeout: 300
+fit_timeout: 90
+research:
+  version: 2
+  evaluator: proxy
+  normalization: train_standard
+  inheritance: compatible
+  selection: diverse

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "incomplete_paused",
+  "status": "incomplete_superseded",
   "reason": "User directed PR #36 to merge first, then adapt PR #37. The old revision pair must not be relabeled to a changed main.",
   "protocol": "governance/pr37-comparison-protocol-20260911.json",
   "protocol_sha256": "dd06f1b9a624afad706951a92bc14d3289d3d0773f3da057b1200d8cf7f9adae",
@@ -304,5 +304,10 @@
         "status": "passed"
       }
     }
-  ]
+  ],
+  "disposition": {
+    "pr36_merge_revision": "61543ef2157af8c21a78789dadf6ba326f5e0a32",
+    "action": "Preserve the incomplete comparison without resuming or relabeling it. PR #36 absorbed the runtime changes; PR #37 retains CI, tests and documentation only.",
+    "qualification": "The separate PR #36 contract evidence remains bound to its original revisions. This partial study is not merge evidence."
+  }
 }

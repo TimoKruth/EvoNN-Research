@@ -24,6 +24,7 @@ class TrainConfig:
     warmup_fraction: float = 0.1
     schedule: str = "cosine"
     timeout: float = 120.0
+    protected: bool = False
 
     def __post_init__(self):
         for value in (self.epochs, self.batch_size, self.patience):
@@ -98,6 +99,12 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
     best_loss, stale, updates, epochs_done = math.inf, 0, 0, 0
     total = config.epochs * math.ceil(len(x) / config.batch_size)
     initial_weights = {k: v.copy() for k, v in model.weights.items()}
+    research = getattr(model.genome, "schema_version", 1) == 2
+    curve = []
+    if research:
+        best_loss = float(b.numpy(loss({k: b.array(v) for k, v in best.items()}, xv, yv)))
+        if not math.isfinite(best_loss):
+            raise ValueError("nonfinite initial validation loss")
     for epoch in range(config.epochs):
         order = rng.permutation(len(x))
         for start in range(0, len(x), config.batch_size):
@@ -128,13 +135,14 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         if not math.isfinite(value):
             raise ValueError("nonfinite validation loss")
         epochs_done += 1
+        curve.append(value)
         if value < best_loss - 1e-8:
             best_loss, stale = value, 0
             best = {k: v.copy() for k, v in model.weights.items()}
             best_buffers = deepcopy(model.buffers)
         else:
             stale += 1
-            if stale >= config.patience:
+            if stale >= config.patience and not config.protected:
                 break
     model.weights = best
     model.buffers = best_buffers
@@ -163,6 +171,14 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         score = float(np.mean(prediction.argmax(axis=-1) == y_validation))
     if not math.isfinite(score):
         raise ValueError("nonfinite final score")
+    extra = {}
+    if research:
+        # A fixed training-only probe, independent of validation labels and protected test data.
+        probe = b.numpy(model.forward(parameters, b.array(x[:16]), training=False, seed=0)).reshape((min(16, len(x)), -1))
+        projection = np.random.default_rng(0).normal(size=(probe.shape[-1], 1)) / math.sqrt(probe.shape[-1])
+        behavior = np.tanh(probe @ projection).reshape(-1)
+        extra = {"validation_curve": curve, "behavior_descriptor": np.pad(behavior, (0, 16-len(behavior))).tolist(),
+                 "behavior_source": "training_probe/v1"}
     return {
         "score": score,
         "epochs": epochs_done,
@@ -178,4 +194,5 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
             "target_std": target_std,
             "calibration": calibration,
         },
+        **extra,
     }

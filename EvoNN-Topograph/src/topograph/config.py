@@ -3,6 +3,7 @@
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 from evonn_shared.runtime_budget import MAX_ENGINE_EVALUATIONS
+from .research import Variant
 
 
 class RunConfig(BaseModel):
@@ -20,3 +21,4 @@ class RunConfig(BaseModel):
 
     benchmark_pooling: bool = False
     novelty_weight: float = Field(default=0, ge=0, le=1)
+    variant: Variant = "legacy"

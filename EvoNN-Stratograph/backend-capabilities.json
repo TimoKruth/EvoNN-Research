@@ -10,7 +10,7 @@
       ],
       "implemented": true,
       "dependency": "mlx",
-      "dependency_condition": "Deterministic hierarchy features with a differentiated GELU head; no end-to-end hierarchy claim. Native Apple Silicon runtime."
+      "dependency_condition": "Legacy deterministic hierarchy features with a differentiated GELU head; opt-in v2 supports trainable shared cells. V2 scientific qualification is pending. Native Apple Silicon runtime."
     },
     {
       "id": "numpy_fallback",
@@ -20,7 +20,7 @@
       ],
       "implemented": true,
       "dependency": "numpy",
-      "dependency_condition": "Deterministic hierarchy features with a differentiated GELU head; no end-to-end hierarchy claim. Portability-only evidence."
+      "dependency_condition": "Legacy deterministic hierarchy features with a differentiated GELU head; opt-in v2 supports trainable shared cells. V2 scientific qualification is pending. Portability-only evidence."
     }
   ],
   "evidence": {

@@ -15,8 +15,7 @@ def protocol_fingerprint(bundle):
     policy = {}
     if bundle.manifest.system.value in {"prism", "topograph", "stratograph", "primordia"}:
         config = artifact_json(bundle, bundle.manifest.config_snapshot.path)
-        keys = ("source_sha256", "epochs", "population_size", "fit_timeout", "benchmark_pooling", "novelty_weight", "variant", "evaluator_fidelity",
-                "search_policy", "training_policy", "max_width", "max_depth")
+        keys = ("source_sha256", "epochs", "population_size", "fit_timeout", "benchmark_pooling", "novelty_weight", "variant", "evaluator_fidelity", "research", "inheritance_policy", "optimizer_policy", "optimizer_backend", "fixed_genomes", "prior_discovery", "search_policy", "training_policy", "max_width", "max_depth")
         policy = {key: config[key] for key in keys if key in config}
     return canonical_sha256({"system": bundle.manifest.system.value, "runtime": runtime, "policy": policy},
                             schema_version="evonn-comparison-protocol/v1", digest_field=None)

@@ -60,3 +60,12 @@ def test_ablation_stops_before_shrinking_a_later_variants_budget(tmp_path, monke
     assert len(calls) == 1 and calls[0]["timeout"] == 20
     result = json.loads(next(tmp_path.glob("ablation_*/ablation.json")).read_text())
     assert result["status"] == "incomplete" and len(result["cases"]) == 1
+
+
+def test_ablation_forwards_explicit_research_policy_to_all_variants(tmp_path, monkeypatch):
+    from stratograph.research import ResearchPolicy
+    calls = prepared(monkeypatch)
+    policy = ResearchPolicy(evaluator='trainable', evolve_representation=False)
+    commands.ablation(configs=[RunConfig(budget=8, timeout=20, research=policy)],
+                      output=tmp_path, cache=tmp_path/'cache', timeout=100)
+    assert len(calls) == 5 and all(call['research'] == policy for call in calls)
