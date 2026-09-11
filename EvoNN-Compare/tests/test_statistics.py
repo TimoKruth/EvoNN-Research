@@ -117,3 +117,16 @@ def test_audit_support_budget_does_not_create_an_unrequested_panel():
     requested[-1]['budget'] = 128
     result = compare_cohorts(requested+support, before='before', after='after')
     assert result['groups'][0]['level'] != 'L4'
+
+
+def test_missing_panel_keeps_before_after_holm_family():
+    rows = observations('before', seeds=range(6)) + observations('after', seeds=range(6), delta=.1)
+    panel = dict(pack='tier1_core', budget=64, engine='prism', benchmarks=['one', 'two', 'three'], seeds=list(range(6)))
+    request = dict(before='before', after='after', before_revision='a'*40, after_revision='b'*40,
+                   panels=[panel, {**panel, 'engine': 'topograph'}])
+    result = analyze(rows, before='before', after='after', request=request)
+    group = next(g for g in result['groups'] if g['engine'] == 'prism')
+    assert group['wilcoxon']['pvalue'] == .03125
+    assert group['wilcoxon']['holm_pvalue'] == .0625
+    assert group['statistical_label'] == 'likely_gain'
+    assert group['aggregation_label'] == 'inconclusive'

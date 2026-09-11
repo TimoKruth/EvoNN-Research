@@ -253,7 +253,9 @@ def analyze_cohort(rows, request, *, artifacts_verified=False):
     tested = sorted([g for g in groups if g['wilcoxon']['status'] == 'available'], key=lambda g:g['wilcoxon']['pvalue'])
     previous = 0.
     for index, group in enumerate(tested):
-        adjusted = max(previous, min(1., group['wilcoxon']['pvalue'] * (len(tested)-index)))
+        # Unavailable tests remain in the declared family (equivalent to p=1).
+        # A missing or saturated contrast cannot strengthen another contrast.
+        adjusted = max(previous, min(1., group['wilcoxon']['pvalue'] * (len(groups)-index)))
         previous = adjusted
         group['wilcoxon']['holm_pvalue'] = adjusted
         if group['statistical_label'] == 'likely_gain' and adjusted <= .05:

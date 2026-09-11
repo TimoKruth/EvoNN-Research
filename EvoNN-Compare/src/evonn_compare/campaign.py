@@ -26,6 +26,7 @@ from evonn_shared.datasets import array_digest, shared_root
 from evonn_shared.export_reader import read_document, read_export
 from evonn_shared.runtime_io import code_identity, source_identity, encode
 from evonn_shared.runtime_host import host_fields
+from evonn_shared.primordia_policy import PrimordiaResearchPolicy
 from evonn_shared.runtime_budget import execution_budget
 from evonn_shared.runtime_journal import load_runtime_checkpoint
 from evonn_shared.telemetry import ArtifactReference
@@ -46,6 +47,7 @@ class CampaignSpec(BaseModel):
     systems: list[str] = Field(default_factory=lambda: list(SYSTEMS), min_length=1)
     backend: str = "mlx_native"
     epochs: int = Field(default=12, ge=1, le=100)
+    primordia_research: PrimordiaResearchPolicy | None = None
     enhanced: bool = False
     timeout: float = Field(default=300.0, gt=0, le=1740)
     fit_timeout: float = Field(default=90.0, gt=0, le=1800)
@@ -54,6 +56,8 @@ class CampaignSpec(BaseModel):
 
     @model_validator(mode="after")
     def valid(self):
+        if self.primordia_research is not None and set(self.systems) != set(SYSTEMS):
+            raise ValueError("Primordia research campaigns require every engine and Contenders")
         if self.backend not in {"mlx_native", "numpy_fallback"}:
             raise ValueError("explicit native or portability backend required")
         if self.analysis != "descriptive_repeated_seed_no_superiority_claim":
@@ -171,6 +175,9 @@ def preflight(root):
 
 def prepare_plan(root, spec, cache, *, timeout=1800):
     """Prepare/verify all datasets in bounded subprocesses, then freeze the plan."""
+    if "primordia" in spec.systems and spec.primordia_research is None:
+        # Freeze new defaults explicitly; reading historical manifests stays additive.
+        spec = CampaignSpec.model_validate({**spec.model_dump(), "primordia_research": PrimordiaResearchPolicy()})
     if not 0 < timeout <= 1800:
         raise ValueError("planning preparation cap must be at most 1800 seconds")
     root, cache = root.absolute(), cache.absolute()
@@ -261,6 +268,12 @@ def match_config(config, manifest, case, system):
             expected["variant"] = "shared"
         if system == "topograph":
             expected.update(benchmark_pooling=False, novelty_weight=0.0)
+        if system == "primordia":
+            policy = spec.primordia_research or PrimordiaResearchPolicy()
+            settings = {**policy.model_dump(), "training_policy": policy.training_policy}
+            if spec.primordia_research is not None or any(key in config for key in settings):
+                if any(key not in config or config[key] != value for key, value in settings.items()):
+                    raise ValueError("campaign Primordia research policy mismatch")
         if any(config[key] != value for key, value in expected.items()):
             raise ValueError("campaign export training settings mismatch")
     elif config["fit_timeout_seconds"] != spec.fit_timeout or config["enhanced"] != spec.enhanced:
@@ -370,6 +383,9 @@ def run_campaign(root, *, session_timeout=1800, max_runs=None):
                 command += ["--backend", spec.backend, "--epochs", str(spec.epochs)]
             elif spec.enhanced:
                 command.append("--enhanced")
+            if system == "primordia" and spec.primordia_research is not None:
+                for key, value in spec.primordia_research.model_dump().items():
+                    command += ["--" + key.replace("_", "-"), str(value)]
             if run is not None:
                 if system == "contenders":
                     raise ValueError("incomplete Contenders run has no resume contract; retained without restarting")
