@@ -279,11 +279,11 @@ def compare_cohorts(rows, *, before, after, materiality=.01, request=None):
             group['level']='L3'
             group['aggregation_label']='blocked'
             group['blockers'].append('incomplete full-attempt runtime allocation')
-    # Holm correction across available group tests; clear gain requires familywise evidence.
+    # Unavailable tests retain their place in the family, equivalent to p=1.
     tested=sorted([g for g in results if g['wilcoxon']['status']=='available'],key=lambda g:g['wilcoxon']['pvalue'])
     previous=0.
     for i,group in enumerate(tested):
-        adjusted=max(previous,min(1.,group['wilcoxon']['pvalue']*(len(tested)-i)))
+        adjusted=max(previous,min(1.,group['wilcoxon']['pvalue']*(len(results)-i)))
         previous=adjusted
         group['wilcoxon']['holm_pvalue']=adjusted
         if group['statistical_label']=='clear_gain' and adjusted>.05:

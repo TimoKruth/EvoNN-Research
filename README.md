@@ -275,6 +275,13 @@ These tasks are experimental, **not admitted as full-fidelity local-safe**;
 their runtime and baseline adequacy still require qualification. The existing
 tabular/image pack and all frozen definitions remain available unchanged.
 
+Campaigns can also freeze `primordia_research` with `search_policy`, `max_width`
+and `max_depth`. New plans record its defaults explicitly and require the full
+engine roster. Adoption and repeated-seed grouping bind these controls and the
+derived training policy; frozen historical configurations retain their original
+identities. Within-cohort and before/after reports keep every declared contrast
+in the Holm correction, including unavailable tests.
+
 ## Campaign planning and recovery
 
 Every new comparison must run **all four engines: Prism, Topograph, Stratograph

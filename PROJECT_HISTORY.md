@@ -832,3 +832,19 @@ concurrent other-engine/shared changes still produced repository-wide findings a
 verification time. These are implementation checks, not a new scientific
 comparison. Repeated all-engine/Contenders qualification, fresh-seed confirmation
 and any promotion remain open in CONSOLIDATED_PLAN.md.
+
+## PR 36 correctness review — 2026-09-11
+
+The merge review reproduced Primordia policy substitution during campaign
+adoption and repeated-seed fingerprint collisions, plus a Holm correction that
+shrunk when a declared contrast became unavailable. The fixes freeze explicit
+Primordia search/size controls in new plans, reject policy drift, and preserve
+the declared hypothesis family in both statistical report paths. Historical
+configurations and receipts remain unchanged. Regression tests include missing
+seeds, absent panels, saturated contrasts and explicit legacy controls.
+
+The bounded merge qualification is predeclared in
+`governance/pr36-contract-validation-protocol-20260911.json`: all four engines
+and Contenders before/after, Tier-B@16, seed 71, two native engine epochs,
+10 runs / 160 fits. This is contract validation with no performance or promotion
+claim; execution results and source revisions belong in the separate receipt.

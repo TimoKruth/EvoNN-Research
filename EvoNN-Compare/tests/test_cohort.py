@@ -137,6 +137,33 @@ def test_six_seed_clear_gain_holm_and_explicit_schema_guards():
             CohortRequest.model_validate(r)
 
 
+@pytest.mark.parametrize('unavailable', ['missing_seed', 'missing_panel', 'saturated'])
+def test_unavailable_contrast_keeps_declared_holm_family(unavailable):
+    rows = data(range(6))
+    r = request(range(6))
+    second = deepcopy(r['panels'][0])
+    second['id'] = 'budget128'
+    second['reference']['budget'] = second['target']['budget'] = 128
+    r['panels'].append(second)
+    complete = analyze_cohort(rows, r, artifacts_verified=True)
+    assert complete['groups'][0]['wilcoxon']['holm_pvalue'] == .0625
+    if unavailable == 'missing_seed':
+        rows = [row for row in rows if not (row['engine'] == 'topograph' and row['budget'] == 128 and row['seed'] == 5)]
+    elif unavailable == 'missing_panel':
+        rows = [row for row in rows if row['budget'] != 128]
+    else:
+        for row in rows:
+            if row['budget'] == 128:
+                row['value'] = 1.
+    result = analyze_cohort(rows, r, artifacts_verified=True)
+    group = result['groups'][0]
+    assert group['wilcoxon']['pvalue'] == .03125
+    assert group['wilcoxon']['holm_pvalue'] == .0625
+    assert group['statistical_label'] == 'likely_gain'
+    assert group['aggregation_label'] == 'inconclusive'
+    assert result == analyze_cohort(list(reversed(rows)), r, artifacts_verified=True)
+
+
 def test_required_floor_must_be_complete_in_each_seed(monkeypatch):
     from types import SimpleNamespace
     from evonn_shared import active_catalog
