@@ -848,3 +848,10 @@ The bounded merge qualification is predeclared in
 and Contenders before/after, Tier-B@16, seed 71, two native engine epochs,
 10 runs / 160 fits. This is contract validation with no performance or promotion
 claim; execution results and source revisions belong in the separate receipt.
+
+All ten qualification runs completed with 160 successful fits, zero failed fits,
+and 32 passing native winner replays. The separate
+`governance/pr36-contract-validation-results-20260911.json` receipt binds both
+source revisions and the versioned evidence transport. All exports reached L3;
+the recomputed decision remains `needs more seeds`. Historical registry events
+are preserved, with ten new rows appended under `pr36-before`/`pr36-after`.
