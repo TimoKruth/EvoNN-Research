@@ -75,7 +75,7 @@ jobs:
       - name: Verify real engine resume, replay and Compare integration
         env:
           EVONN_TEST_BACKEND: numpy_fallback
-        run: uv run --locked --all-packages --group dev pytest -q tests/integration/test_phase2_runtime.py tests/integration/test_phase2_failures.py tests/integration/test_search_snapshot_ownership.py
+        run: uv run --locked --all-packages --group dev pytest -q tests/integration/test_phase2_runtime.py tests/integration/test_phase2_failures.py tests/integration/test_search_snapshot_ownership.py tests/integration/test_primordia_breadth.py
       - name: Execute and validate NumPy runtime probe
         run: |
           uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py generate \

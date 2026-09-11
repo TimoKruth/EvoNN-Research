@@ -354,3 +354,47 @@ def test_large_state_clock_keeps_protocol_and_legacy_projection(tmp_path, export
     from evonn_shared.engine_evidence import artifact_json
     with pytest.raises(ValueError):
         artifact_json(bundle,'state.json')
+
+
+@pytest.mark.parametrize("field,value", [
+    ("search_policy", "legacy_v1"),
+    ("training_policy", "legacy/v1"),
+    ("max_width", 24),
+    ("max_depth", 4),
+])
+def test_primordia_policy_changes_do_not_pool_seed_statistics(
+    tmp_path, export_factory, monkeypatch, field, value
+):
+    from evonn_compare import evidence
+
+    bundle = export_factory(tmp_path / "export", system="primordia")
+    config = json.loads((bundle.root / "config.yaml").read_text())
+    config.update(search_policy="breadth_v2", training_policy="learning_progress_with_patient_slots/v2",
+                  max_width=48, max_depth=8)
+    monkeypatch.setattr(evidence, "artifact_json", lambda *args: config)
+    original = evidence.protocol_fingerprint(bundle)
+    shared = evidence.comparison_fingerprint(bundle)
+    config[field] = value
+    changed = evidence.protocol_fingerprint(bundle)
+    assert changed != original
+    # Engine-specific settings should not prevent explicit cross-engine comparisons.
+    assert evidence.comparison_fingerprint(bundle) == shared
+    accepted = dict(cohort="engine_only", engine_only=True, operating_state="contract-fair",
+                    accounting_state="complete", repeatability_state="single_seed")
+    row = trend_rows(bundle, "case", accepted)[0]
+    rows = [{**row, "case_id": str(i), "run_id": str(i), "seed": 42 + i,
+             "protocol_fingerprint": fingerprint} for i, fingerprint in enumerate((original, changed))]
+    spread = aggregates(rows)["spread"]
+    assert len(spread) == 2 and all(group["n"] == 1 for group in spread)
+
+
+def test_historical_primordia_protocol_fingerprint_is_unchanged(tmp_path, export_factory):
+    from evonn_compare.evidence import protocol_fingerprint
+    from evonn_shared.canonical import canonical_sha256
+
+    bundle = export_factory(tmp_path / "export", system="primordia")
+    config = json.loads((bundle.root / "config.yaml").read_text())
+    policy = {key: config[key] for key in ("source_sha256", "epochs", "population_size", "fit_timeout")}
+    expected = canonical_sha256(dict(system="primordia", runtime=bundle.manifest.runtime.model_dump(mode="json"),
+                                    policy=policy), schema_version="evonn-comparison-protocol/v1", digest_field=None)
+    assert protocol_fingerprint(bundle) == expected
