@@ -352,4 +352,5 @@ def test_large_state_clock_keeps_protocol_and_legacy_projection(tmp_path, export
     row=trend_rows(bundle,'case',acceptance)[0]
     assert row['comparison_fingerprint'] and row['active_run_seconds'] is None and row['active_run_seconds_gap']
     from evonn_shared.engine_evidence import artifact_json
-    with pytest.raises(ValueError):artifact_json(bundle,'state.json')
+    with pytest.raises(ValueError):
+        artifact_json(bundle,'state.json')

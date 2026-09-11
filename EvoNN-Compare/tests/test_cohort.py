@@ -1,6 +1,5 @@
 """Actual arm identities, missing-cell rejection and independent seed inference."""
 from copy import deepcopy
-import json
 
 import pytest
 
@@ -54,23 +53,40 @@ def test_floor_named_selection_and_budget_contrasts():
 
 @pytest.mark.parametrize('change',['source','dirty','data','host','backend','policy','envelope','metric','seeding','duplicate_run','duplicate_outcome','missing','failed','runtime','fingerprint','run_class'])
 def test_invalid_expected_cells_block_l4(change):
-    rows=data();row=next(r for r in rows if r['engine']=='topograph' and r['budget']==64)
-    if change=='source':row['git_commit']='b'*40
-    elif change=='dirty':row['source_clean']=False
-    elif change=='data':row['data_binding']={}
-    elif change=='host':row['comparison_policy']['runtime']['host']='other'
-    elif change=='backend':row['backend']='numpy_fallback'
-    elif change=='policy':row['comparison_policy']['training']['epochs']=99
-    elif change=='envelope':row['comparison_policy']['budget']['time']=500
-    elif change=='metric':row['metric']='wrong'
-    elif change=='seeding':row['seeding']={'seeding_ladder':'direct'}
-    elif change=='duplicate_run':rows.append({**row,'run_id':'other'})
-    elif change=='duplicate_outcome':rows.append(deepcopy(row))
-    elif change=='missing':rows.remove(row)
-    elif change=='failed':row['status']='failed'
-    elif change=='runtime':row['train_seconds']=None
-    elif change=='fingerprint':row['comparison_fingerprint']=None
-    else:row['run_class']='overnight'
+    rows=data()
+    row=next(r for r in rows if r['engine']=='topograph' and r['budget']==64)
+    if change=='source':
+        row['git_commit']='b'*40
+    elif change=='dirty':
+        row['source_clean']=False
+    elif change=='data':
+        row['data_binding']={}
+    elif change=='host':
+        row['comparison_policy']['runtime']['host']='other'
+    elif change=='backend':
+        row['backend']='numpy_fallback'
+    elif change=='policy':
+        row['comparison_policy']['training']['epochs']=99
+    elif change=='envelope':
+        row['comparison_policy']['budget']['time']=500
+    elif change=='metric':
+        row['metric']='wrong'
+    elif change=='seeding':
+        row['seeding']={'seeding_ladder':'direct'}
+    elif change=='duplicate_run':
+        rows.append({**row,'run_id':'other'})
+    elif change=='duplicate_outcome':
+        rows.append(deepcopy(row))
+    elif change=='missing':
+        rows.remove(row)
+    elif change=='failed':
+        row['status']='failed'
+    elif change=='runtime':
+        row['train_seconds']=None
+    elif change=='fingerprint':
+        row['comparison_fingerprint']=None
+    else:
+        row['run_class']='overnight'
     group=analyze_cohort(rows,request(),artifacts_verified=True)['groups'][0]
     assert group['level']!='L4' and group['blockers']
 
@@ -84,14 +100,17 @@ def test_missing_seed_on_both_arms_and_offline_never_promote():
 def test_ceiling_ties_excluded_and_partial_ceiling_cannot_hide_regression():
     rows=data()
     for row in rows:
-        if row['benchmark']=='one':row['value']=1.
+        if row['benchmark']=='one':
+            row['value']=1.
     group=analyze_cohort(rows,request(),artifacts_verified=True)['groups'][0]
     assert group['excluded_benchmarks']==['one'] and group['ceiling_ties']==3
     for row in rows:
-        if row['engine']=='topograph' and row['seed']>0 and row['benchmark']=='one':row['value']=.1
+        if row['engine']=='topograph' and row['seed']>0 and row['benchmark']=='one':
+            row['value']=.1
     group=analyze_cohort(rows,request(),artifacts_verified=True)['groups'][0]
     assert group['effect_mean']<0 and not group['excluded_benchmarks']
-    for row in rows:row['value']=1.
+    for row in rows:
+        row['value']=1.
     group=analyze_cohort(rows,request(),artifacts_verified=True)['groups'][0]
     assert group['fully_saturated'] and group['statistical_label']=='inconclusive'
 
@@ -102,13 +121,20 @@ def test_six_seed_clear_gain_holm_and_explicit_schema_guards():
     assert group['wilcoxon']['holm_pvalue']<=.05
     for edit in ('duplicate','same','two_interventions','bad_seed','bad_floor','unknown'):
         r=request()
-        if edit=='duplicate':r['panels'].append(deepcopy(r['panels'][0]))
-        elif edit=='same':r['panels'][0]['target']=r['panels'][0]['reference']
-        elif edit=='two_interventions':r['panels'][0]['target']['budget']=128
-        elif edit=='bad_seed':r['panels'][0]['seeds']=[1,1,2]
-        elif edit=='bad_floor':r['panels'][0]['reference']['selection']='required_floor'
-        else:r['unexpected']=True
-        with pytest.raises(ValueError):CohortRequest.model_validate(r)
+        if edit=='duplicate':
+            r['panels'].append(deepcopy(r['panels'][0]))
+        elif edit=='same':
+            r['panels'][0]['target']=r['panels'][0]['reference']
+        elif edit=='two_interventions':
+            r['panels'][0]['target']['budget']=128
+        elif edit=='bad_seed':
+            r['panels'][0]['seeds']=[1,1,2]
+        elif edit=='bad_floor':
+            r['panels'][0]['reference']['selection']='required_floor'
+        else:
+            r['unexpected']=True
+        with pytest.raises(ValueError):
+            CohortRequest.model_validate(r)
 
 
 def test_required_floor_must_be_complete_in_each_seed(monkeypatch):
@@ -130,7 +156,8 @@ def test_separate_report_never_changes_registry_and_offline_cannot_claim_l4(tmp_
     root=tmp_path/'registry'
     promote(source.root,registry=root,label='cohort')
     registry_report(root)
-    index=(root/'index.jsonl').read_bytes();historical=(root/'evidence_report.json').read_bytes()
+    index=(root/'index.jsonl').read_bytes()
+    historical=(root/'evidence_report.json').read_bytes()
     result=cohort_report(root,request())
     assert result['status']=='blocked' and result['groups'][0]['level']!='L4'
     assert (root/'index.jsonl').read_bytes()==index and (root/'evidence_report.json').read_bytes()==historical
@@ -151,19 +178,28 @@ def test_budget_contrast_allows_only_the_derived_training_total():
 def test_different_floor_host_needs_verified_campaign_binding():
     rows=data()
     for row in rows:
-        if row['engine']=='contenders':row['host_fingerprint']='different-codec'
-    r=request(reference='contenders');r['panels'][0]['reference'].update(selection='named_contender',contender='baseline')
+        if row['engine']=='contenders':
+            row['host_fingerprint']='different-codec'
+    r=request(reference='contenders')
+    r['panels'][0]['reference'].update(selection='named_contender',contender='baseline')
     assert analyze_cohort(rows,r,artifacts_verified=True)['groups'][0]['level']!='L4'
-    for row in rows:row['matched_host_fingerprint']='validated-common-host'
+    for row in rows:
+        row['matched_host_fingerprint']='validated-common-host'
     assert analyze_cohort(rows,r,artifacts_verified=True)['groups'][0]['level']=='L4'
 
 
 @pytest.mark.parametrize('count,expected',[(6,'likely_gain'),(8,'clear_gain')])
 def test_preregistered_five_contrast_family_needs_eight_for_clear_gain(count,expected):
-    r=request(range(count));base=r['panels'][0]
+    r=request(range(count))
+    base=r['panels'][0]
     for name,benchmarks,budget in [('one-only',['one'],64),('two-only',['two'],64),('higher-budget',['one','two'],128)]:
-        panel=deepcopy(base);panel.update(id=name,benchmarks=benchmarks)
-        panel['reference']['budget']=panel['target']['budget']=budget;r['panels'].append(panel)
-    panel=deepcopy(base);panel['id']='budget-response';panel['target'].update(engine='prism',budget=128);r['panels'].append(panel)
+        panel=deepcopy(base)
+        panel.update(id=name,benchmarks=benchmarks)
+        panel['reference']['budget']=panel['target']['budget']=budget
+        r['panels'].append(panel)
+    panel=deepcopy(base)
+    panel['id']='budget-response'
+    panel['target'].update(engine='prism',budget=128)
+    r['panels'].append(panel)
     groups=analyze_cohort(data(range(count)),r,artifacts_verified=True)['groups']
     assert len(groups)==5 and all(g['statistical_label']==expected for g in groups)

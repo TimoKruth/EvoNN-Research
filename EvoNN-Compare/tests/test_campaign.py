@@ -203,9 +203,11 @@ def test_slow_second_preflight_cannot_overrun_session(planned, monkeypatch):
 def test_enhanced_policy_is_explicit_and_cannot_adopt_plain_floor(binding):
     manifest,case,_,contender=binding
     manifest['spec']['enhanced']=True
-    with pytest.raises(ValueError):c.match_config(contender,manifest,case,'contenders')
+    with pytest.raises(ValueError):
+        c.match_config(contender,manifest,case,'contenders')
     c.match_config({**contender,'enhanced':True},manifest,case,'contenders')
-    legacy={**manifest['spec']};legacy.pop('enhanced')
+    legacy={**manifest['spec']}
+    legacy.pop('enhanced')
     assert c.CampaignSpec.model_validate(legacy).enhanced is False
 
 

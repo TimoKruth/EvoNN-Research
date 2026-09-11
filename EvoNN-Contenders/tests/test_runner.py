@@ -154,7 +154,8 @@ def test_external_estimator_without_sklearn_constraints_and_custom_validator():
     class ExternalEstimator(BaseEstimator):
         pass
     # The inherited private sklearn helper is unusable for this valid protocol.
-    with pytest.raises(AttributeError):ExternalEstimator()._validate_params()
+    with pytest.raises(AttributeError):
+        ExternalEstimator()._validate_params()
     _validate_parameters(ExternalEstimator())
     class ExplicitValidator(ExternalEstimator):
         def _validate_params(self):
