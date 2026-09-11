@@ -168,8 +168,12 @@ the source-bound before/after comparison needed for merge readiness. The frozen
 [protocol](governance/pr37-comparison-protocol-20260911.json) declares all four
 engines plus Contenders at Tier-B budgets 64/128 on fresh seeds 83/89/97, in
 both revisions: 60 runs / 5,760 fits, MLX CPU and 12 configured epochs. Execution
-and analysis are pending. Historical evidence remains unchanged; the known
-policy/host-identity differences must remain explicit statistical blockers.
+is paused and incomplete after four runs / 256 successful fits, at the user's
+request to merge PR #36 first and then adapt this branch. The separate
+[status receipt](governance/pr37-comparison-status-20260911.json) records all five
+systems, including the unexecuted engines; eight saved Prism winners replay.
+Do not relabel the frozen revision pair after main changes. Historical evidence
+remains unchanged; known policy/host-identity differences remain blockers.
 This qualification does not close the scientific ablation/confirmation work below.
 
 4. Qualify Primordia's implemented `breadth_v2` policy, documented in

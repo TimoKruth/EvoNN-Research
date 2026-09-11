@@ -1,0 +1,308 @@
+{
+  "schema_version": 1,
+  "status": "incomplete_paused",
+  "reason": "User directed PR #36 to merge first, then adapt PR #37. The old revision pair must not be relabeled to a changed main.",
+  "protocol": "governance/pr37-comparison-protocol-20260911.json",
+  "protocol_sha256": "dd06f1b9a624afad706951a92bc14d3289d3d0773f3da057b1200d8cf7f9adae",
+  "before_revision": "79249616e15fc4e5f9dd6d68eb3a62ff8153272b",
+  "after_revision": "c05f3616f98ef35a7e04df52ac4770eaad146873",
+  "planned_runs": 60,
+  "completed_runs": 4,
+  "planned_fits": 5760,
+  "completed_fits": 256,
+  "failed_fits": 0,
+  "native_winner_replays": 8,
+  "all_completed_exports_quality": "L3",
+  "remaining_runs": 56,
+  "systems": {
+    "contenders": {
+      "completed_runs": 2,
+      "planned_runs": 12
+    },
+    "prism": {
+      "completed_runs": 2,
+      "planned_runs": 12
+    },
+    "topograph": {
+      "completed_runs": 0,
+      "planned_runs": 12
+    },
+    "stratograph": {
+      "completed_runs": 0,
+      "planned_runs": 12
+    },
+    "primordia": {
+      "completed_runs": 0,
+      "planned_runs": 12
+    }
+  },
+  "interpretation": "Partial contract observations only. No complete comparison, Primordia result, statistical conclusion or merge qualification is established. Frozen protocol and producer artifacts are retained.",
+  "artifact_root": ".artifacts/pr37-comparison",
+  "paused_at": "2026-09-11T14:00:55.906212+00:00",
+  "runs": [
+    {
+      "arm": "before",
+      "system": "contenders",
+      "run_id": "contenders_20260911T135444_c0894d985845",
+      "revision": "79249616e15fc4e5f9dd6d68eb3a62ff8153272b",
+      "budget": 64,
+      "seed": 83,
+      "fits": 64,
+      "failed": 0,
+      "quality": {
+        "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/primordia-push-worktree/.artifacts/pr37-comparison/before/runs/tier_b_core_v2_b64_s83_contenders/contenders_20260911T135444_c0894d985845/symbiosis",
+        "run_id": "contenders_20260911T135444_c0894d985845",
+        "level": "L3",
+        "gaps": [
+          "parameter_count unavailable for some successful outcomes"
+        ],
+        "next_level": "L4 requires multi-seed effect sizes and decision support (Phase 3)"
+      },
+      "documents": {
+        "manifest.json": "2aa52c8da9c3b1e65759812cf30473f30aface61ded5d7fa08ac3cb25468bdad",
+        "results.json": "16f213c58db9b4e10fcff99377717e3474a60083d63a757b6898772548f8d14c",
+        "summary.json": "9ff8fe9091bae68a9712b8d2bd640f8de6a792fab51563e06a5f45ff56800e49"
+      },
+      "best": [
+        {
+          "benchmark_id": "banknote_classification",
+          "outcome_id": "extra_trees_r0000",
+          "metric_name": "accuracy",
+          "direction": "max",
+          "value": 1.0
+        },
+        {
+          "benchmark_id": "diabetes_regression",
+          "outcome_id": "mlp_wide_r0000",
+          "metric_name": "mse",
+          "direction": "min",
+          "value": 2842.11572265625
+        },
+        {
+          "benchmark_id": "digits_image",
+          "outcome_id": "mlp_wide_r0001",
+          "metric_name": "accuracy",
+          "direction": "max",
+          "value": 0.9888888888888889
+        },
+        {
+          "benchmark_id": "shakespeare_byte_lm",
+          "outcome_id": "unigram_lm_r0000",
+          "metric_name": "perplexity",
+          "direction": "min",
+          "value": 33.970303238521495
+        }
+      ]
+    },
+    {
+      "arm": "before",
+      "system": "prism",
+      "run_id": "prism_20260911T140005_333f5794db",
+      "revision": "79249616e15fc4e5f9dd6d68eb3a62ff8153272b",
+      "budget": 64,
+      "seed": 83,
+      "fits": 64,
+      "failed": 0,
+      "quality": {
+        "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/primordia-push-worktree/.artifacts/pr37-comparison/before/runs/tier_b_core_v2_b64_s83_prism/prism_20260911T140005_333f5794db/symbiosis",
+        "run_id": "prism_20260911T140005_333f5794db",
+        "level": "L3",
+        "gaps": [],
+        "next_level": "L4 requires multi-seed effect sizes and decision support (Phase 3)"
+      },
+      "documents": {
+        "manifest.json": "3761341fa999a208830bcb0957728b6b74e31a2ffd7563611734a9c65d63f0da",
+        "results.json": "6cced09d54b9cd943adbd04317cfd83f307b7d73bd5f1648d34b0b734799040c",
+        "summary.json": "399552eacbfc8bc5f8e4d4427dd701c7b4ba272f6ee13efcd0e1ad64db950e38"
+      },
+      "best": [
+        {
+          "benchmark_id": "banknote_classification",
+          "outcome_id": "candidate_000033",
+          "metric_name": "accuracy",
+          "direction": "max",
+          "value": 1.0
+        },
+        {
+          "benchmark_id": "diabetes_regression",
+          "outcome_id": "candidate_000062",
+          "metric_name": "mse",
+          "direction": "min",
+          "value": 2925.916954742214
+        },
+        {
+          "benchmark_id": "digits_image",
+          "outcome_id": "candidate_000059",
+          "metric_name": "accuracy",
+          "direction": "max",
+          "value": 0.9805555555555555
+        },
+        {
+          "benchmark_id": "shakespeare_byte_lm",
+          "outcome_id": "candidate_000056",
+          "metric_name": "perplexity",
+          "direction": "min",
+          "value": 15.444216434284744
+        }
+      ],
+      "replay": {
+        "checks": [
+          {
+            "benchmark": "banknote_classification",
+            "exported": 1.0,
+            "observed": 1.0
+          },
+          {
+            "benchmark": "diabetes_regression",
+            "exported": 2925.916954742214,
+            "observed": 2925.9169547422134
+          },
+          {
+            "benchmark": "digits_image",
+            "exported": 0.9805555555555555,
+            "observed": 0.9805555555555555
+          },
+          {
+            "benchmark": "shakespeare_byte_lm",
+            "exported": 15.444216434284744,
+            "observed": 15.444216434284744
+          }
+        ],
+        "run_id": "prism_20260911T140005_333f5794db",
+        "status": "passed"
+      }
+    },
+    {
+      "arm": "after",
+      "system": "contenders",
+      "run_id": "contenders_20260911T135652_7bb56fbaa269",
+      "revision": "c05f3616f98ef35a7e04df52ac4770eaad146873",
+      "budget": 64,
+      "seed": 83,
+      "fits": 64,
+      "failed": 0,
+      "quality": {
+        "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/primordia-push-worktree/.artifacts/pr37-comparison/after/runs/tier_b_core_v2_b64_s83_contenders/contenders_20260911T135652_7bb56fbaa269/symbiosis",
+        "run_id": "contenders_20260911T135652_7bb56fbaa269",
+        "level": "L3",
+        "gaps": [
+          "parameter_count unavailable for some successful outcomes"
+        ],
+        "next_level": "L4 requires multi-seed effect sizes and decision support (Phase 3)"
+      },
+      "documents": {
+        "manifest.json": "c6c8ce1589ee50231f0514146a8ad7257c4d03a930061a4149dc4de8b20eb795",
+        "results.json": "74b579701375043d77235d51d9a30fd833cc078f81898d0867c01c208636c84e",
+        "summary.json": "8da871cbe57f02c04fb863dc37ca8473840971f696755f9fa68fd02b7b7e82e2"
+      },
+      "best": [
+        {
+          "benchmark_id": "banknote_classification",
+          "outcome_id": "extra_trees_r0000",
+          "metric_name": "accuracy",
+          "direction": "max",
+          "value": 1.0
+        },
+        {
+          "benchmark_id": "diabetes_regression",
+          "outcome_id": "mlp_wide_r0000",
+          "metric_name": "mse",
+          "direction": "min",
+          "value": 2842.11572265625
+        },
+        {
+          "benchmark_id": "digits_image",
+          "outcome_id": "mlp_wide_r0001",
+          "metric_name": "accuracy",
+          "direction": "max",
+          "value": 0.9888888888888889
+        },
+        {
+          "benchmark_id": "shakespeare_byte_lm",
+          "outcome_id": "unigram_lm_r0000",
+          "metric_name": "perplexity",
+          "direction": "min",
+          "value": 33.970303238521495
+        }
+      ]
+    },
+    {
+      "arm": "after",
+      "system": "prism",
+      "run_id": "prism_20260911T135909_8c0897b4b1",
+      "revision": "c05f3616f98ef35a7e04df52ac4770eaad146873",
+      "budget": 64,
+      "seed": 83,
+      "fits": 64,
+      "failed": 0,
+      "quality": {
+        "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/primordia-push-worktree/.artifacts/pr37-comparison/after/runs/tier_b_core_v2_b64_s83_prism/prism_20260911T135909_8c0897b4b1/symbiosis",
+        "run_id": "prism_20260911T135909_8c0897b4b1",
+        "level": "L3",
+        "gaps": [],
+        "next_level": "L4 requires multi-seed effect sizes and decision support (Phase 3)"
+      },
+      "documents": {
+        "manifest.json": "8757b4fdc68acca2cb8895a29ec723f13e61cbfa0b1b083f1be13509d6464713",
+        "results.json": "7cfad6179e93e150a72f8dc772128c957baa8635ebc65ec8d6cb52893688d712",
+        "summary.json": "af7ceb37959f0810160f770f055736af52d02344ceb6c841a9734cb68415f781"
+      },
+      "best": [
+        {
+          "benchmark_id": "banknote_classification",
+          "outcome_id": "candidate_000033",
+          "metric_name": "accuracy",
+          "direction": "max",
+          "value": 1.0
+        },
+        {
+          "benchmark_id": "diabetes_regression",
+          "outcome_id": "candidate_000062",
+          "metric_name": "mse",
+          "direction": "min",
+          "value": 2925.916954742214
+        },
+        {
+          "benchmark_id": "digits_image",
+          "outcome_id": "candidate_000059",
+          "metric_name": "accuracy",
+          "direction": "max",
+          "value": 0.9805555555555555
+        },
+        {
+          "benchmark_id": "shakespeare_byte_lm",
+          "outcome_id": "candidate_000056",
+          "metric_name": "perplexity",
+          "direction": "min",
+          "value": 15.444216434284744
+        }
+      ],
+      "replay": {
+        "checks": [
+          {
+            "benchmark": "banknote_classification",
+            "exported": 1.0,
+            "observed": 1.0
+          },
+          {
+            "benchmark": "diabetes_regression",
+            "exported": 2925.916954742214,
+            "observed": 2925.9169547422134
+          },
+          {
+            "benchmark": "digits_image",
+            "exported": 0.9805555555555555,
+            "observed": 0.9805555555555555
+          },
+          {
+            "benchmark": "shakespeare_byte_lm",
+            "exported": 15.444216434284744,
+            "observed": 15.444216434284744
+          }
+        ],
+        "run_id": "prism_20260911T135909_8c0897b4b1",
+        "status": "passed"
+      }
+    }
+  ]
+}
