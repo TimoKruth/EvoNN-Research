@@ -6,12 +6,15 @@ from .telemetry import ArtifactReference
 
 CORE_RUNTIME_SHA256 = "c649dbc90ee017a34fb91722e7e238baa56a8de30a068e81bd7998dcd1a924a4"
 PHASE4_RUNTIME_SHA256 = "8810cfaf34fd9d07241e724c30559d0823456f75506a5c2d0d5fba3bad38df45"
+BREADTH_RUNTIME_SHA256 = "d55986e6f3b23a674a9209eda11f5a6ffb2a0d11b2aa61d2b9ea82b4eab1c66d"
 
 
 def runtime_manifest(benchmark_id, *, root=None):
     extended=benchmark_id in {"banknote_classification", "shakespeare_byte_lm"}
     path="runtime/phase4_v1.json" if extended else "runtime/tier1_core_v1.json"
     sha=PHASE4_RUNTIME_SHA256 if extended else CORE_RUNTIME_SHA256
+    if benchmark_id in {"shakespeare_context64_lm", "aesop_context64_lm", "delayed_copy_lm"}:
+        path, sha = "runtime/breadth_v1.json", BREADTH_RUNTIME_SHA256
     payload=read_verified_artifact(root if root is not None else resolve_data_root(),ArtifactReference(path=path,sha256=sha),max_bytes=256*1024)
     manifest=json.loads(payload)
     if benchmark_id not in manifest["benchmarks"]:

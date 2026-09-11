@@ -10,7 +10,8 @@ from .runtime_io import prepare_worker, boundary_ownership
 from .export_reader import read_document, read_export
 
 
-def main(search_type, genome_type, run_engine, evaluation_worker, config_type, replay_export, argv=None, *, dataset_loader=None, inspect_extra=None):
+def main(search_type, genome_type, run_engine, evaluation_worker, config_type, replay_export, argv=None, *, dataset_loader=None, inspect_extra=None, run_options=None):
+    run_options = run_options or {}
     argv = sys.argv[1:] if argv is None else argv
     if argv and argv[0] in {"_prepare", "_worker"}:
         request = json.loads(read_document(Path(argv[1]).parent, Path(argv[1]).name, limit=128 * 1024**2))
@@ -39,10 +40,17 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
     run.add_argument("--fit-timeout", type=float, default=120.0)
     run.add_argument("--epochs", type=int, default=12)
     run.add_argument("--population-size", type=int, default=4)
+    if search_type.system == "primordia":
+        run.add_argument("--search-policy", choices=["legacy_v1", "breadth_v2"], default="breadth_v2")
+        run.add_argument("--max-width", type=int, default=48)
+        run.add_argument("--max-depth", type=int, default=8)
+    for name, settings in run_options.items():
+        run.add_argument("--" + name.replace("_", "-"), **settings)
     if search_type.system == "topograph":
         run.add_argument("--benchmark-pooling", action="store_true")
         run.add_argument("--novelty-weight", type=float, default=0)
     if search_type.system == "stratograph":
+        run.add_argument("--research", type=json.loads, help="explicit versioned Stratograph research policy as JSON")
         run.add_argument("--variant", choices=["shared", "flat", "unshared", "no-clone", "no-motif-bias"], default="shared")
     run.add_argument("--resume", type=Path)
     run.add_argument("--stop-after", type=int)
@@ -98,8 +106,15 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
                 fields = (*fields, "benchmark_pooling", "novelty_weight")
                 values.update(benchmark_pooling=options.benchmark_pooling, novelty_weight=options.novelty_weight)
             if search_type.system == "stratograph":
-                fields = (*fields, "variant")
+                fields = (*fields, "variant", "research")
                 values["variant"] = options.variant
+                values["research"] = options.research
+            if search_type.system == "primordia":
+                fields = (*fields, "search_policy", "max_width", "max_depth")
+                values.update(search_policy=options.search_policy, max_width=options.max_width, max_depth=options.max_depth)
+            fields = (*fields, *run_options)
+            parsed_options = dict(options._get_kwargs())
+            values.update({name: parsed_options[name] for name in run_options})
             for field in fields:
                 flag = "--" + field.replace("_", "-")
                 explicit = any(arg == flag or arg.startswith(flag + "=") for arg in argv)
@@ -134,6 +149,12 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
                 config.update(benchmark_pooling=validated.benchmark_pooling, novelty_weight=validated.novelty_weight)
             if search_type.system == "stratograph":
                 config["variant"] = validated.variant
+                config["research"] = validated.research.model_dump(mode="json") if validated.research else None
+            if search_type.system == "primordia":
+                config.update(search_policy=validated.search_policy, max_width=validated.max_width, max_depth=validated.max_depth)
+            if run_options:
+                serialized_config = validated.model_dump(mode="json")
+                config.update({name: serialized_config[name] for name in run_options})
             if options.resume:
                 stored = json.loads(read_document(options.resume, "config.yaml"))
                 mappings = {
@@ -166,14 +187,28 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
                 if search_type.system == "stratograph":
                     mappings["variant"] = "variant"
                     flags["variant"] = "--variant"
+                    mappings["research"] = "research"
+                    flags["research"] = "--research"
+                if search_type.system == "primordia":
+                    for field, default in (("search_policy", "legacy_v1"), ("max_width", 48), ("max_depth", 8)):
+                        mappings[field] = field
+                        flags[field] = "--" + field.replace("_", "-")
+                        if field not in stored:
+                            stored[field] = default
+                mappings.update({name: name for name in run_options})
+                flags.update({name: "--" + name.replace("_", "-") for name in run_options})
+                for name, settings in run_options.items():
+                    if "default" in settings and name not in stored:
+                        stored[name] = settings["default"]
                 for target, source in mappings.items():
                     explicit = flags[target][2:].replace("-", "_") in supplied_config_fields or any(
                         argument == flags[target] or argument.startswith(flags[target] + "=") for argument in argv
                     )
                     current = str(Path(config[target]).absolute()) if target == "cache_root" else config[target]
-                    if explicit and current != stored[source]:
+                    saved_value = stored.get("research") if source == "research" else stored[source]
+                    if explicit and current != saved_value:
                         raise ValueError(f"explicit resume option {flags[target]} differs from saved run")
-                    config[target] = stored[source]
+                    config[target] = saved_value
             print(
                 run_engine(
                     search_type,

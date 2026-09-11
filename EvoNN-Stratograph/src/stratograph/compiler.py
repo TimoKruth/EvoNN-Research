@@ -108,4 +108,8 @@ class CompiledHierarchy:
 
 
 def compile_genome(genome,input_shape,output_dim,modality,task,**options):
+    genome=HierarchicalGenome.model_validate(genome)
+    if genome.schema_version == 2:
+        from .compiler_v2 import ResearchHierarchy
+        return ResearchHierarchy(genome,input_shape,output_dim,modality,task,**options)
     return CompiledHierarchy(genome,input_shape,output_dim,modality,task,**options)

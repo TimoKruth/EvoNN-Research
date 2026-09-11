@@ -43,6 +43,7 @@ from evonn_shared.runtime_io import (
 from .artifacts import build_artifacts
 from .tensors import Backend
 from .training import TrainConfig, fit
+from .config import RunConfig
 
 
 def evaluation_worker(request, output, search_type, genome_type):
@@ -130,6 +131,9 @@ def run_engine(
     fit_timeout=120.0,
     epochs=12,
     population_size=4,
+    search_policy="breadth_v2",
+    max_width=48,
+    max_depth=8,
     resume=None,
     stop_after=None,
     crash_at=None,
@@ -143,6 +147,8 @@ def run_engine(
     TrainConfig(epochs=epochs, timeout=fit_timeout)
     if type(population_size) is not int or not 2 <= population_size <= 16:
         raise ValueError("population_size must be an integer in [2,16]")
+    # Validate policy before creating artifacts or preparing data.
+    RunConfig(search_policy=search_policy, max_width=max_width, max_depth=max_depth, epochs=epochs)
     selection = Backend(backend, device)
     root = shared_root()
     pack = load_parity_pack(pack_name, shared_root=root)
@@ -176,6 +182,8 @@ def run_engine(
         },
     }
     configuration["evaluator_fidelity"] = search_type.evaluator_fidelity
+    configuration.update(search_policy=search_policy, max_width=max_width, max_depth=max_depth,
+                         training_policy="learning_progress_with_patient_slots/v2" if search_policy == "breadth_v2" else "legacy/v1")
     configuration["engine_version"] = importlib.metadata.version("evonn-" + system)
     invocation_start = time.monotonic()
     invocation_started = utc()
@@ -200,7 +208,8 @@ def run_engine(
             provenance.append(prepared["provenance"])
         publish_artifact(workspace.root / "dataset_provenance.json", encode(provenance))
         search = search_type(
-            definitions, seed=int(derive_stream(seed, StreamName.SEARCH)), population_size=population_size, budget=budget
+            definitions, seed=int(derive_stream(seed, StreamName.SEARCH)), population_size=population_size, budget=budget,
+            search_policy=search_policy, max_width=max_width, max_depth=max_depth, training_epochs=epochs
         )
         state = {
             "config": configuration,
@@ -278,7 +287,9 @@ def run_engine(
                         digest_field=None,
                     )
                     generation = search.benchmarks[definition.id]["generation"]
-                    full_epochs = max(1, math.ceil(epochs * (0.5 if generation == 0 else 1)))
+                    proposal = search.proposal(definition.id)
+                    full_epochs = (epochs if search.policy == "breadth_v2" else
+                                   max(1, math.ceil(epochs * (0.5 if generation == 0 else 1))))
                     full_epochs = min(full_epochs, search.epoch_cap(definition.id))
                     allocated = full_epochs
                     inheritance = {"mode": "none", "source": None, "copied_parameters": 0}
@@ -288,10 +299,13 @@ def run_engine(
                         if model.parameter_count > 2_000_000:
                             raise ValueError("compiled candidate exceeds local runtime parameter safety cap")
                         inheritance = search.inherit(model, definition.id, namespace)
-                        ratio = {"exact": 0.3, "partial": 0.6, "none": 1.0}[inheritance["mode"]]
+                        ratio = (1.0 if search.policy == "breadth_v2" else
+                                 {"exact": 0.3, "partial": 0.6, "none": 1.0}[inheritance["mode"]])
                         allocated = max(1, math.ceil(full_epochs * ratio))
                         training = TrainConfig(
                             epochs=allocated,
+                            patience=allocated if proposal.get("lane") == "patient" else 4,
+                            min_epochs=min(allocated, 4) if search.policy == "breadth_v2" else 1,
                             learning_rate=genome.learning_rate,
                             weight_decay=genome.weight_decay,
                             timeout=min(fit_timeout, max(0.001, deadline - time.monotonic())),
@@ -306,7 +320,7 @@ def run_engine(
                             "data": data,
                             "weights": {k: v.tolist() for k, v in model.weights.items()},
                             "buffers": {k: [np.asarray(a).tolist() for a in v] for k, v in model.buffers.items()},
-                            "training": {name: value for name, value in vars_free_training(training).items()},
+                            "training": {**vars_free_training(training), "min_epochs": training.min_epochs},
                             "source_sha256": configuration["source_sha256"],
                         }
                     except (ValueError, TypeError, OverflowError) as error:
@@ -336,7 +350,7 @@ def run_engine(
                         model.buffers = {
                             k: tuple(np.asarray(v) for v in values) for k, values in result["buffers"].items()
                         }
-                        search.remember(model, namespace)
+                        search.remember(model, namespace, result)
                     search.observe(definition.id, genome, result)
                     if result["status"] == "ok":
                         result["metric_value"] = (
@@ -355,6 +369,8 @@ def run_engine(
                         "full_epochs": full_epochs,
                         "allocated_epochs": allocated,
                         "inherited_epoch_savings": full_epochs - allocated,
+                        "proposal": proposal,
+                        "training_policy": configuration["training_policy"],
                         "directory": directory.name,
                         **result,
                     }

@@ -4,7 +4,7 @@ import hashlib
 import json
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator, model_serializer
 
 
 class Gene(BaseModel):
@@ -20,7 +20,15 @@ class CellNodeGene(Gene):
     id: str=Field(pattern=r'^[a-z][a-z0-9_]{0,31}$')
     width: int=Field(default=16,ge=4,le=64,strict=True)
     activation: Literal['relu','tanh','gelu','silu']='gelu'
-    primitive: Literal['projection','gate','residual','sequence']='projection'
+    primitive: str=Field(default='projection', pattern=r'^[a-z][a-z0-9_]{0,31}$')
+    projection_seed: int | None=Field(default=None, ge=0, lt=2**32, strict=True)
+
+    @model_serializer(mode='wrap')
+    def serialized(self, handler):
+        value=handler(self)
+        if self.projection_seed is None:
+            value.pop('projection_seed', None)
+        return value
 
 
 def order(nodes,edges,output):
@@ -68,6 +76,16 @@ class CellGene(Gene):
     edges: tuple[Edge,...]
     output: str
     origin: str | None=None
+    parameter_id: str | None=Field(default=None, pattern=r"^[a-f0-9]{16}$")
+    origin_parameter_id: str | None=Field(default=None, pattern=r"^[a-f0-9]{16}$")
+
+    @model_serializer(mode="wrap")
+    def serialized(self, handler):
+        value=handler(self)
+        for key in ("parameter_id", "origin_parameter_id"):
+            if value[key] is None:
+                del value[key]
+        return value
 
     @model_validator(mode='after')
     def valid(self):
@@ -90,7 +108,8 @@ class MacroNodeGene(Gene):
 
 
 class HierarchicalGenome(Gene):
-    schema_version: Literal[1]=1
+    schema_version: Literal[1,2]=1
+    execution: dict | None=None
     macro_nodes: tuple[MacroNodeGene,...]=Field(min_length=1,max_length=8)
     macro_edges: tuple[Edge,...]
     cells: tuple[CellGene,...]=Field(min_length=1,max_length=8)
@@ -102,6 +121,19 @@ class HierarchicalGenome(Gene):
 
     @model_validator(mode='after')
     def valid(self):
+        if self.schema_version == 1:
+            if self.execution is not None or any(c.parameter_id is not None or c.origin_parameter_id is not None for c in self.cells) or any(n.projection_seed is not None or n.primitive not in ('projection','gate','residual','sequence') for c in self.cells for n in c.nodes):
+                raise ValueError('v2 fields require genome schema 2')
+        else:
+            from .research import ResearchPolicy
+            from .operators import OPERATORS
+            policy=ResearchPolicy.model_validate(self.execution)
+            if policy.model_dump(mode="json") != self.execution:
+                raise ValueError("v2 execution policy must be canonical and explicit")
+            if any(c.parameter_id is None for c in self.cells) or len({c.parameter_id for c in self.cells}) != len(self.cells):
+                raise ValueError("v2 cells require unique persistent parameter identities")
+            if len(self.macro_nodes)>policy.max_macro_nodes or any(len(c.nodes)>policy.max_cell_nodes or any(n.width>policy.max_width or n.projection_seed is None or n.primitive not in OPERATORS for n in c.nodes) for c in self.cells):
+                raise ValueError('genome exceeds declared envelope or has an unsupported primitive')
         ids={cell.id for cell in self.cells}
         if len(ids)!=len(self.cells) or {node.cell_id for node in self.macro_nodes}!=ids:
             raise ValueError('unique cell library must match all macro references')
@@ -111,6 +143,13 @@ class HierarchicalGenome(Gene):
         if self.variant=='unshared' and len(self.cells)!=len(self.macro_nodes):
             raise ValueError('unshared ablation has a distinct cell per macro node')
         return self
+
+    @model_serializer(mode='wrap')
+    def serialized(self, handler):
+        value=handler(self)
+        if self.schema_version == 1:
+            value.pop('execution', None)
+        return value
 
     @property
     def genome_id(self):
@@ -175,7 +214,8 @@ def clone_cell(genome,node_id):
         return genome
     cell=next(c for c in genome.cells if c.id==node.cell_id)
     identity=next(f'cell{i}' for i in range(16) if f'cell{i}' not in {c.id for c in genome.cells})
-    copied=CellGene.model_validate({**cell.model_dump(),'id':identity,'origin':cell.id})
+    extra={} if genome.schema_version == 1 else dict(parameter_id=_digest([cell.parameter_id,node_id,genome.genome_id])[:16],origin_parameter_id=cell.parameter_id)
+    copied=CellGene.model_validate({**cell.model_dump(),'id':identity,'origin':cell.id,**extra})
     nodes=[MacroNodeGene(id=n.id,cell_id=identity if n.id==node_id else n.cell_id) for n in genome.macro_nodes]
     return _construct(genome,macro_nodes=nodes,cells=[*genome.cells,copied])
 
@@ -297,7 +337,8 @@ def crossover(a,b,rng,*,budget=64):
             if key not in identities:
                 cell=next(cell for cell in parent.cells if cell.id==source.cell_id)
                 identity=f'cell{len(cells)}'
-                cells.append(CellGene.model_validate({**cell.model_dump(),'id':identity,'origin':cell.id}))
+                extra={} if a.schema_version == 1 else dict(parameter_id=_digest([cell.parameter_id,side,identity,a.genome_id,b.genome_id])[:16],origin_parameter_id=cell.parameter_id)
+                cells.append(CellGene.model_validate({**cell.model_dump(),'id':identity,'origin':cell.id,**extra}))
                 identities[key]=identity
             nodes.append(MacroNodeGene(id=mapping[old],cell_id=identities[key]))
         edges.extend(Edge(source=mapping[e.source],target=mapping[e.target]) for e in parent.macro_edges if e.source in mapping and e.target in mapping)

@@ -1,0 +1,14 @@
+schema_version: 1
+pack: tier_b_core_v2
+budget: 64
+seed: 42
+epochs: 12
+population_size: 4
+backend: mlx_native
+target_device: cpu
+timeout: 900
+fit_timeout: 90
+variant: open
+inheritance_policy: enabled
+optimizer_policy: restart
+optimizer_backend: numpy

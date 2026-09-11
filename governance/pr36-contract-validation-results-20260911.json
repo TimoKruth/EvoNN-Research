@@ -1,0 +1,402 @@
+{
+  "schema_version": 1,
+  "protocol": "governance/pr36-contract-validation-protocol-20260911.json",
+  "before_revision": "79249616e15fc4e5f9dd6d68eb3a62ff8153272b",
+  "after_revision": "c7f946ea796a980f1e65c798ce3d71758c168788",
+  "purpose": "PR #36 contract validation; no scientific superiority or promotion claim",
+  "status": "complete",
+  "planned_runs": 10,
+  "successful_runs": 10,
+  "successful_fits": 160,
+  "failed_fits": 0,
+  "native_winner_replays": 32,
+  "all_native_replays_passed": true,
+  "systems": [
+    "contenders",
+    "prism",
+    "topograph",
+    "stratograph",
+    "primordia"
+  ],
+  "pack": "tier_b_core_v2",
+  "budgets": [
+    16
+  ],
+  "seeds": [
+    71
+  ],
+  "engine_epochs": 2,
+  "runs": [
+    {
+      "arm": "before",
+      "engine": "contenders",
+      "run_id": "contenders_20260911T132446_1dd2297fd278",
+      "revision": "79249616e15fc4e5f9dd6d68eb3a62ff8153272b",
+      "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/pr36-validation/before/runs/tier_b_core_v2_b16_s71_contenders/contenders_20260911T132446_1dd2297fd278/symbiosis",
+      "coverage": {
+        "benchmark_count": 4,
+        "failed": 0,
+        "ok": 16,
+        "result_count": 36,
+        "skipped": 20,
+        "unsupported": 0
+      }
+    },
+    {
+      "arm": "before",
+      "engine": "primordia",
+      "run_id": "primordia_20260911T132614_594b89cf26",
+      "revision": "79249616e15fc4e5f9dd6d68eb3a62ff8153272b",
+      "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/pr36-validation/before/runs/tier_b_core_v2_b16_s71_primordia/primordia_20260911T132614_594b89cf26/symbiosis",
+      "coverage": {
+        "benchmark_count": 4,
+        "failed": 0,
+        "ok": 16,
+        "result_count": 16,
+        "skipped": 0,
+        "unsupported": 0
+      },
+      "replay": {
+        "checks": [
+          {
+            "benchmark": "banknote_classification",
+            "exported": 0.8218181818181818,
+            "observed": 0.8218181818181818
+          },
+          {
+            "benchmark": "diabetes_regression",
+            "exported": 3707.457139098133,
+            "observed": 3707.457139098133
+          },
+          {
+            "benchmark": "digits_image",
+            "exported": 0.6666666666666666,
+            "observed": 0.6666666666666666
+          },
+          {
+            "benchmark": "shakespeare_byte_lm",
+            "exported": 94.04116793285458,
+            "observed": 94.04116793285458
+          }
+        ],
+        "run_id": "primordia_20260911T132614_594b89cf26",
+        "status": "passed"
+      }
+    },
+    {
+      "arm": "before",
+      "engine": "prism",
+      "run_id": "prism_20260911T132527_d10656fb62",
+      "revision": "79249616e15fc4e5f9dd6d68eb3a62ff8153272b",
+      "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/pr36-validation/before/runs/tier_b_core_v2_b16_s71_prism/prism_20260911T132527_d10656fb62/symbiosis",
+      "coverage": {
+        "benchmark_count": 4,
+        "failed": 0,
+        "ok": 16,
+        "result_count": 16,
+        "skipped": 0,
+        "unsupported": 0
+      },
+      "replay": {
+        "checks": [
+          {
+            "benchmark": "banknote_classification",
+            "exported": 0.6254545454545455,
+            "observed": 0.6254545454545455
+          },
+          {
+            "benchmark": "diabetes_regression",
+            "exported": 4874.376934912787,
+            "observed": 4874.376934912786
+          },
+          {
+            "benchmark": "digits_image",
+            "exported": 0.3638888888888889,
+            "observed": 0.3638888888888889
+          },
+          {
+            "benchmark": "shakespeare_byte_lm",
+            "exported": 121.85277210648756,
+            "observed": 121.85277210648756
+          }
+        ],
+        "run_id": "prism_20260911T132527_d10656fb62",
+        "status": "passed"
+      }
+    },
+    {
+      "arm": "before",
+      "engine": "stratograph",
+      "run_id": "stratograph_20260911T132558_cd97bd3c07",
+      "revision": "79249616e15fc4e5f9dd6d68eb3a62ff8153272b",
+      "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/pr36-validation/before/runs/tier_b_core_v2_b16_s71_stratograph/stratograph_20260911T132558_cd97bd3c07/symbiosis",
+      "coverage": {
+        "benchmark_count": 4,
+        "failed": 0,
+        "ok": 16,
+        "result_count": 16,
+        "skipped": 0,
+        "unsupported": 0
+      },
+      "replay": {
+        "checks": [
+          {
+            "benchmark": "banknote_classification",
+            "exported": 0.56,
+            "observed": 0.56
+          },
+          {
+            "benchmark": "diabetes_regression",
+            "exported": 3783.46290371564,
+            "observed": 3783.4629037156446
+          },
+          {
+            "benchmark": "digits_image",
+            "exported": 0.1111111111111111,
+            "observed": 0.1111111111111111
+          },
+          {
+            "benchmark": "shakespeare_byte_lm",
+            "exported": 212.64830368137586,
+            "observed": 212.64830368137586
+          }
+        ],
+        "run_id": "stratograph_20260911T132558_cd97bd3c07",
+        "status": "passed"
+      }
+    },
+    {
+      "arm": "before",
+      "engine": "topograph",
+      "run_id": "topograph_20260911T132540_613aa31e8f",
+      "revision": "79249616e15fc4e5f9dd6d68eb3a62ff8153272b",
+      "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/pr36-validation/before/runs/tier_b_core_v2_b16_s71_topograph/topograph_20260911T132540_613aa31e8f/symbiosis",
+      "coverage": {
+        "benchmark_count": 4,
+        "failed": 0,
+        "ok": 16,
+        "result_count": 16,
+        "skipped": 0,
+        "unsupported": 0
+      },
+      "replay": {
+        "checks": [
+          {
+            "benchmark": "banknote_classification",
+            "exported": 0.8290909090909091,
+            "observed": 0.8290909090909091
+          },
+          {
+            "benchmark": "diabetes_regression",
+            "exported": 3413.9109355941023,
+            "observed": 3413.9109355941023
+          },
+          {
+            "benchmark": "digits_image",
+            "exported": 0.6194444444444445,
+            "observed": 0.6194444444444445
+          },
+          {
+            "benchmark": "shakespeare_byte_lm",
+            "exported": 94.05811985875044,
+            "observed": 94.05811985875044
+          }
+        ],
+        "run_id": "topograph_20260911T132540_613aa31e8f",
+        "status": "passed"
+      }
+    },
+    {
+      "arm": "after-frozen",
+      "engine": "contenders",
+      "run_id": "contenders_20260911T132812_7644691029f9",
+      "revision": "c7f946ea796a980f1e65c798ce3d71758c168788",
+      "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/pr36-validation/after-frozen/runs/tier_b_core_v2_b16_s71_contenders/contenders_20260911T132812_7644691029f9/symbiosis",
+      "coverage": {
+        "benchmark_count": 4,
+        "failed": 0,
+        "ok": 16,
+        "result_count": 36,
+        "skipped": 20,
+        "unsupported": 0
+      }
+    },
+    {
+      "arm": "after-frozen",
+      "engine": "primordia",
+      "run_id": "primordia_20260911T132946_34e11e8539",
+      "revision": "c7f946ea796a980f1e65c798ce3d71758c168788",
+      "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/pr36-validation/after-frozen/runs/tier_b_core_v2_b16_s71_primordia/primordia_20260911T132946_34e11e8539/symbiosis",
+      "coverage": {
+        "benchmark_count": 4,
+        "failed": 0,
+        "ok": 16,
+        "result_count": 16,
+        "skipped": 0,
+        "unsupported": 0
+      },
+      "replay": {
+        "checks": [
+          {
+            "benchmark": "banknote_classification",
+            "exported": 0.7490909090909091,
+            "observed": 0.7490909090909091
+          },
+          {
+            "benchmark": "diabetes_regression",
+            "exported": 4221.6070004483745,
+            "observed": 4221.6070004483745
+          },
+          {
+            "benchmark": "digits_image",
+            "exported": 0.8388888888888889,
+            "observed": 0.8388888888888889
+          },
+          {
+            "benchmark": "shakespeare_byte_lm",
+            "exported": 143.8641837523986,
+            "observed": 143.8641837523986
+          }
+        ],
+        "run_id": "primordia_20260911T132946_34e11e8539",
+        "status": "passed"
+      }
+    },
+    {
+      "arm": "after-frozen",
+      "engine": "prism",
+      "run_id": "prism_20260911T132859_4a80726a0d",
+      "revision": "c7f946ea796a980f1e65c798ce3d71758c168788",
+      "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/pr36-validation/after-frozen/runs/tier_b_core_v2_b16_s71_prism/prism_20260911T132859_4a80726a0d/symbiosis",
+      "coverage": {
+        "benchmark_count": 4,
+        "failed": 0,
+        "ok": 16,
+        "result_count": 16,
+        "skipped": 0,
+        "unsupported": 0
+      },
+      "replay": {
+        "checks": [
+          {
+            "benchmark": "banknote_classification",
+            "exported": 0.76,
+            "observed": 0.76
+          },
+          {
+            "benchmark": "diabetes_regression",
+            "exported": 5165.239473103116,
+            "observed": 5165.239473103116
+          },
+          {
+            "benchmark": "digits_image",
+            "exported": 0.3472222222222222,
+            "observed": 0.3472222222222222
+          },
+          {
+            "benchmark": "shakespeare_byte_lm",
+            "exported": 114.19253781899553,
+            "observed": 114.19253781899553
+          }
+        ],
+        "run_id": "prism_20260911T132859_4a80726a0d",
+        "status": "passed"
+      }
+    },
+    {
+      "arm": "after-frozen",
+      "engine": "stratograph",
+      "run_id": "stratograph_20260911T132932_ad9d0dad2c",
+      "revision": "c7f946ea796a980f1e65c798ce3d71758c168788",
+      "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/pr36-validation/after-frozen/runs/tier_b_core_v2_b16_s71_stratograph/stratograph_20260911T132932_ad9d0dad2c/symbiosis",
+      "coverage": {
+        "benchmark_count": 4,
+        "failed": 0,
+        "ok": 16,
+        "result_count": 16,
+        "skipped": 0,
+        "unsupported": 0
+      },
+      "replay": {
+        "checks": [
+          {
+            "benchmark": "banknote_classification",
+            "exported": 0.56,
+            "observed": 0.56
+          },
+          {
+            "benchmark": "diabetes_regression",
+            "exported": 3783.46290371564,
+            "observed": 3783.4629037156446
+          },
+          {
+            "benchmark": "digits_image",
+            "exported": 0.1111111111111111,
+            "observed": 0.1111111111111111
+          },
+          {
+            "benchmark": "shakespeare_byte_lm",
+            "exported": 212.64830368137586,
+            "observed": 212.64830368137586
+          }
+        ],
+        "run_id": "stratograph_20260911T132932_ad9d0dad2c",
+        "status": "passed"
+      }
+    },
+    {
+      "arm": "after-frozen",
+      "engine": "topograph",
+      "run_id": "topograph_20260911T132914_255d552fa8",
+      "revision": "c7f946ea796a980f1e65c798ce3d71758c168788",
+      "export": "/Users/timokruth/Projekte/EvoNN/.artifacts/pr36-validation/after-frozen/runs/tier_b_core_v2_b16_s71_topograph/topograph_20260911T132914_255d552fa8/symbiosis",
+      "coverage": {
+        "benchmark_count": 4,
+        "failed": 0,
+        "ok": 16,
+        "result_count": 16,
+        "skipped": 0,
+        "unsupported": 0
+      },
+      "replay": {
+        "checks": [
+          {
+            "benchmark": "banknote_classification",
+            "exported": 0.8290909090909091,
+            "observed": 0.8290909090909091
+          },
+          {
+            "benchmark": "diabetes_regression",
+            "exported": 3413.9109355941023,
+            "observed": 3413.9109355941023
+          },
+          {
+            "benchmark": "digits_image",
+            "exported": 0.6194444444444445,
+            "observed": 0.6194444444444445
+          },
+          {
+            "benchmark": "shakespeare_byte_lm",
+            "exported": 94.05811985875044,
+            "observed": 94.05811985875044
+          }
+        ],
+        "run_id": "topograph_20260911T132914_255d552fa8",
+        "status": "passed"
+      }
+    }
+  ],
+  "limitations": [
+    "One seed and two engine epochs validate bounded runtime/export/replay contracts only.",
+    "Historical source uses hostname identity; new source uses stable machine identity, and engine policies changed. These are not matched scientific performance observations.",
+    "Required-floor admission remains contract-fair; no decision-grade generalization or promotion claim.",
+    "Historical registry events and source artifacts are retained; new rows are appended under pr36-before/pr36-after."
+  ],
+  "evidence_transport": {
+    "declaration": "evidence/source_bundle.json",
+    "release": "https://github.com/TimoKruth/EvoNN-Research/releases/tag/evidence-pr36-contract-20260911",
+    "index_sha256": "dfa70b079754e453f0b772a2358c1cab7b972569041e015445a972b0da68ca94",
+    "decision_category": "needs more seeds",
+    "evidence_level": "L3"
+  }
+}

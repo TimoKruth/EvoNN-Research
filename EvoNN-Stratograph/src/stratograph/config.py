@@ -2,11 +2,13 @@
 
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
+from .research import ResearchPolicy
 from evonn_shared.runtime_budget import MAX_ENGINE_EVALUATIONS
 
 
 class RunConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    research: ResearchPolicy | None = None
     variant: Literal["shared", "flat", "unshared", "no-clone", "no-motif-bias"] = "shared"
     schema_version: Literal[1] = 1
     pack: str = "tier1_core"

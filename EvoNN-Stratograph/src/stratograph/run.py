@@ -40,6 +40,8 @@ from evonn_shared.runtime_io import (
     export_run,
     vars_free_training,
 )
+from .research import ResearchPolicy
+from . import search_v2
 from .artifacts import build_artifacts
 from .tensors import Backend
 from .training import TrainConfig, fit
@@ -65,6 +67,7 @@ def evaluation_worker(request, output, search_type, genome_type):
         model.buffers = {
             k: tuple(np.asarray(v, dtype=np.float32) for v in values) for k, values in request["buffers"].items()
         }
+        model.reuse_feature_statistics = request.get("reuse_feature_statistics", False)
         provenance = request["data"]
         arrays = {}
         for item in provenance["cache_artifacts"]:
@@ -131,6 +134,7 @@ def run_engine(
     epochs=12,
     population_size=4,
     variant="shared",
+    research=None,
     resume=None,
     stop_after=None,
     crash_at=None,
@@ -144,6 +148,9 @@ def run_engine(
     TrainConfig(epochs=epochs, timeout=fit_timeout)
     if type(population_size) is not int or not 2 <= population_size <= 16:
         raise ValueError("population_size must be an integer in [2,16]")
+    research = ResearchPolicy.model_validate(research) if research is not None else None
+    if research and research.screen_epochs > epochs:
+        raise ValueError('screen_epochs cannot exceed the full training allocation')
     selection = Backend(backend, device)
     root = shared_root()
     pack = load_parity_pack(pack_name, shared_root=root)
@@ -176,7 +183,9 @@ def run_engine(
             name: importlib.metadata.version(name) for name in ("numpy", "scipy", "scikit-learn", "pandas", "openml")
         },
     }
-    configuration["evaluator_fidelity"] = search_type.evaluator_fidelity
+    configuration["evaluator_fidelity"] = research.fidelity if research else search_type.evaluator_fidelity
+    if research:
+        configuration["research"] = research.model_dump(mode="json")
     configuration["engine_version"] = importlib.metadata.version("evonn-" + system)
     configuration["variant"] = variant
     invocation_start = time.monotonic()
@@ -202,7 +211,7 @@ def run_engine(
             provenance.append(prepared["provenance"])
         publish_artifact(workspace.root / "dataset_provenance.json", encode(provenance))
         search = search_type(
-            definitions, seed=int(derive_stream(seed, StreamName.SEARCH)), population_size=population_size, budget=budget, variant=variant
+            definitions, seed=int(derive_stream(seed, StreamName.SEARCH)), population_size=population_size, budget=budget, variant=variant, research=research
         )
         state = {
             "config": configuration,
@@ -280,7 +289,8 @@ def run_engine(
                         digest_field=None,
                     )
                     generation = search.benchmarks[definition.id]["generation"]
-                    full_epochs = max(1, math.ceil(epochs * (0.5 if generation == 0 else 1)))
+                    full_epochs = epochs if research else max(1, math.ceil(epochs * (0.5 if generation == 0 else 1)))
+                    proposal = dict(search_v2.metadata(search, definition.id)) if research else None
                     allocated = full_epochs
                     inheritance = {"mode": "none", "source": None, "copied_parameters": 0}
                     directory = create_artifact_directory(workspace.root / f"attempt_{step:06d}")
@@ -289,10 +299,13 @@ def run_engine(
                         if model.parameter_count > 2_000_000:
                             raise ValueError("compiled candidate exceeds local runtime parameter safety cap")
                         inheritance = search.inherit(model, definition.id, namespace)
-                        ratio = {"exact": 0.3, "partial": 0.6, "none": 1.0}[inheritance["mode"]]
+                        ratio = 1.0 if research else {"exact": 0.3, "partial": 0.6, "none": 1.0}[inheritance["mode"]]
                         allocated = max(1, math.ceil(full_epochs * ratio))
+                        if research and research.screen_epochs and not proposal["lane"].startswith("revisit_"):
+                            allocated = research.screen_epochs
                         training = TrainConfig(
                             epochs=allocated,
+                            patience=allocated if research else 4,
                             learning_rate=genome.learning_rate,
                             weight_decay=genome.weight_decay,
                             timeout=min(fit_timeout, max(0.001, deadline - time.monotonic())),
@@ -308,6 +321,7 @@ def run_engine(
                             "weights": {k: v.tolist() for k, v in model.weights.items()},
                             "buffers": {k: [np.asarray(a).tolist() for a in v] for k, v in model.buffers.items()},
                             "training": {name: value for name, value in vars_free_training(training).items()},
+                            **({"reuse_feature_statistics": getattr(model, "reuse_feature_statistics", False)} if research else {}),
                             "source_sha256": configuration["source_sha256"],
                         }
                     except (ValueError, TypeError, OverflowError) as error:
@@ -355,7 +369,8 @@ def run_engine(
                         "inheritance": inheritance,
                         "full_epochs": full_epochs,
                         "allocated_epochs": allocated,
-                        "inherited_epoch_savings": full_epochs - allocated,
+                        "inherited_epoch_savings": 0 if research else full_epochs - allocated,
+                        **({"research_evaluation": proposal, "screen_epoch_reduction": full_epochs - allocated} if research else {}),
                         "directory": directory.name,
                         **result,
                     }

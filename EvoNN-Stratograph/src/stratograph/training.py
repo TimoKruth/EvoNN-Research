@@ -66,6 +66,8 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
     if model.token_input:
         mean, std = np.zeros_like(mean), np.ones_like(std)
     x, xv = (x - mean) / std, (xv - mean) / std
+    if hasattr(model, "prepare_features"):
+        model.prepare_features(x)
     regression = task == "regression"
     target_mean, target_std = regression_target_stats(y_train) if regression else (0, 1)
     y = (
@@ -163,7 +165,7 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         score = float(np.mean(prediction.argmax(axis=-1) == y_validation))
     if not math.isfinite(score):
         raise ValueError("nonfinite final score")
-    return {
+    result = {
         "score": score,
         "epochs": epochs_done,
         "updates": updates,
@@ -179,3 +181,15 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
             "calibration": calibration,
         },
     }
+
+    if hasattr(model, 'policy'):
+        # Training inputs only: behavioral diversity cannot consume protected labels.
+        probe = b.numpy(model.forward(parameters, b.array(x[:16]), training=False, seed=0))
+        signature = probe.reshape(-1)
+        signature = np.array([part.mean() for part in np.array_split(signature, min(16, len(signature)))])
+        signature -= signature.mean()
+        signature /= max(float(np.linalg.norm(signature)), 1e-8)
+        result['behavior'] = signature.tolist()
+        result['evaluator_fidelity'] = model.evaluator_fidelity
+        result['hierarchy_weights_changed'] = any(not np.array_equal(best[k], v) for k, v in initial_weights.items() if k.startswith('cell.'))
+    return result

@@ -1,0 +1,1414 @@
+{
+  "schema_version": 1,
+  "status": "completed_and_evaluated",
+  "evaluated_at": "2026-09-11T05:14:35.238044+00:00",
+  "protocol": {
+    "path": "governance/all-engines-high-budget-20260910.json",
+    "sha256": "bbde3f30758dd09a39c71efe78224911b1e8336e07edc65a145402daa1fafbc1",
+    "unchanged_since_planning": true
+  },
+  "source_revision": "e1d005a6cfe93056bbd033209130ef2c0197db52",
+  "consumer": {
+    "code_dirty": false,
+    "git_commit": "e1d005a6cfe93056bbd033209130ef2c0197db52",
+    "source_sha256": "b1f372e5d72d417f703185bc8b8ed013090ff4d470c61f64544ac7feb34111b2"
+  },
+  "scope": "All four engines and expanded fixed-pool Contenders on the bounded four-task Tier B validation surface. No protected-test, general architecture or transfer claim.",
+  "seeds": [
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60
+  ],
+  "budgets": [
+    128,
+    256
+  ],
+  "systems": [
+    "prism",
+    "topograph",
+    "stratograph",
+    "primordia",
+    "contenders"
+  ],
+  "execution": {
+    "completed_runs": 80,
+    "actual_fits": 15360,
+    "failed_fits": 0,
+    "invalid_proposals": 0,
+    "total_observed_run_seconds": 19491.584657,
+    "exports_verified_at": "2026-09-10T21:18:20.747832+00:00",
+    "repair_attempts": 1,
+    "producer_restarts": 0,
+    "interruptions": "One user pause and two hostname-related preflight blocks; all 80 runs retained on the original source, without partial-fit replacement."
+  },
+  "quality_contrasts": [
+    {
+      "id": "prism-vs-required-b256",
+      "reference": {
+        "budget": 256,
+        "contender": null,
+        "engine": "contenders",
+        "selection": "required_floor"
+      },
+      "target": {
+        "budget": 256,
+        "contender": null,
+        "engine": "prism",
+        "selection": "winner"
+      },
+      "benchmarks": [
+        "banknote_classification",
+        "digits_image",
+        "diabetes_regression",
+        "shakespeare_byte_lm"
+      ],
+      "seeds": [
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "n": 8,
+      "level": "L4",
+      "blockers": [],
+      "statistical_label": "clear_gain",
+      "effect_mean": 0.2888013213466919,
+      "bootstrap_ci95": [
+        0.28068726479556394,
+        0.29659685181204043
+      ],
+      "wilcoxon": {
+        "assumption": "independent seed effects symmetric under the null; diagnostic, not causal proof",
+        "holm_pvalue": 0.03125,
+        "method": "two-sided signed-rank permutation, <=8192 permutations",
+        "n": 8,
+        "pvalue": 0.0078125,
+        "statistic": 0.0,
+        "status": "available"
+      },
+      "seed_effects": [
+        0.2931015386693005,
+        0.276653368251338,
+        0.2660652168221262,
+        0.301846707709433,
+        0.2924212334413094,
+        0.30271829760874025,
+        0.2838275438733641,
+        0.2937766643979241
+      ],
+      "excluded_benchmarks": [
+        "banknote_classification"
+      ],
+      "ceiling_ties": 8
+    },
+    {
+      "id": "topograph-vs-required-b256",
+      "reference": {
+        "budget": 256,
+        "contender": null,
+        "engine": "contenders",
+        "selection": "required_floor"
+      },
+      "target": {
+        "budget": 256,
+        "contender": null,
+        "engine": "topograph",
+        "selection": "winner"
+      },
+      "benchmarks": [
+        "banknote_classification",
+        "digits_image",
+        "diabetes_regression",
+        "shakespeare_byte_lm"
+      ],
+      "seeds": [
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "n": 8,
+      "level": "L4",
+      "blockers": [],
+      "statistical_label": "clear_gain",
+      "effect_mean": 0.08035998409284185,
+      "bootstrap_ci95": [
+        0.0632299841113513,
+        0.0998081629014721
+      ],
+      "wilcoxon": {
+        "assumption": "independent seed effects symmetric under the null; diagnostic, not causal proof",
+        "holm_pvalue": 0.03125,
+        "method": "two-sided signed-rank permutation, <=8192 permutations",
+        "n": 8,
+        "pvalue": 0.0078125,
+        "statistic": 0.0,
+        "status": "available"
+      },
+      "seed_effects": [
+        0.11986285232247164,
+        0.08452215456494654,
+        0.07378529008439325,
+        0.0654535764734072,
+        0.12559308731129595,
+        0.05984352732635349,
+        0.06827680729312892,
+        0.045542577366737856
+      ],
+      "excluded_benchmarks": [
+        "banknote_classification"
+      ],
+      "ceiling_ties": 8
+    },
+    {
+      "id": "stratograph-vs-required-b256",
+      "reference": {
+        "budget": 256,
+        "contender": null,
+        "engine": "contenders",
+        "selection": "required_floor"
+      },
+      "target": {
+        "budget": 256,
+        "contender": null,
+        "engine": "stratograph",
+        "selection": "winner"
+      },
+      "benchmarks": [
+        "banknote_classification",
+        "digits_image",
+        "diabetes_regression",
+        "shakespeare_byte_lm"
+      ],
+      "seeds": [
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "n": 8,
+      "level": "L4",
+      "blockers": [],
+      "statistical_label": "regression",
+      "effect_mean": -0.3181202061346397,
+      "bootstrap_ci95": [
+        -0.35817102794168787,
+        -0.27725632646278614
+      ],
+      "wilcoxon": {
+        "assumption": "independent seed effects symmetric under the null; diagnostic, not causal proof",
+        "holm_pvalue": 0.03125,
+        "method": "two-sided signed-rank permutation, <=8192 permutations",
+        "n": 8,
+        "pvalue": 0.0078125,
+        "statistic": 0.0,
+        "status": "available"
+      },
+      "seed_effects": [
+        -0.3932554422203006,
+        -0.21233903704771867,
+        -0.3833446344806109,
+        -0.37279480349202576,
+        -0.31366157485029,
+        -0.2895142898083115,
+        -0.3145866424899457,
+        -0.2654652246879144
+      ],
+      "excluded_benchmarks": [],
+      "ceiling_ties": 0
+    },
+    {
+      "id": "primordia-vs-required-b256",
+      "reference": {
+        "budget": 256,
+        "contender": null,
+        "engine": "contenders",
+        "selection": "required_floor"
+      },
+      "target": {
+        "budget": 256,
+        "contender": null,
+        "engine": "primordia",
+        "selection": "winner"
+      },
+      "benchmarks": [
+        "banknote_classification",
+        "digits_image",
+        "diabetes_regression",
+        "shakespeare_byte_lm"
+      ],
+      "seeds": [
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "n": 8,
+      "level": "L4",
+      "blockers": [],
+      "statistical_label": "clear_gain",
+      "effect_mean": 0.05045679350336147,
+      "bootstrap_ci95": [
+        0.03292265948921177,
+        0.06853854470548423
+      ],
+      "wilcoxon": {
+        "assumption": "independent seed effects symmetric under the null; diagnostic, not causal proof",
+        "holm_pvalue": 0.03125,
+        "method": "two-sided signed-rank permutation, <=8192 permutations",
+        "n": 8,
+        "pvalue": 0.0078125,
+        "statistic": 0.0,
+        "status": "available"
+      },
+      "seed_effects": [
+        0.04766123528015603,
+        0.028324534417939518,
+        0.09430571663636264,
+        0.05433439364017653,
+        0.05718756127665477,
+        0.07604957955914499,
+        0.03972154380069324,
+        0.0060697834157640365
+      ],
+      "excluded_benchmarks": [],
+      "ceiling_ties": 4
+    }
+  ],
+  "primary_verdicts": [
+    {
+      "id": "prism-vs-required-b256",
+      "gain_pass": true,
+      "criterion": "effect CI95 lower >0.01 and Holm two-sided p<=0.05",
+      "material_negative": false
+    },
+    {
+      "id": "topograph-vs-required-b256",
+      "gain_pass": true,
+      "criterion": "effect CI95 lower >0.01 and Holm two-sided p<=0.05",
+      "material_negative": false
+    },
+    {
+      "id": "stratograph-vs-required-b256",
+      "gain_pass": false,
+      "criterion": "effect CI95 lower >0.01 and Holm two-sided p<=0.05",
+      "material_negative": true
+    },
+    {
+      "id": "primordia-vs-required-b256",
+      "gain_pass": true,
+      "criterion": "effect CI95 lower >0.01 and Holm two-sided p<=0.05",
+      "material_negative": false
+    }
+  ],
+  "descriptive": [
+    {
+      "system": "prism",
+      "budget": 128,
+      "mean_winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2850.290142806922,
+        "digits_image": 0.9791666666666666,
+        "shakespeare_byte_lm": 16.03093206866757
+      },
+      "sd_winners": {
+        "banknote_classification": 0.0,
+        "diabetes_regression": 200.57907050932585,
+        "digits_image": 0.009507260754532497,
+        "shakespeare_byte_lm": 0.9725750365895109
+      },
+      "mean_run_seconds": 107.51081,
+      "median_run_seconds": 102.5020975,
+      "min_run_seconds": 93.117793,
+      "max_run_seconds": 131.733497
+    },
+    {
+      "system": "topograph",
+      "budget": 128,
+      "mean_winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 3057.7276376275677,
+        "digits_image": 0.9739583333333334,
+        "shakespeare_byte_lm": 30.458609460180494
+      },
+      "sd_winners": {
+        "banknote_classification": 0.0,
+        "diabetes_regression": 379.1322464899104,
+        "digits_image": 0.01259334634376578,
+        "shakespeare_byte_lm": 3.261755371196431
+      },
+      "mean_run_seconds": 185.91427625,
+      "median_run_seconds": 178.8517805,
+      "min_run_seconds": 161.298887,
+      "max_run_seconds": 235.082036
+    },
+    {
+      "system": "stratograph",
+      "budget": 128,
+      "mean_winners": {
+        "banknote_classification": 0.7481818181818182,
+        "diabetes_regression": 3599.6468426523434,
+        "digits_image": 0.29756944444444444,
+        "shakespeare_byte_lm": 30.43245194642855
+      },
+      "sd_winners": {
+        "banknote_classification": 0.07740172578607997,
+        "diabetes_regression": 465.108645172466,
+        "digits_image": 0.057090646617610936,
+        "shakespeare_byte_lm": 0.3851068705078035
+      },
+      "mean_run_seconds": 94.408341375,
+      "median_run_seconds": 93.710677,
+      "min_run_seconds": 91.120326,
+      "max_run_seconds": 101.797164
+    },
+    {
+      "system": "primordia",
+      "budget": 128,
+      "mean_winners": {
+        "banknote_classification": 0.9922727272727273,
+        "diabetes_regression": 3072.5448232974773,
+        "digits_image": 0.915625,
+        "shakespeare_byte_lm": 27.290466539528072
+      },
+      "sd_winners": {
+        "banknote_classification": 0.008569460616272015,
+        "diabetes_regression": 393.360050843187,
+        "digits_image": 0.038143002876416705,
+        "shakespeare_byte_lm": 1.6197196967374243
+      },
+      "mean_run_seconds": 58.2752915,
+      "median_run_seconds": 57.8420005,
+      "min_run_seconds": 56.251666,
+      "max_run_seconds": 60.980772
+    },
+    {
+      "system": "contenders",
+      "budget": 128,
+      "mean_winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2898.153108939412,
+        "digits_image": 0.9888888888888889,
+        "shakespeare_byte_lm": 33.66808446908392
+      },
+      "sd_winners": {
+        "banknote_classification": 0.0,
+        "diabetes_regression": 313.97164571391494,
+        "digits_image": 0.007715167498104602,
+        "shakespeare_byte_lm": 0.3344281702020368
+      },
+      "mean_run_seconds": 295.775594375,
+      "median_run_seconds": 293.8194085,
+      "min_run_seconds": 288.662505,
+      "max_run_seconds": 308.034193
+    },
+    {
+      "system": "prism",
+      "budget": 256,
+      "mean_winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2712.1521697038906,
+        "digits_image": 0.9847222222222223,
+        "shakespeare_byte_lm": 14.956947454532434
+      },
+      "sd_winners": {
+        "banknote_classification": 0.0,
+        "diabetes_regression": 208.8990649311339,
+        "digits_image": 0.006804138174397741,
+        "shakespeare_byte_lm": 1.1213786110643067
+      },
+      "mean_run_seconds": 265.619229375,
+      "median_run_seconds": 254.4410925,
+      "min_run_seconds": 205.717897,
+      "max_run_seconds": 329.919496
+    },
+    {
+      "system": "topograph",
+      "budget": 256,
+      "mean_winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2847.5661550413224,
+        "digits_image": 0.9788194444444445,
+        "shakespeare_byte_lm": 27.73837091151754
+      },
+      "sd_winners": {
+        "banknote_classification": 0.0,
+        "diabetes_regression": 421.7308876566677,
+        "digits_image": 0.00877625815658591,
+        "shakespeare_byte_lm": 1.274578773748312
+      },
+      "mean_run_seconds": 523.98907675,
+      "median_run_seconds": 525.1245815,
+      "min_run_seconds": 470.450116,
+      "max_run_seconds": 614.753391
+    },
+    {
+      "system": "stratograph",
+      "budget": 256,
+      "mean_winners": {
+        "banknote_classification": 0.7836363636363636,
+        "diabetes_regression": 3484.303042292302,
+        "digits_image": 0.33993055555555557,
+        "shakespeare_byte_lm": 30.422637088377396
+      },
+      "sd_winners": {
+        "banknote_classification": 0.05397100100269204,
+        "diabetes_regression": 479.36706485235504,
+        "digits_image": 0.07335704132163351,
+        "shakespeare_byte_lm": 0.3935685375315713
+      },
+      "mean_run_seconds": 192.2977655,
+      "median_run_seconds": 191.1441725,
+      "min_run_seconds": 183.211702,
+      "max_run_seconds": 205.911223
+    },
+    {
+      "system": "primordia",
+      "budget": 256,
+      "mean_winners": {
+        "banknote_classification": 0.9931818181818182,
+        "diabetes_regression": 3035.8350184215715,
+        "digits_image": 0.9288194444444444,
+        "shakespeare_byte_lm": 25.445335799859375
+      },
+      "sd_winners": {
+        "banknote_classification": 0.008999540851465154,
+        "diabetes_regression": 403.940976416244,
+        "digits_image": 0.02605522134012474,
+        "shakespeare_byte_lm": 1.742194788510931
+      },
+      "mean_run_seconds": 115.67679675,
+      "median_run_seconds": 114.6529535,
+      "min_run_seconds": 110.684189,
+      "max_run_seconds": 121.390639
+    },
+    {
+      "system": "contenders",
+      "budget": 256,
+      "mean_winners": {
+        "banknote_classification": 1.0,
+        "diabetes_regression": 2892.7129446789604,
+        "digits_image": 0.9895833333333334,
+        "shakespeare_byte_lm": 33.66808446908392
+      },
+      "sd_winners": {
+        "banknote_classification": 0.0,
+        "diabetes_regression": 307.81373586969335,
+        "digits_image": 0.008098544298396257,
+        "shakespeare_byte_lm": 0.3344281702020368
+      },
+      "mean_run_seconds": 596.98090025,
+      "median_run_seconds": 591.614944,
+      "min_run_seconds": 573.949956,
+      "max_run_seconds": 629.927835
+    }
+  ],
+  "named_baselines": [
+    {
+      "budget": 128,
+      "benchmark": "banknote_classification",
+      "selection": "required_floor",
+      "mean": 0.9995454545454545
+    },
+    {
+      "budget": 128,
+      "benchmark": "banknote_classification",
+      "selection": "catboost",
+      "mean": 0.995
+    },
+    {
+      "budget": 128,
+      "benchmark": "diabetes_regression",
+      "selection": "required_floor",
+      "mean": 3002.3286646725087
+    },
+    {
+      "budget": 128,
+      "benchmark": "diabetes_regression",
+      "selection": "catboost",
+      "mean": 3045.40361916411
+    },
+    {
+      "budget": 128,
+      "benchmark": "digits_image",
+      "selection": "required_floor",
+      "mean": 0.9875
+    },
+    {
+      "budget": 128,
+      "benchmark": "digits_image",
+      "selection": "cnn_small",
+      "mean": 0.9868055555555556
+    },
+    {
+      "budget": 128,
+      "benchmark": "shakespeare_byte_lm",
+      "selection": "required_floor",
+      "mean": 33.66808446908392
+    },
+    {
+      "budget": 128,
+      "benchmark": "shakespeare_byte_lm",
+      "selection": "transformer_lm_tiny",
+      "mean": 37.38668870925903
+    },
+    {
+      "budget": 256,
+      "benchmark": "banknote_classification",
+      "selection": "required_floor",
+      "mean": 1.0
+    },
+    {
+      "budget": 256,
+      "benchmark": "banknote_classification",
+      "selection": "catboost",
+      "mean": 0.9954545454545455
+    },
+    {
+      "budget": 256,
+      "benchmark": "diabetes_regression",
+      "selection": "required_floor",
+      "mean": 3002.3286646725087
+    },
+    {
+      "budget": 256,
+      "benchmark": "diabetes_regression",
+      "selection": "catboost",
+      "mean": 3036.3797317524923
+    },
+    {
+      "budget": 256,
+      "benchmark": "digits_image",
+      "selection": "required_floor",
+      "mean": 0.9875
+    },
+    {
+      "budget": 256,
+      "benchmark": "digits_image",
+      "selection": "cnn_small",
+      "mean": 0.9881944444444445
+    },
+    {
+      "budget": 256,
+      "benchmark": "shakespeare_byte_lm",
+      "selection": "required_floor",
+      "mean": 33.66808446908392
+    },
+    {
+      "budget": 256,
+      "benchmark": "shakespeare_byte_lm",
+      "selection": "transformer_lm_tiny",
+      "mean": 36.10622453689575
+    }
+  ],
+  "budget_scaling": [
+    {
+      "system": "prism",
+      "paired_mean_time_ratio": 2.484646396157222,
+      "mean_directional_score_changes": {
+        "banknote_classification": 0.0,
+        "diabetes_regression": 138.1379731030318,
+        "digits_image": 0.005555555555555564,
+        "shakespeare_byte_lm": 1.0739846141351372
+      },
+      "pairs": [
+        {
+          "seed": 53,
+          "time_ratio": 2.209222215994745,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": 0.6011182766542902
+          }
+        },
+        {
+          "seed": 54,
+          "time_ratio": 2.3624588212148683,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.011111111111111183,
+            "shakespeare_byte_lm": 1.3350632663402457
+          }
+        },
+        {
+          "seed": 55,
+          "time_ratio": 1.9960191023656193,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 323.80585000564815,
+            "digits_image": 0.002777777777777768,
+            "shakespeare_byte_lm": 1.514915842367449
+          }
+        },
+        {
+          "seed": 56,
+          "time_ratio": 2.4374268167887463,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 80.55984543681825,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": 0.34676619273611564
+          }
+        },
+        {
+          "seed": 57,
+          "time_ratio": 2.493623804733583,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 7.467932453237154,
+            "digits_image": 0.002777777777777768,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 58,
+          "time_ratio": 2.257783125377605,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 57.88841062102756,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": 3.323869109146381
+          }
+        },
+        {
+          "seed": 59,
+          "time_ratio": 2.615818048052006,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 372.0829994743258,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": 1.3232292228964102
+          }
+        },
+        {
+          "seed": 60,
+          "time_ratio": 3.504819234730602,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 263.2987468331976,
+            "digits_image": 0.02777777777777779,
+            "shakespeare_byte_lm": 0.1469150029402062
+          }
+        }
+      ],
+      "interpretation": "descriptive only; positive quality change favors budget 256"
+    },
+    {
+      "system": "topograph",
+      "paired_mean_time_ratio": 2.8341700316797427,
+      "mean_directional_score_changes": {
+        "banknote_classification": 0.0,
+        "diabetes_regression": 210.16148258624543,
+        "digits_image": 0.004861111111111094,
+        "shakespeare_byte_lm": 2.7202385486629566
+      },
+      "pairs": [
+        {
+          "seed": 53,
+          "time_ratio": 2.636766394250982,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 447.140924720306,
+            "digits_image": 0.008333333333333415,
+            "shakespeare_byte_lm": 0.3668316871581503
+          }
+        },
+        {
+          "seed": 54,
+          "time_ratio": 3.2532954886577765,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": 6.426896085622051
+          }
+        },
+        {
+          "seed": 55,
+          "time_ratio": 3.2265899206111697,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 385.5935240496933,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": 5.2059216575171305
+          }
+        },
+        {
+          "seed": 56,
+          "time_ratio": 2.6802147343402227,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 43.13440402385095,
+            "digits_image": 0.005555555555555536,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 57,
+          "time_ratio": 2.7806002866737396,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 798.7185961994815,
+            "digits_image": -0.005555555555555647,
+            "shakespeare_byte_lm": 6.639245422433692
+          }
+        },
+        {
+          "seed": 58,
+          "time_ratio": 2.6150589873230468,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 20.540639713765813,
+            "digits_image": 0.022222222222222143,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 59,
+          "time_ratio": 2.676662786501125,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -13.83622801713409,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": 0.46620955940690223
+          }
+        },
+        {
+          "seed": 60,
+          "time_ratio": 2.804171655079878,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.008333333333333304,
+            "shakespeare_byte_lm": 2.656803977165726
+          }
+        }
+      ],
+      "interpretation": "descriptive only; positive quality change favors budget 256"
+    },
+    {
+      "system": "stratograph",
+      "paired_mean_time_ratio": 2.0391150315511073,
+      "mean_directional_score_changes": {
+        "banknote_classification": 0.03545454545454545,
+        "diabetes_regression": 115.34380036004137,
+        "digits_image": 0.04236111111111111,
+        "shakespeare_byte_lm": 0.00981485805115545
+      },
+      "pairs": [
+        {
+          "seed": 53,
+          "time_ratio": 2.024326546085493,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": 0.027654847266607163
+          }
+        },
+        {
+          "seed": 54,
+          "time_ratio": 1.9864852680573861,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.10000000000000003,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 55,
+          "time_ratio": 1.8973482109973123,
+          "quality_changes": {
+            "banknote_classification": 0.17454545454545456,
+            "diabetes_regression": 39.77536073550891,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 56,
+          "time_ratio": 1.936350455186623,
+          "quality_changes": {
+            "banknote_classification": 0.07272727272727275,
+            "diabetes_regression": 171.93936033302907,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 57,
+          "time_ratio": 2.195255827769381,
+          "quality_changes": {
+            "banknote_classification": 0.036363636363636265,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.12777777777777777,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 58,
+          "time_ratio": 2.0001454428918954,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.033333333333333326,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 59,
+          "time_ratio": 2.0810086835096677,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 711.035681811793,
+            "digits_image": 0.07777777777777778,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 60,
+          "time_ratio": 2.191999817911099,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": 0.05086401714263644
+          }
+        }
+      ],
+      "interpretation": "descriptive only; positive quality change favors budget 256"
+    },
+    {
+      "system": "primordia",
+      "paired_mean_time_ratio": 1.9868856799132621,
+      "mean_directional_score_changes": {
+        "banknote_classification": 0.0009090909090909149,
+        "diabetes_regression": 36.70980487590589,
+        "digits_image": 0.01319444444444444,
+        "shakespeare_byte_lm": 1.8451307396686967
+      },
+      "pairs": [
+        {
+          "seed": 53,
+          "time_ratio": 1.8910939730324283,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 47.408864939601244,
+            "digits_image": 0.01388888888888884,
+            "shakespeare_byte_lm": 3.0562126401292247
+          }
+        },
+        {
+          "seed": 54,
+          "time_ratio": 2.039406655084669,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 195.82125696603725,
+            "digits_image": 0.047222222222222165,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 55,
+          "time_ratio": 1.8911047466882405,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.002777777777777768,
+            "shakespeare_byte_lm": 3.038845338321835
+          }
+        },
+        {
+          "seed": 56,
+          "time_ratio": 2.0918158176254056,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.025000000000000022,
+            "shakespeare_byte_lm": 2.440751684322862
+          }
+        },
+        {
+          "seed": 57,
+          "time_ratio": 2.08427448845659,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 33.933396166307375,
+            "digits_image": 0.005555555555555536,
+            "shakespeare_byte_lm": 2.079563167568729
+          }
+        },
+        {
+          "seed": 58,
+          "time_ratio": 1.979341851429435,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 16.514920935301234,
+            "digits_image": 0.011111111111111183,
+            "shakespeare_byte_lm": 0.8964546304001928
+          }
+        },
+        {
+          "seed": 59,
+          "time_ratio": 1.8686131589150756,
+          "quality_changes": {
+            "banknote_classification": 0.0072727272727273196,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": 0.6252225584988231
+          }
+        },
+        {
+          "seed": 60,
+          "time_ratio": 2.049434748074254,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": 2.623995898107907
+          }
+        }
+      ],
+      "interpretation": "descriptive only; positive quality change favors budget 256"
+    },
+    {
+      "system": "contenders",
+      "paired_mean_time_ratio": 2.0200147287485337,
+      "mean_directional_score_changes": {
+        "banknote_classification": 0.0,
+        "diabetes_regression": 5.440164260451695,
+        "digits_image": 0.000694444444444442,
+        "shakespeare_byte_lm": 0.0
+      },
+      "pairs": [
+        {
+          "seed": 53,
+          "time_ratio": 1.8632670302286864,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 54,
+          "time_ratio": 1.9792288510380818,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 55,
+          "time_ratio": 1.9046913720194139,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 56,
+          "time_ratio": 2.1727142179222705,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 28.596923828125,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 57,
+          "time_ratio": 2.0577298426756188,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": 14.92439025548856,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 58,
+          "time_ratio": 2.0213950565593857,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.002777777777777768,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 59,
+          "time_ratio": 2.094983657040097,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.002777777777777768,
+            "shakespeare_byte_lm": -0.0
+          }
+        },
+        {
+          "seed": 60,
+          "time_ratio": 2.0661078025047153,
+          "quality_changes": {
+            "banknote_classification": 0.0,
+            "diabetes_regression": -0.0,
+            "digits_image": 0.0,
+            "shakespeare_byte_lm": -0.0
+          }
+        }
+      ],
+      "interpretation": "descriptive only; positive quality change favors budget 256"
+    }
+  ],
+  "prism_winner_families": {
+    "b128/banknote_classification": {
+      "mlp": 3,
+      "sparse_mlp": 4,
+      "moe_mlp": 1
+    },
+    "b128/diabetes_regression": {
+      "sparse_mlp": 4,
+      "moe_mlp": 2,
+      "mlp": 2
+    },
+    "b128/digits_image": {
+      "mlp": 6,
+      "sparse_mlp": 2
+    },
+    "b128/shakespeare_byte_lm": {
+      "embedding": 6,
+      "causal_transformer": 1,
+      "gated_state_space": 1
+    },
+    "b256/banknote_classification": {
+      "mlp": 3,
+      "sparse_mlp": 4,
+      "moe_mlp": 1
+    },
+    "b256/diabetes_regression": {
+      "sparse_mlp": 4,
+      "mlp": 3,
+      "moe_mlp": 1
+    },
+    "b256/digits_image": {
+      "mlp": 6,
+      "sparse_mlp": 1,
+      "conv2d": 1
+    },
+    "b256/shakespeare_byte_lm": {
+      "embedding": 4,
+      "gated_state_space": 2,
+      "causal_transformer": 1,
+      "attention": 1
+    }
+  },
+  "descriptive_effect_components": [
+    {
+      "engine": "prism",
+      "components": [
+        {
+          "benchmark": "banknote_classification",
+          "mean_symmetric_effect": 0.0,
+          "descriptive_only": true
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "mean_symmetric_effect": 0.09820543772552986,
+          "descriptive_only": true
+        },
+        {
+          "benchmark": "digits_image",
+          "mean_symmetric_effect": -0.002809962293371154,
+          "descriptive_only": true
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "mean_symmetric_effect": 0.7710084886079172,
+          "descriptive_only": true
+        }
+      ]
+    },
+    {
+      "engine": "topograph",
+      "components": [
+        {
+          "benchmark": "banknote_classification",
+          "mean_symmetric_effect": 0.0,
+          "descriptive_only": true
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "mean_symmetric_effect": 0.056008131976145306,
+          "descriptive_only": true
+        },
+        {
+          "benchmark": "digits_image",
+          "mean_symmetric_effect": -0.008836526602423659,
+          "descriptive_only": true
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "mean_symmetric_effect": 0.1939083469048039,
+          "descriptive_only": true
+        }
+      ]
+    },
+    {
+      "engine": "stratograph",
+      "components": [
+        {
+          "benchmark": "banknote_classification",
+          "mean_symmetric_effect": -0.24442563851624638,
+          "descriptive_only": true
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "mean_symmetric_effect": -0.14584891429890262,
+          "descriptive_only": true
+        },
+        {
+          "benchmark": "digits_image",
+          "mean_symmetric_effect": -0.9835108933345516,
+          "descriptive_only": true
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "mean_symmetric_effect": 0.10130462161114177,
+          "descriptive_only": true
+        }
+      ]
+    },
+    {
+      "engine": "primordia",
+      "components": [
+        {
+          "benchmark": "banknote_classification",
+          "mean_symmetric_effect": -0.006877419502695516,
+          "descriptive_only": true
+        },
+        {
+          "benchmark": "diabetes_regression",
+          "mean_symmetric_effect": -0.009669038800968416,
+          "descriptive_only": true
+        },
+        {
+          "benchmark": "digits_image",
+          "mean_symmetric_effect": -0.06155373399242451,
+          "descriptive_only": true
+        },
+        {
+          "benchmark": "shakespeare_byte_lm",
+          "mean_symmetric_effect": 0.2799273663095343,
+          "descriptive_only": true
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "registry": {
+      "blockers": [],
+      "records": 80,
+      "require_artifacts": true,
+      "status": "passed"
+    },
+    "records": 80,
+    "replayed_native_runs": 64,
+    "trained_winner_replays": 256,
+    "independent_signed_rank_permutations_per_contrast": 256,
+    "all_four_effects_intervals_and_holm_values_reproduced": true
+  },
+  "artifacts": [
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/request.json",
+      "sha256": "4f5a28399c637802070c4122130a855eb6d9b62dc1b42f582bf5ac775d18efdf"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/registry-aggregate/cohort_report.json",
+      "sha256": "8b25d185e5d3bb57708b2a6535d93e4b3f48b3c25f7dc692a0399afdb281606b"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/registry-aggregate/index.jsonl",
+      "sha256": "c79b3cacb14e5a5e1fe0c272c186ef4534e75d9943f55e34c6bbab0c6f3d16d3"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/descriptive.json",
+      "sha256": "9c5b618f567e83998bd932629950485bcbf3c6928c0d055c5afb312217e71ec4"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/independent-statistics.json",
+      "sha256": "e9a44ccba43e8d4b54e9c33d9dc795b3fc8d11b572ff4852d739e3d02bad5461"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/replays.json",
+      "sha256": "ea5db9f1295591dd0198cd9985ad0e6097ea997680e15961c0792b42bf5b69d2"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/prism-winner-families.json",
+      "sha256": "31ef921e6f8c26a10f0a9611a37ba5e5109da5f4841559bfbe8279bd8005bcf6"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/effect-components.json",
+      "sha256": "c8af6af5169a6c8754e1a1f5061079c988bc973e0bc3aac86e6ff20ad3cc2452"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/evaluate_aggregate.py",
+      "sha256": "71108d9a0d1604e635c0d456a70397a1a46cd502dc22ee89059fe1e979439cac"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/describe.py",
+      "sha256": "33678fb0143ee6927709ee0389859631e794db586aa2474fdccb8c4686722cae"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/crosscheck.py",
+      "sha256": "7fa1937399ee716bc1e53fdd6fbc517c575d940aef075132023e3bc60d6c34e2"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/replay.py",
+      "sha256": "fdc1e3bfbb0a9e1586cadc385501849bce795027edcfafa70afecc3e16e62785"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/finalize.py",
+      "sha256": "dc415ccb04df5ab1afce63ffe1dfcf0751360aba5de1e8233931b8a2a625d64e"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/parse_cache.py",
+      "sha256": "72eba97400a322bfa3cc39c41ea54071ddb1bfb6a5b7e37d5d0ba0c8c54c699d"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/parse-cache-validation.json",
+      "sha256": "26d2165114d5f95974c8814e892b06199cc07af638a3ee90431afd77f56dd7dd"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/evaluate_aggregate_uncached.py",
+      "sha256": "72ef13143cec271364d072a028a6f2b8b381683b9242120bf76b6b1ea80e40f4"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/evaluation-uncached.log",
+      "sha256": "d97032900624c2a4336cae3a36221eadec9080096a666a96569869c66b8ce989"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/parse_cache_safe_load_only.py",
+      "sha256": "63e5687f42b099d961de004f265fae78703257e49a60515506cb765a252a8d05"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-analysis-20260911/evaluation-safe-load-only.log",
+      "sha256": "d44628d444b31369685c70d501b92c3f889b2d62660a0e1c1512c5f030de4182"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN-all-engines-20260910/.artifacts/all-engines-high-budget-20260910/readiness.json",
+      "sha256": "f54148fdf0f7d47c7abfeb515d8ba25fa960d7d534060e7690095b12aae65606"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/all-engines-guardian-20260910/completion.json",
+      "sha256": "2ed4185d3ab9f6f47823441d454f7c141d961f019f081141cbe299a215bf3e23"
+    }
+  ],
+  "limitations": [
+    "Eight paired seeds on four validation tasks; no protected text test or general architecture/transfer claim.",
+    "Primary reference is the best required-floor outcome, not the strongest member of the expanded baseline pool.",
+    "Symmetric relative aggregate effects are not accuracy-point improvements. Full-panel ceiling ties remove banknote from Prism/Topograph primary averages; Primordia/Stratograph retain all four tasks.",
+    "Per-task scores, named enhanced baselines, engine-to-engine rankings, timings and 128-to-256 differences are descriptive, without additional significance tests.",
+    "Observed full-run times use native MLX for engines and mixed fixed-pool baseline backends; elapsed times may reflect changing host load.",
+    "Stratograph uses its frozen shared proxy without the proposed normalization fix.",
+    "Analysis generated aggregate case documents for joint repeated-budget baseline admission; original exports, campaign manifests, scores and frozen protocol remain unchanged.",
+    "No automatic Phase-4, engine, portfolio or transfer promotion."
+  ],
+  "analysis_execution": {
+    "parse_cache": {
+      "catalog_files_checked": 17,
+      "exact_content_equality": true,
+      "changed_content_visible": true,
+      "mutation_isolation": true,
+      "aliases_preserved": true,
+      "stream_passthrough": true,
+      "invalid_yaml_rejected": true,
+      "max_entries": 256,
+      "max_content_bytes": 262144,
+      "cache_policy": "only parsed YAML content; source files still read and hash-validated normally",
+      "strict_catalog_files_checked": 17,
+      "strict_parser_edge_cases": [
+        {
+          "input": "a: [",
+          "outcome": [
+            "error",
+            "InvalidCatalogYamlError",
+            "catalog YAML is invalid: fixture"
+          ]
+        },
+        {
+          "input": "a: 1\na: 2\n",
+          "outcome": [
+            "error",
+            "InvalidCatalogYamlError",
+            "catalog YAML is invalid: fixture"
+          ]
+        },
+        {
+          "input": "a: &a [1]\nb: *a\n",
+          "outcome": [
+            "error",
+            "InvalidCatalogYamlError",
+            "catalog YAML is invalid: fixture"
+          ]
+        },
+        {
+          "input": "a: .nan\n",
+          "outcome": [
+            "value",
+            "{'a': nan}"
+          ]
+        },
+        {
+          "input": "a: !!python/object {}\n",
+          "outcome": [
+            "error",
+            "InvalidCatalogYamlError",
+            "catalog YAML is invalid: fixture"
+          ]
+        }
+      ],
+      "strict_catalog_mutation_isolation": true,
+      "strict_catalog_changed_content_visible": true
+    },
+    "unchanged_consumer_source": true,
+    "wrapper_recorded_by_artifact_hash": true,
+    "uncached_aggregate_workspace_completed": true,
+    "uncached_registry_reader_interrupted_for_parse_acceleration": true
+  },
+  "engine_advancement_authorized": false,
+  "decision_category": "inconclusive",
+  "cohort_report_limitations": [
+    "L4 is evidence quality, not automatic promotion or a causal claim.",
+    "Seed bootstrap intervals are descriptive at small samples; ceiling ties have no win credit.",
+    "These contrasts do not establish preregistration, protected-test performance or transfer."
+  ]
+}

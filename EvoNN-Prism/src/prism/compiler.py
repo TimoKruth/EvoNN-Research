@@ -81,7 +81,7 @@ class FamilyModel:
     def parameter_count(self):
         return sum(v.size for v in self.weights.values())
 
-    def forward(self, p, x, *, training=False, seed=0):
+    def forward(self, p, x, *, training=False, seed=0, return_features=False):
         b, g, family = self.backend, self.genome, self.genome.family
         rng = np.random.default_rng(seed)
 
@@ -144,7 +144,8 @@ class FamilyModel:
                 offsets = (
                     [(dy, dx) for dy in range(-radius, radius + 1) for dx in range(-radius, radius + 1)]
                     if "2d" in family
-                    else [(d,) for d in range(-radius, radius + 1)]
+                    else [(d,) for d in (range(1 - g.kernel_size, 1) if self.task == "language_modeling"
+                                        else range(-radius, radius + 1))]
                 )
                 patches = []
                 # Zero-padding expressed as masked gathers preserves input gradients.
@@ -234,6 +235,8 @@ class FamilyModel:
                     x = x + old
                 if family == "sparse_mlp":
                     x = sparse(x)
+        if return_features:
+            return x
         if x.ndim > 2 and self.task != "language_modeling":
             x = x.mean(axis=tuple(range(1, x.ndim - 1)))
         return linear("head", x)
@@ -261,4 +264,7 @@ def compile_genome(
         raise ValueError("positive model dimensions required")
     if "conv2d" in genome.family and len(input_shape) not in {2, 3}:
         raise ValueError("image convolution requires spatial shape")
+    if genome.family == "composite":
+        from .composition import CompositeModel
+        return CompositeModel(genome, input_shape, output_dim, modality, task, Backend(backend, device), seed, vocab_size)
     return FamilyModel(genome, input_shape, output_dim, modality, task, Backend(backend, device), seed, vocab_size)

@@ -69,6 +69,8 @@ def main(argv=None):
     validation = actions.add_parser("validate")
     reporting = actions.add_parser("report")
     reporting.add_argument("--request", type=Path)
+    cohort_reporting = actions.add_parser("cohort-report", help="explicit engine, floor or budget contrasts without training")
+    cohort_reporting.add_argument("--request", type=Path, required=True)
     supersession = actions.add_parser("supersede")
     supersession.add_argument("--old", required=True)
     supersession.add_argument("--new", required=True)
@@ -85,9 +87,9 @@ def main(argv=None):
     hydration.add_argument("--descriptor", type=Path, required=True)
     gate = actions.add_parser("decision-gate")
     gate.add_argument("--body", type=Path, required=True)
-    for action in (promotion, validation, reporting, supersession, gate, packing, hydration):
+    for action in (promotion, validation, reporting, cohort_reporting, supersession, gate, packing, hydration):
         action.add_argument("--registry", type=Path, default=Path("evidence"))
-    for action in (validation, reporting):
+    for action in (validation, reporting, cohort_reporting):
         action.add_argument("--require-artifacts", action="store_true")
     args = parser.parse_args(argv)
     try:
@@ -117,6 +119,9 @@ def main(argv=None):
             elif args.evidence_command == "report":
                 request = json.loads(args.request.read_text()) if args.request else None
                 result = registry_report(args.registry, request=request, require_artifacts=args.require_artifacts)
+            elif args.evidence_command == "cohort-report":
+                from .cohort import cohort_report
+                result = cohort_report(args.registry, json.loads(args.request.read_text()), require_artifacts=args.require_artifacts)
             elif args.evidence_command in ("pack", "hydrate"):
                 from .transport import pack_registry, hydrate_registry
                 result = (pack_registry(args.registry, archive=args.archive) if args.evidence_command == "pack" else

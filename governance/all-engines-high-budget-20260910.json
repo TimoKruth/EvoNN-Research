@@ -1,0 +1,660 @@
+{
+  "schema_version": 1,
+  "id": "all-engines-high-budget-v1",
+  "status": "protocol_frozen_execution_not_started",
+  "comparison_policy": {
+    "required_systems": [
+      "prism",
+      "topograph",
+      "stratograph",
+      "primordia",
+      "contenders"
+    ],
+    "every_campaign": true,
+    "missing": "Any missing or failed expected engine/seed/budget makes the comparison incomplete. Never silently exclude Stratograph or another engine."
+  },
+  "seeds": [
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60
+  ],
+  "excluded_prior_seeds": [
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52
+  ],
+  "scope": "All four engines and expanded fixed-pool Contenders on the bounded four-task Tier B validation surface. No protected-test, general architecture or transfer claim.",
+  "baselines": {
+    "pool_sha256": "75cbb21024cbe9fad132a6d1b5a3ef42f2b11dd1af3984a55a1897a3335ac398",
+    "enhanced": true,
+    "required_models": [
+      "transformer_lm_tiny",
+      "catboost",
+      "cnn_small"
+    ],
+    "configurations": {
+      "transformer_lm_tiny": {
+        "model": "transformer_lm_tiny",
+        "parameters": {
+          "epochs": 20
+        },
+        "extra": "torch"
+      },
+      "catboost": {
+        "model": "catboost",
+        "parameters": {},
+        "extra": "boosted"
+      },
+      "cnn_small": {
+        "model": "cnn_small",
+        "parameters": {
+          "epochs": 20
+        },
+        "extra": "torch"
+      }
+    },
+    "no_tuning_after_start": true
+  },
+  "controls": {
+    "epochs_max": 12,
+    "run_timeout": 1500,
+    "fit_timeout": 90,
+    "backend": "mlx_native",
+    "priority": "Standard",
+    "ordering": "Rotate the five-system order across seeds; reverse at 256 relative to 128 for each seed.",
+    "stratograph_variant": "shared; known proxy limitation retained and reported; no unqualified normalization change",
+    "holdout": "Protected final 15 percent of text remains unused",
+    "dataset_cache": "Pinned verified splits prepared before dispatch; no tuning or data changes after start"
+  },
+  "execution": {
+    "planned_runs": 80,
+    "planned_fits": 15360,
+    "max_session_seconds": 1800,
+    "automatic_start": false,
+    "required_packages": [
+      "torch",
+      "xgboost",
+      "lightgbm",
+      "catboost"
+    ],
+    "source_revision": "Bound by clean immutable execution manifests"
+  },
+  "statistics": {
+    "primary": "Four engine-vs-required-floor aggregate quality comparisons at budget 256 across the fixed four-task pack.",
+    "bootstrap": "4096 paired-seed percentile resamples, RNG0; direction-aware symmetric relative effects and fixed equal task weights; full-panel ceiling exclusion only.",
+    "multiplicity": "Holm across exactly four primary quality comparisons; eight paired seeds permit minimum adjusted p=0.03125. Report all four including negative/inconclusive findings.",
+    "materiality": 0.01,
+    "primary_gain": "CI95 lower bound >0.01 AND Holm-adjusted two-sided signed-rank p<=0.05; no automatic engine advancement.",
+    "secondary": "Report every engine and Contenders at both budgets, all per-task scores, full-run times, named enhanced baselines and paired 128-to-256 changes descriptively; no secondary significance/superiority claim.",
+    "selection": "Best validation outcome within each fixed fit budget; no protected-test evaluation.",
+    "missing": "No substitution, omitted seed, rerun selection or mixing producer revisions. A repaired producer requires a fresh full campaign."
+  },
+  "analysis_request_template": {
+    "schema_version": 1,
+    "policy": "within-cohort-relative-v1",
+    "label": "all-engines-high-budget-v1",
+    "materiality": 0.01,
+    "panels": [
+      {
+        "id": "prism-vs-required-b256",
+        "pack": "tier_b_core_v2",
+        "reference": {
+          "engine": "contenders",
+          "budget": 256,
+          "selection": "required_floor",
+          "contender": null
+        },
+        "target": {
+          "engine": "prism",
+          "budget": 256,
+          "selection": "winner",
+          "contender": null
+        },
+        "benchmarks": [
+          "banknote_classification",
+          "digits_image",
+          "diabetes_regression",
+          "shakespeare_byte_lm"
+        ],
+        "seeds": [
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60
+        ]
+      },
+      {
+        "id": "topograph-vs-required-b256",
+        "pack": "tier_b_core_v2",
+        "reference": {
+          "engine": "contenders",
+          "budget": 256,
+          "selection": "required_floor",
+          "contender": null
+        },
+        "target": {
+          "engine": "topograph",
+          "budget": 256,
+          "selection": "winner",
+          "contender": null
+        },
+        "benchmarks": [
+          "banknote_classification",
+          "digits_image",
+          "diabetes_regression",
+          "shakespeare_byte_lm"
+        ],
+        "seeds": [
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60
+        ]
+      },
+      {
+        "id": "stratograph-vs-required-b256",
+        "pack": "tier_b_core_v2",
+        "reference": {
+          "engine": "contenders",
+          "budget": 256,
+          "selection": "required_floor",
+          "contender": null
+        },
+        "target": {
+          "engine": "stratograph",
+          "budget": 256,
+          "selection": "winner",
+          "contender": null
+        },
+        "benchmarks": [
+          "banknote_classification",
+          "digits_image",
+          "diabetes_regression",
+          "shakespeare_byte_lm"
+        ],
+        "seeds": [
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60
+        ]
+      },
+      {
+        "id": "primordia-vs-required-b256",
+        "pack": "tier_b_core_v2",
+        "reference": {
+          "engine": "contenders",
+          "budget": 256,
+          "selection": "required_floor",
+          "contender": null
+        },
+        "target": {
+          "engine": "primordia",
+          "budget": 256,
+          "selection": "winner",
+          "contender": null
+        },
+        "benchmarks": [
+          "banknote_classification",
+          "digits_image",
+          "diabetes_regression",
+          "shakespeare_byte_lm"
+        ],
+        "seeds": [
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60
+        ]
+      }
+    ],
+    "campaigns": []
+  },
+  "campaigns": [
+    {
+      "id": "all-engines-b128-s53",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          53
+        ],
+        "systems": [
+          "prism",
+          "topograph",
+          "stratograph",
+          "primordia",
+          "contenders"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b128-s54",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          54
+        ],
+        "systems": [
+          "topograph",
+          "stratograph",
+          "primordia",
+          "contenders",
+          "prism"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b128-s55",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          55
+        ],
+        "systems": [
+          "stratograph",
+          "primordia",
+          "contenders",
+          "prism",
+          "topograph"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b128-s56",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          56
+        ],
+        "systems": [
+          "primordia",
+          "contenders",
+          "prism",
+          "topograph",
+          "stratograph"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b128-s57",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          57
+        ],
+        "systems": [
+          "contenders",
+          "prism",
+          "topograph",
+          "stratograph",
+          "primordia"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b128-s58",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          58
+        ],
+        "systems": [
+          "prism",
+          "topograph",
+          "stratograph",
+          "primordia",
+          "contenders"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b128-s59",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          59
+        ],
+        "systems": [
+          "topograph",
+          "stratograph",
+          "primordia",
+          "contenders",
+          "prism"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b128-s60",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          128
+        ],
+        "seeds": [
+          60
+        ],
+        "systems": [
+          "stratograph",
+          "primordia",
+          "contenders",
+          "prism",
+          "topograph"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b256-s53",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          256
+        ],
+        "seeds": [
+          53
+        ],
+        "systems": [
+          "contenders",
+          "primordia",
+          "stratograph",
+          "topograph",
+          "prism"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b256-s54",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          256
+        ],
+        "seeds": [
+          54
+        ],
+        "systems": [
+          "prism",
+          "contenders",
+          "primordia",
+          "stratograph",
+          "topograph"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b256-s55",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          256
+        ],
+        "seeds": [
+          55
+        ],
+        "systems": [
+          "topograph",
+          "prism",
+          "contenders",
+          "primordia",
+          "stratograph"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b256-s56",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          256
+        ],
+        "seeds": [
+          56
+        ],
+        "systems": [
+          "stratograph",
+          "topograph",
+          "prism",
+          "contenders",
+          "primordia"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b256-s57",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          256
+        ],
+        "seeds": [
+          57
+        ],
+        "systems": [
+          "primordia",
+          "stratograph",
+          "topograph",
+          "prism",
+          "contenders"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b256-s58",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          256
+        ],
+        "seeds": [
+          58
+        ],
+        "systems": [
+          "contenders",
+          "primordia",
+          "stratograph",
+          "topograph",
+          "prism"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b256-s59",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          256
+        ],
+        "seeds": [
+          59
+        ],
+        "systems": [
+          "prism",
+          "contenders",
+          "primordia",
+          "stratograph",
+          "topograph"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    },
+    {
+      "id": "all-engines-b256-s60",
+      "spec": {
+        "pack": "tier_b_core_v2",
+        "budgets": [
+          256
+        ],
+        "seeds": [
+          60
+        ],
+        "systems": [
+          "topograph",
+          "prism",
+          "contenders",
+          "primordia",
+          "stratograph"
+        ],
+        "backend": "mlx_native",
+        "epochs": 12,
+        "enhanced": true,
+        "timeout": 1500.0,
+        "fit_timeout": 90.0,
+        "min_free_bytes": 10737418240,
+        "analysis": "descriptive_repeated_seed_no_superiority_claim"
+      }
+    }
+  ]
+}

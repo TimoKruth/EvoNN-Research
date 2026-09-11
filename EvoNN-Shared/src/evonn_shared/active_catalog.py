@@ -10,8 +10,8 @@ def _directories(root):
     if configured == "":
         raise ValueError("EVONN_SHARED_BENCHMARKS_DIR must not be empty")
     base = Path(root) if root is not None else Path(configured) if configured is not None else resolve_data_root()
-    extension = base / 'extensions' / 'phase4'
-    return base, (extension / 'catalog',) if (extension / 'catalog').exists() else (), (extension / 'packs',) if (extension / 'packs').exists() else ()
+    extensions = [base / 'extensions' / name for name in ('phase4', 'breadth_v1')]
+    return base, tuple(e / 'catalog' for e in extensions if (e / 'catalog').exists()), tuple(e / 'packs' for e in extensions if (e / 'packs').exists())
 
 
 def get_benchmark(benchmark_id, *, shared_root=None):

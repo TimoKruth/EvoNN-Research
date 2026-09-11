@@ -15,7 +15,7 @@ b0_repository_model:
 
 # EvoNN Lab — Consolidated Execution Plan
 
-**Updated:** 2026-09-08. Revision 2 remains the governing plan baseline; this
+**Updated:** 2026-09-09. Revision 2 remains the governing plan baseline; this
 consolidation updates execution status without changing specifications or gates.
 
 This is the sole execution plan. Expand work packages here or in a PR-local
@@ -56,18 +56,183 @@ real-text Tier B and four-engine LM integration. The compact receipt
 `governance/phase4-runtime-evidence.json` binds 13 L3 runs / 304 fits and 80
 replayed winners. The five-system Tier-B@16 contract audit has zero blockers.
 
-**Next:** replan the paused five-system campaign on the optimized source after
-integration; keep it paused until the user requests its start. The first campaign
-completed three 64-fit engine slots; Topograph exhausted its 1500-second
-allowance after 51 committed attempts and one further durable result. Preserve
-that producer and clock unchanged. The [performance receipt](governance/performance-runtime-evidence.json)
-qualifies all four native engines at 64/128 on seed 42: 848 fits across 13 short
-runs, 48 winner replays, exact prior search/metric checks and 39 native recovery
-tests. Topograph now completes 64/128 fits in 70/158 seconds. Required hosted
-lanes gate integration; use Standard launchd priority for the fresh campaign.
-The 256-proposal/1800-second engine limits and 1500/90-second campaign/fit
-settings remain. WP-4.7 and the Phase 4 exit still require repeated low/mid-budget
-and L4 portfolio evidence; native cross-engine ingestion stays Phase 5.
+**Completed comparison:** the user-authorized optimized campaign finished on
+2026-09-09 at 00:30 CEST: 30/30 runs, 2,880/2,880 fits, zero failures; Tier B
+budgets 64/128 × seeds 42/43/44 × five systems. The
+[analysis receipt](governance/tier-b-comparison-20260909.json) and
+[interpretation](PROJECT_HISTORY.md#tier-b-comparison--2026-09-09) bind the exact
+producer and per-seed measurements. Decision-grade benchmark admission now
+passes with zero blockers. Three seeds meet the local coverage minimum, but
+the initial post-run analysis did not close the scientific exit; the explicit
+L4 follow-up below remains distinct from automatic scientific promotion.
+The original timed-out campaign remains untouched; existing limits remain.
+
+**Completed follow-up (2026-09-09):** large-state reporting now preserves valid
+protocol identities and uses the bounded native state reader. Historical registry
+rows still validate with their original observation policy; a separate
+`evidence cohort-report` projection revalidates exports and evaluates explicit
+engine/floor/budget contrasts. All **24 declared contrasts reach L4 evidence
+quality** with three seeds and zero blockers. L4 does not authorize advancement,
+protected-test performance or a broad superiority claim. Source-bound campaign
+manifests reconcile the two historical host-hash encodings; budget contrasts
+permit only the mathematically derived training-total cap to scale.
+
+Stratograph's matched five-variant × three-seed @64 ablation completed **960
+fits in 13m15s**. Shared controls reproduce all twelve prior scores exactly.
+Flat image accuracy averages **57.96% versus 25.09% shared**. Unsharing alone
+reaches 24.26%; removing cloning stays at 25.09%. A separate six-fit fixed-genome
+probe improves image accuracy from **23.98% to 44.63%** by normalizing hierarchy
+features with training-only statistics. This identifies an actionable proxy
+limitation; no new default or end-to-end hierarchy claim has been introduced.
+
+The [confirmation protocol](governance/tier-b-confirmation.json) is frozen before
+execution: **eight fresh seeds 45–52**, 48 runs / 4,608 fits. Discovery seeds
+42–44 are excluded. Eight nonzero same-sign pairs can clear the five-contrast
+Holm family; six cannot, even at their minimum exact two-sided p-value. The
+protocol fixes named neural/boosted baselines, quality margins, the joint
+Primordia quality/runtime criterion and balanced engine order. Stronger model
+classes are additional pressure, not assumed empirically stronger scores.
+
+The isolated execution checkout is
+`/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909`, pinned to
+`7da8e76` with locked optional dependencies. Its **16 manifests passed preflight**.
+Execution started on **2026-09-10 at 11:33 CEST**, using fresh manifests in
+`.artifacts/confirmation-execution-20260910` after a network hostname change;
+source, libraries, specifications and dataset provenance are unchanged. The
+original unused manifests remain retained. A 64-fit enhanced-floor qualification
+completed in 203 seconds with no failed fits; XGBoost, LightGBM, CatBoost, CNN
+and Transformer all ran. The initial qualification exposed a private sklearn
+validation assumption in external estimators; the fix preserves sklearn and
+explicit third-party validation, and the failed producer remains retained.
+
+**Confirmation evaluated (2026-09-10):** all **48 runs / 4,608 fits** finished
+without failures or repairs in 108m09s; all exports validated and **128 native
+winner replays passed**. The unchanged frozen five-contrast family reaches L4.
+The [result receipt](governance/tier-b-confirmation-results-20260910.json) binds
+all per-seed measurements, criteria and source artifacts. Prism LM passes both
+predeclared comparisons (Holm p=0.0391); Topograph regression fails confirmation
+(Holm p=0.2344 against CatBoost and 1.0 against the required floor). Primordia's
+joint tabular-quality/full-pack-runtime criterion passes narrowly: quality CI
+[-2.831%, +4.595%] against a -3% tolerance, runtime ratio CI [0.6839, 0.7406]
+against an upper-bound requirement of 0.75. Image/LM parity is not claimed.
+Guardian state is `complete`; no new campaign is scheduled by this result.
+
+**Next, in priority order:**
+
+**Completed and evaluated (2026-09-11):** the
+[all-engine high-budget result](governance/all-engines-high-budget-results-20260911.json)
+binds all 80 original runs / 15,360 successful fits, 128/256 budgets and seeds
+53–60, producer `e1d005a`. All sixteen cases were combined before baseline
+admission; 80 records validated and 256 trained winners replayed. All four
+predeclared contrasts are L4 with eight seeds and Holm p=0.03125. Prism,
+Topograph and Primordia clear the aggregate material-gain criterion against the
+required floor; Stratograph is materially negative. The full expanded pool is
+reported separately, and task-level/engine-to-engine rankings remain descriptive.
+Prism leads native mean quality, Primordia remains faster with lower image/LM
+quality, and Topograph's additional runtime is not justified by a native quality
+lead in this cohort. More budget does not resolve Stratograph's shared-proxy
+deficit (digits 29.76% → 33.99%). The protected text test is still unused.
+No additional training is scheduled by this evaluation.
+
+**Standing user requirement (2026-09-10):** every new comparison includes Prism,
+Topograph, Stratograph and Primordia on every declared benchmark/budget/seed
+combination, plus Contenders baselines. Focused research questions can restrict
+the predeclared statistical tests, not the engine roster. Report all four;
+failed or missing executions leave the comparison incomplete. Do not omit
+Stratograph while its proxy is being improved. The completed focused confirmation
+remains historical evidence and does not satisfy this new four-engine requirement.
+
+1. Qualify the opt-in Stratograph v2 implementation described in
+   [its runtime README](EvoNN-Stratograph/README.md#explicit-version-2-research-execution).
+   Implemented: training-only hierarchy normalization with saved replay buffers;
+   local projection identities and explicit randomization; representation-aware
+   inheritance without epoch discounts; bidirectional macro edits and wider
+   mutation support; protected exploration, behavioral novelty and archive
+   revisitation; charged screening/full-fit diagnostics; differentiable shared
+   cells and an extensible primitive registry. Legacy execution remains the
+   default when no research policy is declared. This is implementation progress,
+   not scientific qualification or an engine promotion.
+   Freeze separate normalization, inheritance, search and evaluator ablations
+   before their combined confirmation. Set `evolve_representation: false` for
+   fixed-representation diagnostics. Every new comparison includes all four
+   engines and Contenders on every declared combination, with fresh confirmation
+   seeds and matched work accounting. Preserve historical producers/results;
+   leave failed or missing runs visible and the comparison incomplete. Evaluate
+   quality together with coverage, revival of weak candidates and screening rank
+   reversals; never remove a supported direction solely on short-run performance.
+2. Qualify Prism's implemented exploration policies, documented in
+   [the central runtime instructions](README.md#prism-exploration-policies).
+   `open` combines archive parents, protected weak lineages and fresh starts;
+   transfer-coverage and learning-progress epoch allocation; broader reversible
+   mutations and composable blocks. `legacy`, `archive`, `training` and `broad`
+   remain explicit controls. Per-epoch and lineage telemetry, cold-initialization
+   controls, weight-bound optional Adam continuation, and an optional MLX optimizer
+   are implemented. Existing genome identities and frozen evidence remain intact.
+   Package/contract tests and native crash/resume/replay checks establish runtime
+   correctness, not scientific improvement. Keep the NumPy optimizer default:
+   the initial tiny MLX-CPU microbenchmark favored it over native optimizer arrays.
+   Freeze separate archive/training/proposal ablations with fresh seeds, complete
+   all-engine/Contenders matrices, per-task quality margins, diversity/revival
+   criteria and both work and wall-time accounting. A cold-search control does
+   not ensure identical later proposals; use the implemented `finalist-config`
+   and `fixed_genomes` mode to freeze architectures and per-fit training
+   allowances. Prior discovery remains explicitly `reported_prior`, not a
+   charged-prior gain claim. Retain negative/inconclusive
+   variants as research options instead of excluding their architectural paths.
+   Use the confirmed bounded Prism LM finding to design a separate, frozen
+   generalization comparison. The additive `language_breadth_v1` workload includes
+   longer contexts, Aesop and delayed memory alongside the original LM task;
+   runtime safety and contender adequacy remain unqualified. Follow-on workload
+   development includes context-removal diagnostics, distribution shifts and
+   harder image/tabular tasks; phase profiles should guide any worker-reuse or
+   transport optimization. These are not delivered or speedup claims. Include all four
+   engines and Contenders before
+   accessing the protected text test split. Keep
+   validation selection separate from final testing. Retain Primordia as a
+   candidate for efficient tabular search, with its narrow tolerance margin and
+   weaker image/LM outcomes explicit. Do not present Topograph as a confirmed
+   regression leader or extend the fixed eight-seed test after seeing results.
+3. Integrate the analysis-tested exact-content catalog parse cache into the maintained validation path, then remeasure
+   with identical verdicts. Profiling the source-revalidated report found
+   **29,076 catalog lookups**, accounting for roughly 96% of profiled cumulative
+   time. Avoid a global cache that could hide changed catalog bytes. No timing
+   from cProfile is a claimed unprofiled speedup. The September 11 analysis used a bounded
+   parse-only wrapper, checked against all 17 catalog/pool YAML files and malformed
+   input cases. It still reads and hash-checks source bytes; core integration is open.
+
+4. Qualify Primordia's implemented `breadth_v2` policy, documented in
+   [its runtime README](EvoNN-Primordia/README.md). Independent founders,
+   learning-progress early stopping with patient slots, quality/diversity/young/
+   reservoir/Pareto retention, optional cheapening, fresh retraining, configurable
+   size envelopes, branching, mutable sparsity, causal lag processing and
+   composed-motif mutations are implementation changes, not established gains.
+   Preserve `legacy_v1` as the frozen scientific reference. Predeclare separate
+   training, retention/mutation and representation ablations before combined
+   confirmation, using fresh seeds and all four engines plus Contenders on every
+   declared combination. Measure both matched-proposal and matched-compute
+   outcomes, behavioral coverage, lineage revival and fresh/inherited agreement.
+   Do not eliminate a supported operator or representation for poor early scores.
+   No new scientific campaign or protected-test access follows automatically.
+
+5. Qualify the implemented opt-in [Topograph research modes](README.md#topograph-research-modes).
+   `mechanics` is the common v2 control; test `training`, `archive` and `broad`
+   additions separately before combined `open` confirmation. Preserve the original
+   legacy evidence. Use fresh seeds and freeze quality/non-inferiority margins,
+   descriptor/coverage criteria and the statistical family before execution.
+   Include all four engines and Contenders on every declared combination, with
+   explicit Topograph policy in the campaign specification. Record effective
+   structural changes, resource rejections, lineage revival, late learning,
+   fresh/inherited agreement and matched-fit/matched-compute outcomes. Profile
+   runtime stages before changing process isolation or penalizing costly families.
+   Learned descriptors, broader dataset qualification and native cross-run seed
+   ingestion remain separately scoped work; this implementation does not close
+   WP-5.2, WP-6.2 or a scientific superiority gate.
+
+The repeated low/mid admission and explicit L4 aggregate surfaces are now
+available. WP-4.7's remaining preset/trusted-extended integration and the formal
+Phase 4 exit still need their explicit acceptance; no automatic scientific,
+portfolio or transfer promotion was made. Native cross-engine ingestion remains
+Phase 5.
 
 Supporting work: CodeRabbit automatic review is currently skipped by its
 repository star-count policy; a green skipped status is not review evidence.
@@ -819,8 +984,10 @@ artifact shape (B→Phase 5, co-signed here because Primordia emits it).
   clone+specialize counts/motif frequency; Primordia: primitive counts/
   bank size/promotion counts); CI scripts in the Linux lane.
 
-WP-4.7 data and `tier_b_tiny` are implemented and contract-qualified. Its parent
-checkbox remains open for the required repeated decision-grade audit. The other
+WP-4.7 data and `tier_b_tiny` are implemented and contract-qualified. The
+2026-09-09 repeated 64/128 cohort passes decision-grade benchmark admission
+with zero blockers. The follow-up provides 24 L4 contrasts. Its parent remains
+open for the complete specified preset surface and trusted-extended exit; admission alone is not that exit. The other
 checked work packages mean implemented + short-qualified; they do not close the
 full scientific exit. Independent reviews covered numerical/search behavior,
 artifact semantics, transport and the bounded command surface.
@@ -888,8 +1055,9 @@ large model/data artifacts transported externally. Separate proxy, portability,
 native runtime, scientific superiority and transfer evidence.
 **Failure conditions:** engine coupling, proxy mislabeled end-to-end, missing
 budget charges, unbound artifacts, false L3/L4 promotion or failing checks.
-The full Tier-B three-seed five-system exit cohort stays a separate campaign;
-stop before starting a multi-hour training/comparison campaign.
+The Tier-B three-seed five-system 64/128 cohort is complete and analyzed in
+the 2026-09-09 receipt. Further training requires a separate execution decision;
+this analysis starts no additional fits.
 
 **Phase 4 exit:** five-system-cohort Tier B `trusted-extended` at 3 seeds —
 where `trusted-extended` requires **L4 repeated-seed aggregates, a

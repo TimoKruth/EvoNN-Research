@@ -330,3 +330,27 @@ def test_ngram_floor_backend_and_smoothing_are_explicitly_pinned(model):
     for parameters in ({"alpha": 0.1}, {"alpha": True}, {"alpha": "1.0"}, {"alpha": 1.0, "extra": 1}):
         assert not reviewed_ngram_parameters(model, parameters)
     assert not reviewed_ngram_parameters("unknown_gram_lm", {"alpha": 1.0})
+
+
+def test_large_state_clock_keeps_protocol_and_legacy_projection(tmp_path, export_factory, assume_engine_runtime_checked):
+    import hashlib
+    from evonn_shared.telemetry import ArtifactReference
+    from evonn_compare.evidence import comparison_fingerprint
+    bundle=export_factory(tmp_path/'large',system='topograph')
+    payload=json.dumps({'elapsed':12.5,'padding':'x'*(17*1024**2)}).encode()
+    (bundle.root/'state.json').write_bytes(payload)
+    summary=bundle.summary.model_copy(update={'artifact_digests':[*bundle.summary.artifact_digests,
+        ArtifactReference(path='state.json',sha256=hashlib.sha256(payload).hexdigest())]})
+    bundle=type(bundle)(bundle.root,bundle.manifest,bundle.results,summary)
+    acceptance=evaluate_case(Case('tier1_core',64,42),[bundle])
+    row=trend_rows(bundle,'case',acceptance)[0]
+    assert row['active_run_seconds']==12.5 and row['active_run_seconds_gap'] is None
+    assert row['comparison_fingerprint']==comparison_fingerprint(bundle)
+    legacy=trend_rows(bundle,'case',acceptance,legacy_clock=True)[0]
+    assert legacy['comparison_fingerprint'] is None and 'active_run_seconds_gap' not in legacy
+    (bundle.root/'state.json').write_bytes(b'{}')
+    row=trend_rows(bundle,'case',acceptance)[0]
+    assert row['comparison_fingerprint'] and row['active_run_seconds'] is None and row['active_run_seconds_gap']
+    from evonn_shared.engine_evidence import artifact_json
+    with pytest.raises(ValueError):
+        artifact_json(bundle,'state.json')

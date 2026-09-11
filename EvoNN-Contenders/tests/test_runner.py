@@ -10,6 +10,7 @@ import numpy as np
 
 from evonn_contenders import runner
 from evonn_shared.export_reader import read_export
+from evonn_shared.runtime_host import host_fields
 
 
 def test_real_isolated_fit_portable_export_and_missing_data_accounting(tmp_path, monkeypatch):
@@ -23,6 +24,7 @@ def test_real_isolated_fit_portable_export_and_missing_data_accounting(tmp_path,
         output_parent=tmp_path / "runs", cache_root=tmp_path / "cache", timeout=30, fit_timeout=20)
     before = {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in exported.iterdir()}
     bundle = read_export(exported)
+    assert bundle.manifest.runtime.host_fingerprint == hashlib.sha256(runner.json_bytes(host_fields())).hexdigest()
     assert bundle.manifest.status.value == "failed"
     assert bundle.manifest.accounting.actual_evaluations == 1
     assert bundle.manifest.accounting.failed_evaluations == 0
@@ -142,3 +144,23 @@ def test_overflowing_optional_probe_keeps_dataset_and_other_candidates_available
     assert result["available_optional"] == ["good"]
     invalid = result["optional_results"]["bad"]
     assert invalid["status"] == "failed" and invalid["invalid"] == 1 and invalid["charged"] == 0
+
+
+def test_external_estimator_without_sklearn_constraints_and_custom_validator():
+    from sklearn.base import BaseEstimator
+    from sklearn.ensemble import ExtraTreesClassifier
+    from sklearn.pipeline import Pipeline
+    from evonn_contenders.worker import _validate_parameters
+    class ExternalEstimator(BaseEstimator):
+        pass
+    # The inherited private sklearn helper is unusable for this valid protocol.
+    with pytest.raises(AttributeError):
+        ExternalEstimator()._validate_params()
+    _validate_parameters(ExternalEstimator())
+    class ExplicitValidator(ExternalEstimator):
+        def _validate_params(self):
+            raise ValueError('external validation retained')
+    with pytest.raises(ValueError,match='external validation retained'):
+        _validate_parameters(ExplicitValidator())
+    with pytest.raises(ValueError):
+        _validate_parameters(Pipeline([('estimator',ExtraTreesClassifier(n_estimators=-1))]))

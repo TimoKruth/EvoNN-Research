@@ -12,7 +12,6 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import platform
 import signal
 import subprocess
 import sys
@@ -25,6 +24,7 @@ from ._run_io import open_directory, open_regular_at
 from .exports import Manifest, Results, RunSummary, write_export
 from .rng import StreamName, derive_stream
 from .runtime_budget import execution_budget
+from .runtime_host import host_fields
 from .telemetry import ArtifactReference
 
 SEMANTICS = "one started architecture fit/eval; failed started fits charged; invalid pre-fit proposals uncharged; committed prior work is resumed, inheritance still charges its new fit"
@@ -196,7 +196,7 @@ def vars_free_training(config):
     }
 
 
-def export_run(workspace, state, definitions, pack, selection, device_class, inherited, *, extra_artifacts=(), artifact_builder=None):
+def export_run(workspace, state, definitions, pack, selection, device_class, inherited, *, extra_artifacts=(), artifact_builder=None, seeding_override=None):
     from .run_store import STORE_FILENAME
 
     configuration, attempts = state["config"], state["attempts"]
@@ -242,16 +242,7 @@ def export_run(workspace, state, definitions, pack, selection, device_class, inh
             "process_count": configuration["training_worker_count"],
             "threads_per_worker": 1,
         },
-        "host_fingerprint": hashlib.sha256(
-            encode(
-                {
-                    "host": platform.node(),
-                    "machine": platform.machine(),
-                    "system": platform.system(),
-                    "processor": platform.processor(),
-                }
-            )
-        ).hexdigest(),
+        "host_fingerprint": hashlib.sha256(encode(host_fields())).hexdigest(),
     }
     seeding = {
         "seeding_enabled": False,
@@ -266,6 +257,9 @@ def export_run(workspace, state, definitions, pack, selection, device_class, inh
         "seed_cost_accounting": None,
         "seed_source_evaluations": None,
     }
+    if seeding_override is not None:
+        from .telemetry import SeedingMetadata
+        seeding = SeedingMetadata.model_validate_json(json.dumps(seeding_override)).model_dump(mode="json")
     common = {
         "schema_version": "1.0.0",
         "system": configuration["system"],

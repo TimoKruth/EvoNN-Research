@@ -6,7 +6,7 @@ authoritative: false
 
 # EvoNN Project History
 
-**Updated:** 2026-09-08. Foundation acceptance is merged through #28;
+**Updated:** 2026-09-11. Foundation acceptance is merged through #28;
 Phase 1 implementation and runtime evidence are recorded in #29/#30, with
 required hosted checks attached to those revisions. Phase2 implementation and
 its source-bound acceptance cohort are recorded in #31. Phase 3 is merged in
@@ -15,6 +15,358 @@ This is the compact record of completed work, review decisions and verification.
 Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
+
+## Prism exploration implementation — 2026-09-11
+
+The [implementation receipt](governance/prism-exploration-implementation-20260911.json)
+binds the tested source, 1,049 package/benchmark tests and three native MLX CPU
+integration tests covering process recovery, trained-model replay and fixed-finalist
+warm/cold controls. Governance and import checks pass in an independent clone;
+existing artifact backups in the maintained workspace contain duplicate active plans.
+
+The new `open` default combines archive reuse, protected weak lineages,
+coverage/progress-aware training and broader reversible/compositional proposals.
+Historical families and the explicit `legacy` control remain available. The
+[operating instructions](README.md#prism-exploration-policies) document the policy
+variants, provenance, diagnostics and additive experimental language tasks.
+The optional native optimizer was slower in a tiny CPU probe; NumPy remains the
+optimizer default. No scientific improvement, speedup, benchmark admission or
+protected-test claim follows. Remaining qualification and workload development
+are recorded in the consolidated plan.
+
+## Topograph research implementation — 2026-09-11
+
+The [implementation receipt](governance/topograph-research-implementation-20260911.json)
+records opt-in v2 Topograph mechanics, parent-directed inheritance, protected
+training, multiple archive views, broader mutation/representation support and
+stage profiling. Legacy genome identities and replay behavior remain available.
+The modes and operation are documented in [README](README.md#topograph-research-modes);
+scientific qualification remains in the consolidated plan.
+
+Verification used an isolated copy because other engines were being edited
+concurrently: the final Topograph package check passed 71 tests; campaign,
+policy-matching, journal and worker integration checks passed 51 tests. Two
+32-fit contract runs (NumPy and native MLX CPU) had no failed fits; 16 trained
+winners replayed. NumPy recovery includes SIGKILL immediately after checkpoint
+publication, with the absent post-commit timing recorded explicitly. Four
+historical winners from the original seed-53/256-fit Topograph export also replayed.
+The maintained tree's import-boundary validator passes. No new scientific
+comparison, protected-test access, speedup or engine-promotion claim was made.
+
+## All-engine higher-budget results evaluated — 2026-09-11
+
+All 80 runs and 15,360 fits completed on the original `e1d005a` producer; final
+exports were verified at 23:18 CEST on September 10. One user pause and two
+hostname-related preflight blocks caused no result replacement or fit failures.
+The [result receipt](governance/all-engines-high-budget-results-20260911.json) binds the unchanged protocol, all input manifests,
+the aggregate registry and descriptive scores. All 80 records validated and all
+256 trained-winner replays passed. An independent calculation
+reproduced all four bootstrap intervals, signed-rank tests (256 exhaustive sign
+permutations each) and Holm adjustments.
+
+Prism, Topograph and Primordia pass the predeclared aggregate quality criterion
+against the required baseline floor at 256; Stratograph is materially below it.
+All four Holm p-values are 0.03125. Per-task scores, full-pool baselines, runtime
+and budget scaling remain descriptive. The final protected text split remains
+unused and no automatic scientific/engine advancement is authorized. Detailed
+scores are in README; next actions remain Stratograph proxy correction and a
+separate frozen generalization comparison including all five systems.
+
+## All-engine higher-budget comparison started — 2026-09-10
+
+Following two hostname reversions during pause/resume, future campaign and export
+identities now use a versioned hash of the OS machine ID. All four engines and
+Contenders share this provider. Renames no longer invalidate a new campaign;
+machine changes remain detectable. The status skill handles both schemes.
+Historical manifests, exports and the original producer retain their original
+hostname identity; no evidence is relabeled or mixed across revisions.
+
+At the user's request, independent hourly oversight was added to the minute
+guardian. A separate pinned LaunchAgent checks guardian availability, progress,
+repair history and completion evidence, recording local status and issuing macOS
+problem notifications. Its state is `.artifacts/all-engines-hourly-20260910`.
+The combined guardian and health-check suite passes **27 tests**; the training
+producer and frozen protocol are unchanged.
+
+The user explicitly requested higher budgets for all four engines and Contenders.
+The [frozen protocol](governance/all-engines-high-budget-20260910.json) declares
+128/256 fits, eight fresh seeds 53–60 and all five systems in each case: **80 runs /
+15,360 fits**. Four primary engine-vs-required-floor contrasts at 256 use a single
+Holm family; other budgets, per-task results and scaling remain descriptive.
+The protected text test is unused, and no normalization or other engine change
+was introduced into Stratograph for this run. Existing runtime limits remain.
+
+Execution started at **14:47 CEST** in the clean isolated producer
+`../EvoNN-all-engines-20260910`, pinned to `e1d005a`. All sixteen manifests passed
+preflight and all locked optional baseline libraries imported successfully.
+Artifacts and sequential supervisor: `.artifacts/all-engines-high-budget-20260910`
+inside that producer. Guardian state lives in this checkout at
+`.artifacts/all-engines-guardian-20260910`. It uses the supplied frozen protocol,
+supports the 80-run total, and checks the required five-system roster before
+accepting any repaired replacement. Eighteen guardian tests and repository
+governance/import checks passed. No completed comparison was modified or restarted.
+
+## Eight-seed confirmation results — 2026-09-10
+
+After reviewing this focused confirmation, the user required **all four engines
+in every future comparison**. This is now recorded in AGENTS.md, README and the
+execution plan, including focused confirmation/generalization comparisons.
+Stratograph's omission from the completed run is historical; its results and
+frozen protocol are preserved rather than retroactively expanded.
+
+The [unchanged protocol](governance/tier-b-confirmation.json) and
+[result receipt](governance/tier-b-confirmation-results-20260910.json) bind the
+48-run / 4,608-fit confirmation on fresh seeds 45–52. The producer is the clean
+`7da8e76` checkout; training finished at 13:21 CEST after 108m09s, with zero
+failed fits, invalid proposals or repairs. The guardian verified completion at
+13:22 CEST. All five contrasts reach L4 with no blockers. Thirty-two native runs
+replay all **128 saved winners**. Independent extraction agrees with the formal
+report, and exhaustive enumeration of 256 sign assignments reproduces all five
+signed-rank p-values. No additional training was started for this analysis.
+
+Positive quality effects favor the target. Intervals below are 95% paired-seed
+percentile intervals for the symmetric relative effect, not raw score changes.
+Holm correction covers all five declared quality comparisons.
+
+| Frozen comparison | Mean effect | CI95 | Holm p | Criterion result |
+| --- | ---: | ---: | ---: | --- |
+| Prism LM vs tiny Transformer | +77.92% | +69.55% to +85.26% | 0.0391 | Pass |
+| Prism LM vs required floor | +70.58% | +67.40% to +73.49% | 0.0391 | Pass |
+| Topograph regression vs CatBoost | +4.60% | +1.38% to +8.31% | 0.2344 | Not confirmed |
+| Topograph regression vs required floor | +1.07% | -3.17% to +5.61% | 1.0000 | Not confirmed |
+| Primordia vs Prism tabular quality @64 | +1.04% | -2.83% to +4.60% | 1.0000 | Predeclared -3% tolerance met |
+
+**Prism:** mean validation perplexity is **16.11**, versus **36.96** for the
+frozen tiny Transformer and **33.65** for the required floor. Both margins and
+corrected tests pass, and all eight paired seeds favor Prism. This confirms the
+bounded validation-surface result, not general Transformer/architecture superiority.
+
+**Topograph:** mean diabetes MSE is **2738.5**, versus **2870.3** for CatBoost
+and **2769.6** for the required floor. Its numerical advantage does not satisfy
+the complete predeclared significance/margin criteria. It is not a confirmed
+regression winner; this is not proof that it is worse either. The best outcome
+from the entire expanded contender pool averages MSE 2721.5.
+
+**Primordia:** the separate paired full-pack runtime ratio averages **0.7148**
+(CI95 **0.6839–0.7406**): **28.5% less runtime**, with an interval of
+25.9–31.6% less, compared with Prism@64. Its mean run takes 31.38s versus 44.13s.
+The quality lower bound (-2.831%) clears the -3% tolerance narrowly and the
+runtime upper bound clears 0.75, so the **joint predeclared criterion passes**.
+Nonsignificance is not used as proof of equivalence; the tolerance test is
+explicit. Quality covers banknote/diabetes only. Image accuracy is 88.13% versus
+97.12% for Prism@64, and LM perplexity is 28.73 versus 16.58; broader parity is
+not supported.
+
+The first report evaluated baseline admission per single-seed campaign and was
+blocked. Rebuilding a canonical aggregate workspace let the unchanged admission
+rule evaluate all existing low/mid-budget evidence jointly. The blocked report
+is retained; no outcome, original campaign manifest or test rule was changed.
+
+Artifacts, the separate 48-record aggregate registry and reproducible extraction scripts
+are retained under `.artifacts/confirmation-analysis-20260910`. The receipt
+records file hashes and original source paths. Discovery seeds were not pooled,
+no missing baseline was substituted, and the protected text test remains unused.
+Eight-seed uncertainty and validation selection still limit interpretation;
+Phase-4/portfolio/transfer promotion is not automatically authorized.
+
+## Confirmation start and unattended recovery — 2026-09-10
+
+The user authorized the frozen 48-run / 4,608-fit confirmation and subsequently
+automatic Codex diagnosis, repair, resume or necessary restart until completion.
+Training started at 11:33 CEST in the clean producer `7da8e76`. Only the network
+hostname had drifted since planning; sixteen fresh manifests preserve the exact
+protocol and datasets, with the unused originals retained. Execution artifacts:
+`../EvoNN-confirmation-v2-20260909/.artifacts/confirmation-execution-20260910`.
+
+The repository-owned `automation/` guardian uses launchd minute polling, a
+process-inherited lease, bounded repair sessions, local notifications, retry
+backoff and a repeated-failure circuit breaker. It leaves the existing supervisor
+in control while healthy. Repairs run in dedicated clones; a changed producer
+requires a complete replacement cohort and cannot mix old results into it.
+Runtime state/logs and pinned automation copies live in
+`.artifacts/training-guardian-20260910`. A complete status requires source-bound
+validation of every completed export. No original training code or evidence was
+changed, and no fault was injected into the live comparison.
+
+Validation: 16 guardian regression tests cover crash/recovery transitions,
+final-validation rejection, provenance/path restrictions, retry/pause behavior,
+actual child-process timeout and inherited locking, PID-reuse-safe termination,
+and an executable CLI repair fixture. A real authenticated Codex invocation also
+created a disposable marker through a workspace-write shell tool. Ruff and shell
+syntax checks passed. These checks validate the mechanism, not a guarantee that
+arbitrary scientific failures, credentials or physical outages can be repaired.
+
+## Comparison follow-up and Stratograph diagnosis — 2026-09-09
+
+The [follow-up receipt](governance/tier-b-comparison-20260909.json) records the
+large-state fix, explicit within-cohort inference and bounded diagnostics.
+`cohort-report` now evaluates actual engine/floor/budget arms, checks full source,
+data, runtime and accounting bindings, and leaves historical registry/trend bytes
+unchanged. New observations use `split-clock-v2`; legacy receipts retain their
+old interpretation. All 24 declared contrasts reach **L4 evidence quality**,
+with no blockers or automatic advancement. The host proof binds immutable
+campaign manifests because native and Contenders used different JSON codecs
+for the same host. Budget-response checks retain every independent dimension
+while allowing the exact fit-derived training-total cap to scale.
+
+A five-variant × three-seed Stratograph @64 ablation completed 960 successful
+fits in 13m15s on the preserved original producer. Its shared controls reproduce
+all twelve prior benchmark scores exactly. The image results are:
+
+| Variant | Mean validation accuracy |
+| --- | ---: |
+| Shared | 25.09% |
+| Flat | 57.96% |
+| Unshared | 24.26% |
+| No clone | 25.09% |
+| No motif bias | 29.81% |
+
+Flat also raises banknote accuracy from 72.85% to 97.82% and reduces mean
+regression MSE from 3542.7 to 2866.7. The feature probe shows image feature
+standard deviations shrinking from about 0.95 at the input to 0.0068–0.130
+at the hierarchy output, with effective ranks around 5–7. Six fresh-head,
+fixed-genome diagnostic fits isolate normalization: using training-only feature
+statistics raises mean image accuracy from 23.98% to 44.63%, under identical
+initialization/training streams and 12-epoch limits. This supports a scaling
+limitation in the current deterministic-feature proxy, but normalization alone
+still trails the flat variant and other engines. No Stratograph training or
+replay default was silently changed; end-to-end hierarchy learning remains
+unproven.
+
+The [confirmation protocol](governance/tier-b-confirmation.json) fixes eight new
+seeds 45–52, named neural/boosted floors, effect margins, the joint Primordia
+quality/runtime criterion and balanced system order. Six pairs cannot clear
+five-way Holm correction at their minimum exact two-sided p-value; eight can.
+The campaign is **prepared and paused**, with 16 preflight-passed manifests,
+48 planned runs / 4,608 fits, and no dispatch events. Discovery seeds stay
+outside confirmation; the protected text test split remains untouched.
+
+Preparing the expanded baseline pool exposed an inherited private sklearn
+helper that XGBoost and LightGBM could not use without `_parameter_constraints`.
+The correction skips only that unsupported inherited helper, retaining sklearn
+constraints, recursive pipeline checks and explicit external validators. The
+first failed qualification (60 charged fits, four pre-fit worker crashes) is
+preserved. A fresh source-pinned qualification then completes all **64 fits in
+203 seconds**, reaches L3 and passes the contract audit, with successful
+XGBoost, LightGBM, CatBoost, CNN and Transformer results. The additional model
+classes are not assumed to be empirically stronger on every task.
+
+Validation: 115 Compare tests plus two additional multiplicity tests pass;
+48 Contenders tests pass with optional dependencies installed. Profiling the
+fully revalidated report took 920 seconds under cProfile: 29,076 catalog lookups
+consume roughly 96% of cumulative time through repeated YAML parsing. This is
+an identified validation bottleneck, not evidence of a measured optimization.
+The next implementation should reuse definitions within one validation call
+while continuing to detect changed catalog bytes on the next call.
+
+## Tier-B comparison — 2026-09-09
+
+The optimized campaign completed at **00:30 CEST on 2026-09-09**, after
+77m36s: **30 runs, 2,880 fits, zero failed fits**. Source producer
+`53a8c915ea97120bce062e1c872d7c836769047f` is preserved in its clean clone;
+its runtime source digest matches merged #35. The fixed matrix was
+`tier_b_core_v2` × budgets 64/128 × seeds 42/43/44 × four native engines plus
+Contenders, with 12 maximum epochs, 1500-second runs and 90-second fit limits.
+No fitting or tuning was performed during the subsequent analysis.
+The [machine-readable analysis](governance/tier-b-comparison-20260909.json)
+retains exact run IDs, source/export hashes, per-seed scores, floor identities,
+effects, uncertainty, budget response and runtime costs.
+
+**Verification:** all 30 L3 exports passed current artifact validation; 96 neural
+benchmark winners reproduced through inference-only replay. The decision-grade
+benchmark-admission audit passes with zero blockers and repeated low/mid
+coverage. All required contender families are present; optional enhanced
+pressure is absent on all four tasks. This admits the bounded benchmark
+surface and does not establish scientific qualification or native transfer.
+
+**Quality at 128 fits:** arithmetic means of the three best-per-run validation
+scores. Accuracy is higher-is-better; MSE and perplexity are lower-is-better.
+The Contenders row uses its best outcome across the whole configured pool;
+external margins in the receipt separately use the **best required contender**
+for each seed and budget. The two baselines can differ on diabetes.
+
+| System | Banknote accuracy | Digits accuracy | Diabetes MSE | Shakespeare perplexity |
+| --- | ---: | ---: | ---: | ---: |
+| Stratograph | 73.70% | 25.09% | 3519.8 | 30.69 |
+| Primordia | 99.88% | 88.52% | 2661.5 | 25.21 |
+| Prism | 100.00% | 97.96% | 2686.9 | 16.32 |
+| Topograph | 100.00% | 97.59% | 2590.5 | 30.13 |
+| Contenders | 100.00% | 98.61% | 2698.5 | 33.68 |
+
+**Interpretation and provisional research priorities:**
+
+- **Prism:** strongest observed LM engine on every seed at both budgets.
+  At 128, perplexity is 46–56% below the required NGram floor per seed. It is
+  near the image floor but below it on all three seeds (0.28–0.83 percentage
+  points); banknote ceiling ties provide no superiority evidence. Prioritize
+  confirmation against a stronger neural LM baseline, not a broad-engine win.
+- **Topograph:** lowest mean regression MSE at 128; beats the required floor
+  on all three seeds by 1.17–8.13%. Different native engines lead individual
+  regression seeds, so this is a specialization signal rather than a proven
+  best-regressor claim. Its image/LM quality does not justify replacing Prism
+  generally; its runtime remains substantially higher.
+- **Primordia:** fastest engine at both budgets, with competitive tabular
+  results and a clear image-quality tradeoff. At 128 its image accuracy is
+  88.52% versus Prism's 97.96%. Retain it as an efficiency candidate; a
+  seed-source role still requires downstream transfer evidence.
+- **Stratograph:** weak banknote/image/regression results despite runtime
+  comparable to Prism. Digits is exactly unchanged on every seed after budget
+  doubling; LM changes only about 0.11%. Diagnose the hierarchy-feature /
+  trained-head proxy before spending more fits. This does not refute
+  end-to-end hierarchical learning or justify archiving the engine.
+
+**Runtime:** medians of three complete run wall times on the same host.
+
+| System | 64 fits | 128 fits | Fits/s at 128 |
+| --- | ---: | ---: | ---: |
+| Stratograph | 42.3 s | 86.1 s | 1.49 |
+| Primordia | 26.9 s | 49.8 s | 2.57 |
+| Prism | 39.9 s | 96.3 s | 1.33 |
+| Topograph | 69.8 s | 165.6 s | 0.77 |
+| Contenders | 92.2 s | 183.2 s | 0.70 |
+
+The slowest Topograph run completed in 200.3 seconds, far below the unchanged
+1500-second cap; these budgets need no timeout increase. Exported run spans
+sum to 43.6 minutes, versus 77.6 minutes for the campaign. The remaining 34.0
+minutes cover work outside those spans and need separate profiling. Recorded
+fit training sums to 8.8 minutes; this is not end-to-end campaign time. Runtime
+order was fixed and engine epoch policies differ, so equal fit budgets do not
+mean equal compute and the observed ratios are not randomized speed trials.
+
+**Budget response:** doubling fits reduces mean LM perplexity from 18.11→16.32
+for Prism and 28.00→25.21 for Primordia, with improvement on all three seeds.
+Topograph's mean diabetes MSE improves 2771.2→2590.5, but one seed is unchanged.
+Stratograph gains little; its image scores are identical. Contenders' image,
+LM and saturated banknote results are unchanged at both budgets. Additional
+fits should therefore target specific hypotheses rather than repeat the whole
+matrix uniformly.
+
+**Uncertainty and decision:** effects use the existing direction-aware symmetric
+relative formula and 4096 deterministic paired-seed bootstrap resamples. One
+seed, not one candidate or benchmark row, is the independent unit; fixed-panel
+means give each unsaturated benchmark equal weight. Ceiling-saturated tasks are
+excluded per comparison. Different exclusions mean these panel effects must
+not be ranked against one another. Per-seed values and 95% intervals remain
+in the receipt. Three seed units satisfy local coverage but cannot provide the
+six nonzero pairs required by the project's signed-rank test. No significant
+`clear_gain`, formal portfolio status change, L4 promotion or L-SCI closure is
+claimed. The descriptive overall decision is **inconclusive for broad
+superiority**, with the task-specific signals above. Validation winners were
+selected during search; the protected text test split remains unused. The LM
+surface is only 1536 training and 384 validation windows of 16 bytes, and the
+floor contains NGrams rather than a neural LM. Generalization to larger text,
+other tasks or hosts is untested.
+
+**Reporting defect found during analysis:** the optional clock extraction uses
+a 16 MiB state reader, although validated native states may be up to 128 MiB.
+All three Topograph128 exports exceed the smaller limit. The exception also
+clears already computed protocol fingerprints, incorrectly isolating Topograph
+and the external floor in old dashboard rankings. This analysis verifies exact
+shared config/runtime policies and all 12 benchmark/seed data bindings directly
+and computes a separate analytical view. Original exports, append-only trends
+and registry records remain unchanged. Repair and test the reporting path before
+claiming a formal within-cohort L4 result; the current L4 request interface only
+models same-engine before/after revisions. The plan records the remaining work.
 
 ## Native runtime performance — 2026-09-08
 
@@ -46,7 +398,8 @@ inheritance, metrics and updates. Two independent reviews found no unresolved
 source or qualification blockers. Both hosted lanes gate integration. The
 18-record registry's single-seed decision remains `needs more seeds`; no
 scientific advancement is claimed. Existing limits remain, and the full
-comparison is paused pending a fresh pinned plan and user-requested start.
+comparison was paused at that checkpoint; its later authorized completion and
+analysis are recorded above.
 
 ## Bounded campaign control and incremental journals — 2026-09-08
 
@@ -448,3 +801,57 @@ This closes contract foundations only. Catalog entries remain planned metadata;
 regular export composition and actual no-op integrity are separate evidence.
 Engine-specific resume and Topograph speciation/reproduction are explicitly
 pending. No backend is scientifically qualified and no multi-hour training ran.
+
+
+## Stratograph breadth-preserving v2 — 2026-09-11
+
+Implemented an explicit opt-in `research` policy, leaving absent-policy v1
+execution and historical replay intact. V2 adds training-only normalization and
+optional information paths, persistent projection/parameter identities, learned
+clone equivalence, compatible inheritance without epoch discounts, trainable
+shared cells, bidirectional macro edits, full-envelope width mutation, a primitive
+registry, protected exploration and charged archive revisits. Representation and
+selection controls support focused ablations without deleting experimental paths.
+Compare campaigns accept `stratograph_research`, require the full engine roster
+for that policy, and bind it into configuration checks and protocol fingerprints.
+
+The isolated implementation check passed 39 package tests, including forced
+SIGKILL/transaction recovery and replay after a 128-fit proxy and 32-fit native
+trainable run. An earlier combined pass covered 42 package/legacy-process tests;
+961 Shared/Compare tests passed. All four winners of the preserved September 10
+Stratograph seed-53/budget-128 run replayed successfully. A subsequent ablation
+forwarding test and 12 capability/dependency policy tests passed, as did scoped
+Ruff, lock and whitespace checks. The current backend capability declaration now
+includes opt-in trainable execution without a scientific evidence claim.
+
+Local logs and source hashes are in
+`.artifacts/stratograph-v2-validation-20260911/verification.json`. The snapshot
+isolates execution from concurrent engine edits; the receipt does not assert a
+clean global policy gate. Stratograph has zero remaining import-policy violations;
+concurrent other-engine/shared changes still produced repository-wide findings at
+verification time. These are implementation checks, not a new scientific
+comparison. Repeated all-engine/Contenders qualification, fresh-seed confirmation
+and any promotion remain open in CONSOLIDATED_PLAN.md.
+
+## PR 36 correctness review — 2026-09-11
+
+The merge review reproduced Primordia policy substitution during campaign
+adoption and repeated-seed fingerprint collisions, plus a Holm correction that
+shrunk when a declared contrast became unavailable. The fixes freeze explicit
+Primordia search/size controls in new plans, reject policy drift, and preserve
+the declared hypothesis family in both statistical report paths. Historical
+configurations and receipts remain unchanged. Regression tests include missing
+seeds, absent panels, saturated contrasts and explicit legacy controls.
+
+The bounded merge qualification is predeclared in
+`governance/pr36-contract-validation-protocol-20260911.json`: all four engines
+and Contenders before/after, Tier-B@16, seed 71, two native engine epochs,
+10 runs / 160 fits. This is contract validation with no performance or promotion
+claim; execution results and source revisions belong in the separate receipt.
+
+All ten qualification runs completed with 160 successful fits, zero failed fits,
+and 32 passing native winner replays. The separate
+`governance/pr36-contract-validation-results-20260911.json` receipt binds both
+source revisions and the versioned evidence transport. All exports reached L3;
+the recomputed decision remains `needs more seeds`. Historical registry events
+are preserved, with ten new rows appended under `pr36-before`/`pr36-after`.

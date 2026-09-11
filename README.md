@@ -29,18 +29,23 @@ Exact integrations and review decisions are recorded in project history.
 | Shared | Canonical identities/RNG, strict budgets/telemetry/three-file exports, catalog/pack loaders, checkpoints, LM-cache validation, transactional DuckDB/workspace and verified read-only access | Producer interoperability and future contract extensions |
 | Shared benchmarks | Eight frozen definitions plus two additive runtime definitions, four packs, verified tabular/image/real-text caches | Repeated Tier-B scientific qualification and optional enhanced pressure |
 | Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Broader scientific qualification and future producer interoperability |
-| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality, append-only evidence registry, paired-seed L4 analysis and evidence dashboard | Repeated portfolio comparisons and scientific qualification |
-| Prism + Topograph | Package-local MLX/NumPy models including real next-token LM, bounded search, inheritance, atomic resume, portable exports and Compare ingestion | Larger scientific campaigns; repeated native evidence through registry analysis |
-| Stratograph | Hierarchical cell search, trained-head proxy, five ablations, winner motifs, resume/replay | End-to-end hierarchy learning and scientific comparison claims |
-| Primordia | Trained primitive circuits, bounded archive/cost policy, verified motif/seed bank | Native cross-engine ingestion and proven transfer gains |
+| Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality, append-only evidence registry, paired-seed L4 analysis and evidence dashboard | Scientific acceptance, targeted confirmation and native transfer |
+| Prism + Topograph | Package-local MLX/NumPy models including real next-token LM, bounded search, inheritance, atomic resume, portable exports and Compare ingestion | Targeted confirmation, stronger baselines and native transfer evidence |
+| Stratograph | Legacy proxy plus opt-in v2 normalized proxy/trainable shared cells, protected exploration, charged revisits, resume/replay | Repeated v2 scientific qualification and transfer evidence |
+| Primordia | Trained circuits, versioned exploration/retention and training policy, extensible v2 graph/temporal genomes, verified motif/seed bank | Scientific qualification of breadth_v2, native cross-engine ingestion and proven transfer gains |
 
 The [Phase 4 receipt](governance/phase4-runtime-evidence.json) records **13 short
 qualification runs / 304 real fits**: both new engines on Tier A/core@64, five
 Stratograph variants and all five systems on Tier-B@16. All exports are L3;
 80 trained winners replay. Tier-B contract audit passes with zero blockers.
-Repeated-seed and mid-budget evidence remain open, so the decision is
-`needs more seeds`; this is no scientific superiority or transfer claim.
-Stratograph explicitly uses deterministic hierarchy features with a trained head.
+That short qualification remains single-seed evidence. The completed comparison
+below supplies repeated low/mid-budget observations; neither receipt establishes
+a broad superiority or transfer claim.
+Historical Stratograph evidence uses deterministic hierarchy features with a trained head.
+The [opt-in v2 research implementation](EvoNN-Stratograph/README.md#explicit-version-2-research-execution)
+adds normalized/local projections, breadth-preserving search, charged archive
+revisits and a separately labeled trainable shared hierarchy. Scientific
+qualification of v2 is pending; legacy defaults and historical evidence remain.
 [Phase 1](governance/phase1-runtime-evidence.json),
 [Phase 2](governance/phase2-runtime-evidence.json) and
 [Phase 3](governance/phase3-runtime-evidence.json) retain their scoped evidence.
@@ -53,21 +58,238 @@ and **32 MiB** cache remain. Search traces and integrity hashing can still grow
 with history. The [performance receipt](governance/performance-runtime-evidence.json)
 qualifies native Tier-B budgets 64/128 on seed 42: 13 short runs, 848 fits,
 48 replayed neural winners and zero failed fits. The 128-fit runs take 49–158
-seconds on the recorded host. Limits are unchanged; other seeds remain the
-scientific campaign's job. The original comparison remains stopped, and restart
-requires a freshly pinned campaign on the optimized source.
+seconds on the recorded host. Limits are unchanged.
+
+The [completed Tier-B comparison](governance/tier-b-comparison-20260909.json)
+covers **30 runs / 2,880 successful fits**, budgets 64/128 and seeds 42/43/44,
+in 78 minutes. Its decision-grade benchmark-admission audit passes with zero
+blockers; all exports are L3. [Results and scope](PROJECT_HISTORY.md#tier-b-comparison--2026-09-09)
+show Prism leading language modeling, Primordia offering the lowest runtime,
+Topograph showing a regression signal and Stratograph needing a proxy diagnostic.
+The explicit follow-up now gives all 24 declared contrasts L4 evidence quality.
+These remain validation-set observations from three seeds, with no automatic
+engine promotion or transfer proof. The original failed producer remains preserved.
+
+The [eight-seed confirmation](governance/tier-b-confirmation-results-20260910.json)
+finished on **2026-09-10**: **48 runs / 4,608 successful fits**, no failures or
+repairs. The protocol file remains an immutable pre-execution snapshot; the
+result receipt records current completion. All five frozen contrasts reach L4;
+128 saved native winners replay.
+**Prism's bounded LM advantage is confirmed** against the tiny Transformer and
+required floor (mean perplexity 16.11 versus 36.96 / 33.65; Holm p=0.0391).
+**Topograph's regression advantage is not confirmed** (CatBoost comparison Holm
+p=0.2344; required-floor p=1.0). **Primordia's joint tabular-quality/runtime
+criterion passes narrowly**: its quality interval stays above the -3% tolerance,
+and paired full-pack runtime is 28.5% lower than Prism@64 (95% interval
+25.9–31.6% lower). This does not establish image/LM parity or protected-test
+performance. [Next actions](CONSOLIDATED_PLAN.md#immediate-next-actions) retain
+the Stratograph proxy work and scoped generalization validation.
+
+New Primordia runs now default to the experimental `breadth_v2` policy:
+independent founders, recurring exploration/revival slots, full training envelopes
+without inheritance discounts, and configurable graph size across modalities.
+The [Primordia README](EvoNN-Primordia/README.md) documents its v2 genome and
+`legacy_v1` control. All completed measurements below retain their frozen legacy
+producer; the new policy has no demonstrated quality/runtime gain yet.
+
+The guardian for that completed confirmation is in terminal `complete` state.
+The [all-engine comparison](governance/all-engines-high-budget-20260910.json)
+completed on **2026-09-10**, with final exports verified at **23:18 CEST** and
+analysis completed on September 11: all **80 runs / 15,360 fits**, no failed fits,
+Prism, Topograph, Stratograph, Primordia and Contenders at **128/256 fits** on
+seeds **53–60**. The original clean producer `../EvoNN-all-engines-20260910`
+remains pinned to `e1d005a`; hostname interruptions did not replace any results.
+
+The [result receipt](governance/all-engines-high-budget-results-20260911.json) records all four predeclared contrasts against
+the required contender floor at 256: **Prism, Topograph and Primordia pass the
+aggregate gain criterion; Stratograph is materially below the floor**. Each
+Holm-adjusted p-value is **0.03125**. Symmetric aggregate effects and CI95:
+Prism **+28.88% [28.07, 29.66]**, Topograph **+8.04% [6.32, 9.98]**,
+Primordia **+5.05% [3.29, 6.85]**, Stratograph **-31.81% [-35.82, -27.73]**.
+These are not accuracy-point improvements. Banknote is excluded from Prism and
+Topograph averages because both arms reach its ceiling on every seed; other
+panels retain four tasks. No per-task or engine-to-engine significance is claimed.
+
+Descriptive validation means at **256 total fits** (eight seeds):
+
+| System | Banknote accuracy | Digits accuracy | Diabetes MSE ↓ | Text perplexity ↓ | Mean run seconds |
+|---|---:|---:|---:|---:|---:|
+| Prism | 100.00% | 98.47% | 2712.2 | 14.96 | 265.6 |
+| Topograph | 100.00% | 97.88% | 2847.6 | 27.74 | 524.0 |
+| Stratograph | 78.36% | 33.99% | 3484.3 | 30.42 | 192.3 |
+| Primordia | 99.32% | 92.88% | 3035.8 | 25.45 | 115.7 |
+| Contenders: best full-pool outcome | 100.00% | 98.96% | 2892.7 | 33.67 | 597.0 |
+
+The full-pool row differs from the primary required-floor reference. At 256,
+that floor averages 100% banknote, 98.75% digits, 3002.3 MSE and 33.67 perplexity.
+Doubling Prism's budget improves perplexity from 16.03 to 14.96 and MSE from
+2850.3 to 2712.2; its observed paired runtime ratio is 2.48. Stratograph digits
+improve from 29.76% to 33.99%, leaving a large deficit in the frozen shared proxy.
+All budget scaling and timings are descriptive, with changing host load and
+backend differences retained as limitations. All **256 trained-winner replays**
+from 64 native runs passed. The protected text test remains unused; no automatic
+engine, portfolio or Phase-4 promotion follows. Guardian state is `complete` at
+`.artifacts/all-engines-guardian-20260910/status.json`.
+
+For a fast read-only snapshot, use the project skill
+[read-evonn-status](.agents/skills/read-evonn-status/SKILL.md), or run
+`.venv/bin/python .agents/skills/read-evonn-status/scripts/status.py --project .`.
+It discovers the current guardian, follows replacement targets, and reports
+journaled progress, active engines, hostname drift and monitoring health without
+loading models or revalidating exports.
+
+New runs identify the machine with a versioned SHA-256 token derived from the
+OS-provided machine ID (`IOPlatformUUID` on macOS, machine-id on Linux, MachineGuid
+on Windows), plus OS and architecture fields. Campaign checks and all five
+systems' exports use this identity; DHCP, network changes and hostname renames
+do not change it. Missing machine IDs fail explicitly rather than falling back
+to a hostname. Raw identifiers are not stored. Historical producers and their
+frozen hostname-based identities remain unchanged, including the completed
+September 10 comparison. Re-executing its original preflight still requires its
+frozen hostname; new comparisons no longer require that hostname setting.
+
+An independent LaunchAgent checks this guardian and its current training target
+every hour, including failures repaired between checks. It sends macOS
+notifications only for problems and records results in
+`.artifacts/all-engines-hourly-20260910/status.json` and `history.jsonl`.
+It checks scheduler availability, stale status, stalled progress and the final
+completion receipt; bounded repair and validation periods are allowed.
+Install for another guardian with `automation/install-training-healthcheck.py
+--guardian-root <guardian-state> --state-root <new-hourly-state>
+--install-scheduler`. Both monitors use pinned runtime copies and load at login;
+hourly checks require the Mac awake and the user session active. Notification
+visibility depends on macOS notification settings; these are local alerts, not
+messages in this chat. The hourly checker does not launch or modify training.
+
+For an active campaign the guardian checks the dedicated supervisor every 60
+seconds; interruption triggers bounded Codex repair in an isolated clone.
+Verified unchanged runs resume through the campaign journal. Producer changes
+or unresumable attempts require a fresh full comparison, retaining superseded
+evidence. Frozen seeds, budgets, baselines, data and admission gates remain
+binding; completion requires validated exports, not just process exit.
+
+The reusable entry point is `automation/install-training-guardian.py` with
+`--producer`, `--base`, `--state-root` and `--protocol`, first `--dry-run`, then
+`--install-scheduler`. Runtime snapshots, repair decisions and logs are stored in
+the supplied state directory. For the completed all-engine campaign it is
+`.artifacts/all-engines-guardian-20260910`: inspect `status.json`, `control.json` and
+`history.jsonl`; `repairs/` contains individual Codex transcripts and fixes.
+Create a `PAUSE` file there to prevent new dispatches/repairs (an active bounded
+run finishes). Remove it to continue. Three failed repairs for the same error,
+or twelve total attempts, open a circuit breaker and issue a local notification;
+credentials/physical intervention cannot be repaired automatically. After fixing
+the cause, under `guardian.lock`, change `control.json` mode to `repair`, clear
+`failure_counts`, set `repairs` and `next_attempt_at` to zero, and remove `PAUSE`.
+Do not edit runtime control while a repair or training invocation is active.
+The LaunchAgent loads at user login and needs this Mac awake, Codex authenticated
+and network available. No email, remote messages or automatic GitHub changes.
 
 Run a verified short preset and rebuild its dashboard:
 
 ```sh
-uv run evonn-compare fair-matrix --workspace .artifacts/compare --preset local
+uv run evonn-compare fair-matrix --workspace .artifacts/compare --preset local \
+  --systems prism topograph stratograph primordia contenders
 uv run evonn-compare workspace-report .artifacts/compare
 ```
 
 `--preset smoke` uses 16 fits; `local` uses 64. Runs accumulate. Each system
 run stays below 30 minutes; no overnight/weekend preset is admitted.
 
+## Prism exploration policies
+
+The September 11 Prism implementation adds an experimental `open` policy for
+new runs. It preserves every previous family and its historical genome identity.
+This is implementation progress; the completed comparison above continues to
+refer to its frozen producer, and no new superiority claim follows.
+
+| `--variant` | Search and training behavior |
+| --- | --- |
+| `legacy` | Previous family roster, mutation choices, tournament reproduction and epoch discounts |
+| `archive` | Adds rotating family opportunities, three-step protected lineages, family/descriptor archive parents, random retention and fresh starts |
+| `training` | Adds transfer-coverage allocation, full allowances for protected candidates and still-improving sources, and the starting checkpoint as a selection candidate |
+| `broad` | Adds wider and reversible mutations, attention-configuration crossover and mixed block composition |
+| `open` | Combines archive, training and broader proposal policies; default for new Prism runs |
+
+Protected lineages retain development opportunities even when their scores are
+weak. Archive storage is bounded and evictions never create blacklists. The
+mixed genome supports dense, sparse, gated, convolutional, recurrent, attention
+and state-space blocks, plus acyclic skip edges. Text convolution is causal;
+spatial convolution requires image input. The constructor boundary is documented
+in `prism/composition.py`; new operators require shape, gradient and causality
+qualification. Current parameter, depth, cache, fit-count and time limits remain
+operational bounds, not conclusions about excluded larger models.
+
+`--inheritance-policy disabled` provides a fresh-initialization search control.
+Because changed scores can change later proposals, this control alone is **not**
+a matched-finalist architecture comparison. `finalist-config` emits a complete
+run configuration with the exported winners frozen per benchmark:
+
+```sh
+uv run evonn-prism finalist-config <symbiosis-export> > finalist-config.json
+```
+
+This command performs no fits. Its `fixed_genomes` mode keeps candidates constant
+despite subsequent scores and grants the full declared epoch allowance to both
+warm and cold controls. Use the same generated configuration, changing only
+`inheritance_policy` to compare them in complete all-engine campaigns. Warm
+weights accumulate within the new run; weights from the source export are not
+imported. Discovery cost is separately disclosed as `reported_prior`, including
+source run/manifest identity and a digest binding the finalist genomes. All new
+fits are charged. Per-fit allowances and initialization streams match; cumulative
+ancestral training differs and is reported. This diagnostic does not establish
+a charged-prior search or transfer gain.
+
+`--optimizer-policy continue` optionally restores Adam moments and the bias
+correction step only for exact, weight-bound snapshots. Each fit still uses its
+declared schedule and batch stream; this is not uninterrupted-training replay.
+Partial transfers reset optimizer state. Optimizer snapshots share the existing
+32 MiB cache bound. `--optimizer-backend native` keeps optimizer arrays on MLX
+when using that backend; the default remains `numpy`. A small MLX-CPU probe found
+the native optimizer slower on a tiny model, so no general speedup is claimed.
+
+Attempts record proposal origin and parents, changed fields, cumulative ancestral
+optimizer work, per-epoch losses, selected epoch, allocation reason and phase
+timings. Architecture counts exclude optimizer genes and unused settings;
+behavior descriptors supplement them. Repeated genomes are reported separately
+from new proposals. To inspect an existing export without training:
+
+```sh
+uv run evonn-prism research-report <run-directory-or-symbiosis-export>
+```
+
+`EvoNN-Prism/configs/open_research.yaml` is an explicit bounded run configuration.
+Campaign specifications can freeze a `prism_research` object with `variant`,
+`inheritance_policy`, `optimizer_policy`, `optimizer_backend`, and optional
+`fixed_genomes`/`prior_discovery`; campaign
+adoption rejects mismatched policies and the comparison fingerprint separates
+these controls. An explicit Prism research campaign requires all four engines
+and Contenders. Run each declared control/variant with that complete roster.
+
+The additive `language_breadth_v1` pack retains the original Shakespeare task
+and adds 64-byte Shakespeare contexts, a separately pinned Aesop corpus, and a
+64-token delayed-copy diagnostic. New real-text tasks use 4,096 training and 768
+validation contexts. Raw text is split before windows; the final 15% remains
+unused. The Aesop source wrapper is excluded by a pinned byte range. The generated
+memory task has independently generated examples and a seeded 80/20 split.
+These tasks are experimental, **not admitted as full-fidelity local-safe**;
+their runtime and baseline adequacy still require qualification. The existing
+tabular/image pack and all frozen definitions remain available unchanged.
+
+Campaigns can also freeze `primordia_research` with `search_policy`, `max_width`
+and `max_depth`. New plans record its defaults explicitly and require the full
+engine roster. Adoption and repeated-seed grouping bind these controls and the
+derived training policy; frozen historical configurations retain their original
+identities. Within-cohort and before/after reports keep every declared contrast
+in the Holm correction, including unavailable tests.
+
 ## Campaign planning and recovery
+
+Every new comparison must run **all four engines: Prism, Topograph, Stratograph
+and Primordia**, on each declared benchmark/budget/seed combination, with
+Contenders as additional baselines. This also applies to focused confirmation
+and generalization comparisons. Report every engine; weaknesses or execution
+failures do not justify omitting one. Failed or missing engine runs make the
+comparison incomplete. Historical frozen protocols remain unchanged.
 
 Create a JSON specification, for example `.artifacts/campaign-spec.json`:
 
@@ -123,6 +345,65 @@ elapsed wall time through recovery. Clock rollback and broken journals block
 resume. Campaign completion reports execution status only; repeated-seed
 scientific conclusions still require the registry's separate analysis gate.
 
+## Topograph research modes
+
+Topograph has an explicit additive `--variant` option. The default `legacy`
+preserves the historical search and genome identities. `mechanics` introduces
+truthful mutation attribution, reversible graph edits, branch crossover,
+independently sampled founder precision and corrected niche allocation.
+`training`, `archive`, and `broad` each add one policy group to those mechanics;
+`open` combines them. Compare each group against `mechanics` when isolating its
+effect. These are implemented experimental policies, not established quality gains.
+
+- `training`: actual-parent weight transfer across topology changes, copied-fraction
+  training allowances, full allowances for protected candidates, and recorded
+  cumulative ancestral work without double counting. Fresh starts remain possible.
+  Zero-gated branch insertion and restricted zero-padding widening include measured
+  output-drift probes; a finite probe is not a proof for all inputs. Optimizer state
+  resets at every fit and is disclosed. Learning curves and training-only behavior
+  probes accompany every successful v2 fit.
+- `archive`: retain every evaluated genome inside the existing 256-attempt run
+  envelope, with structural and behavioral cell leaders, a quality/parameter Pareto
+  view and a quality-independent reservoir. One slot per generation cycles through
+  diversity, uncertain continuation, reservoir, immigrant and fresh-winner control.
+  Other slots reproduce niches; any niche deferred by the exploration slot is
+  recorded and remains recoverable from the archive. With population four, each
+  exploration source is scheduled once per 20 evaluations after initialization;
+  short runs can end before a full cycle. Weight eviction does not erase genomes.
+- `broad`: expose all valid widths through 256, attention heads, activation precision,
+  sparsity, normalization, merge policies, experts/gates, convolution kernels,
+  optimizer hyperparameters and optional trainable token/spatial adapters. Flat
+  DAG operators stay eligible. The single-channel legacy `depthwise` flag is explicitly
+  reserved until it has distinct executor semantics. Parameter shape estimates
+  reject oversized variations before allocation, with resource reasons recorded.
+
+The operator scheduler has task-local immediate and small heuristic descendant
+credit, uniform exploration support and rotating operator opportunities. Archives
+use several descriptor views plus an independent reservoir; learned descriptors and
+cross-run seed ingestion remain separate future work. A finite representation and
+budget do not guarantee discovery of every possible solution.
+
+Run the short implementation preset explicitly:
+
+```sh
+uv run evonn-topograph run --config EvoNN-Topograph/configs/research_open.yaml
+```
+
+Use `--backend numpy_fallback` for portability checks. Both paths keep hard fit
+timeouts, isolated workers, replay and checkpoint integrity. Versioned policy is
+frozen into run configuration; resume rejects a different variant. Legacy
+`benchmark_pooling`/`novelty_weight` scalars cannot be mixed with these task-local
+research policies. `runtime_profile.json` records compile/inheritance, serialization,
+worker, search, snapshot and checkpoint timing. Nested durations are identified;
+missing post-crash timing is explicit. Profiling does not claim a speedup.
+
+New campaign specifications can set `"topograph_variant": "open"` (or another
+declared mode). Such specifications require Prism, Topograph, Stratograph,
+Primordia and Contenders; campaign adoption rejects a mismatched Topograph policy.
+No scientific campaign, protected-test access or engine promotion follows from
+this implementation. Qualification and further comparisons follow
+[the consolidated plan](CONSOLIDATED_PLAN.md#immediate-next-actions).
+
 ## Bounded engine operation
 
 ```sh
@@ -165,8 +446,8 @@ The bounded profile samples at most 1,536 training and 384 validation contexts.
 The historical catalog and runtime identities remain immutable; active runtime
 consumers use the additive extension through `evonn_shared.active_catalog`.
 Package READMEs document [Stratograph](EvoNN-Stratograph/README.md) and
-[Primordia](EvoNN-Primordia/README.md). Large repeated comparison and native
-transfer claims require subsequent evidence, not these bounded configurations.
+[Primordia](EvoNN-Primordia/README.md). The completed repeated comparison remains
+scoped to this bounded profile; broader and native transfer claims need further evidence.
 
 Run the verified Tier-B tiny profile across all five systems:
 

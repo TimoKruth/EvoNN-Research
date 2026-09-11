@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "purpose": "PR #36 contract validation; no scientific superiority or promotion claim",
+  "before_revision": "79249616e15fc4e5f9dd6d68eb3a62ff8153272b",
+  "after_revision_policy": "Pin the tested PR runtime commit in the execution receipt before dispatch; later changes may only add non-runtime evidence and documentation.",
+  "systems": [
+    "contenders",
+    "prism",
+    "topograph",
+    "stratograph",
+    "primordia"
+  ],
+  "pack": "tier_b_core_v2",
+  "budgets": [
+    16
+  ],
+  "seeds": [
+    71
+  ],
+  "engine_backend": "mlx_native",
+  "engine_epochs": 2,
+  "timeout": 300.0,
+  "fit_timeout": 90.0,
+  "planned_runs": 10,
+  "planned_fits": 160,
+  "scope": "One before and one after run of every system on every declared combination. Engine unit/integration tests cover research variants. One seed cannot establish statistical performance.",
+  "failures": "Retain all attempts; mark incomplete if any system fails. Never omit failed engines or replace outcomes within a completed comparison."
+}

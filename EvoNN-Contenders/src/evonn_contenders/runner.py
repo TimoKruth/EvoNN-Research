@@ -19,6 +19,7 @@ from evonn_shared.artifact_io import (
     create_artifact_directory, publish_artifact, publish_artifact_directory, read_verified_artifact,
 )
 from evonn_shared.canonical import canonical_sha256
+from evonn_shared.runtime_host import host_fields
 from evonn_shared.active_catalog import get_benchmark, load_parity_pack
 from evonn_shared.exports import Manifest, Results, RunSummary, write_export
 from evonn_shared.rng import StreamName, derive_stream
@@ -133,8 +134,7 @@ def run_contenders(*, pack_name: str, budget: int | None, seed: int, output_pare
     runtime = {"backend": "sklearn_contender", "backend_version": importlib.metadata.version("scikit-learn") + "; CPU fixed-pool orchestration; per-attempt backend versions in attempts.json",
                "device_class": device, "precision_mode": "float32 inputs; estimator-native arithmetic",
                "worker_topology": {"worker_count": 1, "process_count": 1, "threads_per_worker": 1},
-               "host_fingerprint": hashlib.sha256(json_bytes({"host": platform.node(), "system": platform.system(),
-                    "machine": platform.machine(), "processor": platform.processor()})).hexdigest()}
+               "host_fingerprint": hashlib.sha256(json_bytes(host_fields())).hexdigest()}
     declaration = execution_budget(pack, total, timeout, device)
     snapshot = {"schema_version": "1.0.0", "benchmark_pack": {"pack_name": pack_name}, "budget": declaration,
                 "seed": seed, "pool_sha256": pool_digest, "pools": config, "enhanced": enhanced,

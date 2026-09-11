@@ -113,7 +113,7 @@ def test_required_floor_uses_catalog_contender_id_and_ignores_unstarted_attempts
     monkeypatch.setattr(registry_module,'_policy',lambda bundle:{})
     monkeypatch.setattr(registry_module,'_data_bindings',lambda bundle:{})
     monkeypatch.setattr(registry_module,'get_benchmark',lambda name:NS(required_contenders=['hist_gb_leaf63']))
-    monkeypatch.setattr(registry_module,'trend_rows',lambda *args:[dict(benchmark='bench',outcome_id=name,model_family='hist_gb') for name in ('required','optional')])
+    monkeypatch.setattr(registry_module,'trend_rows',lambda *args, **kwargs:[dict(benchmark='bench',outcome_id=name,model_family='hist_gb') for name in ('required','optional')])
     rows=registry_module._observations(bundle,'case',{},'before','L3')
     assert [(row['contender_id'],row['required_floor']) for row in rows] == [('hist_gb_leaf63',True),('optional_tree',False)]
 
