@@ -73,7 +73,8 @@ class Search:
         for state in self.benchmarks.values():
             for key, default in {"reservoir": [], "reservoir_seen": 0, "nursery": {}, "history": {},
                                  "proposals": {}, "descriptors": {}, "parent_origins": {}}.items():
-                state.setdefault(key, deepcopy(default))
+                if key not in state:
+                    state[key] = deepcopy(default)
         if self.fixed_genomes is not None and not saved_fixed:
             for key, state in self.benchmarks.items():
                 state["population"] = [deepcopy(self.fixed_genomes[key]) for _ in range(self.size)]
@@ -87,9 +88,9 @@ class Search:
         if self.fixed_genomes is not None:
             return {"origin": "fixed_architecture", "parents": [genome.genome_id] if state["evaluated"] else [],
                     "operator": "fixed_fit", "changed_fields": [], "protected": True}
-        return deepcopy(state["proposals"].get(genome.genome_id, {
+        return deepcopy(state["proposals"][genome.genome_id] if genome.genome_id in state["proposals"] else {
             "origin": "initial", "parents": [], "operator": "seed", "changed_fields": [], "protected": True,
-        }))
+        })
 
     def candidate(self, benchmark):
         state = self.benchmarks[benchmark]
@@ -119,8 +120,9 @@ class Search:
             parents=parents,
             compatible_groups=[f for f, group in GROUPS.items() if group == GROUPS[g.family]],
         )
-        inherited["source_updates"] = state["history"].get(inherited["source"], {}).get("lineage_updates", 0)
-        inherited["source_needs_more_training"] = state["history"].get(inherited["source"], {}).get("needs_more_training", False)
+        source_history = state["history"][inherited["source"]] if inherited["source"] in state["history"] else {}
+        inherited["source_updates"] = source_history.get("lineage_updates", 0)
+        inherited["source_needs_more_training"] = source_history.get("needs_more_training", False)
         if g.genome_id in state["operators"]:
             operator = state["operators"][g.genome_id][0]
             if operator in {"morph_widen", "morph_deepen"} and parents and inherited["source"] == parents[0]:
@@ -149,15 +151,17 @@ class Search:
         }
         proposal = self.proposal(benchmark, genome)
         inherited = result.get("inheritance", {})
-        prior = state["history"].get(genome.genome_id, {})
+        prior = state["history"][genome.genome_id] if genome.genome_id in state["history"] else {}
         state["history"][genome.genome_id] = {
-            "lineage_updates": inherited.get("source_updates", 0) + result.get("updates", 0),
+            "lineage_updates": (inherited.get("source_updates", 0) + result.get("updates", 0)
+                                if result["status"] == "ok" else prior.get("lineage_updates", 0)),
             "evaluations": prior.get("evaluations", 0) + 1,
-            "score": quality,
-            "needs_more_training": result.get("best_epoch", -1) == result.get("epochs", -2),
+            "score": quality if result["status"] == "ok" else prior.get("score", quality),
+            "needs_more_training": (result.get("best_epoch", -1) == result.get("epochs", -2)
+                                    if result["status"] == "ok" else prior.get("needs_more_training", False)),
         }
         origin = proposal["origin"]
-        state["parent_origins"][origin] = state["parent_origins"].get(origin, 0) + 1
+        state["parent_origins"][origin] = (state["parent_origins"][origin] if origin in state["parent_origins"] else 0) + 1
         state["scores"].append(entry)
         state["trace"].append(genome.genome_id)
         state["evaluated"] += 1
@@ -174,10 +178,10 @@ class Search:
                     if index < capacity:
                         state["reservoir"][index] = entry
                 if proposal.get("protected"):
-                    old = state["nursery"].get(genome.family, {})
+                    old = state["nursery"][genome.family] if genome.family in state["nursery"] else {}
                     state["nursery"][genome.family] = {"entry": entry, "steps": old.get("steps", 0) + 1}
                 descriptor = f"{genome.family}:{len(genome.blocks) or len(genome.hidden_layers)}:{max(1, entry['parameters']).bit_length()}:{result.get('behavior_bucket', 'unknown')}"
-                previous_descriptor = state["descriptors"].get(descriptor)
+                previous_descriptor = state["descriptors"][descriptor] if descriptor in state["descriptors"] else None
                 if previous_descriptor is None or quality > previous_descriptor["quality"]:
                     state["descriptors"][descriptor] = entry
                 if len(state["descriptors"]) > 8 * self.size:
@@ -211,7 +215,7 @@ class Search:
                 "ema": 0.8 * prior["ema"] + 0.2 * improved,
             }
             context = f"{benchmark}:{genome.family}:{op}"
-            previous_context = self.context_stats.get(context, {"uses": 0, "successes": 0, "ema": .5})
+            previous_context = self.context_stats[context] if context in self.context_stats else {"uses": 0, "successes": 0, "ema": .5}
             self.context_stats[context] = {"uses": previous_context["uses"] + 1,
                 "successes": previous_context["successes"] + int(improved),
                 "ema": .8 * previous_context["ema"] + .2 * improved}
@@ -273,7 +277,7 @@ class Search:
             operators[child.genome_id] = [op, a["quality"]]
             proposals[child.genome_id] = {"origin": "population", "parents": parents[child.genome_id],
                 "operator": op, "changed_fields": [key for key, value in child.model_dump().items()
-                                                    if parent.model_dump().get(key) != value], "protected": slot == 1}
+                                                    if parent.model_dump()[key] != value], "protected": slot == 1}
         state.update(
             population=children,
             cursor=0,
@@ -307,15 +311,17 @@ class Search:
             if protected:
                 # A deterministic rotation guarantees exposure, even for size two.
                 family = allowed[state["generation"] % len(allowed)]
-                nursery = state["nursery"].get(family)
+                nursery = state["nursery"][family] if family in state["nursery"] else None
                 if nursery and nursery["steps"] < 3:
                     a, origin = nursery["entry"], "nursery"
                 elif family in state["niches"] and self.rng.random() < .5:
                     a, origin = state["niches"][family], "family_archive"
-                    state["nursery"].pop(family, None)
+                    if family in state["nursery"]:
+                        del state["nursery"][family]
                 else:
                     a, origin = None, "fresh"
-                    state["nursery"].pop(family, None)
+                    if family in state["nursery"]:
+                        del state["nursery"][family]
             else:
                 lane = self.rng.randrange(4)
                 candidates = (state["reservoir"] if lane == 0 else list(state["descriptors"].values())
@@ -329,7 +335,8 @@ class Search:
                 op, parent_ids, baseline = "seed", [], -1e30
             else:
                 parent = ModelGenome.model_validate(a["genome"])
-                context = self.context_stats.get(f"{benchmark}:{parent.family}:crossover", {"ema": .5})
+                context_key = f"{benchmark}:{parent.family}:crossover"
+                context = self.context_stats[context_key] if context_key in self.context_stats else {"ema": .5}
                 if not protected and self.rng.random() < .2 + .6 * context["ema"]:
                     second = self.rng.choice(pool)
                     child = crossover(parent, ModelGenome.model_validate(second["genome"]), self.rng,
@@ -351,7 +358,7 @@ class Search:
                 op = "lr"
             before = parent.model_dump() if parent else {}
             proposals[child.genome_id] = {"origin": origin, "operator": op, "parents": parent_ids,
-                "changed_fields": [key for key, value in child.model_dump().items() if before.get(key) != value],
+                "changed_fields": [key for key, value in child.model_dump().items() if (before[key] if key in before else None) != value],
                 "protected": protected}
             children.append(child.model_dump(mode="json"))
             parents[child.genome_id], operators[child.genome_id] = parent_ids, [op, baseline]

@@ -182,7 +182,10 @@ remains historical evidence and does not satisfy this new four-engine requiremen
    Use the confirmed bounded Prism LM finding to design a separate, frozen
    generalization comparison. The additive `language_breadth_v1` workload includes
    longer contexts, Aesop and delayed memory alongside the original LM task;
-   runtime safety and contender adequacy remain unqualified. Include all four
+   runtime safety and contender adequacy remain unqualified. Follow-on workload
+   development includes context-removal diagnostics, distribution shifts and
+   harder image/tabular tasks; phase profiles should guide any worker-reuse or
+   transport optimization. These are not delivered or speedup claims. Include all four
    engines and Contenders before
    accessing the protected text test split. Keep
    validation selection separate from final testing. Retain Primordia as a

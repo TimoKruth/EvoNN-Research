@@ -39,12 +39,14 @@ def summarize_attempts(attempts):
     """Expose discovery and continuation separately without treating hashes as diversity."""
     panels = {}
     for attempt in attempts:
-        panel = panels.setdefault(attempt["benchmark_id"], {
-            "fits": 0, "new_genomes": 0, "revisited_genomes": 0, "family_fits": {},
-            "protected_fits": 0, "fresh_initializations": 0, "optimizer_updates": 0,
-            "train_seconds": 0.0, "seen": set(),
-            "architectures": set(),
-        })
+        benchmark = attempt["benchmark_id"]
+        if benchmark not in panels:
+            panels[benchmark] = {
+                "fits": 0, "new_genomes": 0, "revisited_genomes": 0, "family_fits": {},
+                "protected_fits": 0, "fresh_initializations": 0, "optimizer_updates": 0,
+                "train_seconds": 0.0, "seen": set(), "architectures": set(),
+            }
+        panel = panels[benchmark]
         identity = attempt["genome_id"]
         panel["fits"] += 1
         panel["revisited_genomes" if identity in panel["seen"] else "new_genomes"] += 1
@@ -52,7 +54,7 @@ def summarize_attempts(attempts):
         if attempt.get("architecture_id"):
             panel["architectures"].add(attempt["architecture_id"])
         family = attempt["genome"]["family"]
-        panel["family_fits"][family] = panel["family_fits"].get(family, 0) + 1
+        panel["family_fits"][family] = (panel["family_fits"][family] if family in panel["family_fits"] else 0) + 1
         panel["protected_fits"] += bool(attempt.get("proposal", {}).get("protected", False))
         panel["fresh_initializations"] += attempt["inheritance"]["mode"] == "none"
         panel["optimizer_updates"] += attempt.get("updates", 0)

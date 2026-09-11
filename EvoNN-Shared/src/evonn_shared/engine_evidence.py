@@ -279,7 +279,7 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
                 expected_epochs = research_epochs
         if system == "prism" and "variant" in config:
             from .prism_policy import PrismResearchPolicy
-            prism_policy = PrismResearchPolicy.model_validate({key: config.get(key) for key in PrismResearchPolicy.model_fields})
+            prism_policy = PrismResearchPolicy.model_validate({key: config[key] if key in config else None for key in PrismResearchPolicy.model_fields})
             if state["search"].get("variant") != prism_policy.variant or telemetry.get("research_variant") != prism_policy.variant:
                 raise ValueError("Prism search policy disagrees with frozen configuration")
             if state["search"].get("fixed_genomes") != prism_policy.fixed_genomes:

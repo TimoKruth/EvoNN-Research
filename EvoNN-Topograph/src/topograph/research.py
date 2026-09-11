@@ -7,6 +7,17 @@ Variant = Literal["legacy", "mechanics", "training", "archive", "broad", "open"]
 VARIANTS = ("legacy", "mechanics", "training", "archive", "broad", "open")
 
 
+def lookup(mapping, key, default=None):
+    return mapping[key] if key in mapping else default
+
+
+def take(mapping, key, default=None):
+    value = lookup(mapping, key, default)
+    if key in mapping:
+        del mapping[key]
+    return value
+
+
 def policy(variant):
     if variant not in VARIANTS:
         raise ValueError("unknown Topograph research variant")
@@ -33,9 +44,9 @@ def runtime_profile(attempts):
         "snapshot_seconds",
     )
     return {
-        "coordinator": {k: sum(a.get("profile", {}).get(k, 0) for a in attempts) for k in keys},
+        "coordinator": {k: sum(lookup(a.get("profile", {}), k, 0) for a in attempts) for k in keys},
         "worker": {
-            k: sum(a.get("worker_profile", {}).get(k, 0) for a in attempts)
+            k: sum(lookup(a.get("worker_profile", {}), k, 0) for a in attempts)
             for k in ("setup_seconds", "fit_seconds", "model_publication_seconds")
         },
         "scope": "Worker phases are nested in roundtrip. Checkpoint timing is optional after a crash; "

@@ -10,7 +10,7 @@ from .genome_v2 import GenomeV2
 from .compiler_v2 import compile_genome, parameter_estimate
 from .search import architecture_id, descriptor, species, tuples
 from .operators import CORE, BROAD, edit, crossover, adapters, reachability_catalog, execution_topology
-from .research import policy
+from .research import policy, lookup, take
 
 
 class ResearchSearch:
@@ -50,18 +50,15 @@ class ResearchSearch:
             self.innovations = Innovations(**state["innovations"])
             self.cache = WeightCache(self.cache.capacity, state["cache"])
             self.ema = deepcopy(state["scheduler"])
-            for name in (
-                "benchmarks",
-                "pool_scores",
-                "benchmark_pooling",
-                "novelty_weight",
-                "cache_history",
-                "training_ledger",
-                "inflight",
-                "pending_cache",
-                "progress",
-            ):
-                setattr(self, name, deepcopy(state[name]))
+            self.benchmarks = deepcopy(state["benchmarks"])
+            self.pool_scores = deepcopy(state["pool_scores"])
+            self.benchmark_pooling = state["benchmark_pooling"]
+            self.novelty_weight = state["novelty_weight"]
+            self.cache_history = deepcopy(state["cache_history"])
+            self.training_ledger = deepcopy(state["training_ledger"])
+            self.inflight = deepcopy(state["inflight"])
+            self.pending_cache = deepcopy(state["pending_cache"])
+            self.progress = state["progress"]
         else:
             for definition in definitions:
                 population = [self.immigrant(definition, i) for i in range(self.size)]
@@ -156,7 +153,7 @@ class ResearchSearch:
                 family=model.genome.genome_id,
             )
             key = namespace + ":" + str(result["source"])
-            result.update(ancestor_attempts=self.cache_history.get(key, []), source_genome=None)
+            result.update(ancestor_attempts=lookup(self.cache_history, key, []), source_genome=None)
             self.inflight[benchmark] = deepcopy(result)
             return result
         records = self.benchmarks[benchmark]["records"]
@@ -193,7 +190,7 @@ class ResearchSearch:
                     source=candidate,
                     copied_parameters=copied,
                     source_genome=item["family"],
-                    ancestor_attempts=list(self.cache_history.get(key, [])),
+                    ancestor_attempts=list(lookup(self.cache_history, key, [])),
                 )
                 if proposal["preservation"] and candidate != identity and item["family"] in records:
                     parent = self.compile(
@@ -283,7 +280,7 @@ class ResearchSearch:
             structural = repr((d[0] // 2, int(d[1]).bit_length(), families, genome.input_adapter))
             behavioral = repr(tuple(min(3, max(0, int((v + 1) * 2))) for v in entry["behavior"][:4]))
             for table, cell in ((state["quality_cells"], structural), (state["behavior_cells"], behavioral)):
-                old = table.get(cell)
+                old = lookup(table, cell)
                 if old is None or entry["quality"] > state["records"][old]["quality"]:
                     table[cell] = entry["identity"]
         state["pareto"] = [
@@ -308,7 +305,7 @@ class ResearchSearch:
         first = names[(s["operator_cursor"] // 3) % len(names)]
         # Round-robin proposals protect operator access; adaptive proposals supplement it.
         if s["operator_cursor"] % 3:
-            first = self.rng.choices(names, [0.25 + self.ema.get(benchmark + ":" + op, 0.5) for op in names])[0]
+            first = self.rng.choices(names, [0.25 + lookup(self.ema, benchmark + ":" + op, 0.5) for op in names])[0]
         s["operator_cursor"] += 1
         remaining = [op for op in names if op != first]
         self.rng.shuffle(remaining)
@@ -347,7 +344,9 @@ class ResearchSearch:
         breeding_slots = self.size - int(role is not None)
         # When archive exploration needs a slot, defer a niche explicitly and rotate it.
         if role:
-            groups = sorted(groups, key=lambda g: min(s["species_last"].get(population[i].genome_id, -1) for i in g))
+            groups = sorted(
+                groups, key=lambda g: min(lookup(s["species_last"], population[i].genome_id, -1) for i in g)
+            )
         children, proposals, allocated = [], [], []
         for slot in range(breeding_slots):
             group = groups[slot % len(groups)]
@@ -411,7 +410,7 @@ class ResearchSearch:
         proposal = self.proposal(benchmark)
         quality = result["score"] if result["status"] == "ok" else -1e30
         identity = genome.genome_id
-        previous = s["records"].get(identity)
+        previous = lookup(s["records"], identity)
         entry = dict(
             genome=genome.model_dump(mode="json"),
             identity=identity,
@@ -450,14 +449,14 @@ class ResearchSearch:
             # Small, explicitly heuristic descendant credit supplements immediate success.
             pending, visited = list(proposal["parents"]), {identity}
             while pending and len(visited) < 9:
-                ancestor = pending.pop(0)
+                ancestor, pending = pending[0], pending[1:]
                 if ancestor in visited or ancestor not in s["records"]:
                     continue
                 visited.add(ancestor)
                 old = s["records"][ancestor]
                 if old["origin_operator"]:
                     key = benchmark + ":" + old["origin_operator"]
-                    self.ema[key] = 0.98 * self.ema.get(key, 0.5) + 0.02
+                    self.ema[key] = 0.98 * lookup(self.ema, key, 0.5) + 0.02
                     s["credit_events"].append(
                         dict(
                             ancestor=ancestor,
@@ -469,12 +468,12 @@ class ResearchSearch:
                 pending.extend(old["parents"])
         s["novelty"] = (s["novelty"] + [descriptor(genome)])[-64:]
         s["trace"].append(identity)
-        s["source_counts"][proposal["source"]] = s["source_counts"].get(proposal["source"], 0) + 1
+        s["source_counts"][proposal["source"]] = lookup(s["source_counts"], proposal["source"], 0) + 1
         if proposal["actual"]:
             baselines = [s["records"][p]["quality"] for p in proposal["parents"] if p in s["records"]]
             if baselines:
                 key = benchmark + ":" + proposal["actual"]
-                self.ema[key] = 0.8 * self.ema.get(key, 0.5) + 0.2 * (quality > baselines[0])
+                self.ema[key] = 0.8 * lookup(self.ema, key, 0.5) + 0.2 * (quality > baselines[0])
         s["events"].append(
             {
                 **proposal,
@@ -483,15 +482,15 @@ class ResearchSearch:
                 "outcome_id": result.get("outcome_id", f"{benchmark}:{s['evaluated']}"),
             }
         )
-        inheritance = self.inflight.pop(benchmark, {})
+        inheritance = take(self.inflight, benchmark, {})
         attempt_id = result.get("outcome_id", f"{benchmark}:{s['evaluated']}")
-        self.training_ledger[attempt_id] = {k: result.get(k, 0) for k in ("epochs", "updates", "train_seconds")}
+        self.training_ledger[attempt_id] = {k: lookup(result, k, 0) for k in ("epochs", "updates", "train_seconds")}
         ancestry = sorted(set(inheritance.get("ancestor_attempts", []) + [attempt_id]))
         result["ancestral_training"] = {
             k: sum(self.training_ledger[a][k] for a in ancestry) for k in ("epochs", "updates", "train_seconds")
         }
         result["ancestral_training"]["attempts"] = ancestry
-        key = self.pending_cache.pop(benchmark, None)
+        key = take(self.pending_cache, benchmark, None)
         if result["status"] == "ok" and key in self.cache.entries:
             self.cache_history[key] = ancestry
         s["cursor"] += 1

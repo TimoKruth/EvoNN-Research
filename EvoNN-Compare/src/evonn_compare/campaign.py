@@ -282,7 +282,7 @@ def match_config(config, manifest, case, system):
             # exports must match the explicitly frozen experiment or defaults.
             settings = (spec.prism_research or PrismResearchPolicy()).model_dump()
             if spec.prism_research is not None or "variant" in config:
-                if any(config.get(key) != value for key, value in settings.items()):
+                if any(key not in config or config[key] != value for key, value in settings.items()):
                     raise ValueError("campaign Prism research policy mismatch")
         if system == "topograph":
             expected.update(benchmark_pooling=False, novelty_weight=0.0)

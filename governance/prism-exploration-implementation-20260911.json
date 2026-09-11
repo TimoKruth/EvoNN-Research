@@ -1,0 +1,171 @@
+{
+  "record_kind": "prism_research_implementation",
+  "date": "2026-09-11",
+  "scope": "Implementation and runtime correctness; not scientific qualification or a performance improvement claim.",
+  "snapshot": {
+    "snapshot": "/tmp/evonn-prism-final-clone-20260911",
+    "pythonpath": "/tmp/evonn-prism-final-clone-20260911/EvoNN-Compare/src:/tmp/evonn-prism-final-clone-20260911/EvoNN-Contenders/src:/tmp/evonn-prism-final-clone-20260911/EvoNN-Primordia/src:/tmp/evonn-prism-final-clone-20260911/EvoNN-Prism/src:/tmp/evonn-prism-final-clone-20260911/EvoNN-Shared/src:/tmp/evonn-prism-final-clone-20260911/EvoNN-Stratograph/src:/tmp/evonn-prism-final-clone-20260911/EvoNN-Topograph/src",
+    "base_commit": "0b42a76254fa2058479ae4d671d4e18d119a78e7",
+    "scope": "Fixed unpublished source snapshot with full independent Git history; excludes existing artifact backups.",
+    "final_local_snapshot_commit": "4bfbe7093ea40132ff92dc902a0904f6ee86324b",
+    "published": false
+  },
+  "source_sha256": {
+    "EvoNN-Compare/src/evonn_compare/campaign.py": "86bae6f7b92ea98363cb2bf9292ff56a33ee090008b0aa40c2575e39bfca26a3",
+    "EvoNN-Compare/src/evonn_compare/evidence.py": "b429fbadd0f8b824b92bc73a07ff21a4cd74957a59e30c1f7bba155f98ecb4b6",
+    "EvoNN-Compare/tests/test_prism_policy.py": "a7858ca999357edf4e7de74098b3eedfa46d91ac3eed1b1600d2a6decaf9bcc3",
+    "EvoNN-Prism/src/prism/__init__.py": "420de6b2974118ef1778c96cacc8d508ed1ebe93e99df91973349d1cd6c56b52",
+    "EvoNN-Prism/src/prism/cli.py": "20050f0790f99e67a1c2b998dbf0c5e339b0447fd6d2ab82e1150258d917287a",
+    "EvoNN-Prism/src/prism/compiler.py": "02c0b7c9a537836dff850e03454a724287e25aca8bda196b5fd4681510111ed0",
+    "EvoNN-Prism/src/prism/composition.py": "366044868aae50b855f1eebf94d21a1e936c70058f7f5834996ae5291e95cad6",
+    "EvoNN-Prism/src/prism/config.py": "3a44e48893fd51d98153788665ad212eba00403316dd93275e4ca33e51d89aea",
+    "EvoNN-Prism/src/prism/genome.py": "c54a4d2f12c3734be59ba72d55666701e27f6575b6c5a8b998aa8fedb87c9bf6",
+    "EvoNN-Prism/src/prism/research.py": "0d153853bb7eb0dc0362e5b3758408046fbc7f8bcef1a88e7b45efaf04164853",
+    "EvoNN-Prism/src/prism/run.py": "6c93f070a2643c1aff9c465c580cd89b730874f497e0b1ea9c75c91076ec740d",
+    "EvoNN-Prism/src/prism/search.py": "a413a61e0d634486cebf3155f5ee9df17e229c6e291a3cc3a95d6e1566d29df8",
+    "EvoNN-Prism/src/prism/tensors.py": "cc08f536aed9b02bde990b402dbc743857c0d1f1bf1dad71cb9e10c73fb0dc6f",
+    "EvoNN-Prism/src/prism/training.py": "c6d760a9dd3ec8ed652a8c589f193a98ba71ff5c1a58381a6f3a6b6408bcbcc0",
+    "EvoNN-Prism/src/prism/weight_cache.py": "570c668363de4a46965532837979a5a88d78ace83147054efab8fefef8cb0ef8",
+    "EvoNN-Prism/tests/test_import.py": "da2c8629a8732bd3a3e2e17d3593ca27540cfbd0da55260bcbe2510d33f61085",
+    "EvoNN-Prism/tests/test_numerics.py": "40715d8649582855727e18503c4db6aa07917ac504f82fded0c0eb68c30ad638",
+    "EvoNN-Prism/tests/test_research.py": "9fc466dea24c93bde2d12ebd53e297e6b1cf6f89cd160afc84f892a34e2d806d",
+    "EvoNN-Prism/tests/test_runtime.py": "1afa6f226110ad8f517faf52c6dd070aacc800319e09ee85c635d915493165a9",
+    "EvoNN-Shared/src/evonn_shared/active_catalog.py": "f4bbf1bdaa267fc774fe5d07b6002bd6c21d621095f6dee1c929e74afa9e4398",
+    "EvoNN-Shared/src/evonn_shared/datasets.py": "1e6c45db939d66496bfbe56784fe090aa8b639f05a5e3b4f2b770c12cb258f3b",
+    "EvoNN-Shared/src/evonn_shared/engine_cli.py": "995f5b0b6401760b09af93ceec765045d3e78849608bdccddd7617210986d736",
+    "EvoNN-Shared/src/evonn_shared/engine_evidence.py": "29522af58e5fec3ab55445e7ebcc92f4f04e7dc92a7de50593e0457acd0ba231",
+    "EvoNN-Shared/src/evonn_shared/prism_policy.py": "5f73b3efd57d9bb33fdfb98bbe0ef5919ba53ed31f36ddcf2518c96ad9ead241",
+    "EvoNN-Shared/src/evonn_shared/runtime_catalog.py": "3e4d89da4b467915951315ebe98318c1ffedbeb7fa0ec072ed595346a26f34ed",
+    "EvoNN-Shared/src/evonn_shared/runtime_io.py": "4a802c03a6f96f0529bc3dc3477de4f7c229b087b128219359973902db721fd0",
+    "shared-benchmarks/extensions/breadth_v1/catalog/aesop_context64_lm.yaml": "57cd348cba99cd285bd5e3f3909885507c299e52ae5f5a3481a10d55ea97d7e9",
+    "shared-benchmarks/extensions/breadth_v1/catalog/delayed_copy_lm.yaml": "786136cf96453aa2775be11565aa9a447ce5452bcb5646f4a89dc7d174f4f1f9",
+    "shared-benchmarks/extensions/breadth_v1/catalog/shakespeare_context64_lm.yaml": "599ca5df3cccf8e27884998210c5eef286015c866f42f4d4803705108f982a0f",
+    "shared-benchmarks/extensions/breadth_v1/packs/language_breadth_v1.yaml": "2d370f6c09129acdfe5e53938b765d24a2ef8339caa856bbc804274a2b60bfc7",
+    "shared-benchmarks/runtime/breadth_v1.json": "d55986e6f3b23a674a9209eda11f5a6ffb2a0d11b2aa61d2b9ea82b4eab1c66d",
+    "shared-benchmarks/tests/test_language_breadth.py": "19a5f9eb9a78e4c9d3911d53f54f768a7e2ff9ab246ebe5f0249e7584a8a6e24",
+    "tests/integration/test_prism_finalists.py": "8c80165da29458e309aac99cc527a40560686f8ca5d35a7c8f4deb51a0272462"
+  },
+  "verification": {
+    "package-latest-tests": {
+      "path": ".artifacts/prism-implementation-20260911/package-latest-tests.log",
+      "sha256": "f3470cb48952ac6c6a90bd86ba0e8783df368309a2dd874924abca5af49a9a09",
+      "result": "1049 passed in 91.82s (0:01:31)"
+    },
+    "native-latest-integration": {
+      "path": ".artifacts/prism-implementation-20260911/native-latest-integration.log",
+      "sha256": "f6c612fbbf841ee199daf8325d694ff6aeaf73147f3a74ed0fae3ed092aaea9d",
+      "result": "3 passed, 7 deselected in 123.43s (0:02:03)"
+    },
+    "governance-clean-clone": {
+      "path": ".artifacts/prism-implementation-20260911/governance-clean-clone.log",
+      "sha256": "9b54a1d396913c39dec291ae660f024cc44c52e30e6d92138a24afcf738ece1c",
+      "result": "Repository governance policy: PASS"
+    },
+    "import-clean-clone": {
+      "path": ".artifacts/prism-implementation-20260911/import-clean-clone.log",
+      "sha256": "12522e10f61cda464bfaed452b1a831cd19648c647e05237627eb8840a74d7f0",
+      "result": "Import boundary policy: PASS (7 packages, shared-benchmarks data-only)"
+    }
+  },
+  "implemented": [
+    "All historical families retained; explicit legacy/archive/training/broad/open variants, default open for new runs.",
+    "Archive reproduction, rotating family opportunities, three-step protected lineages, bounded reservoir and fresh starts.",
+    "Coverage/progress-aware training, starting-checkpoint retention, weight-bound optional Adam continuation and bounded optimizer cache.",
+    "Full admitted width/embedding mutation ranges, reversible edits, attention crossover and versioned mixed-block composition.",
+    "Per-epoch/lineage/architecture/phase telemetry and verified research-report command.",
+    "Fixed-finalist warm/cold controls with matched per-fit allowance and separately reported source discovery cost.",
+    "Additive experimental language_breadth_v1 pack and full-roster campaign policy binding."
+  ],
+  "optimizer_probe": {
+    "scope": "Fixed-model MLX-CPU optimizer microbenchmark; alternating order, first pair excluded. No full-run speed or scientific quality claim.",
+    "rows": [
+      {
+        "repetition": 0,
+        "warmup": true,
+        "optimizer": "numpy",
+        "train_seconds": 0.05333000002428889,
+        "score": 0.625,
+        "updates": 36,
+        "validation_loss": 0.8220480680465698
+      },
+      {
+        "repetition": 0,
+        "warmup": true,
+        "optimizer": "native",
+        "train_seconds": 0.03683820797596127,
+        "score": 0.625,
+        "updates": 36,
+        "validation_loss": 0.8220480680465698
+      },
+      {
+        "repetition": 1,
+        "warmup": false,
+        "optimizer": "native",
+        "train_seconds": 0.03682808403391391,
+        "score": 0.625,
+        "updates": 36,
+        "validation_loss": 0.8220480680465698
+      },
+      {
+        "repetition": 1,
+        "warmup": false,
+        "optimizer": "numpy",
+        "train_seconds": 0.02395824994891882,
+        "score": 0.625,
+        "updates": 36,
+        "validation_loss": 0.8220480680465698
+      },
+      {
+        "repetition": 2,
+        "warmup": false,
+        "optimizer": "numpy",
+        "train_seconds": 0.024002666934393346,
+        "score": 0.625,
+        "updates": 36,
+        "validation_loss": 0.8220480680465698
+      },
+      {
+        "repetition": 2,
+        "warmup": false,
+        "optimizer": "native",
+        "train_seconds": 0.03694466594606638,
+        "score": 0.625,
+        "updates": 36,
+        "validation_loss": 0.8220480680465698
+      },
+      {
+        "repetition": 3,
+        "warmup": false,
+        "optimizer": "native",
+        "train_seconds": 0.03674116695765406,
+        "score": 0.625,
+        "updates": 36,
+        "validation_loss": 0.8220480680465698
+      },
+      {
+        "repetition": 3,
+        "warmup": false,
+        "optimizer": "numpy",
+        "train_seconds": 0.023790957988239825,
+        "score": 0.625,
+        "updates": 36,
+        "validation_loss": 0.8220480680465698
+      }
+    ],
+    "mean_seconds": {
+      "numpy": 0.023917291623850662,
+      "native": 0.036837972312544785
+    },
+    "native_to_numpy_ratio": 1.5402234037155544
+  },
+  "limitations": [
+    "Native tests qualified MLX CPU, not GPU.",
+    "Independent full-roster scientific comparisons and new benchmark safety/baseline qualification remain pending.",
+    "Distribution shifts, context-removal diagnostics, harder image/tabular workloads, worker reuse and transport optimization remain follow-on work.",
+    "Warm/cold finalists have equal per-fit allowances but different cumulative ancestral training; source weights are not imported.",
+    "Governance passes in the independent clone. The maintained workspace scan detects pre-existing copied active plans inside artifact backups; those backups were not changed."
+  ],
+  "scientific_comparison_started": false,
+  "protected_test_accessed": false,
+  "historical_results_modified": false
+}

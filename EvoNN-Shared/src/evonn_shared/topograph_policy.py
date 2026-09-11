@@ -6,6 +6,10 @@ from .canonical import canonical_sha256
 VARIANTS = {"mechanics", "training", "archive", "broad", "open"}
 
 
+def lookup(mapping, key, default=None):
+    return mapping[key] if key in mapping else default
+
+
 def expected_epochs(config, attempt, state, telemetry):
     variant = config.get("variant", "legacy")
     if variant == "legacy":
@@ -46,7 +50,7 @@ def expected_epochs(config, attempt, state, telemetry):
     event = next((e for e in history["events"] if e.get("outcome_id") == attempt["outcome_id"]), None)
     if (
         event is None
-        or any(event.get(k) != v for k, v in proposal.items())
+        or any(lookup(event, k) != v for k, v in proposal.items())
         or event["identity"] != attempt["genome_id"]
     ):
         raise ValueError("Topograph proposal differs from durable search event")
@@ -88,7 +92,7 @@ def expected_epochs(config, attempt, state, telemetry):
         for a in ancestry
     ):
         raise ValueError("Topograph ancestry crosses a task or references future/absent work")
-    expected = {k: sum(history[a].get(k, 0) for a in ancestry) for k in ("epochs", "updates", "train_seconds")}
+    expected = {k: sum(lookup(history[a], k, 0) for a in ancestry) for k in ("epochs", "updates", "train_seconds")}
     expected["attempts"] = ancestry
     if attempt.get("ancestral_training") != expected:
         raise ValueError("Topograph ancestral training accounting mismatch")
@@ -105,8 +109,8 @@ def validate_profile(profile, attempts):
     )
     worker = ("setup_seconds", "fit_seconds", "model_publication_seconds")
     for output, source, keys in (("coordinator", "profile", coordinator), ("worker", "worker_profile", worker)):
-        expected = {k: sum(a.get(source, {}).get(k, 0) for a in attempts) for k in keys}
-        if profile.get(output) != expected or any(not math.isfinite(v) or v < 0 for v in expected.values()):
+        expected = {k: sum(lookup(lookup(a, source, {}), k, 0) for a in attempts) for k in keys}
+        if lookup(profile, output) != expected or any(not math.isfinite(v) or v < 0 for v in expected.values()):
             raise ValueError("Topograph runtime profile differs from measured attempt stages")
     timings = profile.get("checkpoint_publications", [])
     ids = [t["attempt"] for t in timings]

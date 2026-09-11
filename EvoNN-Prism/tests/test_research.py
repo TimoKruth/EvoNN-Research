@@ -92,6 +92,20 @@ def test_legacy_search_does_not_introduce_composition_or_archive_selection():
         Search([definition], seed=4, variant="open", state=search.state())
 
 
+def test_failed_repeat_does_not_erase_provenance_of_retained_weights():
+    definition = get_benchmark("iris_classification")
+    search = Search([definition], seed=4)
+    genome = search.candidate(definition.id)
+    model = search.compile(genome, definition, backend="numpy_fallback", seed=3)
+    search.remember(model, "context")
+    search.observe(definition.id, genome, {"status": "ok", "score": .7, "updates": 5, "best_epoch": 1, "epochs": 1})
+    search.observe(definition.id, genome, {"status": "failed", "score": 0})
+    info = search.inherit(model, definition.id, "context")
+    assert info["mode"] == "exact"
+    assert info["source_updates"] == 5
+    assert info["source_needs_more_training"]
+
+
 def test_partial_coverage_and_patient_allocation():
     def allocation(copied, **kwargs):
         return allocate_training(12, 1, {"mode": "partial", "copied_parameters": copied}, 100, **kwargs)

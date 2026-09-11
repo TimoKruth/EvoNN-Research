@@ -113,7 +113,8 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
                 fields = (*fields, "search_policy", "max_width", "max_depth")
                 values.update(search_policy=options.search_policy, max_width=options.max_width, max_depth=options.max_depth)
             fields = (*fields, *run_options)
-            values.update({name: getattr(options, name) for name in run_options})
+            parsed_options = dict(options._get_kwargs())
+            values.update({name: parsed_options[name] for name in run_options})
             for field in fields:
                 flag = "--" + field.replace("_", "-")
                 explicit = any(arg == flag or arg.startswith(flag + "=") for arg in argv)
@@ -197,8 +198,8 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
                 mappings.update({name: name for name in run_options})
                 flags.update({name: "--" + name.replace("_", "-") for name in run_options})
                 for name, settings in run_options.items():
-                    if "default" in settings:
-                        stored.setdefault(name, settings["default"])
+                    if "default" in settings and name not in stored:
+                        stored[name] = settings["default"]
                 for target, source in mappings.items():
                     explicit = flags[target][2:].replace("-", "_") in supplied_config_fields or any(
                         argument == flags[target] or argument.startswith(flags[target] + "=") for argument in argv

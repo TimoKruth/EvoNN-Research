@@ -133,6 +133,7 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         best_loss, best_epoch = initial_loss, 0
     native = config.native_optimizer and b.mx is not None
     if native:
+        import mlx.core as mx_sync
         parameters = {k: b.array(v) for k, v in model.weights.items()}
         moments, variances = ({k: b.array(v) for k, v in values.items()} for values in (moments, variances))
     for epoch in range(config.epochs):
@@ -161,7 +162,7 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
                     m, v = moments[key] / (1 - .9**optimizer_step), variances[key] / (1 - .999**optimizer_step)
                     parameters[key] = parameters[key] * (1 - lr * config.weight_decay) - lr * m / (mx.sqrt(v) + 1e-8)
                 finite_weights = mx.stack([mx.all(mx.isfinite(v)) for v in parameters.values()]).all()
-                mx.eval(value, parameters, moments, variances, finite, finite_weights)
+                mx_sync.eval(value, parameters, moments, variances, finite, finite_weights)
                 if not math.isfinite(float(value.item())) or not bool(finite.item()) or not bool(finite_weights.item()):
                     raise ValueError("nonfinite native loss, gradient or optimizer weights")
                 epoch_loss += float(value.item())

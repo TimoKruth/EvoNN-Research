@@ -223,7 +223,7 @@ def edit(genome, rng, innovations, operator, definition, *, broad=False):
             data["experts"].append(ExpertGene(innovation=identity, width=rng.randint(4, 256)).model_dump())
             data["gate"] = data["gate"] or GateConfig().model_dump()
         elif choice == "remove":
-            data["experts"].pop(rng.randrange(len(data["experts"])))
+            del data["experts"][rng.randrange(len(data["experts"]))]
             if not data["experts"]:
                 data["gate"] = None
             else:

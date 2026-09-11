@@ -16,6 +16,43 @@ Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
+## Prism exploration implementation — 2026-09-11
+
+The [implementation receipt](governance/prism-exploration-implementation-20260911.json)
+binds the tested source, 1,049 package/benchmark tests and three native MLX CPU
+integration tests covering process recovery, trained-model replay and fixed-finalist
+warm/cold controls. Governance and import checks pass in an independent clone;
+existing artifact backups in the maintained workspace contain duplicate active plans.
+
+The new `open` default combines archive reuse, protected weak lineages,
+coverage/progress-aware training and broader reversible/compositional proposals.
+Historical families and the explicit `legacy` control remain available. The
+[operating instructions](README.md#prism-exploration-policies) document the policy
+variants, provenance, diagnostics and additive experimental language tasks.
+The optional native optimizer was slower in a tiny CPU probe; NumPy remains the
+optimizer default. No scientific improvement, speedup, benchmark admission or
+protected-test claim follows. Remaining qualification and workload development
+are recorded in the consolidated plan.
+
+## Topograph research implementation — 2026-09-11
+
+The [implementation receipt](governance/topograph-research-implementation-20260911.json)
+records opt-in v2 Topograph mechanics, parent-directed inheritance, protected
+training, multiple archive views, broader mutation/representation support and
+stage profiling. Legacy genome identities and replay behavior remain available.
+The modes and operation are documented in [README](README.md#topograph-research-modes);
+scientific qualification remains in the consolidated plan.
+
+Verification used an isolated copy because other engines were being edited
+concurrently: the final Topograph package check passed 71 tests; campaign,
+policy-matching, journal and worker integration checks passed 51 tests. Two
+32-fit contract runs (NumPy and native MLX CPU) had no failed fits; 16 trained
+winners replayed. NumPy recovery includes SIGKILL immediately after checkpoint
+publication, with the absent post-commit timing recorded explicitly. Four
+historical winners from the original seed-53/256-fit Topograph export also replayed.
+The maintained tree's import-boundary validator passes. No new scientific
+comparison, protected-test access, speedup or engine-promotion claim was made.
+
 ## All-engine higher-budget results evaluated — 2026-09-11
 
 All 80 runs and 15,360 fits completed on the original `e1d005a` producer; final
