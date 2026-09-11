@@ -119,16 +119,20 @@ Guardian state is `complete`; no new campaign is scheduled by this result.
 
 **Next, in priority order:**
 
-**Running by explicit user request:** the new
-[all-engine high-budget protocol](governance/all-engines-high-budget-20260910.json)
-started on 2026-09-10 at 14:47 CEST. All five systems run at 128 and 256 fits on
-fresh seeds 53–60: 80 runs / 15,360 fits, unchanged 12 native epochs and existing
-1500s run / 90s fit limits. The clean producer is `../EvoNN-all-engines-20260910`
-at `e1d005a`; all sixteen manifests passed preflight. A separate guardian watches
-this execution. Combine all sixteen cases for baseline admission before evidence
-promotion and analysis. Primary inference is the four predeclared engine-vs-floor
-quality contrasts at 256 (one four-test Holm family); all 128 results, individual
-tasks, named enhanced baselines and budget scaling are also reported descriptively.
+**Completed and evaluated (2026-09-11):** the
+[all-engine high-budget result](governance/all-engines-high-budget-results-20260911.json)
+binds all 80 original runs / 15,360 successful fits, 128/256 budgets and seeds
+53–60, producer `e1d005a`. All sixteen cases were combined before baseline
+admission; 80 records validated and 256 trained winners replayed. All four
+predeclared contrasts are L4 with eight seeds and Holm p=0.03125. Prism,
+Topograph and Primordia clear the aggregate material-gain criterion against the
+required floor; Stratograph is materially negative. The full expanded pool is
+reported separately, and task-level/engine-to-engine rankings remain descriptive.
+Prism leads native mean quality, Primordia remains faster with lower image/LM
+quality, and Topograph's additional runtime is not justified by a native quality
+lead in this cohort. More budget does not resolve Stratograph's shared-proxy
+deficit (digits 29.76% → 33.99%). The protected text test is still unused.
+No additional training is scheduled by this evaluation.
 
 **Standing user requirement (2026-09-10):** every new comparison includes Prism,
 Topograph, Stratograph and Primordia on every declared benchmark/budget/seed
@@ -138,11 +142,12 @@ failed or missing executions leave the comparison incomplete. Do not omit
 Stratograph while its proxy is being improved. The completed focused confirmation
 remains historical evidence and does not satisfy this new four-engine requirement.
 
-1. After the authorized all-engine comparison, implement and qualify training-only hierarchy-feature normalization with
+1. Implement and qualify training-only hierarchy-feature normalization with
    explicit versioned preprocessing/replay semantics; consider a shallower or
    residual-preserving proxy after a matched ablation. Preserve legacy model
-   behavior. The user's higher-budget comparison explicitly includes the current
-   Stratograph implementation; its known proxy limitation remains documented.
+   behavior. The completed higher-budget comparison retains the original
+   Stratograph implementation as the reference; qualify changes in a new frozen
+   comparison with all four engines and Contenders, not by replacing old results.
 2. Use the confirmed bounded Prism LM finding to design a separate, frozen
    generalization comparison with all four engines and Contenders before
    accessing the protected text test split. Keep
@@ -150,11 +155,13 @@ remains historical evidence and does not satisfy this new four-engine requiremen
    candidate for efficient tabular search, with its narrow tolerance margin and
    weaker image/LM outcomes explicit. Do not present Topograph as a confirmed
    regression leader or extend the fixed eight-seed test after seeing results.
-3. Optimize catalog parsing within individual validation calls, then remeasure
+3. Integrate the analysis-tested exact-content catalog parse cache into the maintained validation path, then remeasure
    with identical verdicts. Profiling the source-revalidated report found
    **29,076 catalog lookups**, accounting for roughly 96% of profiled cumulative
    time. Avoid a global cache that could hide changed catalog bytes. No timing
-   from cProfile is a claimed unprofiled speedup.
+   from cProfile is a claimed unprofiled speedup. The September 11 analysis used a bounded
+   parse-only wrapper, checked against all 17 catalog/pool YAML files and malformed
+   input cases. It still reads and hash-checks source bytes; core integration is open.
 
 The repeated low/mid admission and explicit L4 aggregate surfaces are now
 available. WP-4.7's remaining preset/trusted-extended integration and the formal

@@ -82,13 +82,43 @@ performance. [Next actions](CONSOLIDATED_PLAN.md#immediate-next-actions) retain
 the Stratograph proxy work and scoped generalization validation.
 
 The guardian for that completed confirmation is in terminal `complete` state.
-The new [all-engine comparison](governance/all-engines-high-budget-20260910.json)
-started on **2026-09-10 at 14:47 CEST**: Prism, Topograph, Stratograph, Primordia
-and Contenders at **128/256 fits**, eight fresh seeds **53–60**, **80 runs /
-15,360 fits**. All sixteen manifests passed preflight in the clean producer
-`../EvoNN-all-engines-20260910` at `e1d005a`. Stratograph uses its current shared
-proxy; the proposed normalization has not been silently introduced. Live
-guardian status is `.artifacts/all-engines-guardian-20260910/status.json`.
+The [all-engine comparison](governance/all-engines-high-budget-20260910.json)
+completed on **2026-09-10**, with final exports verified at **23:18 CEST** and
+analysis completed on September 11: all **80 runs / 15,360 fits**, no failed fits,
+Prism, Topograph, Stratograph, Primordia and Contenders at **128/256 fits** on
+seeds **53–60**. The original clean producer `../EvoNN-all-engines-20260910`
+remains pinned to `e1d005a`; hostname interruptions did not replace any results.
+
+The [result receipt](governance/all-engines-high-budget-results-20260911.json) records all four predeclared contrasts against
+the required contender floor at 256: **Prism, Topograph and Primordia pass the
+aggregate gain criterion; Stratograph is materially below the floor**. Each
+Holm-adjusted p-value is **0.03125**. Symmetric aggregate effects and CI95:
+Prism **+28.88% [28.07, 29.66]**, Topograph **+8.04% [6.32, 9.98]**,
+Primordia **+5.05% [3.29, 6.85]**, Stratograph **-31.81% [-35.82, -27.73]**.
+These are not accuracy-point improvements. Banknote is excluded from Prism and
+Topograph averages because both arms reach its ceiling on every seed; other
+panels retain four tasks. No per-task or engine-to-engine significance is claimed.
+
+Descriptive validation means at **256 total fits** (eight seeds):
+
+| System | Banknote accuracy | Digits accuracy | Diabetes MSE ↓ | Text perplexity ↓ | Mean run seconds |
+|---|---:|---:|---:|---:|---:|
+| Prism | 100.00% | 98.47% | 2712.2 | 14.96 | 265.6 |
+| Topograph | 100.00% | 97.88% | 2847.6 | 27.74 | 524.0 |
+| Stratograph | 78.36% | 33.99% | 3484.3 | 30.42 | 192.3 |
+| Primordia | 99.32% | 92.88% | 3035.8 | 25.45 | 115.7 |
+| Contenders: best full-pool outcome | 100.00% | 98.96% | 2892.7 | 33.67 | 597.0 |
+
+The full-pool row differs from the primary required-floor reference. At 256,
+that floor averages 100% banknote, 98.75% digits, 3002.3 MSE and 33.67 perplexity.
+Doubling Prism's budget improves perplexity from 16.03 to 14.96 and MSE from
+2850.3 to 2712.2; its observed paired runtime ratio is 2.48. Stratograph digits
+improve from 29.76% to 33.99%, leaving a large deficit in the frozen shared proxy.
+All budget scaling and timings are descriptive, with changing host load and
+backend differences retained as limitations. All **256 trained-winner replays**
+from 64 native runs passed. The protected text test remains unused; no automatic
+engine, portfolio or Phase-4 promotion follows. Guardian state is `complete` at
+`.artifacts/all-engines-guardian-20260910/status.json`.
 
 For a fast read-only snapshot, use the project skill
 [read-evonn-status](.agents/skills/read-evonn-status/SKILL.md), or run
@@ -103,8 +133,9 @@ on Windows), plus OS and architecture fields. Campaign checks and all five
 systems' exports use this identity; DHCP, network changes and hostname renames
 do not change it. Missing machine IDs fail explicitly rather than falling back
 to a hostname. Raw identifiers are not stored. Historical producers and their
-frozen hostname-based identities remain unchanged, including the active
-September 10 comparison; keep its current hostname setting until it finishes.
+frozen hostname-based identities remain unchanged, including the completed
+September 10 comparison. Re-executing its original preflight still requires its
+frozen hostname; new comparisons no longer require that hostname setting.
 
 An independent LaunchAgent checks this guardian and its current training target
 every hour, including failures repaired between checks. It sends macOS
@@ -129,7 +160,7 @@ binding; completion requires validated exports, not just process exit.
 The reusable entry point is `automation/install-training-guardian.py` with
 `--producer`, `--base`, `--state-root` and `--protocol`, first `--dry-run`, then
 `--install-scheduler`. Runtime snapshots, repair decisions and logs are stored in
-the supplied state directory. For the active all-engine campaign it is
+the supplied state directory. For the completed all-engine campaign it is
 `.artifacts/all-engines-guardian-20260910`: inspect `status.json`, `control.json` and
 `history.jsonl`; `repairs/` contains individual Codex transcripts and fixes.
 Create a `PAUSE` file there to prevent new dispatches/repairs (an active bounded

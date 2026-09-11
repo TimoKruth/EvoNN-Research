@@ -6,7 +6,7 @@ authoritative: false
 
 # EvoNN Project History
 
-**Updated:** 2026-09-10. Foundation acceptance is merged through #28;
+**Updated:** 2026-09-11. Foundation acceptance is merged through #28;
 Phase 1 implementation and runtime evidence are recorded in #29/#30, with
 required hosted checks attached to those revisions. Phase2 implementation and
 its source-bound acceptance cohort are recorded in #31. Phase 3 is merged in
@@ -16,13 +16,32 @@ Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
+## All-engine higher-budget results evaluated — 2026-09-11
+
+All 80 runs and 15,360 fits completed on the original `e1d005a` producer; final
+exports were verified at 23:18 CEST on September 10. One user pause and two
+hostname-related preflight blocks caused no result replacement or fit failures.
+The [result receipt](governance/all-engines-high-budget-results-20260911.json) binds the unchanged protocol, all input manifests,
+the aggregate registry and descriptive scores. All 80 records validated and all
+256 trained-winner replays passed. An independent calculation
+reproduced all four bootstrap intervals, signed-rank tests (256 exhaustive sign
+permutations each) and Holm adjustments.
+
+Prism, Topograph and Primordia pass the predeclared aggregate quality criterion
+against the required baseline floor at 256; Stratograph is materially below it.
+All four Holm p-values are 0.03125. Per-task scores, full-pool baselines, runtime
+and budget scaling remain descriptive. The final protected text split remains
+unused and no automatic scientific/engine advancement is authorized. Detailed
+scores are in README; next actions remain Stratograph proxy correction and a
+separate frozen generalization comparison including all five systems.
+
 ## All-engine higher-budget comparison started — 2026-09-10
 
 Following two hostname reversions during pause/resume, future campaign and export
 identities now use a versioned hash of the OS machine ID. All four engines and
 Contenders share this provider. Renames no longer invalidate a new campaign;
 machine changes remain detectable. The status skill handles both schemes.
-Historical manifests, exports and the running producer retain their original
+Historical manifests, exports and the original producer retain their original
 hostname identity; no evidence is relabeled or mixed across revisions.
 
 At the user's request, independent hourly oversight was added to the minute
