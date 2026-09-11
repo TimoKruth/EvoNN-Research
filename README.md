@@ -32,7 +32,7 @@ Exact integrations and review decisions are recorded in project history.
 | Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality, append-only evidence registry, paired-seed L4 analysis and evidence dashboard | Scientific acceptance, targeted confirmation and native transfer |
 | Prism + Topograph | Package-local MLX/NumPy models including real next-token LM, bounded search, inheritance, atomic resume, portable exports and Compare ingestion | Targeted confirmation, stronger baselines and native transfer evidence |
 | Stratograph | Hierarchical cell search, trained-head proxy, five ablations, winner motifs, resume/replay | End-to-end hierarchy learning and scientific comparison claims |
-| Primordia | Trained primitive circuits, bounded archive/cost policy, verified motif/seed bank | Native cross-engine ingestion and proven transfer gains |
+| Primordia | Trained circuits, versioned exploration/retention and training policy, extensible v2 graph/temporal genomes, verified motif/seed bank | Scientific qualification of breadth_v2, native cross-engine ingestion and proven transfer gains |
 
 The [Phase 4 receipt](governance/phase4-runtime-evidence.json) records **13 short
 qualification runs / 304 real fits**: both new engines on Tier A/core@64, five
@@ -80,6 +80,13 @@ and paired full-pack runtime is 28.5% lower than Prism@64 (95% interval
 25.9–31.6% lower). This does not establish image/LM parity or protected-test
 performance. [Next actions](CONSOLIDATED_PLAN.md#immediate-next-actions) retain
 the Stratograph proxy work and scoped generalization validation.
+
+New Primordia runs now default to the experimental `breadth_v2` policy:
+independent founders, recurring exploration/revival slots, full training envelopes
+without inheritance discounts, and configurable graph size across modalities.
+The [Primordia README](EvoNN-Primordia/README.md) documents its v2 genome and
+`legacy_v1` control. All completed measurements below retain their frozen legacy
+producer; the new policy has no demonstrated quality/runtime gain yet.
 
 The guardian for that completed confirmation is in terminal `complete` state.
 The [all-engine comparison](governance/all-engines-high-budget-20260910.json)

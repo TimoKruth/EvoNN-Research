@@ -138,6 +138,23 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
             counts = dict(Counter(node["operator"] for item in search["archive"] for node in item["genome"]["primitives"]))
             if telemetry["primitive_usage"][benchmark] != counts or telemetry["archive_size"][benchmark] != len(search["archive"]) or telemetry["lineage"][benchmark] != search["lineage"]:
                 raise ValueError("primitive bank telemetry differs from checkpoint")
+            if config.get("search_policy") == "breadth_v2":
+                envelope = {key: config[key] for key in ("max_width", "max_depth")}
+                if (any(type(envelope[k]) is not int or not low <= envelope[k] <= high
+                        for k, low, high in (("max_width", 2, 256), ("max_depth", 1, 32)))
+                        or any(k not in state["search"] or state["search"][k] != v for k, v in envelope.items())
+                        or state["search"].get("training_epochs") != config["epochs"]
+                        or telemetry.get("search_policy") != "breadth_v2"
+                        or telemetry.get("architecture_envelope") != envelope
+                        or telemetry["epoch_caps"][benchmark] != config["epochs"]):
+                    raise ValueError("primitive envelope telemetry differs from policy")
+                observed = telemetry["exploration"][benchmark]
+                if any(k not in observed or observed[k] != v for k, v in search["exploration"].items()):
+                    raise ValueError("primitive exploration telemetry differs from checkpoint")
+                lanes = dict(Counter(a["proposal"]["lane"] for a in attempts if a["benchmark_id"] == benchmark))
+                sizes = {name: len(search[name]) for name in ("archive", "young", "novelty", "reservoir", "pareto")}
+                if observed["lanes"] != lanes or observed["retention_sizes"] != sizes:
+                    raise ValueError("primitive exploration accounting differs from ledger")
     if system in {"stratograph", "primordia"}:
         expected_fidelity = "hierarchy_features_trained_head" if system == "stratograph" else "end_to_end_primitive"
         if config.get("evaluator_fidelity") != expected_fidelity or telemetry.get("evaluator_fidelity") != expected_fidelity:
@@ -211,7 +228,24 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
             or attempt["backend_version"] != manifest.runtime.backend_version
         ):
             raise ValueError("engine attempt RNG/backend mismatch")
-        if system == "primordia":
+        breadth = system == "primordia" and config.get("search_policy", "legacy_v1") == "breadth_v2"
+        if breadth:
+            if (config.get("training_policy") != "learning_progress_with_patient_slots/v2"
+                    or state["search"].get("search_policy") != "breadth_v2"
+                    or attempt.get("training_policy") != config["training_policy"]
+                    or attempt["genome"].get("version") != 2
+                    or attempt["full_epochs"] != config["epochs"]
+                    or attempt["genome"]["width"] > config["max_width"]
+                    or len(attempt["genome"]["primitives"]) > config["max_depth"]):
+                raise ValueError("primitive breadth policy/envelope differs from frozen run")
+            proposal = attempt.get("proposal", {})
+            if (proposal.get("lane") not in {"founder", "quality", "novelty", "young", "reservoir", "fresh", "patient", "fresh_retrain", "cost"}
+                    or type(proposal.get("fresh")) is not bool
+                    or (proposal["fresh"] and attempt["inheritance"]["mode"] != "none")):
+                raise ValueError("primitive exploration proposal/inheritance mismatch")
+        elif system == "primordia":
+            if config.get("search_policy", "legacy_v1") != "legacy_v1" or attempt["genome"].get("version", 1) != 1:
+                raise ValueError("unknown primitive policy or legacy encoding mismatch")
             definition = get_benchmark(attempt["benchmark_id"])
             expensive = definition.task_kind.value == "language_modeling" or definition.input_modality.value == "image"
             maximum = min(4 if expensive else 8, 3 if current >= 16 else 1000)
@@ -221,10 +255,19 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
         if mode not in {"none", "exact", "partial"}:
             raise ValueError("invalid inheritance mode")
         if attempt["allocated_epochs"] != max(
-            1, math.ceil(attempt["full_epochs"] * {"none": 1, "exact": 0.3, "partial": 0.6}[mode])
+            1, math.ceil(attempt["full_epochs"] * (1 if breadth else {"none": 1, "exact": 0.3, "partial": 0.6}[mode]))
         ):
             raise ValueError("inheritance ratio differs from declared training policy")
         if attempt["status"] == "ok":
+            if breadth:
+                curve, behavior = attempt.get("validation_curve"), attempt.get("behavior_descriptor")
+                if (not isinstance(curve, list) or len(curve) != attempt["epochs"]
+                        or any(type(v) not in (int, float) or not math.isfinite(v) for v in curve)
+                        or not isinstance(behavior, list) or not 1 <= len(behavior) <= 32
+                        or any(type(v) not in (int, float) or not math.isfinite(v) for v in behavior)
+                        or attempt["epochs"] < min(config["epochs"], 4)
+                        or (attempt["proposal"]["lane"] == "patient" and attempt["epochs"] != config["epochs"])):
+                    raise ValueError("primitive learning-progress/patient evidence differs from policy")
             if attempt["charged"] != 1 or record.metric.value != attempt["metric_value"]:
                 raise ValueError("engine successful metric/charge mismatch")
             quality = -attempt["metric_value"] if record.metric.direction.value == "min" else attempt["metric_value"]
@@ -325,7 +368,13 @@ def _validate_primitive_artifacts(bundle, config, attempts, data):
             code_dirty=config["code_dirty"],run_id=manifest.run_id,candidate_id=row["genome_id"],
             benchmark=definition.id,pack=manifest.pack_id,seed=manifest.seed,
             budget_spent=sum(a["charged"] for a in attempts),runtime=manifest.runtime.model_dump(mode="json"))
-        if seed.source.model_dump(mode="json")!=expected_source or seed.encoding!={"format":"primordia.primitive/v1","genome":genome}:
+        version = genome.get("version", 1)
+        if type(version) is not int or version not in (1, 2):
+            raise ValueError("unsupported primitive encoding version")
+        encoding = f"primordia.primitive/v{version}"
+        if canonical_sha256(genome, schema_version=encoding, digest_field=None) != row["genome_id"]:
+            raise ValueError("primitive genome identity differs from ledger")
+        if seed.source.model_dump(mode="json")!=expected_source or seed.encoding!={"format":encoding,"genome":genome}:
             raise ValueError("seed source/genome differs from ledger")
         if seed.quality.model_dump()!=dict(metric=definition.primary_metric.name,direction=definition.primary_metric.direction.value,value=float(row["metric_value"])) or seed.descriptors!=descriptors:
             raise ValueError("seed quality/descriptors differ from ledger")

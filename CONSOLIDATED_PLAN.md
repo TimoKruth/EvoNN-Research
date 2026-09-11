@@ -163,6 +163,20 @@ remains historical evidence and does not satisfy this new four-engine requiremen
    parse-only wrapper, checked against all 17 catalog/pool YAML files and malformed
    input cases. It still reads and hash-checks source bytes; core integration is open.
 
+4. Qualify Primordia's implemented `breadth_v2` policy, documented in
+   [its runtime README](EvoNN-Primordia/README.md). Independent founders,
+   learning-progress early stopping with patient slots, quality/diversity/young/
+   reservoir/Pareto retention, optional cheapening, fresh retraining, configurable
+   size envelopes, branching, mutable sparsity, causal lag processing and
+   composed-motif mutations are implementation changes, not established gains.
+   Preserve `legacy_v1` as the frozen scientific reference. Predeclare separate
+   training, retention/mutation and representation ablations before combined
+   confirmation, using fresh seeds and all four engines plus Contenders on every
+   declared combination. Measure both matched-proposal and matched-compute
+   outcomes, behavioral coverage, lineage revival and fresh/inherited agreement.
+   Do not eliminate a supported operator or representation for poor early scores.
+   No new scientific campaign or protected-test access follows automatically.
+
 The repeated low/mid admission and explicit L4 aggregate surfaces are now
 available. WP-4.7's remaining preset/trusted-extended integration and the formal
 Phase 4 exit still need their explicit acceptance; no automatic scientific,

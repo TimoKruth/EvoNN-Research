@@ -39,6 +39,10 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
     run.add_argument("--fit-timeout", type=float, default=120.0)
     run.add_argument("--epochs", type=int, default=12)
     run.add_argument("--population-size", type=int, default=4)
+    if search_type.system == "primordia":
+        run.add_argument("--search-policy", choices=["legacy_v1", "breadth_v2"], default="breadth_v2")
+        run.add_argument("--max-width", type=int, default=48)
+        run.add_argument("--max-depth", type=int, default=8)
     if search_type.system == "topograph":
         run.add_argument("--benchmark-pooling", action="store_true")
         run.add_argument("--novelty-weight", type=float, default=0)
@@ -100,6 +104,9 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
             if search_type.system == "stratograph":
                 fields = (*fields, "variant")
                 values["variant"] = options.variant
+            if search_type.system == "primordia":
+                fields = (*fields, "search_policy", "max_width", "max_depth")
+                values.update(search_policy=options.search_policy, max_width=options.max_width, max_depth=options.max_depth)
             for field in fields:
                 flag = "--" + field.replace("_", "-")
                 explicit = any(arg == flag or arg.startswith(flag + "=") for arg in argv)
@@ -134,6 +141,8 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
                 config.update(benchmark_pooling=validated.benchmark_pooling, novelty_weight=validated.novelty_weight)
             if search_type.system == "stratograph":
                 config["variant"] = validated.variant
+            if search_type.system == "primordia":
+                config.update(search_policy=validated.search_policy, max_width=validated.max_width, max_depth=validated.max_depth)
             if options.resume:
                 stored = json.loads(read_document(options.resume, "config.yaml"))
                 mappings = {
@@ -166,6 +175,12 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
                 if search_type.system == "stratograph":
                     mappings["variant"] = "variant"
                     flags["variant"] = "--variant"
+                if search_type.system == "primordia":
+                    for field, default in (("search_policy", "legacy_v1"), ("max_width", 48), ("max_depth", 8)):
+                        mappings[field] = field
+                        flags[field] = "--" + field.replace("_", "-")
+                        if field not in stored:
+                            stored[field] = default
                 for target, source in mappings.items():
                     explicit = flags[target][2:].replace("-", "_") in supplied_config_fields or any(
                         argument == flags[target] or argument.startswith(flags[target] + "=") for argument in argv
