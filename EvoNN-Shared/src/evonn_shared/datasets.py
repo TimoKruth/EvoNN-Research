@@ -50,6 +50,10 @@ def array_digest(arrays: dict[str, np.ndarray]) -> str:
 
 def _raw_data(binding: dict, seed: int) -> tuple[np.ndarray, np.ndarray]:
     loader = binding["loader"]
+    if loader == "make_delayed_copy_v1":
+        rng = np.random.default_rng(seed)
+        x = rng.integers(0, binding["vocabulary"], size=(binding["samples"], binding["context"])).astype(np.float32)
+        return x, x[:, 0].astype(np.int64)
     if loader in {"openml_31", "openml_1462"}:
         import openml
         import pandas as pd
@@ -118,7 +122,7 @@ def load_dataset(benchmark_id: str, *, seed: int, cache_root: Path, root: Path |
                                         schema_version="evonn.catalog.benchmark/v1", digest_field=None)
     if definition_digest != binding["definition_sha256"]:
         raise ValueError("Runtime manifest and canonical benchmark definition disagree")
-    if binding["loader"] == "shakespeare_bytes_v1":
+    if binding["loader"] in {"shakespeare_bytes_v1", "byte_corpus_v1"}:
         tokens = _text_tokens(binding, cache_root)
         raw_digest = array_digest({"tokens":tokens})
         arrays = _text_split(tokens, binding, seed)
@@ -180,6 +184,11 @@ def _text_tokens(binding, cache_root):
         except FileExistsError:
             pass
         payload=read_verified_artifact(root,reference,size_bytes=binding["source_size_bytes"])
+    if "content_byte_range" in binding:
+        start, end = binding["content_byte_range"]
+        if type(start) is not int or type(end) is not int or not 0 <= start < end <= len(payload):
+            raise ValueError("invalid pinned corpus byte range")
+        payload = payload[start:end]
     return np.frombuffer(payload,dtype=np.uint8).astype(np.int64)
 
 

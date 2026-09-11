@@ -17,3 +17,6 @@ class RunConfig(BaseModel):
     target_device: Literal["cpu", "gpu"] = "cpu"
     timeout: float = Field(default=1200, gt=0, le=1800)
     fit_timeout: float = Field(default=120, gt=0, le=1800)
+    search_policy: Literal["legacy_v1", "breadth_v2"] = "breadth_v2"
+    max_width: int = Field(default=48, ge=2, le=256, strict=True)
+    max_depth: int = Field(default=8, ge=1, le=32, strict=True)

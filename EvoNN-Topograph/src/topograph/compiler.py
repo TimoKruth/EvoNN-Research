@@ -63,6 +63,9 @@ class EvolvedModel:
                 target.width,
                 target.weight_bits,
             )
+            if getattr(edge, "trainable_scale", False):
+                self.weights[f"edge{edge.innovation}.scale"] = np.array(edge.scale, dtype=np.float32)
+                self.precisions[f"edge{edge.innovation}.scale"] = 32
         for node in self.layers:
             key, width = f"node{node.innovation}", node.width
             if node.operator in {"attention_lite", "transformer_lite"}:
@@ -97,7 +100,7 @@ class EvolvedModel:
     def packed_bytes_estimate(self):
         return sum(math.ceil(v.size * self.precisions[k] / 8) for k, v in self.weights.items())
 
-    def forward(self, p, x, *, training=False, seed=0):
+    def prepare_input(self, p, x):
         b = self.backend
         if self.token_input:
             tokens = b.numpy(x)
@@ -111,7 +114,11 @@ class EvolvedModel:
                 raise ValueError("integer in-vocabulary context matrix required")
             # Every context token precedes the single scored next-token target.
             x = b.array(np.eye(self.output_dim, dtype=np.float32)[tokens.astype(np.int64)])
-        values = {-1: x.reshape((x.shape[0], -1))}
+        return x.reshape((x.shape[0], -1))
+
+    def forward(self, p, x, *, training=False, seed=0):
+        b = self.backend
+        values = {-1: self.prepare_input(p, x)}
 
         def linear(key, value, activation_bits=32):
             return QuantizedLinear(self.precisions[key + ".w"], activation_bits, per_example=self.token_input)(
@@ -120,12 +127,19 @@ class EvolvedModel:
 
         for node in self.layers:
             key, n, width = f"node{node.innovation}", x.shape[0], node.width
-            incoming = [
-                linear(f"edge{e.innovation}", values[e.source], 8 if node.weight_bits == 1.58 else node.activation_bits)
-                for e in self.routing[node.innovation]
-            ]
-            value = sum(incoming) / math.sqrt(len(incoming))
-            value = b.norm(value, "layer")
+            incoming = []
+            for e in self.routing[node.innovation]:
+                value = linear(f"edge{e.innovation}", values[e.source],
+                               8 if node.weight_bits == 1.58 else node.activation_bits)
+                if getattr(e, "trainable_scale", False):
+                    value = value * p[f"edge{e.innovation}.scale"]
+                elif getattr(e, "scale", 1) != 1:
+                    value = value * e.scale
+                incoming.append(value)
+            count = getattr(node, "merge_reference_count", None) or len(incoming)
+            merge = getattr(node, "merge", "sqrt_sum")
+            value = sum(incoming) / (math.sqrt(count) if merge == "sqrt_sum" else count if merge == "mean" else 1)
+            value = b.norm(value, getattr(node, "normalization", "layer"))
             if node.operator in {"attention_lite", "transformer_lite"}:
                 tokens, heads, dims = 4, node.heads, width // (4 * node.heads)
                 z = value.reshape((n, tokens, width // tokens))

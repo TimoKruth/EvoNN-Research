@@ -1,0 +1,11 @@
+schema_version: 1
+variant: open
+pack: tier1_core_smoke
+budget: 32
+seed: 42
+epochs: 2
+population_size: 2
+backend: mlx_native
+target_device: cpu
+timeout: 220
+fit_timeout: 20

@@ -764,3 +764,34 @@ This closes contract foundations only. Catalog entries remain planned metadata;
 regular export composition and actual no-op integrity are separate evidence.
 Engine-specific resume and Topograph speciation/reproduction are explicitly
 pending. No backend is scientifically qualified and no multi-hour training ran.
+
+
+## Stratograph breadth-preserving v2 — 2026-09-11
+
+Implemented an explicit opt-in `research` policy, leaving absent-policy v1
+execution and historical replay intact. V2 adds training-only normalization and
+optional information paths, persistent projection/parameter identities, learned
+clone equivalence, compatible inheritance without epoch discounts, trainable
+shared cells, bidirectional macro edits, full-envelope width mutation, a primitive
+registry, protected exploration and charged archive revisits. Representation and
+selection controls support focused ablations without deleting experimental paths.
+Compare campaigns accept `stratograph_research`, require the full engine roster
+for that policy, and bind it into configuration checks and protocol fingerprints.
+
+The isolated implementation check passed 39 package tests, including forced
+SIGKILL/transaction recovery and replay after a 128-fit proxy and 32-fit native
+trainable run. An earlier combined pass covered 42 package/legacy-process tests;
+961 Shared/Compare tests passed. All four winners of the preserved September 10
+Stratograph seed-53/budget-128 run replayed successfully. A subsequent ablation
+forwarding test and 12 capability/dependency policy tests passed, as did scoped
+Ruff, lock and whitespace checks. The current backend capability declaration now
+includes opt-in trainable execution without a scientific evidence claim.
+
+Local logs and source hashes are in
+`.artifacts/stratograph-v2-validation-20260911/verification.json`. The snapshot
+isolates execution from concurrent engine edits; the receipt does not assert a
+clean global policy gate. Stratograph has zero remaining import-policy violations;
+concurrent other-engine/shared changes still produced repository-wide findings at
+verification time. These are implementation checks, not a new scientific
+comparison. Repeated all-engine/Contenders qualification, fresh-seed confirmation
+and any promotion remain open in CONSOLIDATED_PLAN.md.

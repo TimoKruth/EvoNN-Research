@@ -21,14 +21,17 @@ class TrainConfig:
     weight_decay: float = 0.01
     clip_norm: float = 1.0
     patience: int = 4
+    min_epochs: int = 1
     warmup_fraction: float = 0.1
     schedule: str = "cosine"
     timeout: float = 120.0
 
     def __post_init__(self):
-        for value in (self.epochs, self.batch_size, self.patience):
+        for value in (self.epochs, self.batch_size, self.patience, self.min_epochs):
             if type(value) is not int or value < 1:
                 raise ValueError("positive integer training limits required")
+        if self.min_epochs > self.epochs:
+            raise ValueError("minimum epochs exceeds training envelope")
         values = (self.learning_rate, self.weight_decay, self.clip_norm, self.warmup_fraction, self.timeout)
         if not all(math.isfinite(v) for v in values):
             raise ValueError("finite training settings required")
@@ -98,6 +101,7 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
     best_loss, stale, updates, epochs_done = math.inf, 0, 0, 0
     total = config.epochs * math.ceil(len(x) / config.batch_size)
     initial_weights = {k: v.copy() for k, v in model.weights.items()}
+    validation_curve = []
     for epoch in range(config.epochs):
         order = rng.permutation(len(x))
         for start in range(0, len(x), config.batch_size):
@@ -128,13 +132,14 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         if not math.isfinite(value):
             raise ValueError("nonfinite validation loss")
         epochs_done += 1
+        validation_curve.append(value)
         if value < best_loss - 1e-8:
             best_loss, stale = value, 0
             best = {k: v.copy() for k, v in model.weights.items()}
             best_buffers = deepcopy(model.buffers)
         else:
             stale += 1
-            if stale >= config.patience:
+            if stale >= config.patience and epochs_done >= config.min_epochs:
                 break
     model.weights = best
     model.buffers = best_buffers
@@ -163,11 +168,23 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         score = float(np.mean(prediction.argmax(axis=-1) == y_validation))
     if not math.isfinite(score):
         raise ValueError("nonfinite final score")
+    # Label-independent, fixed-position response sketch for within-benchmark diversity.
+    behavior = np.asarray(prediction, dtype=np.float64)
+    if not regression:
+        behavior = np.exp(behavior - behavior.max(axis=-1, keepdims=True))
+        behavior /= behavior.sum(axis=-1, keepdims=True)
+    else:
+        behavior = np.tanh(behavior / max(float(target_std), 1e-8))
+    flat = behavior.reshape(-1)
+    descriptor = flat[np.linspace(0, len(flat) - 1, min(32, len(flat)), dtype=int)].tolist()
     return {
         "score": score,
         "epochs": epochs_done,
         "updates": updates,
         "validation_loss": best_loss,
+        "validation_curve": validation_curve,
+        "behavior_descriptor": descriptor,
+        "early_stopped": epochs_done < config.epochs,
         "train_seconds": time.monotonic() - started,
         "latency_seconds": latency,
         "weights_changed": any(not np.array_equal(best[k], v) for k, v in initial_weights.items()),

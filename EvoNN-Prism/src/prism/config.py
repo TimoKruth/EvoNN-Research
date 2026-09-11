@@ -3,6 +3,8 @@
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 from evonn_shared.runtime_budget import MAX_ENGINE_EVALUATIONS
+from .research import Variant
+from .genome import ModelGenome
 
 
 class RunConfig(BaseModel):
@@ -17,3 +19,9 @@ class RunConfig(BaseModel):
     target_device: Literal["cpu", "gpu"] = "cpu"
     timeout: float = Field(default=1200, gt=0, le=1800)
     fit_timeout: float = Field(default=120, gt=0, le=1800)
+    variant: Variant = "open"
+    inheritance_policy: Literal["enabled", "disabled"] = "enabled"
+    optimizer_policy: Literal["restart", "continue"] = "restart"
+    optimizer_backend: Literal["numpy", "native"] = "numpy"
+    fixed_genomes: dict[str, ModelGenome] | None = None
+    prior_discovery: dict | None = None

@@ -45,7 +45,7 @@ def _bank(context, trials):
             commit=config['git_commit'],code_dirty=config['code_dirty'],run_id=context['run_id'],
             candidate_id=row['genome_id'],benchmark=row['benchmark_id'],pack=config['pack'],
             seed=config['seed'],budget_spent=context['budget_spent'],runtime=context['runtime']),
-            encoding=dict(format='primordia.primitive/v1',genome=row['genome']),descriptors=descriptors,
+            encoding=dict(format=genome.encoding,genome=row['genome']),descriptors=descriptors,
             quality=dict(metric=entry['metric'],direction=entry['direction'],value=float(entry['quality'])),
             diversity=dict(operator_types=float(len({p.operator for p in genome.primitives}))),
             contamination=dict(policy='train-fit_validation-selection_no-target-test',raw_sha256=provenance['raw_sha256'],

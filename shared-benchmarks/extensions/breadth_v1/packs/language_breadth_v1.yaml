@@ -1,0 +1,11 @@
+schema_version: 1.0.0
+pack_name: language_breadth_v1
+ladder_tier: B
+benchmarks: [shakespeare_byte_lm, shakespeare_context64_lm, aesop_context64_lm, delayed_copy_lm]
+budget_policy: {evaluation_count: 64}
+symmetry: symmetric
+modalities: [text]
+expected_local_runtime_class: medium
+minimum_contenders: [bigram_lm, trigram_lm, unigram_lm]
+suitability: daily
+full_fidelity_local_safe: false

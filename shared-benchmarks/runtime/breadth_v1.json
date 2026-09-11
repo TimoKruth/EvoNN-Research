@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0.0",
+  "evidence_class": "exploratory-scientific",
+  "scope": "Additive language breadth workloads; no admission, adequacy or superiority claim. Existing Tier-B definitions unchanged.",
+  "versions": {
+    "numpy": "2.4.4",
+    "scipy": "1.17.1",
+    "scikit-learn": "1.8.0",
+    "pandas": "3.0.2",
+    "openml": "0.15.1"
+  },
+  "split_policy": "Pinned byte corpora: contiguous 70/15/15 before windows; protected test unused. Generated delayed copy: independent examples, seeded 80/20 split.",
+  "reference_seed": 42,
+  "benchmarks": {
+    "shakespeare_context64_lm": {
+      "loader": "shakespeare_bytes_v1",
+      "source_url": "https://raw.githubusercontent.com/karpathy/char-rnn/370cbcd448eb7daf32f21a6be560b70e0b33c4e3/data/tinyshakespeare/input.txt",
+      "source_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+      "source_size_bytes": 1115394,
+      "license": "Public-domain Shakespeare text; source transcription from char-rnn tinyshakespeare",
+      "context": 64,
+      "stride": 32,
+      "train_limit": 4096,
+      "validation_limit": 768,
+      "split_fractions": [
+        0.7,
+        0.85
+      ],
+      "test_policy": "last 15 percent reserved and never consumed",
+      "definition_sha256": "b5f3ef3cf96d23a4685763f8f70beff8b9f5bf5a0c583e582d1c19af302b3854",
+      "reference_raw_sha256": "1fa83253b4be6e63cb8436a4c41f0fc18600e85bd8f777e69da113d7b03ffe83",
+      "reference_split_sha256": "eee498382dd5ba692ffeca0f75de33a68210f7014239cc0d0e3da238da4e762a"
+    },
+    "aesop_context64_lm": {
+      "loader": "byte_corpus_v1",
+      "source_url": "https://www.gutenberg.org/cache/epub/21/pg21.txt",
+      "source_sha256": "48f2d310226e175250988747ba4c81ff832a218b83c141b38c6dc047a25c1958",
+      "source_size_bytes": 272338,
+      "license": "Project Gutenberg eBook 21; source includes Project Gutenberg License",
+      "content_byte_range": [
+        915,
+        253421
+      ],
+      "context": 64,
+      "stride": 32,
+      "train_limit": 4096,
+      "validation_limit": 768,
+      "split_fractions": [
+        0.7,
+        0.85
+      ],
+      "test_policy": "last 15 percent reserved and never consumed",
+      "definition_sha256": "5cec3a20fb3df7cae9109b418ffcd226c5475772fb461463202c17ee2ef816d0",
+      "reference_raw_sha256": "81557e82a51c0f89bff891e417a664020ca91b84f8eaf90859d209f826a16d7a",
+      "reference_split_sha256": "c1fb5f9baa19086e8c49908d1ea7a49f76adef24537ef362f9258d2ebf2d21b0"
+    },
+    "delayed_copy_lm": {
+      "loader": "make_delayed_copy_v1",
+      "samples": 2048,
+      "context": 64,
+      "vocabulary": 16,
+      "license": "CC0 generated data",
+      "source_url": "generator:make_delayed_copy_v1",
+      "definition_sha256": "1ed1d9b2679bfcfac2d8e647818da660a5965992b63cd46c3474d49b5858ae3f",
+      "reference_raw_sha256": "5d1086ec7651f70cdd376f40d45619a1e4f4bf7883ce9647e29d7b2c08078fd2",
+      "reference_split_sha256": "9ea6c2fb599c76719ebee24e3a87561fe20beaf04f5647f4622b23776bfb9e10"
+    }
+  },
+  "reference_date": "2026-09-11"
+}

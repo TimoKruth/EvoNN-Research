@@ -194,6 +194,8 @@ class Backend:
         return Tensor(np.maximum(value.data, 0), ((value, lambda g: g * (value.data > 0)),))
 
     def activate(self, value, name):
+        if name == "identity":
+            return value
         if name == "relu":
             return self.relu(value)
         if name == "tanh":

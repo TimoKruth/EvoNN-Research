@@ -1,0 +1,14 @@
+# Same extensible search with differentiable shared cells; not a superiority claim.
+pack: tier_a_contract
+budget: 16
+seed: 42
+epochs: 12
+backend: numpy_fallback
+timeout: 300
+fit_timeout: 90
+research:
+  version: 2
+  evaluator: trainable
+  normalization: rms
+  inheritance: compatible
+  selection: diverse

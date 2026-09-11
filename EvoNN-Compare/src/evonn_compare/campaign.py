@@ -14,6 +14,7 @@ import signal
 import subprocess
 import sys
 import time
+from typing import Literal
 
 import numpy as np
 import yaml
@@ -28,6 +29,8 @@ from evonn_shared.runtime_io import code_identity, source_identity, encode
 from evonn_shared.runtime_host import host_fields
 from evonn_shared.runtime_budget import execution_budget
 from evonn_shared.runtime_journal import load_runtime_checkpoint
+from evonn_shared.hierarchy_policy import HierarchyResearchPolicy
+from evonn_shared.prism_policy import PrismResearchPolicy
 from evonn_shared.telemetry import ArtifactReference
 from .audit import artifact_json, benchmark_audit
 from .cases import Case, evaluate_case
@@ -46,6 +49,9 @@ class CampaignSpec(BaseModel):
     systems: list[str] = Field(default_factory=lambda: list(SYSTEMS), min_length=1)
     backend: str = "mlx_native"
     epochs: int = Field(default=12, ge=1, le=100)
+    stratograph_research: HierarchyResearchPolicy | None = None
+    prism_research: PrismResearchPolicy | None = None
+    topograph_variant: Literal["legacy", "mechanics", "training", "archive", "broad", "open"] | None = None
     enhanced: bool = False
     timeout: float = Field(default=300.0, gt=0, le=1740)
     fit_timeout: float = Field(default=90.0, gt=0, le=1800)
@@ -54,6 +60,15 @@ class CampaignSpec(BaseModel):
 
     @model_validator(mode="after")
     def valid(self):
+        if self.topograph_variant is not None and set(self.systems) != set(SYSTEMS):
+            raise ValueError("Topograph research campaigns require every engine and Contenders")
+        if self.prism_research is not None and set(self.systems) != set(SYSTEMS):
+            raise ValueError("Prism research campaigns require every engine and Contenders")
+        if self.stratograph_research is not None:
+            if set(self.systems) != set(SYSTEMS):
+                raise ValueError("hierarchy research campaigns require every engine and Contenders")
+            if self.stratograph_research.screen_epochs > self.epochs:
+                raise ValueError("hierarchy screening exceeds full epoch allocation")
         if self.backend not in {"mlx_native", "numpy_fallback"}:
             raise ValueError("explicit native or portability backend required")
         if self.analysis != "descriptive_repeated_seed_no_superiority_claim":
@@ -259,8 +274,20 @@ def match_config(config, manifest, case, system):
                     "cache": manifest["cache"], "shared_root": str(ROOT / "shared-benchmarks")}
         if system == "stratograph":
             expected["variant"] = "shared"
+            policy = spec.stratograph_research.model_dump(mode="json") if spec.stratograph_research else None
+            if config.get("research") != policy:
+                raise ValueError("campaign hierarchy research policy mismatch")
+        if system == "prism":
+            # Historical manifests/exports omitted these additive fields. New
+            # exports must match the explicitly frozen experiment or defaults.
+            settings = (spec.prism_research or PrismResearchPolicy()).model_dump()
+            if spec.prism_research is not None or "variant" in config:
+                if any(config.get(key) != value for key, value in settings.items()):
+                    raise ValueError("campaign Prism research policy mismatch")
         if system == "topograph":
             expected.update(benchmark_pooling=False, novelty_weight=0.0)
+            if config.get("variant", "legacy") != (spec.topograph_variant or "legacy"):
+                raise ValueError("campaign Topograph research policy mismatch")
         if any(config[key] != value for key, value in expected.items()):
             raise ValueError("campaign export training settings mismatch")
     elif config["fit_timeout_seconds"] != spec.fit_timeout or config["enhanced"] != spec.enhanced:
@@ -370,6 +397,14 @@ def run_campaign(root, *, session_timeout=1800, max_runs=None):
                 command += ["--backend", spec.backend, "--epochs", str(spec.epochs)]
             elif spec.enhanced:
                 command.append("--enhanced")
+            if system == "stratograph" and spec.stratograph_research is not None:
+                command += ["--research", json.dumps(spec.stratograph_research.model_dump(mode="json"), sort_keys=True)]
+            if system == "topograph" and spec.topograph_variant is not None:
+                command += ["--variant", spec.topograph_variant]
+            if system == "prism" and spec.prism_research is not None:
+                for key, value in spec.prism_research.model_dump().items():
+                    if value is not None:
+                        command += ["--" + key.replace("_", "-"), json.dumps(value, sort_keys=True) if isinstance(value, dict) else value]
             if run is not None:
                 if system == "contenders":
                     raise ValueError("incomplete Contenders run has no resume contract; retained without restarting")

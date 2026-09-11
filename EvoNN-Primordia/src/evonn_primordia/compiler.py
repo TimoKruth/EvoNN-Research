@@ -29,15 +29,16 @@ class CompiledPrimitive:
         self.weights["input.b"] = np.zeros(width, np.float32)
         for index, primitive in enumerate(genome.primitives):
             key = f"p{index}"
+            if primitive.operator == "identity":
+                continue
             weight(key + ".w", (width, width))
             self.weights[key + ".b"] = np.zeros(width, np.float32)
             if primitive.operator == "gate":
                 weight(key + ".gate", (width, width))
             if primitive.operator == "sparse":
                 # A structural local mask, independent of labels and run RNG.
-                self.masks[key] = ((np.arange(width)[:, None] - np.arange(width)[None, :]) % width < 2).astype(
-                    np.float32
-                )
+                distances = (np.arange(width)[:, None] - np.arange(width)[None, :]) % width
+                self.masks[key] = np.isin(distances, [v % width for v in genome.sparse_offsets]).astype(np.float32)
         weight("output.w", (width, output_dim))
         self.weights["output.b"] = np.zeros(output_dim, np.float32)
 
@@ -57,33 +58,47 @@ class CompiledPrimitive:
                 or np.any(tokens >= self.output_dim)
             ):
                 raise ValueError("integer in-vocabulary token matrix required")
-            # Each position observes its own token only, never future targets.
+            # Token projection precedes strictly causal temporal processing.
             x = b.array(np.eye(self.output_dim, dtype=np.float32)[tokens.astype(np.int64)])
         else:
             x = features.reshape((features.shape[0], -1))
         hidden = b.tanh(x @ parameters["input.w"] + parameters["input.b"])
         if self.token_input:
             length = hidden.shape[1]
-            causal = (
-                np.tril(np.ones((length, length), dtype=np.float32))
-                / np.arange(1, length + 1, dtype=np.float32)[:, None]
-            )
+            if self.genome.temporal_mode == "lag":
+                causal = np.eye(length, k=-self.genome.temporal_lag, dtype=np.float32)
+            else:
+                causal = (
+                    np.tril(np.ones((length, length), dtype=np.float32))
+                    / np.arange(1, length + 1, dtype=np.float32)[:, None]
+                )
             hidden = (hidden + b.array(causal) @ hidden) * 0.5
+        states = [hidden]
         for index, primitive in enumerate(self.genome.primitives):
+            if self.genome.sources:
+                refs = self.genome.sources[index]
+                hidden = states[refs[0]]
+                for ref in refs[1:]:
+                    hidden = hidden + states[ref]
+                hidden = hidden / len(refs)
             key = f"p{index}"
-            weight = parameters[key + ".w"]
-            if primitive.operator == "sparse":
-                weight = weight * b.array(self.masks[key])
-            value = b.activate(hidden @ weight + parameters[key + ".b"], primitive.activation)
-            if primitive.operator == "gate":
-                value = value * b.sigmoid(hidden @ parameters[key + ".gate"])
-            elif primitive.operator == "residual":
-                value = (value + hidden) * 0.5
+            if primitive.operator == "identity":
+                value = hidden
+            else:
+                weight = parameters[key + ".w"]
+                if primitive.operator == "sparse":
+                    weight = weight * b.array(self.masks[key])
+                value = b.activate(hidden @ weight + parameters[key + ".b"], primitive.activation)
+                if primitive.operator == "gate":
+                    value = value * b.sigmoid(hidden @ parameters[key + ".gate"])
+                elif primitive.operator == "residual":
+                    value = (value + hidden) * 0.5
             if primitive.merge == "mean":
                 value = (value + hidden) * 0.5
             elif primitive.merge == "product":
                 value = value * b.tanh(hidden)
             hidden = value
+            states.append(hidden)
         return hidden @ parameters["output.w"] + parameters["output.b"]
 
 

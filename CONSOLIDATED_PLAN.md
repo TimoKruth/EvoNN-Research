@@ -142,14 +142,48 @@ failed or missing executions leave the comparison incomplete. Do not omit
 Stratograph while its proxy is being improved. The completed focused confirmation
 remains historical evidence and does not satisfy this new four-engine requirement.
 
-1. Implement and qualify training-only hierarchy-feature normalization with
-   explicit versioned preprocessing/replay semantics; consider a shallower or
-   residual-preserving proxy after a matched ablation. Preserve legacy model
-   behavior. The completed higher-budget comparison retains the original
-   Stratograph implementation as the reference; qualify changes in a new frozen
-   comparison with all four engines and Contenders, not by replacing old results.
-2. Use the confirmed bounded Prism LM finding to design a separate, frozen
-   generalization comparison with all four engines and Contenders before
+1. Qualify the opt-in Stratograph v2 implementation described in
+   [its runtime README](EvoNN-Stratograph/README.md#explicit-version-2-research-execution).
+   Implemented: training-only hierarchy normalization with saved replay buffers;
+   local projection identities and explicit randomization; representation-aware
+   inheritance without epoch discounts; bidirectional macro edits and wider
+   mutation support; protected exploration, behavioral novelty and archive
+   revisitation; charged screening/full-fit diagnostics; differentiable shared
+   cells and an extensible primitive registry. Legacy execution remains the
+   default when no research policy is declared. This is implementation progress,
+   not scientific qualification or an engine promotion.
+   Freeze separate normalization, inheritance, search and evaluator ablations
+   before their combined confirmation. Set `evolve_representation: false` for
+   fixed-representation diagnostics. Every new comparison includes all four
+   engines and Contenders on every declared combination, with fresh confirmation
+   seeds and matched work accounting. Preserve historical producers/results;
+   leave failed or missing runs visible and the comparison incomplete. Evaluate
+   quality together with coverage, revival of weak candidates and screening rank
+   reversals; never remove a supported direction solely on short-run performance.
+2. Qualify Prism's implemented exploration policies, documented in
+   [the central runtime instructions](README.md#prism-exploration-policies).
+   `open` combines archive parents, protected weak lineages and fresh starts;
+   transfer-coverage and learning-progress epoch allocation; broader reversible
+   mutations and composable blocks. `legacy`, `archive`, `training` and `broad`
+   remain explicit controls. Per-epoch and lineage telemetry, cold-initialization
+   controls, weight-bound optional Adam continuation, and an optional MLX optimizer
+   are implemented. Existing genome identities and frozen evidence remain intact.
+   Package/contract tests and native crash/resume/replay checks establish runtime
+   correctness, not scientific improvement. Keep the NumPy optimizer default:
+   the initial tiny MLX-CPU microbenchmark favored it over native optimizer arrays.
+   Freeze separate archive/training/proposal ablations with fresh seeds, complete
+   all-engine/Contenders matrices, per-task quality margins, diversity/revival
+   criteria and both work and wall-time accounting. A cold-search control does
+   not ensure identical later proposals; use the implemented `finalist-config`
+   and `fixed_genomes` mode to freeze architectures and per-fit training
+   allowances. Prior discovery remains explicitly `reported_prior`, not a
+   charged-prior gain claim. Retain negative/inconclusive
+   variants as research options instead of excluding their architectural paths.
+   Use the confirmed bounded Prism LM finding to design a separate, frozen
+   generalization comparison. The additive `language_breadth_v1` workload includes
+   longer contexts, Aesop and delayed memory alongside the original LM task;
+   runtime safety and contender adequacy remain unqualified. Include all four
+   engines and Contenders before
    accessing the protected text test split. Keep
    validation selection separate from final testing. Retain Primordia as a
    candidate for efficient tabular search, with its narrow tolerance margin and
@@ -162,6 +196,34 @@ remains historical evidence and does not satisfy this new four-engine requiremen
    from cProfile is a claimed unprofiled speedup. The September 11 analysis used a bounded
    parse-only wrapper, checked against all 17 catalog/pool YAML files and malformed
    input cases. It still reads and hash-checks source bytes; core integration is open.
+
+4. Qualify Primordia's implemented `breadth_v2` policy, documented in
+   [its runtime README](EvoNN-Primordia/README.md). Independent founders,
+   learning-progress early stopping with patient slots, quality/diversity/young/
+   reservoir/Pareto retention, optional cheapening, fresh retraining, configurable
+   size envelopes, branching, mutable sparsity, causal lag processing and
+   composed-motif mutations are implementation changes, not established gains.
+   Preserve `legacy_v1` as the frozen scientific reference. Predeclare separate
+   training, retention/mutation and representation ablations before combined
+   confirmation, using fresh seeds and all four engines plus Contenders on every
+   declared combination. Measure both matched-proposal and matched-compute
+   outcomes, behavioral coverage, lineage revival and fresh/inherited agreement.
+   Do not eliminate a supported operator or representation for poor early scores.
+   No new scientific campaign or protected-test access follows automatically.
+
+5. Qualify the implemented opt-in [Topograph research modes](README.md#topograph-research-modes).
+   `mechanics` is the common v2 control; test `training`, `archive` and `broad`
+   additions separately before combined `open` confirmation. Preserve the original
+   legacy evidence. Use fresh seeds and freeze quality/non-inferiority margins,
+   descriptor/coverage criteria and the statistical family before execution.
+   Include all four engines and Contenders on every declared combination, with
+   explicit Topograph policy in the campaign specification. Record effective
+   structural changes, resource rejections, lineage revival, late learning,
+   fresh/inherited agreement and matched-fit/matched-compute outcomes. Profile
+   runtime stages before changing process isolation or penalizing costly families.
+   Learned descriptors, broader dataset qualification and native cross-run seed
+   ingestion remain separately scoped work; this implementation does not close
+   WP-5.2, WP-6.2 or a scientific superiority gate.
 
 The repeated low/mid admission and explicit L4 aggregate surfaces are now
 available. WP-4.7's remaining preset/trusted-extended integration and the formal
