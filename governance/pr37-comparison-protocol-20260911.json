@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "purpose": "PR #37 repeated before/after implementation comparison; not an engine promotion claim",
+  "authorization": "User requested the comparison and merge readiness on 2026-09-11.",
+  "before_revision": "79249616e15fc4e5f9dd6d68eb3a62ff8153272b",
+  "after_revision": "c05f3616f98ef35a7e04df52ac4770eaad146873",
+  "systems": [
+    "contenders",
+    "prism",
+    "topograph",
+    "stratograph",
+    "primordia"
+  ],
+  "pack": "tier_b_core_v2",
+  "benchmarks": [
+    "banknote_classification",
+    "digits_image",
+    "diabetes_regression",
+    "shakespeare_byte_lm"
+  ],
+  "budgets": [
+    64,
+    128
+  ],
+  "seeds": [
+    83,
+    89,
+    97
+  ],
+  "backend": "mlx_native",
+  "device": "cpu",
+  "epochs": 12,
+  "population_size": 4,
+  "enhanced": false,
+  "timeout": 1200.0,
+  "fit_timeout": 120.0,
+  "planned_runs": 60,
+  "planned_fits": 5760,
+  "planned_native_winner_replays": 192,
+  "primordia_before": "Frozen main legacy implementation and its historical training caps.",
+  "primordia_after": {
+    "search_policy": "breadth_v2",
+    "max_width": 48,
+    "max_depth": 8,
+    "training_policy": "learning_progress_with_patient_slots/v2"
+  },
+  "analysis": {
+    "before": "pr37-before",
+    "after": "pr37-after",
+    "policy": "paired-seed-relative-v1",
+    "materiality": 0.01,
+    "claim_scope": "contract_validation",
+    "target_engines": [
+      "primordia"
+    ],
+    "panels": [
+      {
+        "pack": "tier_b_core_v2",
+        "budget": 64,
+        "engine": "primordia",
+        "benchmarks": [
+          "banknote_classification",
+          "digits_image",
+          "diabetes_regression",
+          "shakespeare_byte_lm"
+        ],
+        "seeds": [
+          83,
+          89,
+          97
+        ]
+      },
+      {
+        "pack": "tier_b_core_v2",
+        "budget": 128,
+        "engine": "primordia",
+        "benchmarks": [
+          "banknote_classification",
+          "digits_image",
+          "diabetes_regression",
+          "shakespeare_byte_lm"
+        ],
+        "seeds": [
+          83,
+          89,
+          97
+        ]
+      }
+    ],
+    "all_system_reporting": "Report every system by benchmark, budget, seed and revision, including runtime, failures and baseline outcomes."
+  },
+  "interpretation": [
+    "Three seeds support descriptive repeats; no significance or broad superiority claim is pre-authorized.",
+    "The before/after intervention includes search, training and representation changes plus versioned host identity. The existing statistical gate must retain those protocol-drift blockers; do not normalize them away.",
+    "Same proposal budgets and configured epoch/wall-clock envelopes do not imply equal consumed compute. Report actual training and invocation runtime separately.",
+    "This is source-bound implementation qualification. Separate mechanism ablations and matched-compute scientific confirmation remain required by the plan.",
+    "Protected test data remains unused. Validation-selected winners are not protected-test results.",
+    "Concurrent host load is retained as a timing limitation. No other project is paused or modified."
+  ],
+  "execution": {
+    "producer_checkouts": "Separate clean full clones pinned to the declared revisions with locked dependencies.",
+    "order": "Campaign slot order is budget, seed, system. Execute each corresponding before/after pair consecutively; reverse the arm order on alternating slots.",
+    "bounds": "One fit worker at a time; each campaign invocation <=1800 seconds and at most one new run. No installed scheduler.",
+    "resume": "Use committed campaign journals. Never replace completed runs or silently drop an engine.",
+    "failures": "Preserve every failed attempt and mark the comparison incomplete. Runtime fixes require a new frozen full comparison; no selective successful-only report."
+  },
+  "merge_acceptance": [
+    "All 60 runs and 5760 fits complete without unresolved failures; all exports L3 and all 192 native winners replay.",
+    "Append registry rows without editing historical evidence; publish checksummed registry and full dependencies for both hosted lanes.",
+    "Review the five named dashboard slices and actual outcome/runtime tradeoffs; report the recomputed decision category and all blockers.",
+    "Pass the PR evidence gate and all required hosted checks on the reviewed head. No automatic scientific promotion."
+  ]
+}

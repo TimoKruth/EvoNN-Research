@@ -163,6 +163,15 @@ remains historical evidence and does not satisfy this new four-engine requiremen
    parse-only wrapper, checked against all 17 catalog/pool YAML files and malformed
    input cases. It still reads and hash-checks source bytes; core integration is open.
 
+**Authorized PR #37 implementation comparison (2026-09-11):** the user requested
+the source-bound before/after comparison needed for merge readiness. The frozen
+[protocol](governance/pr37-comparison-protocol-20260911.json) declares all four
+engines plus Contenders at Tier-B budgets 64/128 on fresh seeds 83/89/97, in
+both revisions: 60 runs / 5,760 fits, MLX CPU and 12 configured epochs. Execution
+and analysis are pending. Historical evidence remains unchanged; the known
+policy/host-identity differences must remain explicit statistical blockers.
+This qualification does not close the scientific ablation/confirmation work below.
+
 4. Qualify Primordia's implemented `breadth_v2` policy, documented in
    [its runtime README](EvoNN-Primordia/README.md). Independent founders,
    learning-progress early stopping with patient slots, quality/diversity/young/
