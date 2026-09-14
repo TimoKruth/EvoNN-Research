@@ -1,0 +1,2856 @@
+{
+  "all_recompiled_neural_replays_passed": true,
+  "artifact_root": ".artifacts/jepa-native-pilot",
+  "classification": "exploratory_validation_only",
+  "contender_fits": 24,
+  "limitations": [
+    "one seed",
+    "fixed candidate architectures",
+    "validation only",
+    "uncontrolled host load",
+    "matched updates are not matched compute",
+    "reported teacher prior",
+    "small custom contender pool"
+  ],
+  "manifest_sha256": "587366aa2bf1ff568e67efef8f0ba69515764dabdc3b4fdf2486af9bf844f902",
+  "neural_fits": 96,
+  "neural_optimizer_updates": 8704,
+  "paired_contrasts": [
+    {
+      "contrast": "against_supervised_long",
+      "control": "9b7859af37e8575ba50d956a",
+      "id": "49c81277b6238ab0c2acd3ca",
+      "quality_improvement": -0.12777777777777777,
+      "robustness_improvement": -0.06666666666666665
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "a9deb885615b1df9bbf3e033",
+      "id": "f48c86816f107e5adcaba3d7",
+      "quality_improvement": -0.12222222222222223,
+      "robustness_improvement": -0.08055555555555555
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "2c41dd5b393ad9c24a87d703",
+      "id": "784dd37f91b93d6bcc230674",
+      "quality_improvement": -0.15277777777777773,
+      "robustness_improvement": -0.06666666666666665
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "8009ee04db169e8ee717c1ba",
+      "id": "12ed5d7ff025dd30528d9737",
+      "quality_improvement": -0.06388888888888888,
+      "robustness_improvement": -0.04999999999999999
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "2484326bb8587a0c8e1ba395",
+      "id": "ae4cc179ce32370ea5367215",
+      "quality_improvement": -0.06388888888888888,
+      "robustness_improvement": -0.05833333333333335
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "12f6b9ad1b24f0437f5f11f0",
+      "id": "54fb93131c68d52ac49195fe",
+      "quality_improvement": -0.08888888888888896,
+      "robustness_improvement": 0.005555555555555536
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "c287800f80fd6966b91d8c39",
+      "id": "290989df01dc0689dba12d3f",
+      "quality_improvement": -0.1611111111111112,
+      "robustness_improvement": -0.09444444444444444
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "39d909fb8b01c1a91e62aa2d",
+      "id": "50ca372f947f50cc68908027",
+      "quality_improvement": -0.09166666666666656,
+      "robustness_improvement": -0.07500000000000001
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "409d2dc0b0ef58a6dd30da79",
+      "id": "c64c2d1100611465ca4cc41e",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "9b7859af37e8575ba50d956a",
+      "id": "33f8322d7cf377af89bc4e1d",
+      "quality_improvement": -0.17777777777777776,
+      "robustness_improvement": -0.04722222222222222
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "a9deb885615b1df9bbf3e033",
+      "id": "860b51853822c75dc49ef5da",
+      "quality_improvement": -0.13055555555555554,
+      "robustness_improvement": -0.06944444444444442
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "2c41dd5b393ad9c24a87d703",
+      "id": "1c56f872af74631f8d1aa176",
+      "quality_improvement": -0.17499999999999993,
+      "robustness_improvement": -0.03888888888888886
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "8009ee04db169e8ee717c1ba",
+      "id": "4fb30e6d57ef9feb50e2eb4f",
+      "quality_improvement": -0.09722222222222221,
+      "robustness_improvement": -0.055555555555555525
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "2484326bb8587a0c8e1ba395",
+      "id": "8ae9ecc4551ff89a00c914bd",
+      "quality_improvement": -0.08333333333333337,
+      "robustness_improvement": -0.016666666666666663
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "12f6b9ad1b24f0437f5f11f0",
+      "id": "581b76a6ec5c8188efa45fab",
+      "quality_improvement": -0.027777777777777846,
+      "robustness_improvement": 0.03888888888888886
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "c287800f80fd6966b91d8c39",
+      "id": "aa658ec126d546d844adb40b",
+      "quality_improvement": -0.18611111111111112,
+      "robustness_improvement": -0.12777777777777777
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "39d909fb8b01c1a91e62aa2d",
+      "id": "fb52c0e1a3812e0674b68f05",
+      "quality_improvement": -0.11666666666666664,
+      "robustness_improvement": -0.07222222222222219
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "409d2dc0b0ef58a6dd30da79",
+      "id": "231f26ad13a729f3bc907804",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "9b7859af37e8575ba50d956a",
+      "id": "df7bc66399ca88e89d550d45",
+      "quality_improvement": -0.15833333333333327,
+      "robustness_improvement": -0.07222222222222219
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "a9deb885615b1df9bbf3e033",
+      "id": "e94aa018c0f64e1ed29246ae",
+      "quality_improvement": -0.17500000000000004,
+      "robustness_improvement": -0.04722222222222222
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "2c41dd5b393ad9c24a87d703",
+      "id": "2f9777ffe716850d4eaac55d",
+      "quality_improvement": -0.15833333333333327,
+      "robustness_improvement": -0.06944444444444442
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "8009ee04db169e8ee717c1ba",
+      "id": "de7b413e5ce46eeb7068bccb",
+      "quality_improvement": -0.06388888888888888,
+      "robustness_improvement": -0.033333333333333326
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "2484326bb8587a0c8e1ba395",
+      "id": "6f239daa3e4522d5366405dc",
+      "quality_improvement": -0.050000000000000044,
+      "robustness_improvement": 0.01944444444444443
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "12f6b9ad1b24f0437f5f11f0",
+      "id": "fd97e765bc047039bb971e76",
+      "quality_improvement": -0.047222222222222276,
+      "robustness_improvement": -0.04444444444444445
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "c287800f80fd6966b91d8c39",
+      "id": "2004f8caa208125d174de2ab",
+      "quality_improvement": -0.18333333333333335,
+      "robustness_improvement": -0.14166666666666666
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "39d909fb8b01c1a91e62aa2d",
+      "id": "9502d9998d235e1575a79052",
+      "quality_improvement": -0.1777777777777777,
+      "robustness_improvement": -0.16388888888888886
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "409d2dc0b0ef58a6dd30da79",
+      "id": "0f2293901795afa9543c38d1",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "9b7859af37e8575ba50d956a",
+      "id": "59ed13038f396a32b5a3f143",
+      "quality_improvement": -0.1611111111111111,
+      "robustness_improvement": -0.09722222222222221
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "a9deb885615b1df9bbf3e033",
+      "id": "26bd828266e2816c7913b82c",
+      "quality_improvement": -0.1527777777777778,
+      "robustness_improvement": -0.08611111111111108
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "2c41dd5b393ad9c24a87d703",
+      "id": "d27fe1c650a2babcd7fc1318",
+      "quality_improvement": -0.1555555555555555,
+      "robustness_improvement": -0.0888888888888889
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "8009ee04db169e8ee717c1ba",
+      "id": "5f16b2595fb344c603c1fcbd",
+      "quality_improvement": -0.08333333333333326,
+      "robustness_improvement": -0.036111111111111094
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "2484326bb8587a0c8e1ba395",
+      "id": "240d5ffb3f71cf5afc6eb02a",
+      "quality_improvement": 0.005555555555555536,
+      "robustness_improvement": -0.07222222222222224
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "12f6b9ad1b24f0437f5f11f0",
+      "id": "b6f67f72b9361d59958d9e32",
+      "quality_improvement": -0.025000000000000078,
+      "robustness_improvement": 0.01388888888888884
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "c287800f80fd6966b91d8c39",
+      "id": "ab82b751e8034d2f70bf4dac",
+      "quality_improvement": -0.21666666666666673,
+      "robustness_improvement": -0.12777777777777777
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "39d909fb8b01c1a91e62aa2d",
+      "id": "32375f3403ba123120f10b3a",
+      "quality_improvement": -0.07499999999999996,
+      "robustness_improvement": -0.07777777777777778
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "409d2dc0b0ef58a6dd30da79",
+      "id": "795a2605b9150e461b749c39",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "9b7859af37e8575ba50d956a",
+      "id": "ae0b66a3144b5442c00dbd6f",
+      "quality_improvement": -0.1555555555555555,
+      "robustness_improvement": -0.07499999999999996
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "a9deb885615b1df9bbf3e033",
+      "id": "72035ca3838ada7015c63a00",
+      "quality_improvement": -0.1527777777777778,
+      "robustness_improvement": -0.08055555555555555
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "2c41dd5b393ad9c24a87d703",
+      "id": "8120fb373cdab314e9723d08",
+      "quality_improvement": -0.15277777777777773,
+      "robustness_improvement": -0.07222222222222224
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "8009ee04db169e8ee717c1ba",
+      "id": "cd2bbe9c423c35e366f4cde7",
+      "quality_improvement": -0.07222222222222219,
+      "robustness_improvement": -0.04722222222222222
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "2484326bb8587a0c8e1ba395",
+      "id": "e6fecca12bad61d95e15f82e",
+      "quality_improvement": -0.12222222222222223,
+      "robustness_improvement": -0.05555555555555558
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "12f6b9ad1b24f0437f5f11f0",
+      "id": "57c00edac14f73f373affeb2",
+      "quality_improvement": -0.09722222222222227,
+      "robustness_improvement": -0.030555555555555558
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "c287800f80fd6966b91d8c39",
+      "id": "cfe4152392fd68fd71dc2d4f",
+      "quality_improvement": -0.20277777777777783,
+      "robustness_improvement": -0.1388888888888889
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "39d909fb8b01c1a91e62aa2d",
+      "id": "fa4fbd1d64050ddd653cfbac",
+      "quality_improvement": -0.11388888888888882,
+      "robustness_improvement": -0.11944444444444441
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "409d2dc0b0ef58a6dd30da79",
+      "id": "f5f49c85b85e277801deb4be",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "1964f8e61e891798f10f334e",
+      "id": "68e9c786b019b020c3790f56",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.00877192982456132
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "4173cce9e8350e2cbe27987b",
+      "id": "e99703b06cef10670019ffbb",
+      "quality_improvement": 0.00877192982456143,
+      "robustness_improvement": -0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "7761bf90f8d4b706109aabaa",
+      "id": "dd307937f4f3027c1c9c9f7f",
+      "quality_improvement": 0.00877192982456143,
+      "robustness_improvement": -0.01754385964912286
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "a0836a1f96858063db145d92",
+      "id": "834fd9d8c8ccb774d4c83ee0",
+      "quality_improvement": 0.0,
+      "robustness_improvement": -0.026315789473684292
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "f16a0d3a7c115b6b4b3a1cf2",
+      "id": "ff454e8788d049217cb093a5",
+      "quality_improvement": 0.01754385964912286,
+      "robustness_improvement": -0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "225aec15d22cdffa2a7be918",
+      "id": "873e08a912ca41f287791420",
+      "quality_improvement": -0.01754385964912286,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "1469a9ce7ecf840dfdae2dfc",
+      "id": "6512b7a5b6d2f5e13dc1addf",
+      "quality_improvement": 0.01754385964912275,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "ffd43ce7af28db45cc54d71a",
+      "id": "2a074039ec5e4e0246239056",
+      "quality_improvement": -0.01754385964912286,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "4689052c2178fdf3c32a69ad",
+      "id": "2cba3d64892e54c44a4fe560",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "1964f8e61e891798f10f334e",
+      "id": "04e1af18e8f0fd3fed60571f",
+      "quality_improvement": 0.01754385964912286,
+      "robustness_improvement": -0.026315789473684292
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "4173cce9e8350e2cbe27987b",
+      "id": "b15528c54db40b808389c1b8",
+      "quality_improvement": 0.00877192982456143,
+      "robustness_improvement": -0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "7761bf90f8d4b706109aabaa",
+      "id": "f726addc5447d161a6bd8aa4",
+      "quality_improvement": 0.00877192982456143,
+      "robustness_improvement": -0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "a0836a1f96858063db145d92",
+      "id": "0c701c19234f1ab286bb9d67",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "f16a0d3a7c115b6b4b3a1cf2",
+      "id": "20396e2d6742a81e5d559ff7",
+      "quality_improvement": 0.03508771929824561,
+      "robustness_improvement": 0.01754385964912286
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "225aec15d22cdffa2a7be918",
+      "id": "29d4abfd2e680c778336fa85",
+      "quality_improvement": -0.00877192982456143,
+      "robustness_improvement": 0.07017543859649122
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "1469a9ce7ecf840dfdae2dfc",
+      "id": "823fffdf3ef015dd39fd01c6",
+      "quality_improvement": 0.00877192982456132,
+      "robustness_improvement": -0.00877192982456132
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "ffd43ce7af28db45cc54d71a",
+      "id": "fdae4c34b1c6615759d01ca8",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "4689052c2178fdf3c32a69ad",
+      "id": "7df4019e546aa0fdef7d4abe",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "1964f8e61e891798f10f334e",
+      "id": "8e26b1dea36ed3927c7767d1",
+      "quality_improvement": 0.0,
+      "robustness_improvement": -0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "4173cce9e8350e2cbe27987b",
+      "id": "6415838b72e6be82d9155957",
+      "quality_improvement": 0.0,
+      "robustness_improvement": -0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "7761bf90f8d4b706109aabaa",
+      "id": "79e1a4f72ffe8b0f870a6201",
+      "quality_improvement": 0.01754385964912286,
+      "robustness_improvement": -0.01754385964912286
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "a0836a1f96858063db145d92",
+      "id": "928838bcdd84d4a1473e5ad8",
+      "quality_improvement": 0.0,
+      "robustness_improvement": -0.026315789473684292
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "f16a0d3a7c115b6b4b3a1cf2",
+      "id": "998d1b44663a91dda485e37c",
+      "quality_improvement": 0.01754385964912286,
+      "robustness_improvement": 0.01754385964912286
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "225aec15d22cdffa2a7be918",
+      "id": "97ca5ae169e69c3b651fcb9c",
+      "quality_improvement": 0.00877192982456143,
+      "robustness_improvement": 0.09649122807017552
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "1469a9ce7ecf840dfdae2dfc",
+      "id": "ff886c9a81804868db40bbd3",
+      "quality_improvement": 0.01754385964912275,
+      "robustness_improvement": 0.01754385964912286
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "ffd43ce7af28db45cc54d71a",
+      "id": "55a677285b1833fab5c72e93",
+      "quality_improvement": 0.00877192982456143,
+      "robustness_improvement": -0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "4689052c2178fdf3c32a69ad",
+      "id": "6df2f93a5ea8f9200492d57d",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "1964f8e61e891798f10f334e",
+      "id": "63c011ac7a0dd3c330ac3980",
+      "quality_improvement": -0.00877192982456132,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "4173cce9e8350e2cbe27987b",
+      "id": "ac5472f4ee208c8e04ade0d5",
+      "quality_improvement": 0.01754385964912286,
+      "robustness_improvement": -0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "7761bf90f8d4b706109aabaa",
+      "id": "09c40ed59a22bfae39d3b64a",
+      "quality_improvement": -0.00877192982456132,
+      "robustness_improvement": 0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "a0836a1f96858063db145d92",
+      "id": "5b41b0b3a277c733249505a7",
+      "quality_improvement": 0.02631578947368418,
+      "robustness_improvement": 0.06140350877192979
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "f16a0d3a7c115b6b4b3a1cf2",
+      "id": "fef450920cad0e669bc89b25",
+      "quality_improvement": 0.0,
+      "robustness_improvement": -0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "225aec15d22cdffa2a7be918",
+      "id": "abc30d21f9f215ebcd6fa0af",
+      "quality_improvement": -0.00877192982456143,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "1469a9ce7ecf840dfdae2dfc",
+      "id": "bf0c6992a66105d40c025376",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.01754385964912286
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "ffd43ce7af28db45cc54d71a",
+      "id": "294025c7148d86f0440072ff",
+      "quality_improvement": -0.01754385964912286,
+      "robustness_improvement": 0.02631578947368418
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "4689052c2178fdf3c32a69ad",
+      "id": "9b996a77d805d67dccb79eef",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "1964f8e61e891798f10f334e",
+      "id": "3f986a571a3fadafa3eedf59",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "4173cce9e8350e2cbe27987b",
+      "id": "be170f268a98a10df918f56e",
+      "quality_improvement": 0.0,
+      "robustness_improvement": -0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "7761bf90f8d4b706109aabaa",
+      "id": "d03dc0bcbf41fd96089e0ab6",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "a0836a1f96858063db145d92",
+      "id": "cca69e8f7695b692b36e4580",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.02631578947368418
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "f16a0d3a7c115b6b4b3a1cf2",
+      "id": "f4553dd4f409d7a2622af149",
+      "quality_improvement": 0.00877192982456143,
+      "robustness_improvement": -0.02631578947368418
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "225aec15d22cdffa2a7be918",
+      "id": "9f9e9725ad47a29923f40814",
+      "quality_improvement": -0.01754385964912286,
+      "robustness_improvement": 0.08771929824561409
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "1469a9ce7ecf840dfdae2dfc",
+      "id": "2ed1bb514f138b8d1c95d8d7",
+      "quality_improvement": 0.0,
+      "robustness_improvement": -0.00877192982456132
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "ffd43ce7af28db45cc54d71a",
+      "id": "1760e89e313cf84512cb3352",
+      "quality_improvement": -0.00877192982456143,
+      "robustness_improvement": 0.00877192982456143
+    },
+    {
+      "contrast": "against_supervised_long",
+      "control": "4689052c2178fdf3c32a69ad",
+      "id": "ccf686284387df823dd927d5",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "59ed13038f396a32b5a3f143",
+      "id": "ae0b66a3144b5442c00dbd6f",
+      "quality_improvement": 0.005555555555555591,
+      "robustness_improvement": 0.022222222222222254
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "26bd828266e2816c7913b82c",
+      "id": "72035ca3838ada7015c63a00",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.005555555555555536
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "d27fe1c650a2babcd7fc1318",
+      "id": "8120fb373cdab314e9723d08",
+      "quality_improvement": 0.002777777777777768,
+      "robustness_improvement": 0.016666666666666663
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "5f16b2595fb344c603c1fcbd",
+      "id": "cd2bbe9c423c35e366f4cde7",
+      "quality_improvement": 0.011111111111111072,
+      "robustness_improvement": -0.011111111111111127
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "240d5ffb3f71cf5afc6eb02a",
+      "id": "e6fecca12bad61d95e15f82e",
+      "quality_improvement": -0.12777777777777777,
+      "robustness_improvement": 0.016666666666666663
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "b6f67f72b9361d59958d9e32",
+      "id": "57c00edac14f73f373affeb2",
+      "quality_improvement": -0.07222222222222219,
+      "robustness_improvement": -0.0444444444444444
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "ab82b751e8034d2f70bf4dac",
+      "id": "cfe4152392fd68fd71dc2d4f",
+      "quality_improvement": 0.013888888888888895,
+      "robustness_improvement": -0.011111111111111127
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "32375f3403ba123120f10b3a",
+      "id": "fa4fbd1d64050ddd653cfbac",
+      "quality_improvement": -0.03888888888888886,
+      "robustness_improvement": -0.04166666666666663
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "795a2605b9150e461b749c39",
+      "id": "f5f49c85b85e277801deb4be",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "63c011ac7a0dd3c330ac3980",
+      "id": "3f986a571a3fadafa3eedf59",
+      "quality_improvement": 0.00877192982456132,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "ac5472f4ee208c8e04ade0d5",
+      "id": "be170f268a98a10df918f56e",
+      "quality_improvement": -0.01754385964912286,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "09c40ed59a22bfae39d3b64a",
+      "id": "d03dc0bcbf41fd96089e0ab6",
+      "quality_improvement": 0.00877192982456132,
+      "robustness_improvement": 0.0
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "5b41b0b3a277c733249505a7",
+      "id": "cca69e8f7695b692b36e4580",
+      "quality_improvement": -0.02631578947368418,
+      "robustness_improvement": -0.03508771929824561
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "fef450920cad0e669bc89b25",
+      "id": "f4553dd4f409d7a2622af149",
+      "quality_improvement": 0.00877192982456143,
+      "robustness_improvement": -0.01754385964912275
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "abc30d21f9f215ebcd6fa0af",
+      "id": "9f9e9725ad47a29923f40814",
+      "quality_improvement": -0.00877192982456143,
+      "robustness_improvement": 0.08771929824561409
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "bf0c6992a66105d40c025376",
+      "id": "2ed1bb514f138b8d1c95d8d7",
+      "quality_improvement": 0.0,
+      "robustness_improvement": -0.02631578947368418
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "294025c7148d86f0440072ff",
+      "id": "1760e89e313cf84512cb3352",
+      "quality_improvement": 0.00877192982456143,
+      "robustness_improvement": -0.01754385964912275
+    },
+    {
+      "contrast": "masked_against_full_input_transfer",
+      "control": "9b996a77d805d67dccb79eef",
+      "id": "ccf686284387df823dd927d5",
+      "quality_improvement": 0.0,
+      "robustness_improvement": 0.0
+    }
+  ],
+  "producer_commit": "49a4b6a",
+  "producer_source_sha256": "cc8f5fbf3ab21daf44b5eeb2c3766813cc16ffa68c50e6c4afa1f521ee3a367e",
+  "report_file_sha256": "2644ca3ffa10584ec557f53d147c9a3ceeb39ca3d21c372c5e6efad7db743d72",
+  "rows": [
+    {
+      "arm": "supervised_short",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "49c81277b6238ab0c2acd3ca",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.338704586029053,
+        "mean_feature_std": 0.9881851077079773,
+        "metric": "accuracy",
+        "missing_input_validation": 0.37777777777777777,
+        "validation": 0.5083333333333333
+      },
+      "result_sha256": "394fbeb34ee1bbf7fc1afa52cc8e7b279c6f6e999bef45f552486143b4d8a514",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4818369170025107
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "f48c86816f107e5adcaba3d7",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.494297027587891,
+        "mean_feature_std": 0.9656417369842529,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3416666666666667,
+        "validation": 0.5638888888888889
+      },
+      "result_sha256": "0c1ba87c705fb59fb1da346d1af5e3f222a9a67c9082b92eea7a9bb288105594",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4661618749960326
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "784dd37f91b93d6bcc230674",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.251551151275635,
+        "mean_feature_std": 0.9501492977142334,
+        "metric": "accuracy",
+        "missing_input_validation": 0.35555555555555557,
+        "validation": 0.45555555555555555
+      },
+      "result_sha256": "71276e921fd6b34655cbcf262ca3dc6411c60c4b47a50eb5674523265950ec18",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4777252080020844
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "12ed5d7ff025dd30528d9737",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.220983982086182,
+        "mean_feature_std": 1.1517457962036133,
+        "metric": "accuracy",
+        "missing_input_validation": 0.375,
+        "validation": 0.575
+      },
+      "result_sha256": "bb6ffea13eacfea7991506e024dfccb6487e139517531b75ab24d58a6f4441f1",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4796503339966876
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "ae4cc179ce32370ea5367215",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.209476947784424,
+        "mean_feature_std": 0.6349139213562012,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3416666666666667,
+        "validation": 0.525
+      },
+      "result_sha256": "d115f0298d6f6325f415a4aad30899334a012265d481e10d4495a27c68b9576b",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.4784179579946795
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "54fb93131c68d52ac49195fe",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.046482563018799,
+        "mean_feature_std": 0.7186514735221863,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3111111111111111,
+        "validation": 0.42777777777777776
+      },
+      "result_sha256": "26bc0d0f35856daba245761828791249bbba9e3f23f58b8302d3ed8308988cd1",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.4780927920000977
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "290989df01dc0689dba12d3f",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.307281494140625,
+        "mean_feature_std": 0.6667951345443726,
+        "metric": "accuracy",
+        "missing_input_validation": 0.43333333333333335,
+        "validation": 0.5444444444444444
+      },
+      "result_sha256": "28f488935dfa7acd3b33f69f7d1f8c45dbf2e1066b74b9cc765cbb4bc91f61e6",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4296435420037596
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "50ca372f947f50cc68908027",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.1990795135498047,
+        "mean_feature_std": 0.45095157623291016,
+        "metric": "accuracy",
+        "missing_input_validation": 0.42777777777777776,
+        "validation": 0.5166666666666667
+      },
+      "result_sha256": "8abc98eb7cc069bcce27b00160eb7b6a100eb67e33933673e25294ddbdec009a",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4294483339981525
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "c64c2d1100611465ca4cc41e",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "metric": "accuracy",
+        "missing_input_validation": 0.8055555555555556,
+        "validation": 0.9277777777777778
+      },
+      "result_sha256": "2e63643994710aac6f17da079cb545cb46d230243387f08792de9c4da64b41b4",
+      "seed": 131,
+      "system": "contenders",
+      "worker_seconds": 1.7966187079946394
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "9b7859af37e8575ba50d956a",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.422543048858643,
+        "mean_feature_std": 1.1218738555908203,
+        "metric": "accuracy",
+        "missing_input_validation": 0.4444444444444444,
+        "validation": 0.6361111111111111
+      },
+      "result_sha256": "2bd16cf34e3af374b3223a4c503554b7f147441718121f9015692409c7e2777d",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.471997166001529
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "a9deb885615b1df9bbf3e033",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.637332439422607,
+        "mean_feature_std": 1.1153564453125,
+        "metric": "accuracy",
+        "missing_input_validation": 0.4222222222222222,
+        "validation": 0.6861111111111111
+      },
+      "result_sha256": "8d3551fb2d54e3d018a910a8f2ace4b6f7286eaf6fe4486137d4431774066780",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4735997910029255
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "2c41dd5b393ad9c24a87d703",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.399618148803711,
+        "mean_feature_std": 1.0888057947158813,
+        "metric": "accuracy",
+        "missing_input_validation": 0.4222222222222222,
+        "validation": 0.6083333333333333
+      },
+      "result_sha256": "dc18b65d97dbfef7888088d64d4e96755ad028a1ecb672639ff7d536341e0f62",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4828362080006627
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "8009ee04db169e8ee717c1ba",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.298557758331299,
+        "mean_feature_std": 1.5908397436141968,
+        "metric": "accuracy",
+        "missing_input_validation": 0.425,
+        "validation": 0.6388888888888888
+      },
+      "result_sha256": "08242f81fd32be82348768dcb4b92dd92f42aebf12944b96ef8babd3547c3872",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4776623330035363
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "2484326bb8587a0c8e1ba395",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.486598491668701,
+        "mean_feature_std": 0.869369387626648,
+        "metric": "accuracy",
+        "missing_input_validation": 0.4,
+        "validation": 0.5888888888888889
+      },
+      "result_sha256": "f20ea32ea668eb13c3e8b02b658351f01e514cb93840daa119359a909038878c",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.4884840419981629
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "12f6b9ad1b24f0437f5f11f0",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.1508419513702393,
+        "mean_feature_std": 0.9856023788452148,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3055555555555556,
+        "validation": 0.5166666666666667
+      },
+      "result_sha256": "855dd4af042dcac99cbe12e082e41ae7aa645fce716d756429cb934473acbd4e",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.612495333996776
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "c287800f80fd6966b91d8c39",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.871551513671875,
+        "mean_feature_std": 0.8163552284240723,
+        "metric": "accuracy",
+        "missing_input_validation": 0.5277777777777778,
+        "validation": 0.7055555555555556
+      },
+      "result_sha256": "f278158b9f2617e9e42a2e5567899ffb0ec4aebc350d610a3a56bdbe21c9a596",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.587475166998047
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "39d909fb8b01c1a91e62aa2d",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.297273635864258,
+        "mean_feature_std": 0.6641143560409546,
+        "metric": "accuracy",
+        "missing_input_validation": 0.5027777777777778,
+        "validation": 0.6083333333333333
+      },
+      "result_sha256": "32a95782985751c26c82880cff96bf61bf88ab709a77272724ca4ccb967a43c7",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.6250372080030502
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "409d2dc0b0ef58a6dd30da79",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "metric": "accuracy",
+        "missing_input_validation": 0.8055555555555556,
+        "validation": 0.9277777777777778
+      },
+      "result_sha256": "9e02f67a62724d1a535da996b5540efd582a3e716fbab6db98738e83e42cad74",
+      "seed": 131,
+      "system": "contenders",
+      "worker_seconds": 1.9603942500034464
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "33f8322d7cf377af89bc4e1d",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.206095218658447,
+        "mean_feature_std": 0.9411434531211853,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3972222222222222,
+        "validation": 0.4583333333333333
+      },
+      "result_sha256": "7ae985e5fe5950be8207d09f7e480d597bf22c001ecc237e7e1e6c7eb4366dbd",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4392050829992513
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "860b51853822c75dc49ef5da",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.492756366729736,
+        "mean_feature_std": 0.8921516537666321,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3527777777777778,
+        "validation": 0.5555555555555556
+      },
+      "result_sha256": "5d0b4ee92cf9c2a0eab7032e1e27b47a85f0489d122d3578145294111cd3809b",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4421043750044191
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "1c56f872af74631f8d1aa176",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.008725166320801,
+        "mean_feature_std": 0.8749683499336243,
+        "metric": "accuracy",
+        "missing_input_validation": 0.38333333333333336,
+        "validation": 0.43333333333333335
+      },
+      "result_sha256": "f8e5c230aa817bdbe9d36f7b214d100e499831f6e5d4a2731d714d79d9fac25c",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4858934589938144
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "4fb30e6d57ef9feb50e2eb4f",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.950232744216919,
+        "mean_feature_std": 0.9054168462753296,
+        "metric": "accuracy",
+        "missing_input_validation": 0.36944444444444446,
+        "validation": 0.5416666666666666
+      },
+      "result_sha256": "3cd9e2b992c8dfd4b1ee2bbcaf913b0a8792df50e25adbb299f3599feb8a79fe",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.5448198749945732
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "8ae9ecc4551ff89a00c914bd",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.309008598327637,
+        "mean_feature_std": 0.5531864166259766,
+        "metric": "accuracy",
+        "missing_input_validation": 0.38333333333333336,
+        "validation": 0.5055555555555555
+      },
+      "result_sha256": "0e9f11fbcaaa422cd5e459794836044b697ac1e459615c094d95e7aad9d879cd",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.5311734590068227
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "581b76a6ec5c8188efa45fab",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 2.8199501037597656,
+        "mean_feature_std": 0.7233407497406006,
+        "metric": "accuracy",
+        "missing_input_validation": 0.34444444444444444,
+        "validation": 0.4888888888888889
+      },
+      "result_sha256": "61b72ecfcb9e8964344b2a06bdccfdbf4ab49b6c0a0e232ec9155d275da1ca69",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.4812860840029316
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "aa658ec126d546d844adb40b",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 2.9806699752807617,
+        "mean_feature_std": 0.6227107048034668,
+        "metric": "accuracy",
+        "missing_input_validation": 0.4,
+        "validation": 0.5194444444444445
+      },
+      "result_sha256": "c3004c47d6ca9510a1f9a3ee4a9df2a972add22a22bf740f10811481c14e0d28",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4742045419989154
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "fb52c0e1a3812e0674b68f05",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.3963050842285156,
+        "mean_feature_std": 0.43038854002952576,
+        "metric": "accuracy",
+        "missing_input_validation": 0.4305555555555556,
+        "validation": 0.49166666666666664
+      },
+      "result_sha256": "122256f03eb76d7c2a63b72d872c089bbe7f60341b971d71786cee4a3bc0f559",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.386985499993898
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "231f26ad13a729f3bc907804",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "metric": "accuracy",
+        "missing_input_validation": 0.8055555555555556,
+        "validation": 0.9277777777777778
+      },
+      "result_sha256": "87b8a71fcd4bacbfa5a1e6f0fc20136c984e703629eb9da3348763a07ed23eb3",
+      "seed": 131,
+      "system": "contenders",
+      "worker_seconds": 1.8043896670060349
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "df7bc66399ca88e89d550d45",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.9816668033599854,
+        "mean_feature_std": 0.9374240636825562,
+        "metric": "accuracy",
+        "missing_input_validation": 0.37222222222222223,
+        "validation": 0.4777777777777778
+      },
+      "result_sha256": "7839d8a76dfe1566227492c4b712ab33aaba52ad3f5aacd84ae9af9d0037326d",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.5257812079944415
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "e94aa018c0f64e1ed29246ae",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.44947624206543,
+        "mean_feature_std": 0.9669420719146729,
+        "metric": "accuracy",
+        "missing_input_validation": 0.375,
+        "validation": 0.5111111111111111
+      },
+      "result_sha256": "9b5719878a511c3c1b732df37aa249eb5a6c29436f6e614e7e9736626e707402",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4708157920031226
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "2f9777ffe716850d4eaac55d",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.860182046890259,
+        "mean_feature_std": 0.8793603181838989,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3527777777777778,
+        "validation": 0.45
+      },
+      "result_sha256": "07f72f46af79dc2fa92dc73821e6844fa47575fadbd42995398a9113994117c9",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4815402919994085
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "de7b413e5ce46eeb7068bccb",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.128669261932373,
+        "mean_feature_std": 1.0150938034057617,
+        "metric": "accuracy",
+        "missing_input_validation": 0.39166666666666666,
+        "validation": 0.575
+      },
+      "result_sha256": "ee6aec7a807f5a59d231f8b9ff2900e6a8cddcd80ed47a065084316f8fb672e0",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.5307494590015267
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "6f239daa3e4522d5366405dc",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.044355392456055,
+        "mean_feature_std": 0.6954032778739929,
+        "metric": "accuracy",
+        "missing_input_validation": 0.41944444444444445,
+        "validation": 0.5388888888888889
+      },
+      "result_sha256": "3f2b595b718817df96bb7760ca4a5da010d0846dfc801867ea80a677b4612c27",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.47512225000537
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "fd97e765bc047039bb971e76",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.5711705684661865,
+        "mean_feature_std": 0.8295565843582153,
+        "metric": "accuracy",
+        "missing_input_validation": 0.2611111111111111,
+        "validation": 0.46944444444444444
+      },
+      "result_sha256": "1d416266130dc9de4e9204d0d7ca77439a7c725adb2f5fdf6278da6cd4219122",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.5215395830018679
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "2004f8caa208125d174de2ab",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 2.921522617340088,
+        "mean_feature_std": 0.6867326498031616,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3861111111111111,
+        "validation": 0.5222222222222223
+      },
+      "result_sha256": "74c2a9e79bfbef8e117251494c1f7fd176a9fd1255f7883ab0852fb08fa75e84",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4259864580017165
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "9502d9998d235e1575a79052",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 2.881563901901245,
+        "mean_feature_std": 0.5120773315429688,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3388888888888889,
+        "validation": 0.4305555555555556
+      },
+      "result_sha256": "b88cf4498da981e9341e5ea1ffe977d5b19e2a4170c6fa255aaaebf416dc1d48",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4420202500041341
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "0f2293901795afa9543c38d1",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "metric": "accuracy",
+        "missing_input_validation": 0.8055555555555556,
+        "validation": 0.9277777777777778
+      },
+      "result_sha256": "33d57e68d7b480c2277959dd33a98fcabcc145b869f982ba2673a6e7c85b669a",
+      "seed": 131,
+      "system": "contenders",
+      "worker_seconds": 1.7021768750055344
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "59ed13038f396a32b5a3f143",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.052050590515137,
+        "mean_feature_std": 1.0038002729415894,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3472222222222222,
+        "validation": 0.475
+      },
+      "result_sha256": "b89b745effed615d1b767ad9cdea5cec556c6bfa1b803c770991c926daed8dd9",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4641672500001732
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "26bd828266e2816c7913b82c",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.167181491851807,
+        "mean_feature_std": 0.9052838087081909,
+        "metric": "accuracy",
+        "missing_input_validation": 0.33611111111111114,
+        "validation": 0.5333333333333333
+      },
+      "result_sha256": "30d37118d28e638fa51239be6f93e54d34bc36cca3879e4e3ef2a50b84b7d9f4",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.463323500000115
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "d27fe1c650a2babcd7fc1318",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.9747371673583984,
+        "mean_feature_std": 0.9828213453292847,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3333333333333333,
+        "validation": 0.4527777777777778
+      },
+      "result_sha256": "06604b1946b2bd54e24c59fcf5704aa474c7461b9166d2418aee4bee2f6155a5",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.516213874994719
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "5f16b2595fb344c603c1fcbd",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.553826808929443,
+        "mean_feature_std": 0.9742593765258789,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3888888888888889,
+        "validation": 0.5555555555555556
+      },
+      "result_sha256": "56f698dca98bc8424911f13616982e01729c8ae78221a216884be0126da8b8a9",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4794565420015715
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "240d5ffb3f71cf5afc6eb02a",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.8407418727874756,
+        "mean_feature_std": 0.7848476767539978,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3277777777777778,
+        "validation": 0.5944444444444444
+      },
+      "result_sha256": "a51b0708512fc1dfe1de053cda380ea74756a011fafbff7490407f9e26909d86",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.4688950419949833
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "b6f67f72b9361d59958d9e32",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.3190834522247314,
+        "mean_feature_std": 0.8046594262123108,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3194444444444444,
+        "validation": 0.49166666666666664
+      },
+      "result_sha256": "18d5766d1d3bcfc1c96db3d84c1836595a5468a5c7ac5652592e1acd065413a2",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.5178977499963366
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "ab82b751e8034d2f70bf4dac",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.6603896617889404,
+        "mean_feature_std": 0.6692050099372864,
+        "metric": "accuracy",
+        "missing_input_validation": 0.4,
+        "validation": 0.4888888888888889
+      },
+      "result_sha256": "c2eb5d9aceefe6858b3e2e5ff8392cb5b43a67321f481d97dc20e9855f5628c1",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4293965409960947
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "32375f3403ba123120f10b3a",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.181368350982666,
+        "mean_feature_std": 0.5497821569442749,
+        "metric": "accuracy",
+        "missing_input_validation": 0.425,
+        "validation": 0.5333333333333333
+      },
+      "result_sha256": "900b4e1b6cb4ff015a6531bc5d3e2d7edc390afd2c4fc5ceea606f434e127325",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4699083749947022
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "795a2605b9150e461b749c39",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "metric": "accuracy",
+        "missing_input_validation": 0.8055555555555556,
+        "validation": 0.9277777777777778
+      },
+      "result_sha256": "b6af4f5658b7e7f9ae37ff2a37a5837b6b18fecabd60c3ab18b41ba63389391e",
+      "seed": 131,
+      "system": "contenders",
+      "worker_seconds": 1.7342343340060324
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "ae0b66a3144b5442c00dbd6f",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.008444309234619,
+        "mean_feature_std": 0.9547178149223328,
+        "metric": "accuracy",
+        "missing_input_validation": 0.36944444444444446,
+        "validation": 0.48055555555555557
+      },
+      "result_sha256": "5048ba4f5a419e47f581b1261e8084a0b9537ad4025759eff63d4040af28338a",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4810077920046751
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "72035ca3838ada7015c63a00",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.488271713256836,
+        "mean_feature_std": 0.8850080966949463,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3416666666666667,
+        "validation": 0.5333333333333333
+      },
+      "result_sha256": "cd832d3f0728d9f316fb1dd5a312c62425b10ab7e3b4c1a4e95eb1edc0a54016",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4679653750063153
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "8120fb373cdab314e9723d08",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.719186782836914,
+        "mean_feature_std": 0.8934441804885864,
+        "metric": "accuracy",
+        "missing_input_validation": 0.35,
+        "validation": 0.45555555555555555
+      },
+      "result_sha256": "ff3dcc1e6177ca4ab4000eeabe0c7e3a3a526df717a1bebf3c4bc0040d67f180",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4647859579999931
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "cd2bbe9c423c35e366f4cde7",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.861914873123169,
+        "mean_feature_std": 1.039676547050476,
+        "metric": "accuracy",
+        "missing_input_validation": 0.37777777777777777,
+        "validation": 0.5666666666666667
+      },
+      "result_sha256": "e097dbfa007eed615c9e3818e88f2263056b3705a0831cbf1364b1f952ed0b0b",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4772568330008653
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "e6fecca12bad61d95e15f82e",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 4.438156604766846,
+        "mean_feature_std": 0.5618748664855957,
+        "metric": "accuracy",
+        "missing_input_validation": 0.34444444444444444,
+        "validation": 0.4666666666666667
+      },
+      "result_sha256": "a576f1b61f6d467f4396f6d26dbc2117bb76e1bc9de6d25a356bd80b3b406c32",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.5179404170048656
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "57c00edac14f73f373affeb2",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.4999914169311523,
+        "mean_feature_std": 0.7443321943283081,
+        "metric": "accuracy",
+        "missing_input_validation": 0.275,
+        "validation": 0.41944444444444445
+      },
+      "result_sha256": "3a657a021c4ebb6df0e731dc8f20b1c7f7fc978639ffd70d1ee359feb8dbf6db",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.4791042090000701
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "cfe4152392fd68fd71dc2d4f",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.4411561489105225,
+        "mean_feature_std": 0.6575987339019775,
+        "metric": "accuracy",
+        "missing_input_validation": 0.3888888888888889,
+        "validation": 0.5027777777777778
+      },
+      "result_sha256": "31d18dcce90d1be4b995514ff2ccc1fdcf054cb53805912802010e2f5dea18b0",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.477069084001414
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "digits",
+      "candidate": 1,
+      "id": "fa4fbd1d64050ddd653cfbac",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 3.3783507347106934,
+        "mean_feature_std": 0.5184767246246338,
+        "metric": "accuracy",
+        "missing_input_validation": 0.38333333333333336,
+        "validation": 0.49444444444444446
+      },
+      "result_sha256": "b7ff34872e3dbfe1192332f1cfbda615e2364def91de7f3e54606b2cc2025008",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4683562919963151
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "digits",
+      "candidate": 0,
+      "id": "f5f49c85b85e277801deb4be",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "metric": "accuracy",
+        "missing_input_validation": 0.8055555555555556,
+        "validation": 0.9277777777777778
+      },
+      "result_sha256": "3338c428ef5edebeb38fbbe55559692b95b0e5d790418f490ba79bec972472f8",
+      "seed": 131,
+      "system": "contenders",
+      "worker_seconds": 1.738809290996869
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "68e9c786b019b020c3790f56",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 2.0893161296844482,
+        "mean_feature_std": 0.8101259469985962,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9122807017543859,
+        "validation": 0.9122807017543859
+      },
+      "result_sha256": "81c680fc8030e65c4353ba9497289ad39aa74a691d8a898fb1a5f3180634becf",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4236129589990014
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "e99703b06cef10670019ffbb",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.8247859477996826,
+        "mean_feature_std": 1.0852909088134766,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9122807017543859,
+        "validation": 0.956140350877193
+      },
+      "result_sha256": "24a77548a71771f7f13d73922a14d9c3ca3d2803a71ae1247dec6fe7c06de089",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.422670833999291
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "dd307937f4f3027c1c9c9f7f",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 2.369492530822754,
+        "mean_feature_std": 0.7376516461372375,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8771929824561403,
+        "validation": 0.9210526315789473
+      },
+      "result_sha256": "63f6c72971e62bf32fa4456d0c492381490cb97441fd0b2593dcb02fc760ec5a",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4642980419957894
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "834fd9d8c8ccb774d4c83ee0",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.9559590816497803,
+        "mean_feature_std": 1.3551344871520996,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8421052631578947,
+        "validation": 0.9210526315789473
+      },
+      "result_sha256": "8c15b1dd7d5232adcd094c4cb1ed1354aca369992ebf39bede71806ffbb676b1",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4248483330011368
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "ff454e8788d049217cb093a5",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.9789100885391235,
+        "mean_feature_std": 0.7511518597602844,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8771929824561403,
+        "validation": 0.9385964912280702
+      },
+      "result_sha256": "f6d9c92f73bffe990638a82e2ecfb92de6b972f0c87d618351d7305bcfaf5e7a",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.4360781249997672
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "873e08a912ca41f287791420",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.199122428894043,
+        "mean_feature_std": 0.8776342868804932,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8421052631578947,
+        "validation": 0.9122807017543859
+      },
+      "result_sha256": "057f6fa7c97be7d9d7a224b27f20eb2f1649c86aa7f312e57696e8213e3a3b37",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.4597966660003294
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "6512b7a5b6d2f5e13dc1addf",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.3466185331344604,
+        "mean_feature_std": 0.7103580236434937,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9122807017543859,
+        "validation": 0.956140350877193
+      },
+      "result_sha256": "a22c8138584547118f45854caed7dfd1c1e109ef5af30fb6ffac9bd7b7f2cac4",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4145542920014123
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "2a074039ec5e4e0246239056",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.1110695600509644,
+        "mean_feature_std": 0.8168169856071472,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9210526315789473,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "dfb5c0cf735403312ce27745b5113b3da4a8b6bc69ec22023fdc95191f9c7f2f",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4713638749963138
+    },
+    {
+      "arm": "supervised_short",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "2cba3d64892e54c44a4fe560",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "metric": "accuracy",
+        "missing_input_validation": 0.9385964912280702,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "af21907dc040af9e00491e00d0164de66369d91510ed6a291f3a57d7283088dd",
+      "seed": 131,
+      "system": "contenders",
+      "worker_seconds": 1.5826355410026736
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "1964f8e61e891798f10f334e",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.7624479532241821,
+        "mean_feature_std": 0.9831191897392273,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9035087719298246,
+        "validation": 0.9122807017543859
+      },
+      "result_sha256": "950870a3d085ed9cce08e8e6cf4cc77543e1872b53eb87fab804ea6d9401bc0e",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.46760833299777
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "4173cce9e8350e2cbe27987b",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.6703696250915527,
+        "mean_feature_std": 1.2125449180603027,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9210526315789473,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "b941dec105a49b275f8b6fb930f9217960781537c9af3e02252a2bd4dbd8fc3e",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4736032920045545
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "7761bf90f8d4b706109aabaa",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.8959362506866455,
+        "mean_feature_std": 0.9057133197784424,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8947368421052632,
+        "validation": 0.9122807017543859
+      },
+      "result_sha256": "bec8b5392c8d2681c55a7dbf99b7c6bbe5013a460b9defa8838dbce3f70c8a94",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4639046669981326
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "a0836a1f96858063db145d92",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.7191100120544434,
+        "mean_feature_std": 1.5959326028823853,
+        "metric": "accuracy",
+        "missing_input_validation": 0.868421052631579,
+        "validation": 0.9210526315789473
+      },
+      "result_sha256": "44e839a16c8e438fe196234652e586df1c095751af473dc0a703f28e6b96e996",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.478780249999545
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "f16a0d3a7c115b6b4b3a1cf2",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.6682395935058594,
+        "mean_feature_std": 0.9144169688224792,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8859649122807017,
+        "validation": 0.9210526315789473
+      },
+      "result_sha256": "82ade18679de048108abc635729c90a2c40659916d9c82f60508af776ecfd07a",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.5761527080030646
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "225aec15d22cdffa2a7be918",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.1150286197662354,
+        "mean_feature_std": 1.2425122261047363,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8421052631578947,
+        "validation": 0.9298245614035088
+      },
+      "result_sha256": "11f9147f1c099350fd849d586f4316dad31ecd4ba5fa50594c42e48175c9f4d6",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.5243189590037218
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "1469a9ce7ecf840dfdae2dfc",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.218550205230713,
+        "mean_feature_std": 0.8568412065505981,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9122807017543859,
+        "validation": 0.9385964912280702
+      },
+      "result_sha256": "b8f89f6464987ee0c899240c2bc92d35ca4bbc79cb08e99d27bc19fc5d901997",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.464944084000308
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "ffd43ce7af28db45cc54d71a",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.0572632551193237,
+        "mean_feature_std": 1.1063363552093506,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9210526315789473,
+        "validation": 0.9649122807017544
+      },
+      "result_sha256": "63f6d7bdb91e324e986e21c713e85f345ca6d24f245c27da81f7f78e5e2e833c",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.5806078750028973
+    },
+    {
+      "arm": "supervised_long",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "4689052c2178fdf3c32a69ad",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "metric": "accuracy",
+        "missing_input_validation": 0.9385964912280702,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "1f94eed71b858a5154473eaeb85c9af9956661c1a1f30e3ee57bc08819bdcf48",
+      "seed": 131,
+      "system": "contenders",
+      "worker_seconds": 1.639400583000679
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "04e1af18e8f0fd3fed60571f",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 2.4101688861846924,
+        "mean_feature_std": 0.7088720202445984,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8771929824561403,
+        "validation": 0.9298245614035088
+      },
+      "result_sha256": "60ba642d4daacec566fe4ed82b92e03e6fe09ac07c12fbd7168f752f8f31fc09",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4692766669977573
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "b15528c54db40b808389c1b8",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.65614914894104,
+        "mean_feature_std": 1.007872223854065,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9122807017543859,
+        "validation": 0.956140350877193
+      },
+      "result_sha256": "c1cdd9bdbe95d359b04accb7a8787db20c2a1234c64f9d2f38735e1ef18ba61e",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.475085958998534
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "f726addc5447d161a6bd8aa4",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 2.5051653385162354,
+        "mean_feature_std": 0.7206175327301025,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8859649122807017,
+        "validation": 0.9210526315789473
+      },
+      "result_sha256": "65b95f563e3bb29fa6edf33af672274b5fe7ee243c056759871bf19d473c99c2",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.5188655409947387
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "0c701c19234f1ab286bb9d67",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.5910459756851196,
+        "mean_feature_std": 1.163650393486023,
+        "metric": "accuracy",
+        "missing_input_validation": 0.868421052631579,
+        "validation": 0.9210526315789473
+      },
+      "result_sha256": "1d76f67bbe53f34043b42e424e4a84660b07efaadfdadb1f3aadbc5fdf172b8f",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.5780896659998689
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "20396e2d6742a81e5d559ff7",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.4098542928695679,
+        "mean_feature_std": 0.7119046449661255,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9035087719298246,
+        "validation": 0.956140350877193
+      },
+      "result_sha256": "dbac0405524d7f90dc78f3eb92a3b35824e4a4735f0437dc2b44f0ba021f44bc",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.5704210000039893
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "29d4abfd2e680c778336fa85",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.11909019947052,
+        "mean_feature_std": 0.8884199857711792,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9122807017543859,
+        "validation": 0.9210526315789473
+      },
+      "result_sha256": "503b0f178edc297db7acae810f2d70990e9ab543cfd97747a4b691e49769e0ce",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.5797596249976777
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "823fffdf3ef015dd39fd01c6",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.3246852159500122,
+        "mean_feature_std": 0.6917747259140015,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9035087719298246,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "c4b14237b210f5861655619953ef71878ab50364368f1f453e40bbdfdb503104",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4758597079999163
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "fdae4c34b1c6615759d01ca8",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.1027289628982544,
+        "mean_feature_std": 0.7867193222045898,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9210526315789473,
+        "validation": 0.9649122807017544
+      },
+      "result_sha256": "13c1f8619baddae4ea9985deafb4b5e2a01c49cc9b5cb1c63a0ad04796a21dae",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.46573641699797
+    },
+    {
+      "arm": "reconstruction",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "7df4019e546aa0fdef7d4abe",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "metric": "accuracy",
+        "missing_input_validation": 0.9385964912280702,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "3b790118108d6bed8d632bc52a2679e46919390e4e35f40ea74d5f351eb349de",
+      "seed": 131,
+      "system": "contenders",
+      "worker_seconds": 1.5217084169998998
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "8e26b1dea36ed3927c7767d1",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 2.044320821762085,
+        "mean_feature_std": 0.8133682012557983,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8947368421052632,
+        "validation": 0.9122807017543859
+      },
+      "result_sha256": "7df8e51036bdc98a3657998ac7a54936bc62000338406ec3810739131b1ebaf9",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.5268761249972158
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "6415838b72e6be82d9155957",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.814347267150879,
+        "mean_feature_std": 1.088289737701416,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9122807017543859,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "efb0358abfd613547fb8a46c8bd45b887b7e8562a89e86f23fe0b2abee1feb09",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4787964170027408
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "79e1a4f72ffe8b0f870a6201",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 2.341005325317383,
+        "mean_feature_std": 0.747040867805481,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8771929824561403,
+        "validation": 0.9298245614035088
+      },
+      "result_sha256": "4f866480dd2a7ee7a271565ffd73fd93dada7f33636d7a19066719dbcde86e55",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.46780179200141
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "928838bcdd84d4a1473e5ad8",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.698111891746521,
+        "mean_feature_std": 1.194833755493164,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8421052631578947,
+        "validation": 0.9210526315789473
+      },
+      "result_sha256": "3a08d0b02c12ef9e94d2c3f76d7005b5d705d0aad31da8c44735070adbea4bef",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.5268039160000626
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "998d1b44663a91dda485e37c",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.5545557737350464,
+        "mean_feature_std": 0.7508202791213989,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9035087719298246,
+        "validation": 0.9385964912280702
+      },
+      "result_sha256": "c4172069358aee9ef65bccb7a151ff4170b2a0498920a37636e302ab57f15436",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.5401135830034036
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "97ca5ae169e69c3b651fcb9c",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.1812248229980469,
+        "mean_feature_std": 0.6219903826713562,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9385964912280702,
+        "validation": 0.9385964912280702
+      },
+      "result_sha256": "b2e7178b2d17d9a411a3f90fe73341159d9fd33f65ed0efc67943b8b7f706afc",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.5701379999954952
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "ff886c9a81804868db40bbd3",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.4204113483428955,
+        "mean_feature_std": 0.7686706781387329,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9298245614035088,
+        "validation": 0.956140350877193
+      },
+      "result_sha256": "28c1f5ed8c5646517b11ec9b3f3b9919198761420bbd29c212d2eb6d070752d1",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4771484169978066
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "55a677285b1833fab5c72e93",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.1781858205795288,
+        "mean_feature_std": 0.7613847255706787,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9122807017543859,
+        "validation": 0.9736842105263158
+      },
+      "result_sha256": "d92d1b2f9f58e5c9073d512a2695f56f30ae1ab6a2736620525ac0f13fe50137",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4816783330024919
+    },
+    {
+      "arm": "jepa",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "6df2f93a5ea8f9200492d57d",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "metric": "accuracy",
+        "missing_input_validation": 0.9385964912280702,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "576d5550f663fc2ce02fe1aef1de5ac74eb93e7237d65250cd0fc528311048bb",
+      "seed": 131,
+      "system": "contenders",
+      "worker_seconds": 1.5728205000050366
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "63c011ac7a0dd3c330ac3980",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.5971015691757202,
+        "mean_feature_std": 0.8577184677124023,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9035087719298246,
+        "validation": 0.9035087719298246
+      },
+      "result_sha256": "26600ca9d9bf291ce8a56157b61a9c8b1cdc66e94676dd670af3ae02ea686181",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4734109589990112
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "ac5472f4ee208c8e04ade0d5",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.7732480764389038,
+        "mean_feature_std": 1.020313024520874,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9122807017543859,
+        "validation": 0.9649122807017544
+      },
+      "result_sha256": "6396b32893f296257fca070847435559e28c28a47524ea356ccd6d2cb101d369",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.461220333003439
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "09c40ed59a22bfae39d3b64a",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.7039178609848022,
+        "mean_feature_std": 0.7945148944854736,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9035087719298246,
+        "validation": 0.9035087719298246
+      },
+      "result_sha256": "79f49166a45ec1a1e8cd902fb35be322a02a6778610e97f02b458e020d53ed95",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4601536249974743
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "5b41b0b3a277c733249505a7",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.5800702571868896,
+        "mean_feature_std": 1.1402857303619385,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9298245614035088,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "93a8e14707a13bace25825d605e91b9f9e4cddccc79a3d487e071409cd86267d",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.4683279169985326
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "fef450920cad0e669bc89b25",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.5401954650878906,
+        "mean_feature_std": 0.9712478518486023,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8771929824561403,
+        "validation": 0.9210526315789473
+      },
+      "result_sha256": "2dc02ee88e4e5ebea545193debb48b0c10b840c55e2a09d12b626da736f97418",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.460856582998531
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "abc30d21f9f215ebcd6fa0af",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.2805052995681763,
+        "mean_feature_std": 0.9409887194633484,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8421052631578947,
+        "validation": 0.9210526315789473
+      },
+      "result_sha256": "5a845db174ca521f6cedafc8a3c75865da2ba14b8622d0698c558f8f0ec11a63",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.5138457089997246
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "bf0c6992a66105d40c025376",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.2016534805297852,
+        "mean_feature_std": 0.9223976135253906,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9298245614035088,
+        "validation": 0.9385964912280702
+      },
+      "result_sha256": "0ed987ebc09f628399d822d2b17bcb34988ef73bdb727f419efc7e82578a6ab4",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4581604999984847
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "294025c7148d86f0440072ff",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.0789240598678589,
+        "mean_feature_std": 0.7709229588508606,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9473684210526315,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "cf49b3d32478e8009426040a0eddbd6127b97d4d7ebe8a1a2ceb55d561392274",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4759351249958854
+    },
+    {
+      "arm": "distillation",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "9b996a77d805d67dccb79eef",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "metric": "accuracy",
+        "missing_input_validation": 0.9385964912280702,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "11d44c8831042458d95c5d6376bd677f45ecbf30adc4843a34766c7fa2ab7ecc",
+      "seed": 131,
+      "system": "contenders",
+      "worker_seconds": 1.5240661249990808
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "3f986a571a3fadafa3eedf59",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.8424204587936401,
+        "mean_feature_std": 0.7817169427871704,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9035087719298246,
+        "validation": 0.9122807017543859
+      },
+      "result_sha256": "15e7415fb9a293a248817ee98f949d8894764fb7b1d308f1a4a92e5bf9279049",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.480225999999675
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "be170f268a98a10df918f56e",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.9125934839248657,
+        "mean_feature_std": 1.0057889223098755,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9122807017543859,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "cbce317373bf931383b4158c2a478ff06c9539344f738252e5c7d2a1251ba2e2",
+      "seed": 131,
+      "system": "prism",
+      "worker_seconds": 1.4792266660006135
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "d03dc0bcbf41fd96089e0ab6",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.9275000095367432,
+        "mean_feature_std": 0.7567648887634277,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9035087719298246,
+        "validation": 0.9122807017543859
+      },
+      "result_sha256": "ff6573f985ef0d5a766622afc4ce33c725eddec05a9ca298e7e9fdec8d9d9c5d",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.581792917000712
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "cca69e8f7695b692b36e4580",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.786552906036377,
+        "mean_feature_std": 1.1579349040985107,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8947368421052632,
+        "validation": 0.9210526315789473
+      },
+      "result_sha256": "80ea2487137ffdd74f8ea7a426f6b23cab58020a9f4aeb5b895782c361937226",
+      "seed": 131,
+      "system": "topograph",
+      "worker_seconds": 1.528776665996702
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "f4553dd4f409d7a2622af149",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.5392107963562012,
+        "mean_feature_std": 0.8676271438598633,
+        "metric": "accuracy",
+        "missing_input_validation": 0.8596491228070176,
+        "validation": 0.9298245614035088
+      },
+      "result_sha256": "28a7298870bc96e8b48d1858a625c3de4f7cec9ec6f5c25e29f59b4cf7a2250d",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.4782430830018711
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "9f9e9725ad47a29923f40814",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.1351356506347656,
+        "mean_feature_std": 0.6392277479171753,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9298245614035088,
+        "validation": 0.9122807017543859
+      },
+      "result_sha256": "162c0ceb07bbd41becc1d3268adbc991658f51d15a1610fd7683b731efb69f67",
+      "seed": 131,
+      "system": "stratograph",
+      "worker_seconds": 1.5384288749992265
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "2ed1bb514f138b8d1c95d8d7",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.345425009727478,
+        "mean_feature_std": 0.8046053051948547,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9035087719298246,
+        "validation": 0.9385964912280702
+      },
+      "result_sha256": "804e1f2584cb210ecfc792b95c5e22e68333ee1d12087ccd5b2adb1fcdd646a1",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.4313833750056801
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "breast_cancer",
+      "candidate": 1,
+      "id": "1760e89e313cf84512cb3352",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "effective_rank": 1.1055315732955933,
+        "mean_feature_std": 0.8093038201332092,
+        "metric": "accuracy",
+        "missing_input_validation": 0.9298245614035088,
+        "validation": 0.956140350877193
+      },
+      "result_sha256": "8a840f8d6cdf9e1c64a042ec73f342c7e7f94bbaa281af4c46cfe6c4c29930a6",
+      "seed": 131,
+      "system": "primordia",
+      "worker_seconds": 1.47610941700259
+    },
+    {
+      "arm": "jepa_transfer",
+      "benchmark": "breast_cancer",
+      "candidate": 0,
+      "id": "ccf686284387df823dd927d5",
+      "label_fraction": 0.1,
+      "metrics": {
+        "direction": "maximize",
+        "metric": "accuracy",
+        "missing_input_validation": 0.9385964912280702,
+        "validation": 0.9473684210526315
+      },
+      "result_sha256": "6f6f316aa53649ea13e7976f7bb86ebada303a6132690f4f42e701fd1da91050",
+      "seed": 131,
+      "system": "contenders",
+      "worker_seconds": 1.5817953330042656
+    }
+  ],
+  "source_note": "Producer fingerprint was verified against commit 49a4b6a before the subsequent runner-only provenance guard patch.",
+  "spec": {
+    "arms": [
+      "supervised_short",
+      "supervised_long",
+      "reconstruction",
+      "jepa",
+      "distillation",
+      "jepa_transfer"
+    ],
+    "backend": "mlx_native",
+    "batch_size": 32,
+    "benchmarks": [
+      "digits",
+      "breast_cancer"
+    ],
+    "candidates": 2,
+    "covariance_weight": 0.04,
+    "device": "cpu",
+    "ema_decay": 0.99,
+    "finetune_steps": 64,
+    "fit_timeout": 90.0,
+    "label_fractions": [
+      0.1
+    ],
+    "latent_dim": 8,
+    "learning_rate": 0.001,
+    "mask_fraction": 0.5,
+    "pretrain_steps": 32,
+    "seeds": [
+      131
+    ],
+    "systems": [
+      "prism",
+      "topograph",
+      "stratograph",
+      "primordia",
+      "contenders"
+    ],
+    "transfer_teacher": "prism",
+    "variance_weight": 1.0,
+    "version": 1
+  },
+  "status": "complete",
+  "version": 1,
+  "worker_cases": 108,
+  "worker_wall_seconds": 162.91727854701458
+}

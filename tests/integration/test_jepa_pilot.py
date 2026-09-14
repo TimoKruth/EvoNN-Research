@@ -255,3 +255,34 @@ def test_complete_run_resume_and_artifact_tampering(tmp_path):
     checked = report(workspace)
     assert checked['status'] == 'incomplete'
     assert next(r for r in checked['rows'] if r['id'] == case['id'])['status'] == 'invalid'
+
+
+@pytest.mark.parametrize('during_worker', [False, True])
+def test_mid_session_producer_change_cannot_publish_success(tmp_path, monkeypatch, during_worker):
+    from evonn_compare import jepa
+    workspace = tmp_path/'drift'
+    manifest = plan(workspace, specification())
+    identity = manifest['producer']
+    identities = iter([identity, identity, {'changed': True}] if during_worker else [identity, {'changed': True}])
+    monkeypatch.setattr(jepa, 'producer', lambda: next(identities))
+    monkeypatch.setattr(jepa.subprocess, 'run', lambda *args, **kwargs: None)
+    if during_worker:
+        result = run(workspace, max_cases=1)
+        assert result['status'] == 'incomplete' and result['completed'] == 0
+        assert result['rows'][0]['status'] == 'failed'
+        assert 'producer changed during the worker' in result['rows'][0]['error']
+    else:
+        with pytest.raises(ValueError, match='producer changed during the session'):
+            run(workspace, max_cases=1)
+        assert not list((workspace/'cases').glob('*/receipt.json'))
+
+
+def test_optional_mlx_metadata_is_not_required_for_numpy(monkeypatch):
+    from evonn_compare import jepa
+    original = jepa.importlib.metadata.version
+    def without_mlx(name):
+        if name == 'mlx':
+            raise jepa.importlib.metadata.PackageNotFoundError(name)
+        return original(name)
+    monkeypatch.setattr(jepa.importlib.metadata, 'version', without_mlx)
+    assert jepa.producer()['mlx_version'] is None

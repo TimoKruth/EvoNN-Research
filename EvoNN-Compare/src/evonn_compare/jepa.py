@@ -26,10 +26,14 @@ ROOT = Path(__file__).resolve().parents[3]
 def producer():
     paths = sorted(path for package in ROOT.glob('EvoNN-*') for path in (package/'src').rglob('*.py'))
     paths += [ROOT/'uv.lock']
+    try:
+        mlx_version = importlib.metadata.version('mlx')
+    except importlib.metadata.PackageNotFoundError:
+        mlx_version = None
     return dict(source_sha256=digest({str(path.relative_to(ROOT)): file_digest(path) for path in paths}),
                 host=host_fields(), python=sys.version, dependencies={name: importlib.metadata.version(name)
                     for name in ('numpy', 'scipy', 'scikit-learn', 'pydantic')},
-                mlx_version=importlib.metadata.version('mlx') if sys.platform == 'darwin' else None)
+                mlx_version=mlx_version)
 
 
 def cases(spec):
@@ -199,6 +203,8 @@ def run(workspace, *, max_cases=None, session_timeout=1800):
                 continue
             if (max_cases is not None and executed >= max_cases) or time.monotonic()-started >= session_timeout:
                 break
+            if producer() != manifest['producer']:
+                raise ValueError('producer changed during the session; pending cases were not executed')
             directory.mkdir(exist_ok=False)
             write_json(directory/'request.json', case['request'])
             write_json(directory/'receipt.json', dict(status='running', charged_attempt=True,
@@ -219,6 +225,8 @@ def run(workspace, *, max_cases=None, session_timeout=1800):
                 with (directory/'worker.log').open('w') as log:
                     subprocess.run(command, cwd=ROOT, env=environment, stdout=log, stderr=subprocess.STDOUT,
                                    check=True, timeout=max(0.01, timeout))
+                if producer() != manifest['producer']:
+                    raise ValueError('producer changed during the worker; result cannot be accepted')
                 receipt = dict(status='ok', result_sha256=file_digest(directory/'result.json'), charged_attempt=True,
                                worker_seconds=time.monotonic()-fit_started)
                 write_json(directory/'receipt.json', receipt)
