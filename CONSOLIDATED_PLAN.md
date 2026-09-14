@@ -134,6 +134,18 @@ lead in this cohort. More budget does not resolve Stratograph's shared-proxy
 deficit (digits 29.76% → 33.99%). The protected text test is still unused.
 No additional training is scheduled by this evaluation.
 
+**Prepared successor study (2026-09-14; not started):** the user requested the next
+large run after the completed 64-run engine refresh. The
+[next research protocol](governance/next-research-study-20260914.md) schedules
+qualification, Prism/Stratograph mechanism screening, fresh-seed confirmation,
+measured-training-budget comparisons and language breadth. Every arm retains all
+four engines plus Contenders. The full conditional ceiling is 840 runs / 138,880
+fit attempts, plus separately capped profiling repeats. Validated fixed-proposal
+configs are available; policy nomination, graceful pause/resume, profiling and
+measured-compute contracts, and breadth adequacy have explicit gates. No fits or
+protected-test access are authorized by plan generation. Historical protocols
+and the completed refresh remain unchanged.
+
 **Standing user requirement (2026-09-10):** every new comparison includes Prism,
 Topograph, Stratograph and Primordia on every declared benchmark/budget/seed
 combination, plus Contenders baselines. Focused research questions can restrict
