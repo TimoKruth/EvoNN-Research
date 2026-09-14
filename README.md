@@ -347,6 +347,12 @@ scientific conclusions still require the registry's separate analysis gate.
 
 ## Topograph research modes
 
+Topograph's FP16 quantizer saturates finite values to the representable range
+before casting, while retaining the straight-through gradient. This prevents
+finite image activations above 65,504 from becoming infinite validation losses.
+Nonfinite inputs still fail the training checks. This numerical fix requires a
+fresh producer and comparison; frozen historical runs retain their original code.
+
 Topograph has an explicit additive `--variant` option. The default `legacy`
 preserves the historical search and genome identities. `mechanics` introduces
 truthful mutation attribution, reversible graph edits, branch crossover,

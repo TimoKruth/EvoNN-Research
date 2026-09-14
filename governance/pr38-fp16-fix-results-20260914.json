@@ -1,0 +1,541 @@
+{
+  "validation": {
+    "status": "passed",
+    "decision_category": "needs more seeds",
+    "run_ids": [
+      "contenders_20260914T214105_ff883821657d",
+      "contenders_20260914T214317_f0b75d8eeb4a",
+      "primordia_20260914T214233_6e38d899c8",
+      "primordia_20260914T214446_3de0cc3934",
+      "prism_20260914T214147_8d9e857320",
+      "prism_20260914T214400_ab88d10438",
+      "stratograph_20260914T214219_fb5460a3bb",
+      "stratograph_20260914T214432_1768487158",
+      "topograph_20260914T214201_e5e1f53f5a",
+      "topograph_20260914T214415_a3a0502583"
+    ],
+    "case_ids": [
+      "tier_b_core_v2_b16_s1401"
+    ],
+    "target_engines": [
+      "topograph"
+    ],
+    "before_revision": "2715213f751f08b5b2b10ab3ddb9b8ef96bf0057",
+    "after_revision": "2cb4b96e1613c535d03cd21b033adc7de21370a5"
+  },
+  "historical_rows_preserved": 28,
+  "new_runs": 10,
+  "new_fits": 160,
+  "replayed_native_winners": 32,
+  "analysis": {
+    "schema_version": 1,
+    "before": "pr38-before",
+    "after": "pr38-after",
+    "groups": [
+      {
+        "pack": "tier_b_core_v2",
+        "budget": 16,
+        "engine": "topograph",
+        "seeds": [
+          1401
+        ],
+        "benchmarks": [
+          "banknote_classification",
+          "diabetes_regression",
+          "digits_image",
+          "shakespeare_byte_lm"
+        ],
+        "n": 1,
+        "effect_mean": 0.0,
+        "bootstrap_ci95": null,
+        "standardized_effect": null,
+        "rank_biserial": null,
+        "bootstrap_method": "4096 percentile resamples of independent paired seed means; RNG seed 0",
+        "wilcoxon": {
+          "status": "insufficient_data",
+          "n": 1,
+          "reason": "requires at least six nonzero independent paired seeds"
+        },
+        "materiality": 0.01,
+        "statistical_label": "needs_more_runs",
+        "aggregation_label": "blocked",
+        "blockers": [
+          "at least 3 paired independent seeds required"
+        ],
+        "level": "L3",
+        "minimum_seeds": 3,
+        "ceiling_ties": 0,
+        "raw_deltas": [
+          {
+            "seed": 1401,
+            "benchmark": "banknote_classification",
+            "delta": 0.0
+          },
+          {
+            "seed": 1401,
+            "benchmark": "diabetes_regression",
+            "delta": -0.0
+          },
+          {
+            "seed": 1401,
+            "benchmark": "digits_image",
+            "delta": 0.0
+          },
+          {
+            "seed": 1401,
+            "benchmark": "shakespeare_byte_lm",
+            "delta": -0.0
+          }
+        ],
+        "seed_effects": [
+          0.0
+        ],
+        "runtime_tradeoffs": {
+          "complete": true,
+          "per_label": {
+            "pr38-after": {
+              "wall_clock": 15.542575,
+              "evals_per_second": 1.029430451517847,
+              "seconds_per_success": 0.9714109375
+            },
+            "pr38-before": {
+              "wall_clock": 15.838386,
+              "evals_per_second": 1.010203943760431,
+              "seconds_per_success": 0.989899125
+            }
+          },
+          "score_per_second": [
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "banknote_classification",
+              "value": 0.03649798873563276
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "banknote_classification",
+              "value": 0.0341583740730922
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "banknote_classification",
+              "value": 0.043048909790746326
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "banknote_classification",
+              "value": 0.037667796066903035
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "diabetes_regression",
+              "value": 342.79171699001705
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "diabetes_regression",
+              "value": 331.49132023353195
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "diabetes_regression",
+              "value": 309.34508631609276
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "diabetes_regression",
+              "value": 337.71010974811406
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "digits_image",
+              "value": 0.026271922981445053
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "digits_image",
+              "value": 0.05504593386588487
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "digits_image",
+              "value": 0.026450643545944678
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "digits_image",
+              "value": 0.04664606733440244
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 6.735764368297308
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 5.919027642795048
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 6.88325153028976
+            },
+            {
+              "label": "pr38-after",
+              "run_id": "topograph_20260914T214415_a3a0502583",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 11.57718982633503
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "banknote_classification",
+              "value": 0.035816321642415286
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "banknote_classification",
+              "value": 0.03352040358841431
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "banknote_classification",
+              "value": 0.04224489219361803
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "banknote_classification",
+              "value": 0.036964280669415775
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "diabetes_regression",
+              "value": 336.3894509640133
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "diabetes_regression",
+              "value": 325.30010990884347
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "diabetes_regression",
+              "value": 303.5674976572326
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "diabetes_regression",
+              "value": 331.40275208713143
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "digits_image",
+              "value": 0.025781246481386
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "digits_image",
+              "value": 0.054017849770523055
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "digits_image",
+              "value": 0.025956629110511078
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "digits_image",
+              "value": 0.04577486620164454
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 6.609961575414851
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 5.80847891099606
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 6.754694143291707
+            },
+            {
+              "label": "pr38-before",
+              "run_id": "topograph_20260914T214201_e5e1f53f5a",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 11.360964505161649
+            }
+          ],
+          "family_allocation": [
+            {
+              "label": "pr38-after",
+              "family": "dag",
+              "seconds": 2.0979119969997555
+            },
+            {
+              "label": "pr38-before",
+              "family": "dag",
+              "seconds": 2.0462385389910196
+            }
+          ],
+          "note": "family allocation covers exported outcomes; raw lower-is-better score/time is not utility"
+        },
+        "portability_only": false,
+        "excluded_benchmarks": [],
+        "uncertainty_reason": null,
+        "friedman": {
+          "status": "insufficient_data",
+          "reason": "paired before/after has only two systems"
+        },
+        "effect_scale": "symmetric relative difference, direction-aware, equal benchmark weight"
+      }
+    ],
+    "request": {
+      "schema_version": 1,
+      "policy": "paired-seed-relative-v1",
+      "before": "pr38-before",
+      "after": "pr38-after",
+      "before_revision": "2715213f751f08b5b2b10ab3ddb9b8ef96bf0057",
+      "after_revision": "2cb4b96e1613c535d03cd21b033adc7de21370a5",
+      "panels": [
+        {
+          "pack": "tier_b_core_v2",
+          "budget": 16,
+          "engine": "topograph",
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            1401
+          ]
+        }
+      ],
+      "materiality": 0.01,
+      "claim_scope": "contract_validation"
+    },
+    "decision_category": "needs more seeds",
+    "diagnostics": {
+      "transfer_proof": {
+        "status": "not_applicable",
+        "native_claim_ready": false,
+        "sources": []
+      },
+      "lm_flatline": [
+        {
+          "label": "pr38-after",
+          "engine": "contenders",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 1401,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "pr38-after",
+          "engine": "primordia",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 1401,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "pr38-after",
+          "engine": "prism",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 1401,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "pr38-after",
+          "engine": "stratograph",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 1401,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "pr38-after",
+          "engine": "topograph",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 1401,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "pr38-before",
+          "engine": "contenders",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 1401,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "pr38-before",
+          "engine": "primordia",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 1401,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "pr38-before",
+          "engine": "prism",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 1401,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "pr38-before",
+          "engine": "stratograph",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 1401,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "pr38-before",
+          "engine": "topograph",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 1401,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        }
+      ],
+      "engine_roles": [
+        {
+          "engine": "primordia",
+          "role": "watch",
+          "status": "insufficient_data",
+          "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+        },
+        {
+          "engine": "prism",
+          "role": "watch",
+          "status": "insufficient_data",
+          "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+        },
+        {
+          "engine": "stratograph",
+          "role": "watch",
+          "status": "insufficient_data",
+          "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+        },
+        {
+          "engine": "topograph",
+          "role": "watch",
+          "status": "insufficient_data",
+          "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+        }
+      ]
+    },
+    "limitations": [
+      "Bootstrap uncertainty at few seeds is descriptive; likely_gain is not promotion.",
+      "Source revision is the declared intervention; observational comparisons do not prove causality."
+    ]
+  },
+  "before_source": "2715213f751f08b5b2b10ab3ddb9b8ef96bf0057",
+  "after_source": "2cb4b96e1613c535d03cd21b033adc7de21370a5",
+  "protocol": {
+    "purpose": "PR38 numerical correctness contract validation; one seed, no performance inference",
+    "at": "2026-09-14T21:41:13.038639+00:00",
+    "before_revision": "2715213f751f08b5b2b10ab3ddb9b8ef96bf0057",
+    "after_revision": "2cb4b96e1613c535d03cd21b033adc7de21370a5",
+    "systems": [
+      "prism",
+      "topograph",
+      "stratograph",
+      "primordia",
+      "contenders"
+    ],
+    "pack": "tier_b_core_v2",
+    "budgets": [
+      16
+    ],
+    "seeds": [
+      1401
+    ],
+    "epochs": 2,
+    "backend": "mlx_native",
+    "planned_runs": 10,
+    "planned_fits": 160,
+    "enhanced": false,
+    "timeout": 300.0,
+    "fit_timeout": 90.0,
+    "policy": "Current declared native research policies, identical across arms; exact overflow reproduction separately retained.",
+    "failures": "Preserve all failures; no omitted system or selective successful-only evidence."
+  },
+  "exact_candidate_reproduction": {
+    "original_request_sha256": "eed05366534277f52a9f9d6a2d47fcd0d9d7f902fb95b5dac2a202b3093a2b6f",
+    "original_source_sha256": "62c219ee8dfda244a8261bee04573a9496d9aa39e3d357098a1e30457d701eb5",
+    "fixed_source_sha256": "5f887de6beeddc1b8ba2f2257ec5ef68a7539a5b3419e667337db7f7994353c4",
+    "intervention": "FP16 finite saturation; same candidate, inherited weights, arrays, seed and training settings",
+    "status": "ok",
+    "reason": null,
+    "charged": 1,
+    "epochs": 4,
+    "train_seconds": 1.154766166000627,
+    "score": 0.9777777777777777
+  },
+  "tests": {
+    "topograph_passed": 73,
+    "fp16_numpy_and_mlx_regression": "passed",
+    "ruff": "passed",
+    "hosted": "pending on evidence commit"
+  }
+}

@@ -125,6 +125,26 @@ def test_real_next_token_training_and_replay_perplexity():
 
 
 @pytest.mark.parametrize("backend", ["numpy_fallback", "mlx_native"])
+def test_fp16_saturates_finite_outliers_with_straight_through_gradient(backend):
+    if backend == "mlx_native":
+        pytest.importorskip("mlx.core")
+    from topograph.tensors import Backend
+
+    b = Backend(backend, "cpu")
+    # 69488.55 reproduces the range encountered by qualification candidate 99;
+    # the much larger values also catch cancellation in the STE expression.
+    raw = np.array([-1e20, -69488.55, -65504, -1.125, 0, 1.125, 65504, 69488.55, 1e20], dtype=np.float32)
+    parameters = {"x": b.array(raw)}
+    expected = np.array([-65504, -65504, -65504, -1.125, 0, 1.125, 65504, 65504, 65504], dtype=np.float32)
+    with np.errstate(over="raise", invalid="raise"):
+        result = b.numpy(b.quantize(parameters["x"], 16))
+        value, grads = b.gradients(lambda p: b.quantize(p["x"], 16).sum(), parameters)
+    np.testing.assert_array_equal(result, expected)
+    assert np.isfinite(value)
+    np.testing.assert_array_equal(grads["x"], np.ones_like(raw))
+
+
+@pytest.mark.parametrize("backend", ["numpy_fallback", "mlx_native"])
 @pytest.mark.parametrize("bits", [1.58, 4, 8])
 def test_lm_quantization_is_independent_of_batch_neighbors(backend, bits):
     if backend == "mlx_native":
