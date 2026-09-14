@@ -244,7 +244,16 @@ class Backend:
         raw = self.numpy(value)
         axes = tuple(range(1, raw.ndim)) if per_example else None
         if bits == 16:
-            quantized = raw.astype(np.float16).astype(np.float32)
+            # Finite activations can exceed FP16's range even with finite
+            # weights/gradients. Saturate before casting instead of creating
+            # infinities; preserve nonfinite inputs for the training checks.
+            limit = np.finfo(np.float16).max
+            bounded = np.where(np.isfinite(raw), np.clip(raw, -limit, limit), raw)
+            quantized = bounded.astype(np.float16).astype(np.float32)
+            # Put the quantized value first, with a zero-valued STE term. The
+            # usual value + stop(quantized - value) loses the quantized result
+            # through cancellation when the finite input is very large.
+            return self.array(quantized) + (value - self.stop(value))
         elif bits == 1.58:
             scale = np.maximum(np.mean(np.abs(raw), axis=axes, keepdims=per_example), 1e-8)
             quantized = np.clip(np.round(raw / scale), -1, 1) * scale
