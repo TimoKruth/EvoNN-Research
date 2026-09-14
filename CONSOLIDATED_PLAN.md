@@ -159,6 +159,23 @@ later-stage gates remain unaccepted; this launch does not declare the full study
 ready or authorize automatic progression into A/B/C/D. Frozen planning evidence
 is preserved separately from the launch receipt.
 
+**Corrected qualification restarted (2026-09-15):** Topograph's original
+attempt 99 failed when a finite activation exceeded FP16's range. PR #38 fixes
+saturating FP16 conversion and its straight-through gradient. All 73 Topograph
+tests, a separate five-system before/after contract check (10 runs / 160 fits,
+32 winner replays), and both hosted CI jobs passed. The contract is one seed and
+remains insufficient for a statistical improvement claim.
+
+The [restart receipt](governance/next-research-restart-20260915.json) freezes
+`../EvoNN-next-study-fixed-20260914` at merged main `aabc7f9`. All **30 Q runs /
+4,480 fits** restart under this corrected producer; the earlier 128 Prism attempts
+and 112 Topograph attempts (including one failure) remain separate. Both contract
+checkouts remain pinned. Six preflights and the pause-control check passed. The
+current status and pause path are in
+`.artifacts/next-research-study-20260914/execution.json`. The new Standard
+LaunchAgent runs one slot at a time and stops after Q or on failure; later-stage
+acceptance gates remain unchanged.
+
 **Standing user requirement (2026-09-10):** every new comparison includes Prism,
 Topograph, Stratograph and Primordia on every declared benchmark/budget/seed
 combination, plus Contenders baselines. Focused research questions can restrict
