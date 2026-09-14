@@ -134,7 +134,7 @@ lead in this cohort. More budget does not resolve Stratograph's shared-proxy
 deficit (digits 29.76% → 33.99%). The protected text test is still unused.
 No additional training is scheduled by this evaluation.
 
-**Prepared successor study (2026-09-14; not started):** the user requested the next
+**Prepared successor study (2026-09-14; qualification now started):** the user requested the next
 large run after the completed 64-run engine refresh. The
 [next research protocol](governance/next-research-study-20260914.md) schedules
 qualification, Prism/Stratograph mechanism screening, fresh-seed confirmation,
@@ -145,6 +145,19 @@ configs are available; policy nomination, graceful pause/resume, profiling and
 measured-compute contracts, and breadth adequacy have explicit gates. No fits or
 protected-test access are authorized by plan generation. Historical protocols
 and the completed refresh remain unchanged.
+
+**Qualification launched (2026-09-14, 22:54 CEST):** the explicit start instruction
+is recorded in [the launch receipt](governance/next-research-launch-20260914.json).
+Q-core and Q-breadth execute **30 runs / 4,480 fits**, all five systems, in
+`../EvoNN-next-study-20260914` pinned to merged main `2715213`. Six campaigns
+passed preflight. Native runs use existing clean `--stop-after` boundaries every
+16 fits to qualify resume; their extra invocation overhead is retained. Contenders
+finishes its bounded slot. Status and the pause control are linked from
+`.artifacts/next-research-study-20260914/execution.json`. Execution stops on failure
+and after Q. Profiling, request-driven fit-boundary pause, breadth adequacy and
+later-stage gates remain unaccepted; this launch does not declare the full study
+ready or authorize automatic progression into A/B/C/D. Frozen planning evidence
+is preserved separately from the launch receipt.
 
 **Standing user requirement (2026-09-10):** every new comparison includes Prism,
 Topograph, Stratograph and Primordia on every declared benchmark/budget/seed
