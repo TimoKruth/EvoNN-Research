@@ -1,0 +1,12 @@
+{
+  "benchmarks": ["digits", "breast_cancer", "diabetes"],
+  "seeds": [131],
+  "label_fractions": [0.1],
+  "candidates": 1,
+  "pretrain_steps": 2,
+  "finetune_steps": 2,
+  "batch_size": 8,
+  "latent_dim": 4,
+  "transfer_teacher": "prism",
+  "arms": ["supervised_short", "supervised_long", "reconstruction", "jepa", "distillation", "jepa_transfer"]
+}

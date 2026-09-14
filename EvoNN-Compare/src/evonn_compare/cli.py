@@ -1,6 +1,7 @@
 """Compare Phase 1 CLI: orchestration, reports, audit and quality."""
 import argparse
 import json
+import sys
 from pathlib import Path
 import webbrowser
 
@@ -12,8 +13,13 @@ from .workspace import fair_matrix, workspace_audit, workspace_report
 
 
 def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] == 'jepa':
+        from .jepa import main as jepa_main
+        return jepa_main(argv[1:])
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser('jepa', help='isolated JEPA pilot: plan, run, report')
     campaign = commands.add_parser("campaign", help="plan, preflight and resume bounded campaigns")
     campaign_actions = campaign.add_subparsers(dest="campaign_command", required=True)
     planning = campaign_actions.add_parser("plan", help="prepare data and freeze settings; no model fits")

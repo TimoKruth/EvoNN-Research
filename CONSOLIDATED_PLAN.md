@@ -27,6 +27,21 @@ Product and interop; Product implementation is outside this repository's plan.
 
 ## Immediate Next Actions
 
+**JEPA experiment branch (2026-09-14):** implement and qualify an additive pilot
+without changing frozen protocols or current engine defaults. The pilot compares
+fixed actual engine architectures under supervised, reconstruction and predictive
+representation objectives, then optionally full-input versus masked frozen
+teacher transfer. All task/seed/label-fraction/arm combinations retain four engines
+and Contenders. Runtime commands and preset sizes are in README; formulation and
+limitations are in `research/jepa/DESIGN.md`. Acceptance requires nonzero encoder
+training, teacher stop-gradient, collapse diagnostics, matching data/initialization,
+full-roster isolated execution, saved-weight reconstruction/replay, failure
+visibility and producer-bound resume. Qualification is implementation evidence.
+Repeated low-label findings, adequate contender strength, training sufficiency
+and measured-compute confirmation remain scientific work. Native motif transfer,
+adaptive search and speculative mutation world models remain outside this pilot.
+
+
 Documentation consolidation (#23/#26), CodeRabbit selection (#24), the catalog
 freeze and fixture integration (#25), and its canonical authorization (#27)
 are merged. Phase 0 contract acceptance is bound in

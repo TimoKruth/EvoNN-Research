@@ -1,0 +1,15 @@
+{
+  "benchmarks": ["digits", "breast_cancer"],
+  "seeds": [131, 137, 149],
+  "label_fractions": [0.1, 1.0],
+  "candidates": 2,
+  "pretrain_steps": 64,
+  "finetune_steps": 64,
+  "batch_size": 32,
+  "latent_dim": 16,
+  "backend": "mlx_native",
+  "device": "cpu",
+  "fit_timeout": 90,
+  "transfer_teacher": "prism",
+  "arms": ["supervised_short", "supervised_long", "reconstruction", "jepa", "distillation", "jepa_transfer"]
+}
