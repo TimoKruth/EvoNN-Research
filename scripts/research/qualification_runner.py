@@ -1,7 +1,9 @@
 """Qualification recovery launcher: one native chunk per bounded worker.
 
-Install as runtime/runner-v3.py beside the frozen runner.py. The additive
-runner-amendment.json binds this launcher while readiness.json remains intact.
+Install as runtime/runner-v5.py beside the previous frozen launchers.
+runner-amendment-v5.json binds this launcher and explicit blocked slots while
+readiness.json remains intact. Deferred slots remain in the protocol and prevent
+qualification completion; their failure evidence is never discarded.
 Engine source, fit settings and cumulative invocation clocks are unchanged.
 """
 import datetime
@@ -17,7 +19,7 @@ import time
 
 from evonn_compare.campaign import (
     CampaignSpec, adopted, identity, lease, match_config, preflight,
-    read_manifest, run_campaign, slot_id,
+    read_manifest, run_campaign, slot_id, events, append_event,
 )
 from evonn_compare.cases import Case
 from evonn_shared.engine_evidence import artifact_json
@@ -61,16 +63,33 @@ def write(path, value, *, replace=False):
             os.fsync(stream.fileno())
 
 
+def deferred_slots():
+    path = BASE/'deferred-slots.json'
+    return read(path)['slots'] if path.exists() else {}
+
+
+def unresolved_slots():
+    return {ident: reason for ident, reason in deferred_slots().items()
+            if not (BASE/'receipts'/(ident+'.json')).exists()}
+
+
 def status(state, **values):
     completed = len(list((BASE/'receipts').glob('*.json')))
     write(BASE/'status.json', dict(state=state, updated_at=stamp(), completed=completed,
-          total=30, study_maximum=840, pid=os.getpid(), **values), replace=True)
+          total=30, study_maximum=840, blocked_slots=unresolved_slots(),
+          comparison_complete=False, pid=os.getpid(), **values), replace=True)
 
 
 def check_inputs():
-    amendment = read(BASE/'runner-amendment.json')
+    amendment = read(BASE/'runner-amendment-v5.json')
     assert digest(Path(__file__)) == amendment['runner_sha256'], 'Launcher drift'
     assert digest(BASE/'readiness.json') == amendment['original_readiness_sha256'], 'Readiness drift'
+    assert digest(BASE/'deferred-slots.json') == amendment['deferred_slots_sha256'], 'Deferral drift'
+    declared = {row['id']+'-'+system for row in read(BASE/'qualification-matrix.json')
+                for system in row['systems']}
+    assert set(deferred_slots()) <= declared, 'Unknown deferred slot'
+    for path, sha in amendment['retained_evidence'].items():
+        assert digest(Path(path)) == sha, 'Retained evidence changed'
     ready = read(BASE/'readiness.json')
     assert identity() == ready['identity'], 'Producer/environment/host drift'
     for relative, sha in ready['files'].items():
@@ -116,6 +135,44 @@ def checkpoint(run):
     return state
 
 
+
+def contender_slot(campaign, manifest, case, ident, deadline):
+    # Target this exact slot; whole-campaign traversal can encounter an earlier
+    # failed native slot. Keep the same frozen CLI settings and never replace
+    # incomplete Contenders evidence.
+    with lease(campaign) as fd:
+        run, reference = adopted(campaign, manifest, case, 'contenders')
+        if reference is not None:
+            return
+        if run is not None:
+            raise RuntimeError('Incomplete Contenders run retained; no replacement authorized')
+        spec = manifest['spec']
+        output = campaign/'runs'/slot_id(case, 'contenders')
+        output.mkdir(parents=True, exist_ok=True)
+        command = [sys.executable, '-m', MODULES['contenders'], 'run', '--pack', case.pack,
+                   '--budget', str(case.budget), '--seed', str(case.seed), '--output', str(output),
+                   '--cache', manifest['cache'], '--timeout', str(spec['timeout']),
+                   '--fit-timeout', str(spec['fit_timeout'])]
+        if spec.get('enhanced', False):
+            command.append('--enhanced')
+        status('training', active=ident, engine='contenders', budget=case.budget, seed=case.seed)
+        command_run(command, BASE/'logs'/f'{ident}-contenders.log',
+                    min(1580, deadline-time.monotonic()), fd)
+
+
+def journal_completion(campaign, manifest, case, system, reference):
+    # Record the validated slot even when an earlier unresolved slot prevents
+    # the campaign-wide adoption pass from reaching it.
+    with lease(campaign):
+        history = events(campaign, manifest)
+        slot = slot_id(case, system)
+        completed = [e for e in history if e['slot'] == slot and e['kind'] == 'complete']
+        if completed:
+            assert len(completed) == 1 and completed[0]['details'] == reference
+        else:
+            append_event(campaign, manifest, history, slot, 'complete', reference)
+
+
 def worker(index, system, outer_fd):
     check_inputs()
     row = read(BASE/'qualification-matrix.json')[index]
@@ -129,11 +186,7 @@ def worker(index, system, outer_fd):
         return
     preflight(campaign)
     if system == 'contenders':
-        # Whole bounded contender slot; incomplete Contenders are never restarted.
-        status('training', active=ident, engine=system, budget=case.budget, seed=case.seed)
-        command_run([sys.executable, '-m', 'evonn_compare.cli', 'campaign', 'run',
-                     str(campaign), '--max-runs', '1'], BASE/'logs'/f'{ident}-contenders.log',
-                    min(1580, deadline-time.monotonic()), outer_fd)
+        contender_slot(campaign, manifest, case, ident, deadline)
     else:
         with lease(campaign) as fd:
             run, reference = adopted(campaign, manifest, case, system)
@@ -194,6 +247,7 @@ def worker(index, system, outer_fd):
         run_campaign(campaign, session_timeout=1)
     run, reference = adopted(campaign, manifest, case, system)
     assert reference is not None
+    journal_completion(campaign, manifest, case, system, reference)
     bundle = read_export(run/'symbiosis')
     assert bundle.manifest.accounting.failed_evaluations == 0
     replay = None
@@ -242,6 +296,8 @@ def tick():
                     ident = row['id']+'-'+system
                     if (BASE/'receipts'/(ident+'.json')).exists():
                         continue
+                    if ident in deferred_slots():
+                        continue  # Explicitly blocked, still required for completion.
                     log = BASE/'logs'/f'{ident}-worker-{time.time_ns()}.log'
                     with log.open('x') as stream:
                         child = subprocess.Popen([sys.executable, __file__, 'worker', str(index), system, str(lock.fileno())],
@@ -263,6 +319,9 @@ def tick():
                     elif (BASE/'receipts'/(ident+'.json')).exists():
                         status('between_runs', last=ident)
                     return
+            if unresolved_slots():
+                status('blocked_incomplete', reason='Executable slots finished; Primordia breadth remains unresolved')
+                return
             write(BASE/'qualification-execution-complete.json', dict(at=stamp(), runs=30,
                   training_complete=True, qualification_accepted=False, next_stage_authorized=False,
                   blockers=['Profiling reconciliation and equivalence need review.',

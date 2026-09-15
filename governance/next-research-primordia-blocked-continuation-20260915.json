@@ -1,0 +1,117 @@
+{
+  "amendment": {
+    "at": "2026-09-15T21:24:18.808380+00:00",
+    "authorization": "User: continue run please",
+    "scope": "Continue five unaffected remaining slots; preserve both blocked Primordia breadth slots and keep comparison incomplete",
+    "runner": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/runtime/runner-v4.py",
+    "runner_sha256": "0c188cd053978d59eb40ff13c6b37d1e42b11228cd71025d5ed20a0b31af5c98",
+    "original_readiness_sha256": "c19d89de340e4887f0471c462062e92355b831fc10ecb293701f1fd51f5c0560",
+    "deferred_slots_sha256": "8db09d4c2a21c0db45a0bcece65e08e291805404cef0b0f92a36fae6fbf26a2a",
+    "retained_evidence": {
+      "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/runtime/runner-v3.py": "6b0d58e4d574a394003835adfb98bad73789fb67ec0c1d031070f9489b233844",
+      "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/runner-amendment.json": "1b9bda5b44db8a5984d719a444e72a16dda15f4a49a6f1f77e5c0530ef217941",
+      "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/recoveries/20260915T212418Z/failure.json": "a29360a2d264fe06455a638768b74559d4b3ff82f802d718c371c5d46a382c22",
+      "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/campaigns/Q-breadth-language_breadth_v1-fits64-s1003-refresh_reference/runs/language_breadth_v1_b64_s1003_primordia/primordia_20260915T152709_17082e9481/prepare_aesop_context64_lm/worker.log": "c9363071fce1c5609fee27276c505f38cc141712f589087df7dd0f0d17091456"
+    },
+    "completed_receipts": {
+      "Q-core-tier_b_core_v2-fits128-s1001-refresh_reference-stratograph.json": "3468ba83fc2d11bb489ba25eb9d7fbab37102f29f757c09ebfd757124848f8cd",
+      "Q-core-tier_b_core_v2-fits128-s1002-refresh_reference-contenders.json": "3f05f77e13040cb154299012133c5cec7f488a8ae590e27f805cb2253bf007d2",
+      "Q-breadth-language_breadth_v1-fits64-s1003-refresh_reference-stratograph.json": "10d830e113cf15e6ff02b016e2d706bd83a8bafdf0c3ca290bd3e6901762e8c2",
+      "Q-core-tier_b_core_v2-fits256-s1001-refresh_reference-primordia.json": "fbaa2a90ad8b5a2d0f8d59def9a8ee7119048b187b99053deec3223a63199125",
+      "Q-core-tier_b_core_v2-fits256-s1001-refresh_reference-topograph.json": "63c61a5f5d222d01d3f59190dbac31484c51095da599dff535c74c94a5fbc7b9",
+      "Q-core-tier_b_core_v2-fits128-s1002-refresh_reference-prism.json": "ba4af22934235fdae2582f194700322a8c12d9588bb4ddda9a336c811cc13f73",
+      "Q-core-tier_b_core_v2-fits256-s1002-refresh_reference-topograph.json": "451b87c761b373005512d57dfc65244cf95fc9a7155e9edc41b3f43c7d909950",
+      "Q-core-tier_b_core_v2-fits256-s1002-refresh_reference-primordia.json": "e5f1c52a96f9b18df2d3578c5df27cfe3c14c7b431de529b23c2bec2dcbfe7f0",
+      "Q-core-tier_b_core_v2-fits256-s1002-refresh_reference-stratograph.json": "10d35993c0c8c22cf925188040fb5ec12792f7b2321dfa023bf07caaf91f5e44",
+      "Q-core-tier_b_core_v2-fits128-s1001-refresh_reference-contenders.json": "e71cedeb85f0c69a3354e0b293eaba6918912dbe21f140d8c06decc9ff0cda1f",
+      "Q-core-tier_b_core_v2-fits128-s1001-refresh_reference-prism.json": "13c662621bdf4a53505186cc8d09a78b07fa3b15b259636299f1e1e73458367e",
+      "Q-core-tier_b_core_v2-fits128-s1001-refresh_reference-primordia.json": "060ca6758d18486ca7d3416aa91161ccdd67bb6a06564b3e946581d8744295ab",
+      "Q-core-tier_b_core_v2-fits128-s1001-refresh_reference-topograph.json": "a22c26496d0dabf5856c5d99548144ebe24860c96ed5307d766fd2e7e2a9e530",
+      "Q-core-tier_b_core_v2-fits256-s1001-refresh_reference-prism.json": "03cb8986bd8e2ffa4291297a53386cd321721bb5f2bfc8465b01d06012a6d8b7",
+      "Q-core-tier_b_core_v2-fits256-s1001-refresh_reference-contenders.json": "f46f6711bd36d3c2512e96995e03f4e91ab7ffd854bf840405fcfce6917c6f66",
+      "Q-breadth-language_breadth_v1-fits64-s1003-refresh_reference-prism.json": "8cd1c6a4e6e301d7bc85ff8a7d2f336c4002284f5e5fa842cbf95e572a9955be",
+      "Q-core-tier_b_core_v2-fits256-s1001-refresh_reference-stratograph.json": "9c4ad758b88a74709fa421bdf88e6513b8a7ed6d1472c4ec790655955dc41a86",
+      "Q-breadth-language_breadth_v1-fits64-s1003-refresh_reference-topograph.json": "3b332405c6ca96c0f7f84963d06671baa9dacb433c2383d4ebe0ffbacdc7b362",
+      "Q-core-tier_b_core_v2-fits256-s1002-refresh_reference-prism.json": "0c7e177e301a4639f046ba7e530e643f886be691f014a30b39cdb69fd2d508b9",
+      "Q-core-tier_b_core_v2-fits128-s1002-refresh_reference-stratograph.json": "3dc3dbd977128b79b60397804a61ce2c59d7440263f43fd62a3704341063c1a9",
+      "Q-core-tier_b_core_v2-fits128-s1002-refresh_reference-topograph.json": "3c1bc170c28911d824eabd7f3a9d56a462cd623d54c6f492ad893f2b80ddfe42",
+      "Q-core-tier_b_core_v2-fits128-s1002-refresh_reference-primordia.json": "1f828a3fa8eea8d14465275a811558af2e4ed3ebacc1e887c5e9f34e073eaf9c",
+      "Q-core-tier_b_core_v2-fits256-s1002-refresh_reference-contenders.json": "8f064f3cd8c6b8b51e08ec19591c9cd6f8fa2a49b25af02cb01517213dee0e6f"
+    },
+    "engine_source_settings_and_clocks_unchanged": true,
+    "required_runs": 30,
+    "maximum_reachable_completions_before_repair": 28,
+    "regression_tests": "8 passed; tests/test_qualification_runner.py",
+    "later_stages_authorized": false,
+    "recovery": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/recoveries/20260915T212418Z"
+  },
+  "deferred": {
+    "at": "2026-09-15T21:24:18.808380+00:00",
+    "authorization": "User: continue run please; continue executable slots with unresolved failures explicitly retained",
+    "slots": {
+      "Q-breadth-language_breadth_v1-fits64-s1003-refresh_reference-primordia": {
+        "state": "failed_before_training",
+        "reason": "Frozen Primordia loader does not support byte_corpus_v1",
+        "evidence": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/campaigns/Q-breadth-language_breadth_v1-fits64-s1003-refresh_reference/runs/language_breadth_v1_b64_s1003_primordia/primordia_20260915T152709_17082e9481/prepare_aesop_context64_lm/worker.log"
+      },
+      "Q-breadth-language_breadth_v1-fits64-s1004-refresh_reference-primordia": {
+        "state": "blocked_not_attempted",
+        "reason": "Same frozen Primordia loader lacks byte_corpus_v1 and make_delayed_copy_v1; source repair required",
+        "evidence": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/campaigns/Q-breadth-language_breadth_v1-fits64-s1003-refresh_reference/runs/language_breadth_v1_b64_s1003_primordia/primordia_20260915T152709_17082e9481/prepare_aesop_context64_lm/worker.log"
+      }
+    },
+    "required_roster_unchanged": true,
+    "comparison_complete": false
+  },
+  "dispatch_followup": {
+    "at": "2026-09-15T21:26:40.082263+00:00",
+    "authorization": "User: continue run please",
+    "completed_receipts": {
+      "Q-breadth-language_breadth_v1-fits64-s1003-refresh_reference-prism.json": "8cd1c6a4e6e301d7bc85ff8a7d2f336c4002284f5e5fa842cbf95e572a9955be",
+      "Q-breadth-language_breadth_v1-fits64-s1003-refresh_reference-stratograph.json": "10d830e113cf15e6ff02b016e2d706bd83a8bafdf0c3ca290bd3e6901762e8c2",
+      "Q-breadth-language_breadth_v1-fits64-s1003-refresh_reference-topograph.json": "3b332405c6ca96c0f7f84963d06671baa9dacb433c2383d4ebe0ffbacdc7b362",
+      "Q-core-tier_b_core_v2-fits128-s1001-refresh_reference-contenders.json": "e71cedeb85f0c69a3354e0b293eaba6918912dbe21f140d8c06decc9ff0cda1f",
+      "Q-core-tier_b_core_v2-fits128-s1001-refresh_reference-primordia.json": "060ca6758d18486ca7d3416aa91161ccdd67bb6a06564b3e946581d8744295ab",
+      "Q-core-tier_b_core_v2-fits128-s1001-refresh_reference-prism.json": "13c662621bdf4a53505186cc8d09a78b07fa3b15b259636299f1e1e73458367e",
+      "Q-core-tier_b_core_v2-fits128-s1001-refresh_reference-stratograph.json": "3468ba83fc2d11bb489ba25eb9d7fbab37102f29f757c09ebfd757124848f8cd",
+      "Q-core-tier_b_core_v2-fits128-s1001-refresh_reference-topograph.json": "a22c26496d0dabf5856c5d99548144ebe24860c96ed5307d766fd2e7e2a9e530",
+      "Q-core-tier_b_core_v2-fits128-s1002-refresh_reference-contenders.json": "3f05f77e13040cb154299012133c5cec7f488a8ae590e27f805cb2253bf007d2",
+      "Q-core-tier_b_core_v2-fits128-s1002-refresh_reference-primordia.json": "1f828a3fa8eea8d14465275a811558af2e4ed3ebacc1e887c5e9f34e073eaf9c",
+      "Q-core-tier_b_core_v2-fits128-s1002-refresh_reference-prism.json": "ba4af22934235fdae2582f194700322a8c12d9588bb4ddda9a336c811cc13f73",
+      "Q-core-tier_b_core_v2-fits128-s1002-refresh_reference-stratograph.json": "3dc3dbd977128b79b60397804a61ce2c59d7440263f43fd62a3704341063c1a9",
+      "Q-core-tier_b_core_v2-fits128-s1002-refresh_reference-topograph.json": "3c1bc170c28911d824eabd7f3a9d56a462cd623d54c6f492ad893f2b80ddfe42",
+      "Q-core-tier_b_core_v2-fits256-s1001-refresh_reference-contenders.json": "f46f6711bd36d3c2512e96995e03f4e91ab7ffd854bf840405fcfce6917c6f66",
+      "Q-core-tier_b_core_v2-fits256-s1001-refresh_reference-primordia.json": "fbaa2a90ad8b5a2d0f8d59def9a8ee7119048b187b99053deec3223a63199125",
+      "Q-core-tier_b_core_v2-fits256-s1001-refresh_reference-prism.json": "03cb8986bd8e2ffa4291297a53386cd321721bb5f2bfc8465b01d06012a6d8b7",
+      "Q-core-tier_b_core_v2-fits256-s1001-refresh_reference-stratograph.json": "9c4ad758b88a74709fa421bdf88e6513b8a7ed6d1472c4ec790655955dc41a86",
+      "Q-core-tier_b_core_v2-fits256-s1001-refresh_reference-topograph.json": "63c61a5f5d222d01d3f59190dbac31484c51095da599dff535c74c94a5fbc7b9",
+      "Q-core-tier_b_core_v2-fits256-s1002-refresh_reference-contenders.json": "8f064f3cd8c6b8b51e08ec19591c9cd6f8fa2a49b25af02cb01517213dee0e6f",
+      "Q-core-tier_b_core_v2-fits256-s1002-refresh_reference-primordia.json": "e5f1c52a96f9b18df2d3578c5df27cfe3c14c7b431de529b23c2bec2dcbfe7f0",
+      "Q-core-tier_b_core_v2-fits256-s1002-refresh_reference-prism.json": "0c7e177e301a4639f046ba7e530e643f886be691f014a30b39cdb69fd2d508b9",
+      "Q-core-tier_b_core_v2-fits256-s1002-refresh_reference-stratograph.json": "10d35993c0c8c22cf925188040fb5ec12792f7b2321dfa023bf07caaf91f5e44",
+      "Q-core-tier_b_core_v2-fits256-s1002-refresh_reference-topograph.json": "451b87c761b373005512d57dfc65244cf95fc9a7155e9edc41b3f43c7d909950"
+    },
+    "deferred_slots_sha256": "8db09d4c2a21c0db45a0bcece65e08e291805404cef0b0f92a36fae6fbf26a2a",
+    "engine_source_settings_and_clocks_unchanged": true,
+    "later_stages_authorized": false,
+    "maximum_reachable_completions_before_repair": 28,
+    "original_readiness_sha256": "c19d89de340e4887f0471c462062e92355b831fc10ecb293701f1fd51f5c0560",
+    "recovery": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/recoveries/20260915T212640Z",
+    "regression_tests": "10 passed",
+    "required_runs": 30,
+    "retained_evidence": {
+      "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/campaigns/Q-breadth-language_breadth_v1-fits64-s1003-refresh_reference/runs/language_breadth_v1_b64_s1003_primordia/primordia_20260915T152709_17082e9481/prepare_aesop_context64_lm/worker.log": "c9363071fce1c5609fee27276c505f38cc141712f589087df7dd0f0d17091456",
+      "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/recoveries/20260915T212418Z/failure.json": "a29360a2d264fe06455a638768b74559d4b3ff82f802d718c371c5d46a382c22",
+      "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/runner-amendment.json": "1b9bda5b44db8a5984d719a444e72a16dda15f4a49a6f1f77e5c0530ef217941",
+      "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/runtime/runner-v3.py": "6b0d58e4d574a394003835adfb98bad73789fb67ec0c1d031070f9489b233844",
+      "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/runtime/runner-v4.py": "0c188cd053978d59eb40ff13c6b37d1e42b11228cd71025d5ed20a0b31af5c98",
+      "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/runner-amendment-v4.json": "1c84cbee23cbd90006b4ac4073df7360d1f1d45d35dd48406d5a44619d92362e",
+      "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/recoveries/20260915T212640Z/failure.json": "171d0b9b00c3d201d570b8413101b75986670becf43d8dea9cab208b84d8a88e",
+      "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/logs/Q-breadth-language_breadth_v1-fits64-s1003-refresh_reference-contenders-contenders.log": "88eed9eb45f1c0ad2c31aa2f58c042d488da49e9bc16f2b98e3159796256cf22"
+    },
+    "runner": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/runtime/runner-v5.py",
+    "runner_sha256": "b616bb2cd7e456b0d99b136f82a591e5ea08e87e5d9af4b4ce5f6b9938ee6997",
+    "scope": "Continue five unaffected remaining slots; preserve both blocked Primordia breadth slots and keep comparison incomplete",
+    "dispatch_repair": "Target Contenders slot directly with frozen CLI settings; append verified completion to standard journal"
+  }
+}

@@ -30,11 +30,12 @@ class QualificationRecoveryTests(unittest.TestCase):
         self.addCleanup(self.stack.close)
         self.stack.enter_context(patch.object(runner, 'BASE', self.base))
         self.stack.enter_context(patch.object(runner, 'PRODUCER', self.base))
-        for name in ('check_inputs', 'preflight', 'match_config'):
+        for name in ('check_inputs', 'preflight', 'match_config', 'journal_completion'):
             self.stack.enter_context(patch.object(runner, name))
         self.stack.enter_context(patch.object(runner, 'read_manifest', return_value={'spec':{}}))
         self.stack.enter_context(patch.object(runner, 'CampaignSpec', SimpleNamespace(model_validate=lambda x:x)))
         self.stack.enter_context(patch.object(runner, 'lease', side_effect=lambda p:contextlib.nullcontext(7)))
+        self.stack.enter_context(patch.object(runner.os, 'killpg'))
         self.clock = self.stack.enter_context(patch.object(runner.time, 'monotonic', return_value=0))
 
     def state(self, n):
@@ -108,6 +109,48 @@ class QualificationRecoveryTests(unittest.TestCase):
         process.assert_not_called()
         self.assertEqual(p.read_text(),'{"preserved":true}')
         self.assertFalse(json.loads((self.base/'qualification-execution-complete.json').read_text())['next_stage_authorized'])
+
+    def test_deferred_slot_prevents_false_completion_and_stays_visible(self):
+        (self.base/'deferred-slots.json').write_text(json.dumps({'slots':{'row-topograph':'Unsupported loader'}}))
+        with patch.object(runner.subprocess,'Popen') as process:
+            runner.tick()
+        process.assert_not_called()
+        self.assertFalse((self.base/'qualification-execution-complete.json').exists())
+        status=json.loads((self.base/'status.json').read_text())
+        self.assertEqual(status['state'],'blocked_incomplete')
+        self.assertEqual(status['blocked_slots'],{'row-topograph':'Unsupported loader'})
+        self.assertEqual(status['total'],30)
+
+    def test_deferred_slot_does_not_prevent_next_eligible_worker(self):
+        self.row['systems']=['primordia','topograph']
+        (self.base/'qualification-matrix.json').write_text(json.dumps([self.row]))
+        (self.base/'deferred-slots.json').write_text(json.dumps({'slots':{'row-primordia':'Unsupported loader'}}))
+        with patch.object(runner.subprocess,'Popen') as process:
+            process.return_value.returncode=0
+            runner.tick()
+        process.assert_called_once()
+        self.assertEqual(process.call_args.args[0][4],'topograph')
+        self.assertFalse((self.base/'qualification-execution-complete.json').exists())
+
+
+    def test_contender_dispatch_targets_only_selected_slot(self):
+        manifest={'spec':{'timeout':1500,'fit_timeout':90,'enhanced':True},'cache':'/frozen/cache'}
+        case=runner.Case('language_breadth_v1',64,1003)
+        with patch.object(runner,'adopted',return_value=(None,None)), \
+             patch.object(runner,'command_run') as command:
+            runner.contender_slot(self.base/'campaigns/row',manifest,case,'row-contenders',1680)
+        args=command.call_args.args[0]
+        self.assertEqual(args[2:4],['evonn_contenders.cli','run'])
+        self.assertIn('--enhanced',args)
+        self.assertEqual(args[args.index('--timeout')+1],'1500')
+        self.assertEqual(args[args.index('--seed')+1],'1003')
+
+    def test_incomplete_contenders_is_never_restarted(self):
+        with patch.object(runner,'adopted',return_value=(self.run,None)), \
+             patch.object(runner,'command_run') as command:
+            with self.assertRaisesRegex(RuntimeError,'no replacement authorized'):
+                runner.contender_slot(self.base/'campaigns/row',{},runner.Case('language_breadth_v1',64,1003),'row-contenders',1680)
+        command.assert_not_called()
 
 
 if __name__ == '__main__':

@@ -190,6 +190,22 @@ archived failures are bound by
 Qualification resumed from the existing checkpoint; scientific-stage gates and
 the requirement to requalify infrastructure changes remain open.
 
+**Breadth continuation with unresolved Primordia slots (2026-09-15):** after
+23 completed runs, Primordia seed 1003 failed before fitting because its owned
+dataset loader lacks `byte_corpus_v1`; source inspection also found missing
+`make_delayed_copy_v1` support. The user requested continuation. The scheduler
+now executes the five unaffected remaining slots while explicitly retaining both
+Primordia breadth slots as unresolved (1003 failed; 1004 not attempted). The
+30-run roster and frozen producer remain unchanged. It must stop as incomplete
+at at most 28/30, without publishing a qualification-completion receipt or
+advancing stages. Ten scheduler regression tests passed. Contenders dispatch
+now targets its exact slot so an earlier failed native preparation cannot
+redirect it; verified exports retain standard completion journal entries. Failure logs and all
+23 completion receipts are preserved in
+[the continuation receipt](governance/next-research-primordia-blocked-continuation-20260915.json).
+Completing qualification still requires a separately qualified Primordia loader
+repair; no claim of full engine coverage is authorized.
+
 **Standing user requirement (2026-09-10):** every new comparison includes Prism,
 Topograph, Stratograph and Primordia on every declared benchmark/budget/seed
 combination, plus Contenders baselines. Focused research questions can restrict
