@@ -176,6 +176,20 @@ current status and pause path are in
 LaunchAgent runs one slot at a time and stops after Q or on failure; later-stage
 acceptance gates remain unchanged.
 
+**Qualification scheduler recovery (2026-09-15):** two Topograph workers hit
+the launcher's wall-clock limit as repeated checkpoint verification accumulated.
+Seed 1001 finished 256 fits and was subsequently adopted and replayed; seed 1002
+was interrupted while loading the next chunk, retaining 224 successful fits and
+14 closed invocation clocks. The additive launcher now executes one native
+16-fit chunk per bounded worker and handles final adoption/replay on a separate
+tick. Six scheduling regression tests passed. All 15 existing completion receipts,
+the frozen producer, configurations, cumulative 1,500-second engine clocks and
+the original launcher/readiness records are preserved. The amended launcher and
+archived failures are bound by
+[the recovery receipt](governance/next-research-scheduler-recovery-20260915.json).
+Qualification resumed from the existing checkpoint; scientific-stage gates and
+the requirement to requalify infrastructure changes remain open.
+
 **Standing user requirement (2026-09-10):** every new comparison includes Prism,
 Topograph, Stratograph and Primordia on every declared benchmark/budget/seed
 combination, plus Contenders baselines. Focused research questions can restrict
