@@ -27,19 +27,19 @@ Product and interop; Product implementation is outside this repository's plan.
 
 ## Immediate Next Actions
 
-**JEPA experiment branch (2026-09-14):** implement and qualify an additive pilot
-without changing frozen protocols or current engine defaults. The pilot compares
-fixed actual engine architectures under supervised, reconstruction and predictive
-representation objectives, then optionally full-input versus masked frozen
-teacher transfer. All task/seed/label-fraction/arm combinations retain four engines
-and Contenders. Runtime commands and preset sizes are in README; formulation and
-limitations are in `research/jepa/DESIGN.md`. Acceptance requires nonzero encoder
-training, teacher stop-gradient, collapse diagnostics, matching data/initialization,
-full-roster isolated execution, saved-weight reconstruction/replay, failure
-visibility and producer-bound resume. Qualification is implementation evidence.
-Repeated low-label findings, adequate contender strength, training sufficiency
-and measured-compute confirmation remain scientific work. Native motif transfer,
-adaptive search and speculative mutation world models remain outside this pilot.
+**JEPA experiment branch (updated 2026-09-16):** implementation qualification and
+the full repeated transfer preset are complete: 648 worker cases / 720 fits,
+including all four engines and Contenders, with all 576 neural replays passing.
+The [assessment](research/jepa/ASSESSMENT-20260916.md) records mostly negative
+results and a small Prism low-label tabular signal (+0.88 accuracy points versus
+long supervised across the three seed averages). Masked teacher transfer shows
+no consistent benefit. Preserve the implementation as experimental; do not change
+engine defaults. The next scientific step, if pursued, is a predeclared full-roster
+tabular replication with more datasets/unseen seeds, adequate training and
+compute-accounted controls. Stronger contender coverage and untouched evaluation
+data remain necessary. Native motif transfer, adaptive search and speculative
+mutation world models remain untested. Runtime commands are in README;
+formulation and limitations are in `research/jepa/DESIGN.md`.
 
 
 Documentation consolidation (#23/#26), CodeRabbit selection (#24), the catalog

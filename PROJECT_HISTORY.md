@@ -16,6 +16,19 @@ Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
+## JEPA repeated exploratory training — 2026-09-16
+
+The JEPA branch completed its full transfer preset at source `69d3670`: 648 worker
+cases / 720 fits across two tasks, three seeds, two training-label fractions,
+six arms, all four neural engines and Contenders. All 576 neural models passed
+replay; there were no failed or excluded cases. The
+[assessment](research/jepa/ASSESSMENT-20260916.md) links the complete descriptive
+tables, compact producer-bound receipts and reproduction command. Digits results
+are negative against longer supervised training; Prism's small low-label tabular
+gain merits only follow-up consideration. Masked transfer shows no consistent
+advantage. This is exploratory validation, not canonical acceptance or promotion.
+Frozen earlier pilots and protocols remain unchanged.
+
 ## Prism exploration implementation — 2026-09-11
 
 The [implementation receipt](governance/prism-exploration-implementation-20260911.json)

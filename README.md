@@ -503,6 +503,18 @@ not canonical benchmark exports, protected-test evidence or L3/L4 promotion.
 See [the experiment design](research/jepa/DESIGN.md) for objective details and
 limitations, and the consolidated plan for acceptance and follow-on work.
 
+The [2026-09-16 repeated evaluation](research/jepa/ASSESSMENT-20260916.md) completed
+the full transfer preset: 720 fits with all 576 neural replays passing. Results
+are mostly negative, with a small Prism low-label tabular signal and no consistent
+masked-transfer benefit. All seed-level contrasts and costs are retained in the
+[tables](research/jepa/repeated-20260916.md) and JSON companion. Regenerate the
+summary from a complete local workspace with:
+
+```sh
+uv run python research/jepa/analyze.py .artifacts/jepa-repeated-20260916 \
+  --output research/jepa/repeated-20260916
+```
+
 ## Architecture and authority
 
 The seven uv workspace packages are Shared, Contenders, Compare, Prism,
