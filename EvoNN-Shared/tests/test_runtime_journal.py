@@ -1,5 +1,6 @@
 """Crash consistency, corruption rejection and history storage scaling."""
 from copy import deepcopy
+import hashlib
 import json
 
 import pytest
@@ -138,3 +139,36 @@ def test_real_weight_cache_eviction_and_reordering_stays_incremental():
     changes = delta(before, after)
     assert apply_delta(before, changes) == after
     assert len(encode(changes)) < len(encode(after)) / 8
+
+
+@pytest.mark.parametrize("step,field", [(5, "before"), (5, "after"), (5, "attempt"), (16, "snapshot")])
+def test_every_logical_hash_is_checked_even_when_artifact_chain_is_rehashed(tmp_path, step, field):
+    state = initial()
+    publish_initial(tmp_path, "run_test", "step_0", state)
+    for _ in range(32):
+        after = advance(state)
+        commit(tmp_path, state, after)
+        state = after
+    previous = None
+    for index in range(33):
+        path = tmp_path / f"step_{index}.ckpt"
+        value = json.loads(path.read_bytes())
+        if index == step:
+            if field in {"before", "after"}:
+                value[field] = "0" * 64
+            elif field == "attempt":
+                value["change"]["attempt"]["charged"] = 0
+            else:
+                value["snapshot"]["search"]["weights"][0] = -999.0
+        value["previous"] = previous
+        payload = encode(value)
+        path.write_bytes(payload)
+        previous = dict(checkpoint_id=f"step_{index}", sequence=index, payload_path=path.name,
+                        size_bytes=len(payload), sha256=hashlib.sha256(payload).hexdigest(),
+                        previous_sha256=previous["sha256"] if previous is not None else None)
+    manifest_path = tmp_path / "manifest.json"
+    manifest = json.loads(manifest_path.read_bytes())
+    manifest["latest"] = previous
+    manifest_path.write_bytes(encode(manifest))
+    with pytest.raises(ValueError, match="hash mismatch"):
+        load_runtime_checkpoint(tmp_path)

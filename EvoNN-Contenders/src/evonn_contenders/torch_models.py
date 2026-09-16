@@ -79,6 +79,7 @@ class TorchFloor:
                 raise ValueError("unknown torch floor")
             optimizer = torch.optim.Adam(self.model.parameters(), lr=self.learning_rate)
             self.model.train()
+            self.completed_epochs_ = self.optimizer_updates_ = 0
             for _ in range(self.epochs):
                 order = torch.randperm(len(features))
                 for indices in order.split(self.batch_size):
@@ -86,6 +87,8 @@ class TorchFloor:
                     loss = nn.functional.cross_entropy(self.model(features[indices]), targets[indices])
                     loss.backward()
                     optimizer.step()
+                    self.optimizer_updates_ += 1
+                self.completed_epochs_ += 1
         self.model.train(False)
         return self
 

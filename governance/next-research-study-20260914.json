@@ -1,0 +1,425 @@
+{
+  "schema_version": 1,
+  "id": "next-research-study-20260914",
+  "status": "prepared_not_started",
+  "dispatch_authorized": false,
+  "source": {
+    "engine_reference_revision": "2715213f751f08b5b2b10ab3ddb9b8ef96bf0057",
+    "execution_revision": "Resolve to reviewed merged main after prerequisite instrumentation/contract fixes; freeze the same clean producer across all stages. A later numerical change supersedes affected comparisons.",
+    "historical_comparison": "../EvoNN-engine-refresh-20260912/.artifacts/engine-refresh/before-after.json",
+    "historical_comparison_sha256": "967a491d7796f78ac77b0eac0a7a059bc1576ab59265ddc6c24451b573d803e2"
+  },
+  "required_systems": [
+    "prism",
+    "topograph",
+    "stratograph",
+    "primordia",
+    "contenders"
+  ],
+  "roster_policy": "All five systems execute every declared arm/pack/regime/seed. Previous engine-only and interrupted-slot exceptions apply only to the completed historical run. No silent exclusions, pooled duplicate controls or selective successful-only reporting.",
+  "maximum_runs": 840,
+  "maximum_fit_attempts": 138880,
+  "maximum_native_winner_replays": 2688,
+  "controls": {
+    "backend": "mlx_native",
+    "target_device": "cpu",
+    "epochs": 12,
+    "population_size": 4,
+    "run_timeout_seconds": 1500,
+    "fit_timeout_seconds": 90,
+    "session_seconds": 1800,
+    "concurrent_fit_workers": 1,
+    "min_free_bytes": 21474836480,
+    "priority": "Standard",
+    "optimizer_backend": "numpy",
+    "optimizer_state": "restart",
+    "independent_runs": "Fresh weights/search/archive per slot; no cross-run inheritance.",
+    "order": "Rotate arm and five-system order across seeds; reverse on alternate budget/compute regimes. Pair all arms for each seed before moving on. One fit worker at a time; record host load, active time and sleep events."
+  },
+  "baselines": {
+    "enhanced": true,
+    "pool_sha256": "75cbb21024cbe9fad132a6d1b5a3ef42f2b11dd1af3984a55a1897a3335ac398",
+    "install_command": "uv sync --locked --all-packages --group dev --all-extras",
+    "required_optional_models": [
+      "catboost",
+      "cnn_small",
+      "transformer_lm_tiny"
+    ],
+    "policy": "Relevant named optional models must actually execute and succeed; missing packages or skipped required experiment baselines block their stage. Preserve required-floor, named-neural/boosted and full-pool outcomes separately. Full-pool best is secondary. No retuning after start."
+  },
+  "stages": [
+    {
+      "id": "Q-core",
+      "seeds": [
+        1001,
+        1002
+      ],
+      "packs": [
+        "tier_b_core_v2"
+      ],
+      "arms": [
+        "refresh_reference"
+      ],
+      "regimes": [
+        {
+          "id": "fits128",
+          "mode": "fixed_proposals",
+          "proposal_limit": 128
+        },
+        {
+          "id": "fits256",
+          "mode": "fixed_proposals",
+          "proposal_limit": 256
+        }
+      ],
+      "purpose": "Qualify exact producer, profile both budgets and prove clean pause/resume without score-based tuning.",
+      "gate": "All systems, exports and winner replays pass; timers reconciled; graceful-stop acceptance passes."
+    },
+    {
+      "id": "Q-breadth",
+      "seeds": [
+        1003,
+        1004
+      ],
+      "packs": [
+        "language_breadth_v1"
+      ],
+      "arms": [
+        "refresh_reference"
+      ],
+      "regimes": [
+        {
+          "id": "fits64",
+          "mode": "fixed_proposals",
+          "proposal_limit": 64
+        }
+      ],
+      "purpose": "Qualify four language tasks and enhanced contender execution before broad confirmation.",
+      "gate": "No missing engine/task or required baseline; checksum-pinned datasets, causal inputs and adequate baselines verified. Runtime success alone does not establish baseline adequacy."
+    },
+    {
+      "id": "A-mechanisms",
+      "seeds": [
+        1011,
+        1012,
+        1013,
+        1014,
+        1015,
+        1016
+      ],
+      "packs": [
+        "tier_b_core_v2"
+      ],
+      "arms": [
+        "refresh_reference",
+        "prism_legacy",
+        "prism_archive",
+        "prism_training",
+        "prism_broad",
+        "stratograph_fixed",
+        "stratograph_proxy",
+        "stratograph_no_norm",
+        "stratograph_train_standard",
+        "stratograph_fresh",
+        "stratograph_quality"
+      ],
+      "regimes": [
+        {
+          "id": "fits128",
+          "mode": "fixed_proposals",
+          "proposal_limit": 128
+        }
+      ],
+      "purpose": "Six-seed exploratory screening of Prism policy components and six controlled Stratograph questions.",
+      "gate": "Q-core passes; all arms frozen and all 330 slots run. No confirmatory claims from this screening."
+    },
+    {
+      "id": "B-confirmation",
+      "seeds": [
+        1101,
+        1102,
+        1103,
+        1104,
+        1105,
+        1106,
+        1107,
+        1108,
+        1109,
+        1110,
+        1111,
+        1112
+      ],
+      "packs": [
+        "tier_b_core_v2"
+      ],
+      "arms": [
+        "refresh_reference",
+        "selected_bundle"
+      ],
+      "regimes": [
+        {
+          "id": "fits128",
+          "mode": "fixed_proposals",
+          "proposal_limit": 128
+        }
+      ],
+      "purpose": "Independent twelve-seed confirmation of nominated policies and current contender floors.",
+      "gate": "Nomination receipt is frozen before generating or inspecting these data/seeds; exact selected policies materialized and validated."
+    },
+    {
+      "id": "C-compute",
+      "seeds": [
+        1201,
+        1202,
+        1203,
+        1204,
+        1205,
+        1206,
+        1207,
+        1208,
+        1209,
+        1210,
+        1211,
+        1212
+      ],
+      "packs": [
+        "tier_b_core_v2"
+      ],
+      "arms": [
+        "refresh_reference",
+        "selected_bundle"
+      ],
+      "regimes": [
+        {
+          "id": "train10s_per_task",
+          "mode": "measured_training_ceiling",
+          "proposal_limit": 256,
+          "training_seconds_per_benchmark": 10
+        },
+        {
+          "id": "train30s_per_task",
+          "mode": "measured_training_ceiling",
+          "proposal_limit": 256,
+          "training_seconds_per_benchmark": 30
+        }
+      ],
+      "purpose": "Compare quality under shared measured-training ceilings, with exact consumed work, cap-limited runs and censored outcomes visible.",
+      "gate": "New versioned compute-budget runner/export contract and all five executors must pass acceptance first. Current CampaignSpec timeout is not this budget."
+    },
+    {
+      "id": "D-breadth",
+      "seeds": [
+        1301,
+        1302,
+        1303,
+        1304,
+        1305,
+        1306,
+        1307,
+        1308,
+        1309,
+        1310,
+        1311,
+        1312
+      ],
+      "packs": [
+        "language_breadth_v1"
+      ],
+      "arms": [
+        "refresh_reference",
+        "selected_bundle"
+      ],
+      "regimes": [
+        {
+          "id": "fits128",
+          "mode": "fixed_proposals",
+          "proposal_limit": 128
+        }
+      ],
+      "purpose": "Fresh-seed longer-context and second-corpus robustness, plus a separate delayed-memory diagnostic.",
+      "gate": "Q-breadth and B-confirmation pass; policy nomination already locked. No tuning on these outcomes."
+    }
+  ],
+  "mechanism_contrasts": [
+    {
+      "id": "prism-archive",
+      "engine": "prism",
+      "reference": "prism_legacy",
+      "target": "prism_archive",
+      "changed": "variant"
+    },
+    {
+      "id": "prism-training",
+      "engine": "prism",
+      "reference": "prism_legacy",
+      "target": "prism_training",
+      "changed": "variant"
+    },
+    {
+      "id": "prism-broad",
+      "engine": "prism",
+      "reference": "prism_legacy",
+      "target": "prism_broad",
+      "changed": "variant"
+    },
+    {
+      "id": "prism-open",
+      "engine": "prism",
+      "reference": "prism_legacy",
+      "target": "refresh_reference",
+      "changed": "variant"
+    },
+    {
+      "id": "stratograph-trainability",
+      "engine": "stratograph",
+      "reference": "stratograph_proxy",
+      "target": "stratograph_fixed",
+      "changed": "research.evaluator"
+    },
+    {
+      "id": "stratograph-rms-normalization",
+      "engine": "stratograph",
+      "reference": "stratograph_no_norm",
+      "target": "stratograph_fixed",
+      "changed": "research.normalization"
+    },
+    {
+      "id": "stratograph-standard-vs-rms",
+      "engine": "stratograph",
+      "reference": "stratograph_fixed",
+      "target": "stratograph_train_standard",
+      "changed": "research.normalization"
+    },
+    {
+      "id": "stratograph-inheritance",
+      "engine": "stratograph",
+      "reference": "stratograph_fresh",
+      "target": "stratograph_fixed",
+      "changed": "research.inheritance"
+    },
+    {
+      "id": "stratograph-diversity",
+      "engine": "stratograph",
+      "reference": "stratograph_quality",
+      "target": "stratograph_fixed",
+      "changed": "research.selection"
+    },
+    {
+      "id": "stratograph-representation-evolution",
+      "engine": "stratograph",
+      "reference": "stratograph_fixed",
+      "target": "refresh_reference",
+      "changed": "research.evolve_representation"
+    }
+  ],
+  "nomination": {
+    "stage": "A-mechanisms",
+    "scope": "Provisional candidate selection, never a promotion claim.",
+    "candidates": {
+      "prism": [
+        "prism_legacy",
+        "prism_archive",
+        "prism_training",
+        "prism_broad",
+        "refresh_reference"
+      ],
+      "stratograph": [
+        "refresh_reference",
+        "stratograph_fixed",
+        "stratograph_proxy",
+        "stratograph_no_norm",
+        "stratograph_train_standard",
+        "stratograph_fresh",
+        "stratograph_quality"
+      ]
+    },
+    "rules": [
+      "Evaluate all six seed pairs and all four tasks, with failure/coverage information. Do not read B/C/D outcomes during nomination.",
+      "Prism nomination uses legacy as the image/regression guard reference and current open as the language reference. Eligible candidate: mean digits accuracy no more than 0.25 percentage points below legacy; mean MSE no more than 2% above legacy; mean LM perplexity no more than 1% above current open. These screening guards are practical filters, not noninferiority proofs.",
+      "Stratograph eligible candidate: mean accuracy on either classification task no more than 0.25 percentage points below current trainable/open reference; mean MSE and LM perplexity no more than 2% above that reference.",
+      "Among eligible candidates select the greatest equal-weight direction-aware symmetric quality effect against current reference over digits, diabetes and Shakespeare. If effects differ by less than 0.01, prefer lower summed measured fit-training seconds; remaining tie uses fewer serialized winner bytes, then lexical arm ID. Retain current reference when no candidate qualifies. No task-specific hybrids or newly invented policies.",
+      "The selected bundle combines only nominated Prism and Stratograph policies; Topograph open, Primordia breadth_v2 and the contender pool remain unchanged.",
+      "Freeze exact full selected policy objects and hashes before confirmation. If both nominations equal the reference, omit the entire redundant selected-bundle arm from B/C/D by this predeclared rule, record the reduced roster of arms, and still run all five systems for every retained combination."
+    ],
+    "never_do": "Do not substitute reference configs for unresolved selected-bundle templates; do not relabel screening seeds as confirmation."
+  },
+  "statistics": {
+    "unit": "Matched seed, never individual fits or repeated unchanged-engine control runs.",
+    "bootstrap": "4096 deterministic paired-seed resamples (RNG 0), 95% percentile intervals; retain all raw metric pairs.",
+    "effect": "Direction-aware symmetric relative effects and equal task weights; report classification changes in percentage points and regression/LM changes in raw units and ordinary relative percentages as well.",
+    "materiality": 0.01,
+    "screening": "A has six seeds and ten declared mechanism contrasts; descriptive screening only. Even unanimous six-seed signed-rank results cannot generally pass correction across ten tests. No significant-gain label is authorized.",
+    "confirmation": "B has twelve independent fresh paired seeds. Predeclare six primary panels at 128: two nominated-vs-reference policy aggregates (Prism, Stratograph) plus four selected-bundle engines vs required contender floor. If selected bundle was omitted, policy panels are unavailable, and floor panels use reference. Keep the six-panel family for Holm correction.",
+    "compute": "C has twelve seed pairs and twelve primary panels: at each of two caps, two selected-vs-reference policy contrasts plus four engine-vs-required-floor contrasts. Missing/cap-inadequate floors make their panels unavailable, never substitute another baseline. Holm across the twelve-panel family.",
+    "breadth": "D has six primary panels: two policy contrasts plus four engine-vs-floor contrasts, using the two real-text breadth tasks (Shakespeare context64 and Aesop context64). Original Shakespeare is a bridge task; delayed-copy is a separate diagnostic. Do not let synthetic-memory gains mask real-text regressions. Holm across the six-panel family.",
+    "ceilings": "Remove a task from a contrast aggregate only if every paired observation in both arms is at its known ceiling; retain raw task results. Banknote is a sentinel, not evidence of broad superiority.",
+    "claims": "Intervals and exploratory p-values do not override source, data, policy, baseline or evaluator-admission blockers. Keep unsupported/failed outcomes and negative results. Per-task rankings, guards, size and profiling results remain descriptive. No automatic engine promotion."
+  },
+  "measured_compute": {
+    "status": "implementation_required",
+    "allocation": "10 or 30 measured training seconds per benchmark, independently; no transfer of unused allowance across tasks; maximum 256 total proposals and 1500 seconds/run.",
+    "semantics": "A common training-time ceiling is not proof of equal consumed compute. Report actual training seconds, updates, processed examples/tokens, parameter counts, inherited ancestral work, started/failed fits and proposal-cap saturation. No FLOP-equivalence claim across backends.",
+    "completion": "Select only candidates whose evaluations finish within that task budget; record start/end and score-availability boundaries. No overshooting candidate or later refit may supply a cutoff winner. Use best completed checkpoint according to a predeclared versioned contract. Distinguish planned budget censoring from genuine worker failure. Cells with no available outcome stay missing.",
+    "proposal_saturation": "If 256 proposals are exhausted before the time ceiling, label the arm proposal-cap-limited; do not call it equal-consumed-work. Pilot must establish usable outcome/baseline coverage at both predeclared caps. If it cannot, stop C and issue a new pre-results protocol rather than silently change the caps.",
+    "export_gate": "Current complete fixed-proposal validators require all declared evaluations. A time-limited result must have its own versioned budget/termination/export semantics and validation; never force it through by suppressing partial-run errors."
+  },
+  "profiling": {
+    "priority": [
+      "Topograph 128-to-256 scaling",
+      "Primordia time outside measured fit training",
+      "Prism changed training allocation"
+    ],
+    "phases": [
+      "data preparation",
+      "compile and inheritance",
+      "training",
+      "validation and inference",
+      "search and proposal updates",
+      "worker startup and transport",
+      "serialization",
+      "checkpoint publication"
+    ],
+    "acceptance": "Use disjoint top-level timers with documented nesting; reconcile totals with active invocation time and record unaccounted remainder. Synchronize asynchronous backend work at defined boundaries. Profile only Q seeds. Measure overhead in paired profiled/unprofiled qualification before interpreting timing; instrumentation must not change random streams, fit counts or winners.",
+    "budget": "Q-core configurations provide unprofiled anchors. Additional instrumented repeats are outside the 840-run scientific matrix and must be counted as qualification overhead, with a separate cap of 20 runs / 3840 proposal attempts."
+  },
+  "generalization": {
+    "tasks": [
+      "shakespeare_byte_lm",
+      "shakespeare_context64_lm",
+      "aesop_context64_lm",
+      "delayed_copy_lm"
+    ],
+    "runtime_manifest_sha256": "d55986e6f3b23a674a9209eda11f5a6ffb2a0d11b2aa61d2b9ea82b4eab1c66d",
+    "constraints": "Existing breadth pack is experimental and not admitted as full-fidelity local-safe. Gate qualification, native replay, baseline adequacy and causal input construction before D. Freeze bytes/splits before execution. Aesop source must match its declared SHA; never accept a changed upstream file silently.",
+    "heldout": "All training stages use declared training/validation data only. The final 15% of real text remains untouched. Add a separate frozen-winner protected-test evaluator before any test claim; it must prohibit policy/checkpoint selection after test access. No such test evaluator is currently prepared or authorized to read the protected split. Delayed-copy currently has train/validation only, so do not invent a protected-test result.",
+    "scope": "Fresh seeds and a second corpus test robustness within these tasks; they do not establish general real-world architecture superiority or transfer."
+  },
+  "launch_gates": [
+    "Planning only: explicit launch instruction required. No fit, dataset preparation, scheduler installation, or protected-test access is performed by the generator.",
+    "Review and merge infrastructure changes before creating one clean, immutable execution producer; freeze environment, all configs, pool, data and host hashes. Numerical policies must match the declared reference or be a separately declared intervention.",
+    "Graceful stop/resume must be qualified: a requested pause finishes a bounded active fit, commits its outcome and closes the invocation clock at a safe boundary; restarts preserve remaining budgets and completed outcomes. Hard-killed unresolved fits remain visible and cannot receive fabricated clocks. Contenders must finish a bounded slot or use an explicitly qualified resume contract.",
+    "Validate source-bound profiling and callback/timestamp semantics without altering search RNG. Do not enable intrusive profilers on confirmation runs.",
+    "Q-breadth must pass before any breadth confirmation. Baseline adequacy requires more than schema validation or a model name being present.",
+    "C requires measured-training-budget execution and export support for every system; normal --timeout and proposal counts are not substitutes.",
+    "A policy-aware arm analysis must bind exact config hashes. Existing cohort-report only distinguishes engine/budget arms, so same-engine/same-budget variants need an explicit additive analysis request schema or a separately validated descriptive analyzer.",
+    "B/C/D selected-bundle rows are conditional until the nomination receipt is frozen; no fallback auto-execution as reference."
+  ],
+  "cost": {
+    "ordinary_run_envelope_hours": 350,
+    "profile_extra_run_envelope_hours": 8.333333333333334,
+    "interpretation": "840 x 1500s is an upper bound for run invocations only, not an ETA or a spending authorization; validation/replay/preparation add overhead. Actual compute-mode proposals can be below their ceiling.",
+    "reference_estimate": "Using the last observed current-policy core means and historical Contenders timings, unprofiled Q-core + A + B are roughly 26 hours before validation. This is only a planning reference: ablations, instrumentation, host load and dependencies can change it. Breadth and compute-mode durations remain unqualified; estimate them only from Q."
+  },
+  "recovery": "Never rerun successful slots for a better score. Keep source/config/seed identity and immutable journals. Missing or failed required runs leave their stage incomplete. Any replacement of an interrupted slot must receive a new explicit amendment with all previous work/cost retained; the historical 55+9 exception is not standing permission for undisclosed restarts.",
+  "deliverables": [
+    "readiness and stage-gate receipts",
+    "all source/config/data/pool hashes",
+    "per-seed paired quality and resource tables",
+    "policy-specific architecture/inheritance/revival diagnostics",
+    "disjoint phase profiles",
+    "quality-versus-measured-work curves with censored cells",
+    "nomination and independent confirmation receipts",
+    "breadth report separating real text and synthetic memory",
+    "complete failure/restart accounting and replay receipts"
+  ]
+}

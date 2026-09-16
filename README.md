@@ -201,6 +201,13 @@ uv run evonn-compare workspace-report .artifacts/compare
 `--preset smoke` uses 16 fits; `local` uses 64. Runs accumulate. Each system
 run stays below 30 minutes; no overnight/weekend preset is admitted.
 
+Checkpoint recovery reuses canonical JSON bytes for unchanged private state
+within each replay, while retaining every artifact and logical-state hash check.
+The format and publication boundaries are unchanged. The
+[checkpoint replay benchmark](reports/checkpoint-json-20260916/report.md)
+records byte compatibility, resume tests and measured performance on a retained
+256-attempt checkpoint.
+
 ## Prism exploration policies
 
 The September 11 Prism implementation adds an experimental `open` policy for
@@ -647,3 +654,42 @@ Unless otherwise indicated, original code and documentation are licensed under
 GNU GPL version 3 only (`GPL-3.0-only`); see [LICENSE](LICENSE). Each workspace
 package carries its own copy for distribution. The software comes without
 warranty. Dependencies, datasets and model weights retain their own licenses.
+
+### Language baseline follow-up operations
+
+The immediate follow-up is a descriptive language-baseline screen: **60 runs /
+3,840 fit attempts**, all four engines plus Contenders in every arm, breadth
+budget 64 and seeds 1421/1422. Six versioned pools vary Transformer epochs
+(2/5/10 versus 20) or n-gram smoothing (0.1/0.01 versus 1.0). Native policies
+and 12-epoch envelopes stay fixed. Experimental pools do not inherit floor
+admission. The fixed selection/coverage rules live in
+`evonn_compare.baseline_study.POLICY`; independent confirmation is still needed.
+
+From a clean, locked producer checkout, first prepare and execute the separate
+30-slot implementation qualification (seed 1431, budget 16, two native epochs).
+This checks all six arms/all five systems, actual baseline updates and 96 saved
+native winners. Preparation of the research run requires its completed receipt:
+
+```sh
+.venv/bin/python -m evonn_compare.baseline_study prepare .artifacts/baseline-qualification --qualification --cache .artifacts/data-cache
+.venv/bin/python -m evonn_compare.baseline_study run .artifacts/baseline-qualification
+.venv/bin/python -m evonn_compare.baseline_study prepare .artifacts/baseline-follow-up --qualification-workspace .artifacts/baseline-qualification --cache .artifacts/data-cache
+.venv/bin/python -m evonn_compare.baseline_study preflight .artifacts/baseline-follow-up
+```
+
+Preparation and preflight do not train. When launch is authorized, use `run`
+with that workspace. `pause` requests a stop between slots; `resume` clears the
+pause and revalidates frozen source/data/dependencies before continuing. `report`
+verifies coverage and reports incomplete evidence explicitly. Failed Contenders
+slots are retained and require diagnosis; they are never automatically replaced.
+A second controller is excluded by the study lock. Native interrupted slots
+use the existing integrity-checked campaign checkpoint recovery.
+
+The old qualification remains 28/30. Its historical planning/recovery scripts
+are retained with explicit integrity checks under `EvoNN-Compare/tests/research_archive/`, with recovery
+regressions retained. Their original byte-exact versions remain in the historical commits and frozen producer.
+The archived planner now resolves the repository from its moved location; its
+original protocol document retains the command valid at the time it was frozen.
+These are archival fixtures for the prior producer;
+use the module above for this new follow-up. Historical receipts and results
+have not been relabeled as complete.

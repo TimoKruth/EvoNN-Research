@@ -1,0 +1,75 @@
+{
+  "at": "2026-09-14T22:40:01.952476+00:00",
+  "user_instruction": "fix it and restart",
+  "protocol_sha256": "3ad93796cb5f38dea2a2d08ddca12f367510744d51542a57b51c919c5025b65e",
+  "execution_scope": [
+    "Q-core",
+    "Q-breadth"
+  ],
+  "qualification_runs": 30,
+  "maximum_fits": 4480,
+  "producer_revision": "aabc7f913153535f1e53258221201f4e2abb7fef",
+  "qualification_execution_interpretation": "User-authorized corrected Q restart. All later scientific stages remain gated; this receipt does not declare qualification acceptance.",
+  "clean_pause_qualification": "Use existing --stop-after at multiples of 16 completed fits for every native Q slot. Verify committed prefix preservation and closed invocation clocks at every boundary. The original cumulative 1500-second budget remains binding. Chunk overhead is included and these timings must not be compared as uninterrupted production speed.",
+  "pause_control": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/PAUSE",
+  "contenders_pause": "Finish the active bounded slot; do not interrupt or automatically replace incomplete Contenders.",
+  "remaining_gates": "Request-driven fit-boundary stopping, profiling reconciliation/equivalence, breadth adequacy, policy-aware analysis, and measured-training budget support remain unaccepted. Q cannot auto-advance. Infrastructure changes require a reviewed merged producer and requalification before scientific stages.",
+  "historical_protocol": "Preserved byte-for-byte; this separate execution receipt records the user start instruction and qualification boundary behavior.",
+  "hard_failure": "Retain evidence and stop. No silent replacement, removed baseline, clock rewrite or automatic source repair.",
+  "fix_pr": "https://github.com/TimoKruth/EvoNN-Research/pull/38",
+  "supersedes": "/Users/timokruth/Projekte/EvoNN-next-study-20260914/.artifacts/qualification",
+  "restart_scope": "Restart all 30 Q runs under the corrected merged producer. No prior result is adopted into this execution.",
+  "prior_evidence": {
+    "completed_runs": 1,
+    "committed_native_attempts": 240,
+    "successful_attempts": 239,
+    "failed_attempts": 1,
+    "failed_candidate": 99,
+    "failure_reason": "nonfinite validation loss caused by finite activation 69488.5546875 exceeding FP16 maximum 65504",
+    "prior_probe_attempts": 1,
+    "fixed_exact_candidate_probe_attempts": 1,
+    "test_suite": "73 Topograph tests passed; separate validation work",
+    "pr38_contract_validation_runs": 10,
+    "pr38_contract_validation_fits": 160,
+    "pr38_contract_native_replays": 32
+  },
+  "numerical_change": "FP16 quantizer saturates finite input before casting, preserving nonfinite input rejection and straight-through gradients. Other settings, engine roster, seeds and budgets remain as declared.",
+  "status": "qualification_restarted",
+  "producer": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914",
+  "base": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification",
+  "launch": {
+    "at": "2026-09-14T22:40:06.759323+00:00",
+    "label": "com.evonn.next-study.20260914.qualification-v2",
+    "readiness_sha256": "c19d89de340e4887f0471c462062e92355b831fc10ecb293701f1fd51f5c0560",
+    "authorization_sha256": "8416d749a4adbdd201d2e528527a8a1bb4be363ab41f5fa601a6719f233b44db"
+  },
+  "status_file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/status.json",
+  "scheduler": {
+    "label": "com.evonn.next-study.20260914.qualification-v2",
+    "plist": "/Users/timokruth/Library/LaunchAgents/com.evonn.next-study.20260914.qualification-v2.plist",
+    "uid": 501
+  },
+  "qualification_accepted": false,
+  "later_stages_dispatched": false,
+  "ci": {
+    "linux": {
+      "status": "passed",
+      "run": "https://github.com/TimoKruth/EvoNN-Research/actions/runs/34901471997"
+    },
+    "macos": {
+      "status": "passed",
+      "run": "https://github.com/TimoKruth/EvoNN-Research/actions/runs/34901471999"
+    }
+  },
+  "frozen_artifacts": {
+    "readiness.json": "c19d89de340e4887f0471c462062e92355b831fc10ecb293701f1fd51f5c0560",
+    "launch-authorization.json": "8416d749a4adbdd201d2e528527a8a1bb4be363ab41f5fa601a6719f233b44db",
+    "runtime/runner.py": "48fda32e2cfeae8f7b0cbd236ded99e5c21e4a8ddc547b20f419a98ade0e2527",
+    "launch-agent.plist": "a6754397afbe323170866970573dec13895a5f0c96c83d5aae6b30571ab5e833",
+    "control-check.json": "641a6be66e04ed6a57b9a6060e82929379f65e57c70dd59e10e7b87fbf672698"
+  },
+  "contract_producers_preserved": [
+    "/Users/timokruth/Projekte/EvoNN-next-study-20260914",
+    "/Users/timokruth/Projekte/EvoNN-next-study-v2-20260914"
+  ]
+}

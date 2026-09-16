@@ -28,6 +28,8 @@ def test_optional_image_and_lm_fit_heldout_and_invalid_targets():
         lm = build_model("transformer_lm_tiny", task="language_modeling", seed=42, input_shape=(3,), train_rows=16,
                          output_dim=2, parameters={"epochs": 3, "batch_size": 8})
         lm.fit(contexts, targets)
+        assert lm.completed_epochs_ == 3
+        assert lm.optimizer_updates_ == 6
         assert lm.perplexity(validation, validation_targets) < 1.5
         with pytest.raises(ValueError, match="held-out"):
             lm.perplexity(validation, np.array([-1] * 4))
