@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
-SPEC = importlib.util.spec_from_file_location('qualification_runner', Path(__file__).resolve().parents[1] / 'scripts/research/qualification_runner.py')
+SPEC = importlib.util.spec_from_file_location('qualification_runner', Path(__file__).resolve().parents[1] / 'EvoNN-Compare/tests/research_archive/qualification_runner.py')
 runner = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(runner)
 
