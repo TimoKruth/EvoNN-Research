@@ -134,6 +134,91 @@ lead in this cohort. More budget does not resolve Stratograph's shared-proxy
 deficit (digits 29.76% → 33.99%). The protected text test is still unused.
 No additional training is scheduled by this evaluation.
 
+**Prepared successor study (2026-09-14; qualification now started):** the user requested the next
+large run after the completed 64-run engine refresh. The
+[next research protocol](governance/next-research-study-20260914.md) schedules
+qualification, Prism/Stratograph mechanism screening, fresh-seed confirmation,
+measured-training-budget comparisons and language breadth. Every arm retains all
+four engines plus Contenders. The full conditional ceiling is 840 runs / 138,880
+fit attempts, plus separately capped profiling repeats. Validated fixed-proposal
+configs are available; policy nomination, graceful pause/resume, profiling and
+measured-compute contracts, and breadth adequacy have explicit gates. No fits or
+protected-test access are authorized by plan generation. Historical protocols
+and the completed refresh remain unchanged.
+
+**Qualification launched (2026-09-14, 22:54 CEST):** the explicit start instruction
+is recorded in [the launch receipt](governance/next-research-launch-20260914.json).
+Q-core and Q-breadth execute **30 runs / 4,480 fits**, all five systems, in
+`../EvoNN-next-study-20260914` pinned to merged main `2715213`. Six campaigns
+passed preflight. Native runs use existing clean `--stop-after` boundaries every
+16 fits to qualify resume; their extra invocation overhead is retained. Contenders
+finishes its bounded slot. Status and the pause control are linked from
+`.artifacts/next-research-study-20260914/execution.json`. Execution stops on failure
+and after Q. Profiling, request-driven fit-boundary pause, breadth adequacy and
+later-stage gates remain unaccepted; this launch does not declare the full study
+ready or authorize automatic progression into A/B/C/D. Frozen planning evidence
+is preserved separately from the launch receipt.
+
+**Corrected qualification restarted (2026-09-15):** Topograph's original
+attempt 99 failed when a finite activation exceeded FP16's range. PR #38 fixes
+saturating FP16 conversion and its straight-through gradient. All 73 Topograph
+tests, a separate five-system before/after contract check (10 runs / 160 fits,
+32 winner replays), and both hosted CI jobs passed. The contract is one seed and
+remains insufficient for a statistical improvement claim.
+
+The [restart receipt](governance/next-research-restart-20260915.json) freezes
+`../EvoNN-next-study-fixed-20260914` at merged main `aabc7f9`. All **30 Q runs /
+4,480 fits** restart under this corrected producer; the earlier 128 Prism attempts
+and 112 Topograph attempts (including one failure) remain separate. Both contract
+checkouts remain pinned. Six preflights and the pause-control check passed. The
+current status and pause path are in
+`.artifacts/next-research-study-20260914/execution.json`. The new Standard
+LaunchAgent runs one slot at a time and stops after Q or on failure; later-stage
+acceptance gates remain unchanged.
+
+**Qualification scheduler recovery (2026-09-15):** two Topograph workers hit
+the launcher's wall-clock limit as repeated checkpoint verification accumulated.
+Seed 1001 finished 256 fits and was subsequently adopted and replayed; seed 1002
+was interrupted while loading the next chunk, retaining 224 successful fits and
+14 closed invocation clocks. The additive launcher now executes one native
+16-fit chunk per bounded worker and handles final adoption/replay on a separate
+tick. Six scheduling regression tests passed. All 15 existing completion receipts,
+the frozen producer, configurations, cumulative 1,500-second engine clocks and
+the original launcher/readiness records are preserved. The amended launcher and
+archived failures are bound by
+[the recovery receipt](governance/next-research-scheduler-recovery-20260915.json).
+Qualification resumed from the existing checkpoint; scientific-stage gates and
+the requirement to requalify infrastructure changes remain open.
+
+**Breadth continuation with unresolved Primordia slots (2026-09-15):** after
+23 completed runs, Primordia seed 1003 failed before fitting because its owned
+dataset loader lacks `byte_corpus_v1`; source inspection also found missing
+`make_delayed_copy_v1` support. The user requested continuation. The scheduler
+now executes the five unaffected remaining slots while explicitly retaining both
+Primordia breadth slots as unresolved (1003 failed; 1004 not attempted). The
+30-run roster and frozen producer remain unchanged. It must stop as incomplete
+at at most 28/30, without publishing a qualification-completion receipt or
+advancing stages. Ten scheduler regression tests passed. Contenders dispatch
+now targets its exact slot so an earlier failed native preparation cannot
+redirect it; verified exports retain standard completion journal entries. Failure logs and all
+23 completion receipts are preserved in
+[the continuation receipt](governance/next-research-primordia-blocked-continuation-20260915.json).
+Completing qualification still requires a separately qualified Primordia loader
+repair; no claim of full engine coverage is authorized.
+
+**Descriptive Q analysis (2026-09-16):** all unaffected slots finished, leaving
+28/30 runs (20/20 core, 8/10 breadth). The
+[findings and research priorities](reports/qualification-20260916/findings.md)
+and [raw paired score report](reports/qualification-20260916/report.md) cover
+all five systems and explicitly retain the missing Primordia breadth cells.
+Receipt/artifact hashes, 4,352 successful charged fits, 88 recorded native
+replays and within-case dataset identity were checked; an independent winner
+reconstruction matched 112 task outcomes. Prism's language results, Topograph's
+budget scaling, Primordia's recorded training economy and Stratograph's weak
+delayed-copy results motivate follow-up, with only two seeds and no causal or
+held-out-test claim. Real-text baseline adequacy and checkpoint overhead need
+review. No Q acceptance, nomination, promotion or later-stage launch follows.
+
 **Standing user requirement (2026-09-10):** every new comparison includes Prism,
 Topograph, Stratograph and Primordia on every declared benchmark/budget/seed
 combination, plus Contenders baselines. Focused research questions can restrict

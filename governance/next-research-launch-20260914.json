@@ -1,0 +1,42 @@
+{
+  "at": "2026-09-14T20:54:16.665048+00:00",
+  "user_instruction": "Start it",
+  "protocol_sha256": "3ad93796cb5f38dea2a2d08ddca12f367510744d51542a57b51c919c5025b65e",
+  "execution_scope": [
+    "Q-core",
+    "Q-breadth"
+  ],
+  "qualification_runs": 30,
+  "maximum_fits": 4480,
+  "producer_revision": "2715213f751f08b5b2b10ab3ddb9b8ef96bf0057",
+  "qualification_execution_interpretation": "Collect Q evidence using existing merged engine interfaces. This does not declare the unresolved launch/acceptance gates passed or authorize dispatch into A/B/C/D.",
+  "clean_pause_qualification": "Use existing --stop-after at multiples of 16 completed fits for every native Q slot. Verify committed prefix preservation and closed invocation clocks at every boundary. The original cumulative 1500-second budget remains binding. Chunk overhead is included and these timings must not be compared as uninterrupted production speed.",
+  "pause_control": "/Users/timokruth/Projekte/EvoNN-next-study-20260914/.artifacts/qualification/PAUSE",
+  "contenders_pause": "Finish the active bounded slot; do not interrupt or automatically replace incomplete Contenders.",
+  "remaining_gates": "Request-driven fit-boundary stopping, profiling reconciliation/equivalence, breadth adequacy, policy-aware analysis, and measured-training budget support remain unaccepted. Q cannot auto-advance. Infrastructure changes require a reviewed merged producer and requalification before scientific stages.",
+  "historical_protocol": "Preserved byte-for-byte; this separate execution receipt records the user start instruction and qualification boundary behavior.",
+  "hard_failure": "Retain evidence and stop. No silent replacement, removed baseline, clock rewrite or automatic source repair.",
+  "status": "qualification_started",
+  "producer": "/Users/timokruth/Projekte/EvoNN-next-study-20260914",
+  "base": "/Users/timokruth/Projekte/EvoNN-next-study-20260914/.artifacts/qualification",
+  "status_file": "/Users/timokruth/Projekte/EvoNN-next-study-20260914/.artifacts/qualification/status.json",
+  "schedule": {
+    "label": "com.evonn.next-study.20260914.qualification",
+    "plist": "/Users/timokruth/Library/LaunchAgents/com.evonn.next-study.20260914.qualification.plist",
+    "uid": 501
+  },
+  "preflight": {
+    "campaigns": 6,
+    "runs": 30,
+    "all_passed": true
+  },
+  "frozen_artifacts": {
+    "readiness.json": "c39dfb147a94aead9ae22309e615f859ab3ff8bfc3bdab9b28039aa1d64eb3de",
+    "launch-authorization.json": "b136cb681ac40feeff8fe82509f603d70e11bb2d75264cc7c04d46518544d34c",
+    "runtime/runner.py": "48fda32e2cfeae8f7b0cbd236ded99e5c21e4a8ddc547b20f419a98ade0e2527",
+    "launch-agent.plist": "f69e780f7e3666df03a0e9667d77011bfdface0a0d9966c519d45a5824b9d89a",
+    "control-check.json": "641a6be66e04ed6a57b9a6060e82929379f65e57c70dd59e10e7b87fbf672698"
+  },
+  "later_stages_dispatched": false,
+  "qualification_accepted": false
+}
