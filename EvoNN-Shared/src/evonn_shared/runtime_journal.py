@@ -13,6 +13,7 @@ from .artifact_io import publish_artifact, read_verified_artifact
 from .checkpoints import CheckpointPublication, CheckpointRecord, read_checkpoint_manifest
 from .export_reader import read_document
 from .telemetry import ArtifactReference
+from ._journal_encoding import ReplayEncoder
 
 FORMAT = "evonn.runtime-journal/v1"
 INTERVAL = 16
@@ -212,6 +213,9 @@ def publish_initial(directory, run_id, checkpoint_id, state):
 
 def load_runtime_checkpoint(directory):
     """Validate the entire committed chain and decode the original logical state."""
+    # Replay owns these decoded states. restore/apply_delta replace containers
+    # instead of mutating predecessors, so unchanged nodes can reuse exact bytes.
+    encoder = ReplayEncoder(LIMIT)
     manifest = read_checkpoint_manifest(directory)
     if manifest is not None and manifest.latest.size_bytes > LIMIT:
         raise ValueError("journal record exceeds read limit")
@@ -239,7 +243,7 @@ def load_runtime_checkpoint(directory):
             compact(state)
             if state["completed"] != 0 or current.checkpoint_id != "step_0":
                 raise ValueError("invalid initial journal progress")
-            if digest(state) != value["after"]:
+            if encoder.digest(state) != value["after"]:
                 raise ValueError("initial journal state hash mismatch")
             records = records[:-1]
             break
@@ -251,7 +255,7 @@ def load_runtime_checkpoint(directory):
         if previous.payload_path != previous.checkpoint_id + ".ckpt":
             raise ValueError("journal payload name differs from checkpoint identity")
         current = previous
-    state_digest = digest(state)
+    state_digest = encoder.digest(state)
     for record in reversed(records):
         payload = read_verified_artifact(directory, ArtifactReference(path=record.payload_path, sha256=record.sha256),
                                          size_bytes=record.size_bytes, max_bytes=LIMIT)
@@ -272,9 +276,9 @@ def load_runtime_checkpoint(directory):
             state = restore(state, change)
             if state["completed"] % INTERVAL == 0:
                 raise ValueError("missing periodic compact snapshot")
-        state_digest = digest(state)
+        state_digest = encoder.digest(state)
         if state_digest != value["after"]:
             raise ValueError("journal logical state hash mismatch")
         if record.checkpoint_id != f"step_{state['completed']}":
             raise ValueError("journal checkpoint and attempt progress disagree")
-    return latest, encode(state)
+    return latest, encoder.encode(state)

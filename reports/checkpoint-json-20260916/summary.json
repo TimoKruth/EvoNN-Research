@@ -1,0 +1,76 @@
+{
+  "before_revision": "aabc7f913153535f1e53258221201f4e2abb7fef",
+  "after_revision": "fb6c42f75e97db3c4331c20170515096af4a6e94",
+  "before_wall_seconds": [
+    57.788492708001286,
+    57.83104087499669,
+    57.708542833977845
+  ],
+  "after_wall_seconds": [
+    23.73644162499113,
+    23.774204332992667,
+    24.059318125015125
+  ],
+  "before_median_seconds": 57.788492708001286,
+  "after_median_seconds": 23.774204332992667,
+  "speedup": 2.430722471237671,
+  "replay_time_reduction_percent": 58.859968102782965,
+  "before_rss_range_bytes": [
+    1219182592,
+    1327235072
+  ],
+  "after_rss_range_bytes": [
+    1254768640,
+    1267630080
+  ],
+  "logical_checks_per_replay": 258,
+  "all_logical_hash_sequences_identical": true,
+  "all_final_payload_hashes_identical": true,
+  "historical_files_changed": false,
+  "benchmark_fits_started": 0,
+  "protected_test_evaluation": false,
+  "checkpoint_format_changed": false,
+  "profile_json_iterencode_self_seconds": {
+    "before": 46.196848789,
+    "after": 6.37645614
+  },
+  "scope": "Repeated read-only timings of one 256-attempt Topograph checkpoint on this Mac; not end-to-end training speed or independent scientific replicates. cProfile breakdown is separate from the six unprofiled timing repeats.",
+  "sources": [
+    {
+      "path": "1-before.json",
+      "sha256": "ec83ef370040b8282707f5c23013eaef501325edc6ca9b5d1e1ca6271121a455"
+    },
+    {
+      "path": "2-after.json",
+      "sha256": "78376f03d0f679513b40ddecc918cfbb64c5e91edd3f2718f00f5733dd110407"
+    },
+    {
+      "path": "3-after.json",
+      "sha256": "add66a514ce9699485b53d35ca44f6dbce56d82a43fa06c5fe41e7059bd399e6"
+    },
+    {
+      "path": "4-before.json",
+      "sha256": "cdef11750a94f93a00bdf65a509677070bc91638e8bb4721775b226c131b40f6"
+    },
+    {
+      "path": "5-before.json",
+      "sha256": "ad0030ecf7d8755d7ad6ed15a0f802c0c33f99b7b0400d61a95181d7da5e895a"
+    },
+    {
+      "path": "6-after.json",
+      "sha256": "41f032a4e8204fa2b3c0e838c9b202833ce5c8b73cf8295c9dc7c82bb0aed590"
+    },
+    {
+      "path": "profile-after.json",
+      "sha256": "3e9b2f5d30618bd3dcd1d6035980cf2e9a1a848746d1432ffe11984750a730c4"
+    },
+    {
+      "path": "profile-before.json",
+      "sha256": "ee0fa3bc10b191c3e7a63d42bf73f70f187e5de92b084492d79910520732bd62"
+    },
+    {
+      "path": "protocol.json",
+      "sha256": "b26a4dddc382c745c4ad008a696beb4accadb2b78d90014158b94ba11cbdd735"
+    }
+  ]
+}
