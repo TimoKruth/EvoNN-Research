@@ -9,7 +9,16 @@
     "reason": "Documentation was edited while the clean-source Prism prefix was active. The unchanged resume source-drift guard correctly rejected code_dirty changing from false to true. No runtime test assertion was relaxed.",
     "log_sha256": "536f58ce7b48dc8d088b32d6a32682db4bd9d8ee287e768291e3aa04bee58494"
   },
-  "clean_checkout_rerun": "pending",
+  "clean_checkout_rerun": {
+    "status": "passed",
+    "test": "tests/integration/test_phase2_runtime.py::test_real_resume_kill_boundaries_export_and_report[prism]",
+    "passed": 1,
+    "elapsed_seconds": 32.12,
+    "source_revision": "ef5c5d1",
+    "log_sha256": "3b6422aaad69c1c3e0b102d1653de9503405ceb8e70f69c5bbfee55823ae5ade",
+    "runtime_files_changed_since_benchmark": false
+  },
   "ruff": "passed",
-  "import_boundaries": "passed"
+  "import_boundaries": "passed",
+  "unique_tests_passing_after_targeted_rerun": 893
 }

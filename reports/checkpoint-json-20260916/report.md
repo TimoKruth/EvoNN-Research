@@ -57,7 +57,14 @@ reordering, deletion, appends and periodic snapshots; numeric types, signed zero
 Unicode/surrogate escaping, nonfinite rejection and byte limits; deep legacy
 snapshots; immediate release of evicted payloads; and intermediate logical
 corruption even after recomputing every outer artifact hash. Existing publication
-crash-boundary tests remain unchanged.
+crash-boundary tests remain unchanged. The full Shared suite plus targeted native
+MLX integration checks produced 892 passes and one source-drift rejection when
+documentation changed during the Prism resume fixture. That single case passed
+on a clean, fixed checkout (32.12 s), giving 893 unique passing tests across the
+suite and targeted rerun. No test assertion or source-drift guard was relaxed.
+The integration coverage includes all four native engines, real process-death
+boundaries, inherited-weight resume, exports and saved-winner replay. See
+[verification.json](verification.json) for commands and log hashes.
 
 The benchmark script is
 `EvoNN-Shared/tests/benchmark_runtime_journal.py`. Run it with each producer's
