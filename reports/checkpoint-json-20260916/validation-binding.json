@@ -27,7 +27,7 @@
       "source_note": "Runtime/tests unchanged; broad run became documentation-dirty during Prism resume. The clean targeted rerun is separate."
     },
     {
-      "command": ".venv/bin/python -m pytest -q tests/integration/test_phase2_runtime.py::test_real_resume_kill_boundaries_export_and_report[prism]",
+      "command": "EVONN_TEST_BACKEND=mlx_native .venv/bin/python -m pytest -q tests/integration/test_phase2_runtime.py::test_real_resume_kill_boundaries_export_and_report[prism]",
       "source_revision": "ef5c5d1fe958589c95a9e986bfdd7c5a76ab05cc",
       "log": "validation-logs/prism-clean-rerun.txt",
       "log_sha256": "3b6422aaad69c1c3e0b102d1653de9503405ceb8e70f69c5bbfee55823ae5ade",
