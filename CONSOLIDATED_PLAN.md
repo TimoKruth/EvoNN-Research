@@ -27,6 +27,16 @@ Product and interop; Product implementation is outside this repository's plan.
 
 ## Immediate Next Actions
 
+**Research readiness (2026-09-16):** the follow-up qualification remains incomplete
+at 28/30 because frozen Primordia cannot load two breadth slots. The
+[readiness audit](reports/readiness-20260916/report.md) records a separate loader
+repair, exact shared/owned dataset parity, a retained-model baseline audit and a
+read-only checkpoint profile. The [follow-up plan](governance/readiness-follow-up-20260916.json)
+keeps baseline adequacy, checkpoint optimization, source requalification and the
+larger scientific stages explicitly gated. Historical producer/results are
+preserved; implementation checks do not close scientific qualification.
+
+
 Documentation consolidation (#23/#26), CodeRabbit selection (#24), the catalog
 freeze and fixture integration (#25), and its canonical authorization (#27)
 are merged. Phase 0 contract acceptance is bound in
