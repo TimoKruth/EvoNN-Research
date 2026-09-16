@@ -92,6 +92,12 @@ The [Primordia README](EvoNN-Primordia/README.md) documents its v2 genome and
 `legacy_v1` control. All completed measurements below retain their frozen legacy
 producer; the new policy has no demonstrated quality/runtime gain yet.
 
+Primordia's owned loader supports the experimental language breadth pack,
+including pinned Aesop byte ranges and seeded delayed-copy examples. It applies
+the same source checksums, train/validation splits and cache verification as the
+shared loader. This is dataset-runtime support, not scientific qualification;
+historical failed breadth runs and their frozen producer remain unchanged.
+
 The guardian for that completed confirmation is in terminal `complete` state.
 The [all-engine comparison](governance/all-engines-high-budget-20260910.json)
 completed on **2026-09-10**, with final exports verified at **23:18 CEST** and
