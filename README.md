@@ -289,7 +289,7 @@ environment and a fresh output path:
 ```sh
 <producer>/.venv/bin/python scripts/research/audit_language_baselines.py \
   <producer>/.artifacts/qualification <new-output>/language-baselines.json
-<producer>/.venv/bin/python EvoNN-Shared/src/evonn_shared/checkpoint_profile.py \
+<producer>/.venv/bin/python EvoNN-Shared/tests/profile_checkpoint_read.py \
   <completed-run>/checkpoints <new-output>/checkpoint-profile.json
 ```
 
