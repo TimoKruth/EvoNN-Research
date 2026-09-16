@@ -607,7 +607,13 @@
           }
         ]
       }
-    ]
+    ],
+    "replay_comparison": {
+      "method": "math.isclose",
+      "relative_tolerance": 1e-06,
+      "absolute_tolerance": 1e-08,
+      "scope": "Saved-winner replay only; before/after exported scores are exactly identical."
+    }
   },
   "local_governance_check": {
     "status": "environment_blocked",

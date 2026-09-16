@@ -2,7 +2,8 @@
 
 Primordia's owned loader now supports the pinned Aesop byte corpus, its declared
 byte range and generated delayed-copy data. Shared/owned arrays and provenance
-match exactly in all 12 real-data checks (four tasks × seeds 42, 1003, 1004).
+match exactly in all 12 parity checks (four tasks × seeds 42, 1003, 1004): nine pinned
+real-corpus checks and three generated delayed-copy checks.
 The 32 passing Primordia and breadth integration tests include 13 new loader
 checks covering parity, malformed ranges and corrupt cache/source rejection.
 
@@ -12,7 +13,7 @@ implementation evidence; neither their tiny budget nor the loader fix replaces
 missing historical results or establishes baseline adequacy.
 
 The separate runtime contracts completed **15/15 runs, 240/240 fits and 48/48
-native saved-winner replays**: all five systems on core before/after the repair,
+native saved-winner replays** (relative tolerance 1e-6, absolute tolerance 1e-8): all five systems on core before/after the repair,
 and all five on the repaired breadth pack, at budget 16 and seed 1411 with two
 native epochs. Every core outcome score is identical before/after. The breadth
 check uses the minimum contender floor, so it does not qualify the enhanced

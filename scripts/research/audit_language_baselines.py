@@ -16,7 +16,13 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
 def main(base, output):
+    base = base.resolve()
     torch.set_num_threads(1)
     rows = []
     for receipt_path in sorted((base / "receipts").glob("*.json")):
@@ -24,10 +30,10 @@ def main(base, output):
         if receipt["system"] != "contenders":
             continue
         root = Path(receipt["export"])
-        assert sha(root / "manifest.json") == receipt["documents"]["manifest.json"]
+        require(sha(root / "manifest.json") == receipt["documents"]["manifest.json"], "audit input hash or replay mismatch")
         manifest = json.loads((root / "manifest.json").read_text())
         artifacts = {a["path"]: a["sha256"] for a in manifest["artifacts"]}
-        assert sha(root / "attempts.json") == artifacts["attempts.json"]
+        require(sha(root / "attempts.json") == artifacts["attempts.json"], "audit input hash or replay mismatch")
         attempts = json.loads((root / "attempts.json").read_text())["attempts"]
         for name in sorted({a["benchmark_id"] for a in attempts if a["family"] == "transformer_lm_tiny"}):
             for family in ["transformer_lm_tiny", "unigram_lm", "bigram_lm", "trigram_lm"]:
@@ -37,23 +43,23 @@ def main(base, output):
                 attempt = min(candidates, key=lambda a: a["score"])
                 directory = root.parent / "attempts" / (name + "_" + attempt["outcome_id"])
                 model_path = directory / "model.pkl"
-                assert sha(model_path) == attempt["worker_model_sha256"]
+                require(sha(model_path) == attempt["worker_model_sha256"], "audit input hash or replay mismatch")
                 # These are local models produced by this user's frozen runs;
                 # the trusted export binds the serialized model's exact bytes.
                 with model_path.open("rb") as stream:
                     model = pickle.load(stream)
                 provenance_path = root / "dataset_provenance.json"
-                assert sha(provenance_path) == artifacts["dataset_provenance.json"]
+                require(sha(provenance_path) == artifacts["dataset_provenance.json"], "audit input hash or replay mismatch")
                 data = next(d for d in json.loads(provenance_path.read_text()) if d["benchmark_id"] == name)
                 arrays = {}
                 for entry in data["cache_artifacts"]:
                     p = Path(data["cache_directory"]) / entry["path"]
-                    assert sha(p) == entry["sha256"]
+                    require(sha(p) == entry["sha256"], "audit input hash or replay mismatch")
                     arrays[Path(entry["path"]).stem] = np.load(io.BytesIO(p.read_bytes()), allow_pickle=False)
                 for key in ["x_train", "x_validation"]:
                     arrays[key] = arrays[key].astype(np.int64)
                 validation = model.perplexity(arrays["x_validation"], arrays["y_validation"])
-                assert np.isclose(validation, attempt["score"], rtol=1e-6, atol=1e-7)
+                require(np.isclose(validation, attempt["score"], rtol=1e-6, atol=1e-7), "audit input hash or replay mismatch")
                 train = model.perplexity(arrays["x_train"], arrays["y_train"])
                 row = dict(
                     stage=receipt["stage"],
@@ -68,9 +74,9 @@ def main(base, output):
                     iterations=attempt["training_iterations_or_trees"],
                     training_rows=attempt["training_rows"],
                     training_seconds=attempt["train_seconds"],
-                    model=str(model_path),
+                    model=str(model_path.resolve().relative_to(base)),
                     model_sha256=sha(model_path),
-                    receipt=str(receipt_path),
+                    receipt=str(receipt_path.resolve().relative_to(base)),
                     receipt_sha256=sha(receipt_path),
                 )
                 if family == "transformer_lm_tiny":
@@ -92,6 +98,7 @@ def main(base, output):
         print(receipt["stage"], receipt["budget"], receipt["seed"], "audited", flush=True)
     result = dict(
         at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        artifact_root="qualification",
         model_fits_started=0,
         protected_test_access=False,
         selection="Existing best validation attempt per family; descriptive audit, not a new independent comparison",

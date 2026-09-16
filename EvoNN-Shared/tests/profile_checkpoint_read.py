@@ -19,7 +19,8 @@ def main(directory, output):
     record, payload = profile.runcall(load_runtime_checkpoint, directory)
     wall = time.perf_counter() - start
     after = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in directory.iterdir() if p.is_file()}
-    assert inputs == after
+    if inputs != after:
+        raise ValueError("checkpoint inputs changed during profiling")
     state = json.loads(payload)
     stats = pstats.Stats(profile)
     rows = []
@@ -45,7 +46,7 @@ def main(directory, output):
         checkpoint_files=len(inputs),
         checkpoint_bytes=sum(p.stat().st_size for p in directory.iterdir() if p.is_file()),
         inputs_sha256=hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest(),
-        inputs_unchanged=True,
+        inputs_unchanged=inputs == after,
         fits_started=0,
         scope="One instrumented replay of full committed chain; inclusive profile times overlap. Not a production speed estimate.",
         top_self=sorted(rows, key=lambda r: r["self_seconds"], reverse=True)[:30],
