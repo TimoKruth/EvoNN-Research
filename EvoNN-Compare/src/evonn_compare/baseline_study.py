@@ -165,7 +165,7 @@ def nominate(baselines):
             )
             if accepted:
                 key = (row["arm"], row["seed"], row["benchmark"])
-                scores[key] = min(scores.get(key, float("inf")), row["value"])
+                scores[key] = min(scores[key] if key in scores else float("inf"), row["value"])
         real = [key for key in scores if key[0] == "reference" and key[2] != "delayed_copy_lm"]
         delayed = [key for key in scores if key[0] == "reference" and key[2] == "delayed_copy_lm"]
         rows = []
