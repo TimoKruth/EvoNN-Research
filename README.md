@@ -281,6 +281,23 @@ These tasks are experimental, **not admitted as full-fidelity local-safe**;
 their runtime and baseline adequacy still require qualification. The existing
 tabular/image pack and all frozen definitions remain available unchanged.
 
+The [September 16 readiness audit](reports/readiness-20260916/report.md) records
+the loader repair, retained-baseline generalization gaps and checkpoint replay
+profile. To repeat either read-only audit, use the frozen producer's Python
+environment and a fresh output path:
+
+```sh
+<producer>/.venv/bin/python scripts/research/audit_language_baselines.py \
+  <producer>/.artifacts/qualification <new-output>/language-baselines.json
+<producer>/.venv/bin/python scripts/research/profile_checkpoint_read.py \
+  <completed-run>/checkpoints <new-output>/checkpoint-profile.json
+```
+
+The model audit deserializes retained local models: use only trusted run
+artifacts. Neither audit fits models or evaluates protected test data. The
+checkpoint profiler adds instrumentation overhead and cannot measure an
+optimization speedup by itself.
+
 Campaigns can also freeze `primordia_research` with `search_policy`, `max_width`
 and `max_depth`. New plans record its defaults explicitly and require the full
 engine roster. Adoption and repeated-seed grouping bind these controls and the

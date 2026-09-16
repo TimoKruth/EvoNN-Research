@@ -1,0 +1,186 @@
+{
+  "fits_started": 0,
+  "protected_test_access": false,
+  "checks": [
+    {
+      "benchmark": "shakespeare_byte_lm",
+      "seed": 42,
+      "raw_sha256": "1fa83253b4be6e63cb8436a4c41f0fc18600e85bd8f777e69da113d7b03ffe83",
+      "split_sha256": "0d72f230d23e86d7888571173fa57a377306de3bd33d5e2040c4cbcf41599be9",
+      "training_shape": [
+        1536,
+        16
+      ],
+      "validation_shape": [
+        384,
+        16
+      ],
+      "parity": "exact"
+    },
+    {
+      "benchmark": "shakespeare_context64_lm",
+      "seed": 42,
+      "raw_sha256": "1fa83253b4be6e63cb8436a4c41f0fc18600e85bd8f777e69da113d7b03ffe83",
+      "split_sha256": "eee498382dd5ba692ffeca0f75de33a68210f7014239cc0d0e3da238da4e762a",
+      "training_shape": [
+        4096,
+        64
+      ],
+      "validation_shape": [
+        768,
+        64
+      ],
+      "parity": "exact"
+    },
+    {
+      "benchmark": "aesop_context64_lm",
+      "seed": 42,
+      "raw_sha256": "81557e82a51c0f89bff891e417a664020ca91b84f8eaf90859d209f826a16d7a",
+      "split_sha256": "c1fb5f9baa19086e8c49908d1ea7a49f76adef24537ef362f9258d2ebf2d21b0",
+      "training_shape": [
+        4096,
+        64
+      ],
+      "validation_shape": [
+        768,
+        64
+      ],
+      "parity": "exact"
+    },
+    {
+      "benchmark": "delayed_copy_lm",
+      "seed": 42,
+      "raw_sha256": "5d1086ec7651f70cdd376f40d45619a1e4f4bf7883ce9647e29d7b2c08078fd2",
+      "split_sha256": "9ea6c2fb599c76719ebee24e3a87561fe20beaf04f5647f4622b23776bfb9e10",
+      "training_shape": [
+        1638,
+        64
+      ],
+      "validation_shape": [
+        410,
+        64
+      ],
+      "parity": "exact"
+    },
+    {
+      "benchmark": "shakespeare_byte_lm",
+      "seed": 1003,
+      "raw_sha256": "1fa83253b4be6e63cb8436a4c41f0fc18600e85bd8f777e69da113d7b03ffe83",
+      "split_sha256": "b81475844559cce43d28229d2c6be748358d99266e2b71afab89435b29573e79",
+      "training_shape": [
+        1536,
+        16
+      ],
+      "validation_shape": [
+        384,
+        16
+      ],
+      "parity": "exact"
+    },
+    {
+      "benchmark": "shakespeare_context64_lm",
+      "seed": 1003,
+      "raw_sha256": "1fa83253b4be6e63cb8436a4c41f0fc18600e85bd8f777e69da113d7b03ffe83",
+      "split_sha256": "107b9ae91ef5b50198c14f6c3c18d1918e6f6abb768d5cbf1e3cae9c0449166b",
+      "training_shape": [
+        4096,
+        64
+      ],
+      "validation_shape": [
+        768,
+        64
+      ],
+      "parity": "exact"
+    },
+    {
+      "benchmark": "aesop_context64_lm",
+      "seed": 1003,
+      "raw_sha256": "81557e82a51c0f89bff891e417a664020ca91b84f8eaf90859d209f826a16d7a",
+      "split_sha256": "2af319d7f5631fd78009e499daddb05e6acb83ae3c4d368429a8a8ffd0d25278",
+      "training_shape": [
+        4096,
+        64
+      ],
+      "validation_shape": [
+        768,
+        64
+      ],
+      "parity": "exact"
+    },
+    {
+      "benchmark": "delayed_copy_lm",
+      "seed": 1003,
+      "raw_sha256": "0c92b8426323a2e097191fbebaa1de77245c9d5f67bc105b935fd54e0a5868f7",
+      "split_sha256": "ae1e32df6d36854778b9ba75cafd8b8121581527e91de24c8f3c2d017d35923a",
+      "training_shape": [
+        1638,
+        64
+      ],
+      "validation_shape": [
+        410,
+        64
+      ],
+      "parity": "exact"
+    },
+    {
+      "benchmark": "shakespeare_byte_lm",
+      "seed": 1004,
+      "raw_sha256": "1fa83253b4be6e63cb8436a4c41f0fc18600e85bd8f777e69da113d7b03ffe83",
+      "split_sha256": "8196f13dc653f613845eee304f9a0d34aafbe451007f8e779ad550d166f3e111",
+      "training_shape": [
+        1536,
+        16
+      ],
+      "validation_shape": [
+        384,
+        16
+      ],
+      "parity": "exact"
+    },
+    {
+      "benchmark": "shakespeare_context64_lm",
+      "seed": 1004,
+      "raw_sha256": "1fa83253b4be6e63cb8436a4c41f0fc18600e85bd8f777e69da113d7b03ffe83",
+      "split_sha256": "226dabccf738a528f70c3492791fb2417bd111671d76e3ed3e451b9b5a18b1a9",
+      "training_shape": [
+        4096,
+        64
+      ],
+      "validation_shape": [
+        768,
+        64
+      ],
+      "parity": "exact"
+    },
+    {
+      "benchmark": "aesop_context64_lm",
+      "seed": 1004,
+      "raw_sha256": "81557e82a51c0f89bff891e417a664020ca91b84f8eaf90859d209f826a16d7a",
+      "split_sha256": "87e4d0510e10eae4053ddf51691191b568cfa63e6167028f08fe5b51430f1dcc",
+      "training_shape": [
+        4096,
+        64
+      ],
+      "validation_shape": [
+        768,
+        64
+      ],
+      "parity": "exact"
+    },
+    {
+      "benchmark": "delayed_copy_lm",
+      "seed": 1004,
+      "raw_sha256": "3564a9c84ed3e4832b8fff80c30a4fc00d7925b87cc4b144c0afba265a9343f8",
+      "split_sha256": "0376065ad9813932e80b9d02baaf1fe8537147a51b24a39ec054d2536989445d",
+      "training_shape": [
+        1638,
+        64
+      ],
+      "validation_shape": [
+        410,
+        64
+      ],
+      "parity": "exact"
+    }
+  ]
+}
