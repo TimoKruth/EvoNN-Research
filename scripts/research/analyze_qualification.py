@@ -164,7 +164,7 @@ def render(data):
     lines += ['## Breadth at 64 fits','', 'All entries are perplexity (lower is better). Shakespeare byte is a bridge task; delayed copy is a separate synthetic diagnostic. Do not average them together to claim language superiority.','',
               '| System | Shakespeare context 64 | Aesop context 64 | Original Shakespeare | Delayed copy |','| --- | ---: | ---: | ---: | ---: |']
     for system in SYSTEMS:
-        vals=[index.get(('Q-breadth',64,system,b)) for b in BREADTH]
+        vals=[index[('Q-breadth',64,system,b)] if ('Q-breadth',64,system,b) in index else None for b in BREADTH]
         lines.append('| '+system.title()+' | '+' | '.join(f"{v['mean']:.4f}" if v else 'Blocked' for v in vals)+' |')
     lines += ['', '## Paired budget scaling: 128 → 256','',
               'Percent reductions are ratios of the two-seed means, not means of seed-level percentages. Raw pairs are retained in analysis.json. Banknote stays at 100% for every system/seed/budget.','',
@@ -178,7 +178,7 @@ def render(data):
               'Sum of per-attempt train_seconds across all four tasks, averaged over the two seeds. These are backend-specific recorded timers, not matched FLOPs or an audited common-compute budget. They exclude much orchestration/checkpoint work. Export elapsed time spans scheduler gaps/manual pauses and is unsuitable for throughput ranking.','',
               '| System | Core 128 (s) | Core 256 (s) | Breadth 64 (s) |','| --- | ---: | ---: | ---: |']
     for system in SYSTEMS:
-        vals=[costs.get((stage,budget,system)) for stage,budget in [('Q-core',128),('Q-core',256),('Q-breadth',64)]]
+        vals=[costs[(stage,budget,system)] if (stage,budget,system) in costs else None for stage,budget in [('Q-core',128),('Q-core',256),('Q-breadth',64)]]
         lines.append('| '+system.title()+' | '+' | '.join(f'{v:.1f}' if v is not None else 'Blocked' for v in vals)+' |')
     lines += ['', '## Named language baselines','',
               'These panels separate the best frozen contender pool from named baselines. Successfully executing a baseline does not establish adequate tuning or matching training effort.','',

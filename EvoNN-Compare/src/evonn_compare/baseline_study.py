@@ -5,7 +5,9 @@ import json
 import math
 from pathlib import Path
 import statistics
+import subprocess
 import sys
+import uuid
 
 from evonn_shared.artifact_io import publish_artifact
 from evonn_shared.export_reader import read_export
@@ -78,7 +80,16 @@ def matrix(*, qualification=False):
 
 def read_plan(root):
     value = json.loads(c.read_document(root, "study.json"))
-    if set(value) != {"schema_version", "policy", "qualification", "identity", "matrix", "sha256"}:
+    if set(value) != {
+        "schema_version",
+        "policy",
+        "qualification",
+        "identity",
+        "matrix",
+        "sha256",
+        "qualification_binding",
+        "seed_audit",
+    }:
         raise ValueError("unexpected study fields")
     if value["schema_version"] != "evonn.baseline-study/v1" or type(value["qualification"]) is not bool:
         raise ValueError("unsupported study schema")
@@ -93,12 +104,60 @@ def read_plan(root):
     return value
 
 
-def prepare(root, cache, *, qualification=False):
+def seed_audit(qualification):
+    """Check tracked historical receipts; the prior proposal only reserved these seeds."""
+    requested = {QUALIFICATION_SEED} if qualification else set(SEEDS)
+    paths = subprocess.check_output(
+        ["git", "ls-files", "governance/*.json", "reports/**/*.json"], cwd=c.ROOT, text=True
+    ).splitlines()
+    checked = []
+
+    def visit(value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if key in {"seed", "seeds"}:
+                    values = item if isinstance(item, list) else [item]
+                    if requested.intersection(v for v in values if type(v) is int):
+                        raise ValueError("screening seeds overlap tracked historical evidence")
+                visit(item)
+        elif isinstance(value, list):
+            for item in value:
+                visit(item)
+
+    for path in paths:
+        if path == "governance/readiness-follow-up-20260916.json":
+            continue  # This is the original reservation of 1421/1422, not completed evidence.
+        payload = c.read_document((c.ROOT / path).parent, (c.ROOT / path).name)
+        visit(json.loads(payload))
+        checked.append({"path": path, "sha256": c.hashlib.sha256(payload).hexdigest()})
+    return {
+        "requested": sorted(requested),
+        "checked": checked,
+        "excluded_reservation": "governance/readiness-follow-up-20260916.json",
+    }
+
+
+def qualification_binding(workspace, pinned):
+    if workspace is None:
+        raise ValueError("production preparation requires completed --qualification-workspace")
+    workspace = workspace.absolute()
+    plan = read_plan(workspace)
+    if not plan["qualification"] or plan["identity"] != pinned:
+        raise ValueError("qualification must use the same frozen producer and environment")
+    evidence = report(workspace)
+    if evidence["status"] != "complete":
+        raise ValueError("qualification incomplete")
+    return {"workspace": str(workspace), "study_sha256": plan["sha256"], "report_sha256": c.sha(evidence)}
+
+
+def prepare(root, cache, *, qualification=False, qualification_workspace=None):
     root = root.absolute()
     if root.exists():
         raise ValueError("use a fresh study directory; existing evidence is never replaced")
-    root.mkdir(parents=True)
     pinned = c.identity()
+    audit = seed_audit(qualification)
+    binding = None if qualification else qualification_binding(qualification_workspace, pinned)
+    root.mkdir(parents=True)
     rows = matrix(qualification=qualification)
     for row in rows:
         c.prepare_plan(root / row["campaign"], c.CampaignSpec.model_validate(row["spec"]), cache)
@@ -108,6 +167,8 @@ def prepare(root, cache, *, qualification=False):
         "schema_version": "evonn.baseline-study/v1",
         "policy": POLICY,
         "qualification": qualification,
+        "qualification_binding": binding,
+        "seed_audit": audit,
         "identity": pinned,
         "matrix": rows,
     }
@@ -117,6 +178,10 @@ def prepare(root, cache, *, qualification=False):
 
 def preflight(root):
     plan = read_plan(root)
+    if not plan["qualification"]:
+        binding = plan["qualification_binding"]
+        if qualification_binding(Path(binding["workspace"]), plan["identity"]) != binding:
+            raise ValueError("qualification evidence changed")
     for row in plan["matrix"]:
         c.preflight(root / row["campaign"])
     return {
@@ -141,10 +206,42 @@ def run(root):
                 result = c.run_campaign(workspace, max_runs=1)
                 print(json.dumps({"arm": row["arm"], "seed": row["seed"], **result}), flush=True)
                 if result["status"] == "complete":
+                    replay_campaign(workspace)
                     break
                 if result["new_runs"] == 0:
                     raise ValueError("campaign made no progress; retained for diagnosis")
         return report(root)
+
+
+def replay_campaign(workspace):
+    """Reproduce saved native winners; preserve each failed replay log."""
+    manifest = c.read_manifest(workspace)
+    for case, system in c.slots(c.CampaignSpec.model_validate(manifest["spec"])):
+        if system == "contenders":
+            continue
+        run, reference = c.adopted(workspace, manifest, case, system)
+        if reference is None:
+            raise ValueError("cannot replay an incomplete campaign")
+        path = workspace / (system + "-replay.json")
+        if not path.exists():
+            log = workspace / (system + "-replay-" + uuid.uuid4().hex + ".log")
+            c._bounded_process([sys.executable, "-m", c.MODULES[system], "replay", str(run)], 300, log)
+            value = json.loads(log.read_bytes())
+            validate_replay(value, reference["run_id"], case.pack)
+            publish_artifact(path, c.encoded(value))
+        validate_replay(json.loads(c.read_document(path.parent, path.name)), reference["run_id"], case.pack)
+
+
+def validate_replay(value, run_id, pack):
+    checks = value["checks"]
+    if (
+        value["status"] != "passed"
+        or value["run_id"] != run_id
+        or len(checks) != 4
+        or {row["benchmark"] for row in checks} != set(c.load_parity_pack(pack).benchmarks)
+        or any(not math.isclose(row["observed"], row["exported"], rel_tol=1e-6, abs_tol=1e-8) for row in checks)
+    ):
+        raise ValueError("native winner replay mismatch")
 
 
 def nominate(baselines):
@@ -200,6 +297,14 @@ def report(root):
                     missing.append(label)
                     continue
                 bundle = read_export(workspace / reference["export"])
+                if system != "contenders":
+                    replay_path = workspace / (system + "-replay.json")
+                    if not replay_path.exists():
+                        missing.append(label + "-winner-replay")
+                        continue
+                    validate_replay(
+                        json.loads(c.read_document(workspace, replay_path.name)), bundle.manifest.run_id, case.pack
+                    )
                 complete.append(label)
                 for task in c.load_parity_pack(case.pack).benchmarks:
                     candidates = [
@@ -256,13 +361,16 @@ def main(argv=None):
     parser.add_argument("workspace", type=Path)
     parser.add_argument("--cache", type=Path)
     parser.add_argument("--qualification", action="store_true")
+    parser.add_argument("--qualification-workspace", type=Path)
     args = parser.parse_args(argv)
     root = args.workspace.absolute()
     try:
         if args.action == "prepare":
             if args.cache is None:
                 raise ValueError("--cache required for preparation")
-            result = prepare(root, args.cache, qualification=args.qualification)
+            result = prepare(
+                root, args.cache, qualification=args.qualification, qualification_workspace=args.qualification_workspace
+            )
         elif args.action == "pause":
             read_plan(root)
             (root / "PAUSE").touch(exist_ok=True)

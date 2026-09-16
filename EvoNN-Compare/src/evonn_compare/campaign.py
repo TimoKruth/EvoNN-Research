@@ -383,6 +383,13 @@ def adopted(root, manifest, case, system):
                               and a["contender_id"] == family and a["status"] == "ok"]
                 if len(successful) != expected:
                     raise ValueError("baseline screening family coverage incomplete")
+                if family == "transformer_lm_tiny":
+                    for attempt in successful:
+                        epochs = config["pools"]["models"][family]["parameters"]["epochs"]
+                        updates = epochs * ((attempt["training_rows"] + 31) // 32)
+                        if (attempt.get("completed_epochs") != epochs or attempt.get("optimizer_updates") != updates
+                                or attempt.get("model_selection") != "fixed_final_epoch"):
+                            raise ValueError("baseline screening training telemetry mismatch")
     references = [ArtifactReference(path=name, sha256=hashlib.sha256(read_document(bundle.root, name)).hexdigest()).model_dump(mode="json")
                   for name in ("manifest.json", "results.json", "summary.json")]
     return run, {"system": system, "run_id": bundle.manifest.run_id, "export": str(bundle.root.relative_to(root)), "documents": references}

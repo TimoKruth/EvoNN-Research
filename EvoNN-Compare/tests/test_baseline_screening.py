@@ -115,3 +115,31 @@ def test_study_roster_coverage_and_nomination_are_preregistered():
     for row in baselines:
         row["value"] = 100.0
     assert all(v["nomination"] == "reference" for v in nominate(baselines).values())
+
+
+def test_production_cannot_prepare_without_completed_qualification(tmp_path, monkeypatch):
+    from evonn_compare import baseline_study as study
+
+    monkeypatch.setattr(c, "identity", lambda: {"commit": "frozen"})
+    monkeypatch.setattr(study, "seed_audit", lambda qualification: {})
+    with pytest.raises(ValueError, match="qualification-workspace"):
+        study.prepare(tmp_path / "study", tmp_path / "cache")
+    assert not (tmp_path / "study").exists()
+
+
+def test_replay_validation_rejects_false_pass_and_duplicate_tasks():
+    from evonn_compare.baseline_study import validate_replay
+
+    tasks = c.load_parity_pack("language_breadth_v1").benchmarks
+    value = {
+        "status": "passed",
+        "run_id": "run",
+        "checks": [dict(benchmark=t, observed=2.0, exported=2.0) for t in tasks],
+    }
+    validate_replay(value, "run", "language_breadth_v1")
+    value["checks"][0]["observed"] = 3.0
+    with pytest.raises(ValueError, match="replay mismatch"):
+        validate_replay(value, "run", "language_breadth_v1")
+    value["checks"][0] = value["checks"][1]
+    with pytest.raises(ValueError, match="replay mismatch"):
+        validate_replay(value, "run", "language_breadth_v1")

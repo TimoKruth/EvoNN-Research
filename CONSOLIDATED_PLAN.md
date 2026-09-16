@@ -1379,3 +1379,20 @@ provenance-envelope schema (A→B, co-signed before fixture work starts).
   acceptance criteria, expected evidence artifact).
 
 ---
+
+## Immediate baseline diagnostic readiness — September 16
+
+Prepare the 60-run language baseline diagnostic described in README before
+returning to the larger mechanism study. The versioned runner fixes all five
+systems in every arm, freezes six baseline pools, audits seed disjointness,
+requires separate all-arm/all-system qualification, validates actual Transformer
+updates and saved native winners, and exposes graceful pause/resume. Screening
+never grants scientific floor admission, and policy nomination is descriptive.
+Its exact selection and failure rules are preregistered in
+`evonn_compare.baseline_study.POLICY` before any seed-1421/1422 outcomes exist.
+
+Integration checks and the 30-run implementation qualification must pass before
+readiness is declared. The actual follow-up remains unstarted until requested.
+This diagnostic does not unlock stages A–D automatically: mechanism timing and
+recovery, fresh-seed nomination, measured-compute execution and scientific breadth
+adequacy keep their original stage gates. Preserve the old 28/30 qualification.
