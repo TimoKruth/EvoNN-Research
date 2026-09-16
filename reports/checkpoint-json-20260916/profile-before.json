@@ -1,0 +1,558 @@
+{
+  "at": "2026-09-16T08:46:35.041533+00:00",
+  "directory": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/campaigns/Q-core-tier_b_core_v2-fits256-s1001-refresh_reference/runs/tier_b_core_v2_b256_s1001_topograph/topograph_20260915T001518_de2747ea0e/checkpoints",
+  "completed": 256,
+  "attempts": 256,
+  "logical_sha256": "6e7324aacbac45d2afe207c8f0d11b0303cd686dfe411301afa42beb0552da73",
+  "profile_wall_seconds": 61.40357750002295,
+  "checkpoint_files": 258,
+  "checkpoint_bytes": 327571983,
+  "inputs_sha256": "d949dc22cc0aa2aafc95e984428c37a903a1f90728caecf55781e62e1344c90c",
+  "inputs_unchanged": true,
+  "fits_started": 0,
+  "scope": "One instrumented replay of full committed chain; inclusive profile times overlap. Not a production speed estimate.",
+  "top_self": [
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/json/encoder.py",
+      "line": 205,
+      "function": "iterencode",
+      "primitive_calls": 259,
+      "calls": 259,
+      "self_seconds": 46.196848789,
+      "cumulative_seconds": 46.196848789
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/json/decoder.py",
+      "line": 351,
+      "function": "raw_decode",
+      "primitive_calls": 513,
+      "calls": 513,
+      "self_seconds": 6.050493491,
+      "cumulative_seconds": 6.050493491
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/copy.py",
+      "line": 119,
+      "function": "deepcopy",
+      "primitive_calls": 6029,
+      "calls": 6124533,
+      "self_seconds": 3.0069061890000004,
+      "cumulative_seconds": 6.250185977
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method _hashlib.openssl_sha256>",
+      "primitive_calls": 771,
+      "calls": 771,
+      "self_seconds": 1.5617707490000001,
+      "cumulative_seconds": 1.5617707490000001
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/copy.py",
+      "line": 192,
+      "function": "_deepcopy_list",
+      "primitive_calls": 7421,
+      "calls": 246008,
+      "self_seconds": 1.203706307,
+      "cumulative_seconds": 6.21883282
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'get' of 'dict' objects>",
+      "primitive_calls": 12243037,
+      "calls": 12243037,
+      "self_seconds": 0.910162358,
+      "cumulative_seconds": 0.910162358
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'encode' of 'str' objects>",
+      "primitive_calls": 772,
+      "calls": 772,
+      "self_seconds": 0.44876002800000003,
+      "cumulative_seconds": 0.44876002800000003
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.id>",
+      "primitive_calls": 6640786,
+      "calls": 6640786,
+      "self_seconds": 0.383972996,
+      "cumulative_seconds": 0.383972996
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'append' of 'list' objects>",
+      "primitive_calls": 6184405,
+      "calls": 6184405,
+      "self_seconds": 0.368622604,
+      "cumulative_seconds": 0.368622604
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+      "line": 23,
+      "function": "encode",
+      "primitive_calls": 259,
+      "calls": 259,
+      "self_seconds": 0.300451205,
+      "cumulative_seconds": 46.948805204
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/copy.py",
+      "line": 173,
+      "function": "_deepcopy_atomic",
+      "primitive_calls": 5867769,
+      "calls": 5867769,
+      "self_seconds": 0.277428765,
+      "cumulative_seconds": 0.277428765
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+      "line": 213,
+      "function": "load_runtime_checkpoint",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_seconds": 0.24990092100000003,
+      "cumulative_seconds": 61.399551666
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method posix.open>",
+      "primitive_calls": 7186,
+      "calls": 7186,
+      "self_seconds": 0.098285734,
+      "cumulative_seconds": 0.09828640000000001
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method posix.read>",
+      "primitive_calls": 1548,
+      "calls": 1548,
+      "self_seconds": 0.08389835300000001,
+      "cumulative_seconds": 0.08389835300000001
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/copy.py",
+      "line": 232,
+      "function": "_keep_alive",
+      "primitive_calls": 256764,
+      "calls": 256764,
+      "self_seconds": 0.06789318500000001,
+      "cumulative_seconds": 0.10654552
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'decode' of 'bytes' objects>",
+      "primitive_calls": 513,
+      "calls": 513,
+      "self_seconds": 0.040061002000000005,
+      "cumulative_seconds": 0.040061002000000005
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/copy.py",
+      "line": 218,
+      "function": "_deepcopy_dict",
+      "primitive_calls": 1772,
+      "calls": 10756,
+      "self_seconds": 0.030721695,
+      "cumulative_seconds": 6.106386618
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'join' of 'bytes' objects>",
+      "primitive_calls": 515,
+      "calls": 515,
+      "self_seconds": 0.029127587000000003,
+      "cumulative_seconds": 0.029127587000000003
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+      "line": 68,
+      "function": "apply_delta",
+      "primitive_calls": 240,
+      "calls": 8952,
+      "self_seconds": 0.022513316000000002,
+      "cumulative_seconds": 6.278190692000001
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+      "line": 30,
+      "function": "digest",
+      "primitive_calls": 258,
+      "calls": 258,
+      "self_seconds": 0.005946263,
+      "cumulative_seconds": 48.146664748000006
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/budgets.py",
+      "line": 18,
+      "function": "_reject_scalar_subclasses",
+      "primitive_calls": 773,
+      "calls": 5957,
+      "self_seconds": 0.004779974,
+      "cumulative_seconds": 0.008735103000000001
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method posix.close>",
+      "primitive_calls": 7699,
+      "calls": 7699,
+      "self_seconds": 0.004659348000000001,
+      "cumulative_seconds": 0.004659348000000001
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'validate_python' of 'pydantic_core._pydantic_core.SchemaValidator' objects>",
+      "primitive_calls": 769,
+      "calls": 769,
+      "self_seconds": 0.0043004,
+      "cumulative_seconds": 0.017887505
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/_run_io.py",
+      "line": 33,
+      "function": "open_directory",
+      "primitive_calls": 1026,
+      "calls": 1026,
+      "self_seconds": 0.004248843,
+      "cumulative_seconds": 0.098565103
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/artifact_io.py",
+      "line": 33,
+      "function": "read_verified_artifact",
+      "primitive_calls": 513,
+      "calls": 513,
+      "self_seconds": 0.003804398,
+      "cumulative_seconds": 0.505191995
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.isinstance>",
+      "primitive_calls": 31066,
+      "calls": 31066,
+      "self_seconds": 0.003506826,
+      "cumulative_seconds": 0.004323086
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method posix.fstat>",
+      "primitive_calls": 1030,
+      "calls": 1030,
+      "self_seconds": 0.002160338,
+      "cumulative_seconds": 0.002160338
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.any>",
+      "primitive_calls": 3949,
+      "calls": 3949,
+      "self_seconds": 0.002153307,
+      "cumulative_seconds": 0.003199935
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'items' of 'dict' objects>",
+      "primitive_calls": 14787,
+      "calls": 14787,
+      "self_seconds": 0.001548614,
+      "cumulative_seconds": 0.001548614
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.len>",
+      "primitive_calls": 14515,
+      "calls": 14515,
+      "self_seconds": 0.001389316,
+      "cumulative_seconds": 0.001389316
+    }
+  ],
+  "top_cumulative": [
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+      "line": 213,
+      "function": "load_runtime_checkpoint",
+      "primitive_calls": 1,
+      "calls": 1,
+      "self_seconds": 0.24990092100000003,
+      "cumulative_seconds": 61.399551666
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+      "line": 30,
+      "function": "digest",
+      "primitive_calls": 258,
+      "calls": 258,
+      "self_seconds": 0.005946263,
+      "cumulative_seconds": 48.146664748000006
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+      "line": 23,
+      "function": "encode",
+      "primitive_calls": 259,
+      "calls": 259,
+      "self_seconds": 0.300451205,
+      "cumulative_seconds": 46.948805204
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/json/__init__.py",
+      "line": 183,
+      "function": "dumps",
+      "primitive_calls": 259,
+      "calls": 259,
+      "self_seconds": 0.000902167,
+      "cumulative_seconds": 46.199595127
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/json/encoder.py",
+      "line": 183,
+      "function": "encode",
+      "primitive_calls": 259,
+      "calls": 259,
+      "self_seconds": 0.0012190640000000002,
+      "cumulative_seconds": 46.198538167
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/json/encoder.py",
+      "line": 205,
+      "function": "iterencode",
+      "primitive_calls": 259,
+      "calls": 259,
+      "self_seconds": 46.196848789,
+      "cumulative_seconds": 46.196848789
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+      "line": 117,
+      "function": "restore",
+      "primitive_calls": 240,
+      "calls": 240,
+      "self_seconds": 0.0010099430000000001,
+      "cumulative_seconds": 6.280457128
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+      "line": 68,
+      "function": "apply_delta",
+      "primitive_calls": 240,
+      "calls": 8952,
+      "self_seconds": 0.022513316000000002,
+      "cumulative_seconds": 6.278190692000001
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/copy.py",
+      "line": 119,
+      "function": "deepcopy",
+      "primitive_calls": 6029,
+      "calls": 6124533,
+      "self_seconds": 3.0069061890000004,
+      "cumulative_seconds": 6.250185977
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/copy.py",
+      "line": 192,
+      "function": "_deepcopy_list",
+      "primitive_calls": 7421,
+      "calls": 246008,
+      "self_seconds": 1.203706307,
+      "cumulative_seconds": 6.21883282
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/copy.py",
+      "line": 218,
+      "function": "_deepcopy_dict",
+      "primitive_calls": 1772,
+      "calls": 10756,
+      "self_seconds": 0.030721695,
+      "cumulative_seconds": 6.106386618
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/json/__init__.py",
+      "line": 299,
+      "function": "loads",
+      "primitive_calls": 513,
+      "calls": 513,
+      "self_seconds": 0.0009567760000000001,
+      "cumulative_seconds": 6.094422487
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/json/decoder.py",
+      "line": 340,
+      "function": "decode",
+      "primitive_calls": 513,
+      "calls": 513,
+      "self_seconds": 0.001010311,
+      "cumulative_seconds": 6.052281553
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/json/decoder.py",
+      "line": 351,
+      "function": "raw_decode",
+      "primitive_calls": 513,
+      "calls": 513,
+      "self_seconds": 6.050493491,
+      "cumulative_seconds": 6.050493491
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method _hashlib.openssl_sha256>",
+      "primitive_calls": 771,
+      "calls": 771,
+      "self_seconds": 1.5617707490000001,
+      "cumulative_seconds": 1.5617707490000001
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'get' of 'dict' objects>",
+      "primitive_calls": 12243037,
+      "calls": 12243037,
+      "self_seconds": 0.910162358,
+      "cumulative_seconds": 0.910162358
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/artifact_io.py",
+      "line": 33,
+      "function": "read_verified_artifact",
+      "primitive_calls": 513,
+      "calls": 513,
+      "self_seconds": 0.003804398,
+      "cumulative_seconds": 0.505191995
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'encode' of 'str' objects>",
+      "primitive_calls": 772,
+      "calls": 772,
+      "self_seconds": 0.44876002800000003,
+      "cumulative_seconds": 0.44876002800000003
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.id>",
+      "primitive_calls": 6640786,
+      "calls": 6640786,
+      "self_seconds": 0.383972996,
+      "cumulative_seconds": 0.383972996
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'append' of 'list' objects>",
+      "primitive_calls": 6184405,
+      "calls": 6184405,
+      "self_seconds": 0.368622604,
+      "cumulative_seconds": 0.368622604
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/copy.py",
+      "line": 173,
+      "function": "_deepcopy_atomic",
+      "primitive_calls": 5867769,
+      "calls": 5867769,
+      "self_seconds": 0.277428765,
+      "cumulative_seconds": 0.277428765
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.next>",
+      "primitive_calls": 2052,
+      "calls": 2052,
+      "self_seconds": 0.0008861450000000001,
+      "cumulative_seconds": 0.116780085
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/contextlib.py",
+      "line": 136,
+      "function": "__enter__",
+      "primitive_calls": 1026,
+      "calls": 1026,
+      "self_seconds": 0.000412663,
+      "cumulative_seconds": 0.11519051100000001
+    },
+    {
+      "file": "/Users/timokruth/.local/share/uv/python/cpython-3.13.1-macos-aarch64-none/lib/python3.13/copy.py",
+      "line": 232,
+      "function": "_keep_alive",
+      "primitive_calls": 256764,
+      "calls": 256764,
+      "self_seconds": 0.06789318500000001,
+      "cumulative_seconds": 0.10654552
+    },
+    {
+      "file": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/EvoNN-Shared/src/evonn_shared/_run_io.py",
+      "line": 33,
+      "function": "open_directory",
+      "primitive_calls": 1026,
+      "calls": 1026,
+      "self_seconds": 0.004248843,
+      "cumulative_seconds": 0.098565103
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method posix.open>",
+      "primitive_calls": 7186,
+      "calls": 7186,
+      "self_seconds": 0.098285734,
+      "cumulative_seconds": 0.09828640000000001
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method posix.read>",
+      "primitive_calls": 1548,
+      "calls": 1548,
+      "self_seconds": 0.08389835300000001,
+      "cumulative_seconds": 0.08389835300000001
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'decode' of 'bytes' objects>",
+      "primitive_calls": 513,
+      "calls": 513,
+      "self_seconds": 0.040061002000000005,
+      "cumulative_seconds": 0.040061002000000005
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'join' of 'bytes' objects>",
+      "primitive_calls": 515,
+      "calls": 515,
+      "self_seconds": 0.029127587000000003,
+      "cumulative_seconds": 0.029127587000000003
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'validate_python' of 'pydantic_core._pydantic_core.SchemaValidator' objects>",
+      "primitive_calls": 769,
+      "calls": 769,
+      "self_seconds": 0.0043004,
+      "cumulative_seconds": 0.017887505
+    }
+  ]
+}

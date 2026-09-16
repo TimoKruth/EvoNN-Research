@@ -195,6 +195,13 @@ uv run evonn-compare workspace-report .artifacts/compare
 `--preset smoke` uses 16 fits; `local` uses 64. Runs accumulate. Each system
 run stays below 30 minutes; no overnight/weekend preset is admitted.
 
+Checkpoint recovery reuses canonical JSON bytes for unchanged private state
+within each replay, while retaining every artifact and logical-state hash check.
+The format and publication boundaries are unchanged. The
+[checkpoint replay benchmark](reports/checkpoint-json-20260916/report.md)
+records byte compatibility, resume tests and measured performance on a retained
+256-attempt checkpoint.
+
 ## Prism exploration policies
 
 The September 11 Prism implementation adds an experimental `open` policy for

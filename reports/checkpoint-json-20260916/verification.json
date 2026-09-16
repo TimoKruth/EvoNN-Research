@@ -1,0 +1,15 @@
+{
+  "focused_tests_passed": 28,
+  "broad_check": {
+    "command": "EVONN_TEST_BACKEND=mlx_native .venv/bin/python -m pytest -q EvoNN-Shared/tests tests/integration/test_phase2_runtime.py tests/integration/test_phase2_failures.py tests/integration/test_search_snapshot_ownership.py tests/integration/test_primordia_breadth.py",
+    "passed": 892,
+    "failed": 1,
+    "elapsed_seconds": 450.4,
+    "failed_test": "tests/integration/test_phase2_runtime.py::test_real_resume_kill_boundaries_export_and_report[prism]",
+    "reason": "Documentation was edited while the clean-source Prism prefix was active. The unchanged resume source-drift guard correctly rejected code_dirty changing from false to true. No runtime test assertion was relaxed.",
+    "log_sha256": "536f58ce7b48dc8d088b32d6a32682db4bd9d8ee287e768291e3aa04bee58494"
+  },
+  "clean_checkout_rerun": "pending",
+  "ruff": "passed",
+  "import_boundaries": "passed"
+}

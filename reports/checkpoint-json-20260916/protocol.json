@@ -1,0 +1,16 @@
+{
+  "order": [
+    "before",
+    "after",
+    "after",
+    "before",
+    "before",
+    "after"
+  ],
+  "fits_started": 0,
+  "checkpoint_directory": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/qualification/campaigns/Q-core-tier_b_core_v2-fits256-s1001-refresh_reference/runs/tier_b_core_v2_b256_s1001_topograph/topograph_20260915T001518_de2747ea0e/checkpoints",
+  "before_revision": "aabc7f913153535f1e53258221201f4e2abb7fef",
+  "after_revision": "fb6c42f75e97db3c4331c20170515096af4a6e94",
+  "script_sha256": "f91a0b84b266aa63365594accf55cc937511250915b4fa5560cf937ce5379afd",
+  "scope": "Six fresh-process read-only replay measurements of the same committed chain; no scientific engine comparison or training. Every logical state hash and final bytes must match. Input hashing warms files before timing in both versions."
+}
