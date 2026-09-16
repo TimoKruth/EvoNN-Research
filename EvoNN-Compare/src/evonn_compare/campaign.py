@@ -1,5 +1,5 @@
 """Pinned, resumable comparison campaigns; planning never fits a model."""
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 import fcntl
 import hashlib
 import importlib.metadata
@@ -169,6 +169,19 @@ def slot_id(case, system):
     return case.id + "_" + system
 
 
+def probe_transformer():
+    """Report missing/broken mandatory baseline support as a campaign blocker."""
+    try:
+        result = subprocess.run([sys.executable, "-c", "import torch; from torch import nn; nn.TransformerEncoderLayer(64, 4)"],
+                                capture_output=True, timeout=30)
+    except subprocess.TimeoutExpired as error:
+        detail = (error.stderr or b"").decode(errors="replace")
+        raise ValueError("baseline Transformer probe timed out: " + detail) from error
+    if result.returncode:
+        raise ValueError("baseline screening requires a working Torch Transformer: "
+                         + result.stderr.decode(errors="replace").strip())
+
+
 def preflight(root):
     manifest = read_manifest(root)
     spec = CampaignSpec.model_validate(manifest["spec"])
@@ -176,8 +189,7 @@ def preflight(root):
         raise ValueError("campaign source, environment, host or catalog drift")
     if spec.contender_pool is not None:
         # This is a mandatory family in this experiment, even though the generic CLI treats it as optional.
-        subprocess.run([sys.executable, "-c", "import torch; from torch import nn; nn.TransformerEncoderLayer(64, 4)"],
-                       check=True, capture_output=True, timeout=30)
+        probe_transformer()
     if spec.backend == "mlx_native":
         # Verify availability through Shared backend discovery, without fitting.
         if platform.system() != "Darwin" or platform.machine() != "arm64":
@@ -236,12 +248,16 @@ def prepare_plan(root, spec, cache, *, timeout=1800):
     return preflight(root)
 
 
-def _bounded_process(command, timeout, log, *, pass_fds=()):
+def _bounded_process(command, timeout, log, *, pass_fds=(), stdout_path=None):
     if timeout <= 0:
         raise ValueError("invocation time budget exhausted before dispatch")
     # File output avoids unbounded PIPE buffers and records diagnostics after death.
-    with log.open("xb") as output:
-        process = subprocess.Popen(command, stdout=output, stderr=subprocess.STDOUT, start_new_session=True, pass_fds=pass_fds)
+    with ExitStack() as stack:
+        diagnostics = stack.enter_context(log.open("xb"))
+        output = diagnostics if stdout_path is None else stack.enter_context(stdout_path.open("xb"))
+        process = subprocess.Popen(command, stdout=output,
+                                   stderr=subprocess.STDOUT if stdout_path is None else diagnostics,
+                                   start_new_session=True, pass_fds=pass_fds)
         try:
             result = process.wait(timeout=timeout)
         except BaseException:

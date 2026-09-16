@@ -225,8 +225,11 @@ def replay_campaign(workspace):
         path = workspace / (system + "-replay.json")
         if not path.exists():
             log = workspace / (system + "-replay-" + uuid.uuid4().hex + ".log")
-            c._bounded_process([sys.executable, "-m", c.MODULES[system], "replay", str(run)], 300, log)
-            value = json.loads(log.read_bytes())
+            payload = log.with_suffix(".stdout.json")
+            c._bounded_process(
+                [sys.executable, "-m", c.MODULES[system], "replay", str(run)], 300, log, stdout_path=payload
+            )
+            value = json.loads(payload.read_bytes())
             validate_replay(value, reference["run_id"], case.pack)
             publish_artifact(path, c.encoded(value))
         validate_replay(json.loads(c.read_document(path.parent, path.name)), reference["run_id"], case.pack)

@@ -143,3 +143,35 @@ def test_replay_validation_rejects_false_pass_and_duplicate_tasks():
     value["checks"][0] = value["checks"][1]
     with pytest.raises(ValueError, match="replay mismatch"):
         validate_replay(value, "run", "language_breadth_v1")
+
+
+def test_replay_payload_stays_json_when_process_warns(tmp_path):
+    import sys
+    import json
+
+    log = tmp_path / "replay.log"
+    payload = tmp_path / "replay.json"
+    c._bounded_process(
+        [sys.executable, "-c", 'import sys; print("{\\"status\\":\\"passed\\"}"); print("warning",file=sys.stderr)'],
+        10,
+        log,
+        stdout_path=payload,
+    )
+    assert json.loads(payload.read_text()) == {"status": "passed"}
+    assert log.read_text().strip() == "warning"
+
+
+def test_missing_or_hung_transformer_is_a_diagnostic_blocker(monkeypatch):
+    import subprocess
+    from types import SimpleNamespace
+
+    monkeypatch.setattr(c.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=1, stderr=b"no torch"))
+    with pytest.raises(ValueError, match="no torch"):
+        c.probe_transformer()
+
+    def timeout(*args, **kwargs):
+        raise subprocess.TimeoutExpired("probe", 30, stderr=b"backend hung")
+
+    monkeypatch.setattr(c.subprocess, "run", timeout)
+    with pytest.raises(ValueError, match="backend hung"):
+        c.probe_transformer()
