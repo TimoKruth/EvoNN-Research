@@ -10,6 +10,7 @@ import sys
 
 import numpy as np
 import torch
+import yaml
 
 
 def sha(path):
@@ -26,10 +27,45 @@ def object_fields(value, keys, label):
     return value
 
 
+def expected_language_tasks(pack_id):
+    """Read declared tasks from the checked-in pack/catalog, never observed attempts."""
+    root = Path(__file__).resolve().parents[2] / "shared-benchmarks"
+    packs = {"language_breadth_v1": "extensions/breadth_v1/packs/language_breadth_v1.yaml",
+             "tier_b_core_v2": "extensions/phase4/packs/tier_b_core_v2.yaml"}
+    require(pack_id in packs, "unsupported audit pack")
+    pack_path = root / packs[pack_id]
+    pack = yaml.safe_load(pack_path.read_text())
+    require(pack["pack_name"] == pack_id, "pack declaration mismatch")
+    language = []
+    bindings = {str(pack_path.relative_to(root)): sha(pack_path)}
+    for name in pack["benchmarks"]:
+        candidates = [root / "catalog" / (name + ".yaml"), *root.glob("extensions/*/catalog/" + name + ".yaml")]
+        candidates = [path for path in candidates if path.is_file()]
+        require(len(candidates) == 1, f"missing or ambiguous benchmark definition: {name}")
+        path = candidates[0]
+        definition = yaml.safe_load(path.read_text())
+        require(definition["id"] == name, "benchmark definition mismatch")
+        bindings[str(path.relative_to(root))] = sha(path)
+        if definition["task_kind"] == "language_modeling":
+            language.append(name)
+    return pack["benchmarks"], language, bindings
+
+
+def require_baseline_coverage(attempts, pack_id):
+    declared, language, bindings = expected_language_tasks(pack_id)
+    require({a["benchmark_id"] for a in attempts} == set(declared), "attempt benchmark coverage mismatch")
+    for name in language:
+        for family in ["transformer_lm_tiny", "unigram_lm", "bigram_lm", "trigram_lm"]:
+            require(any(a["benchmark_id"] == name and a.get("family") == family and a["status"] == "ok"
+                        for a in attempts), f"missing successful {family} attempt for {name}")
+    return language, bindings
+
+
 def main(base, output):
     base = base.resolve()
     torch.set_num_threads(1)
     rows = []
+    definitions = {}
     for receipt_path in sorted((base / "receipts").glob("*.json")):
         receipt = object_fields(json.loads(receipt_path.read_text()),
                                 ["system", "export", "documents", "stage", "budget", "seed"], "receipt")
@@ -38,7 +74,9 @@ def main(base, output):
         object_fields(receipt["documents"], ["manifest.json"], "receipt document hashes")
         root = Path(receipt["export"])
         require(sha(root / "manifest.json") == receipt["documents"]["manifest.json"], "audit input hash or replay mismatch")
-        manifest = object_fields(json.loads((root / "manifest.json").read_text()), ["artifacts"], "manifest")
+        manifest = object_fields(json.loads((root / "manifest.json").read_text()), ["artifacts", "pack_id", "status", "system", "seed"], "manifest")
+        require(manifest["status"] == "completed" and manifest["system"] == "contenders"
+                and manifest["seed"] == receipt["seed"], "audit requires a matching completed Contenders run")
         require(isinstance(manifest["artifacts"], list), "malformed artifact list")
         for artifact in manifest["artifacts"]:
             object_fields(artifact, ["path", "sha256"], "artifact reference")
@@ -53,7 +91,9 @@ def main(base, output):
             if attempt["status"] == "ok":
                 object_fields(attempt, ["family", "score", "outcome_id", "worker_model_sha256", "parameters",
                                        "training_iterations_or_trees", "training_rows", "train_seconds"], "successful attempt")
-        for name in sorted({a["benchmark_id"] for a in attempts if a.get("family") == "transformer_lm_tiny"}):
+        language, bindings = require_baseline_coverage(attempts, manifest["pack_id"])
+        definitions[manifest["pack_id"]] = bindings
+        for name in sorted(language):
             for family in ["transformer_lm_tiny", "unigram_lm", "bigram_lm", "trigram_lm"]:
                 candidates = [
                     a for a in attempts if a["benchmark_id"] == name and a.get("family") == family and a["status"] == "ok"
@@ -141,6 +181,7 @@ def main(base, output):
     result = dict(
         at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
         artifact_root="qualification",
+        benchmark_definition_bindings=definitions,
         model_fits_started=0,
         protected_test_access=False,
         selection="Existing best validation attempt per family; descriptive audit, not a new independent comparison",
