@@ -206,6 +206,19 @@ redirect it; verified exports retain standard completion journal entries. Failur
 Completing qualification still requires a separately qualified Primordia loader
 repair; no claim of full engine coverage is authorized.
 
+**Descriptive Q analysis (2026-09-16):** all unaffected slots finished, leaving
+28/30 runs (20/20 core, 8/10 breadth). The
+[findings and research priorities](reports/qualification-20260916/findings.md)
+and [raw paired score report](reports/qualification-20260916/report.md) cover
+all five systems and explicitly retain the missing Primordia breadth cells.
+Receipt/artifact hashes, 4,352 successful charged fits, 88 recorded native
+replays and within-case dataset identity were checked; an independent winner
+reconstruction matched 112 task outcomes. Prism's language results, Topograph's
+budget scaling, Primordia's recorded training economy and Stratograph's weak
+delayed-copy results motivate follow-up, with only two seeds and no causal or
+held-out-test claim. Real-text baseline adequacy and checkpoint overhead need
+review. No Q acceptance, nomination, promotion or later-stage launch follows.
+
 **Standing user requirement (2026-09-10):** every new comparison includes Prism,
 Topograph, Stratograph and Primordia on every declared benchmark/budget/seed
 combination, plus Contenders baselines. Focused research questions can restrict
