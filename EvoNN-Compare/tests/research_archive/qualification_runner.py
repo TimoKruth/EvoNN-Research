@@ -82,22 +82,34 @@ def status(state, **values):
 
 def check_inputs():
     amendment = read(BASE/'runner-amendment-v5.json')
-    assert digest(Path(__file__)) == amendment['runner_sha256'], 'Launcher drift'
-    assert digest(BASE/'readiness.json') == amendment['original_readiness_sha256'], 'Readiness drift'
-    assert digest(BASE/'deferred-slots.json') == amendment['deferred_slots_sha256'], 'Deferral drift'
+    if not (digest(Path(__file__)) == amendment['runner_sha256']):
+        raise ValueError('Launcher drift')
+    if not (digest(BASE / 'readiness.json') == amendment['original_readiness_sha256']):
+        raise ValueError('Readiness drift')
+    if not (digest(BASE / 'deferred-slots.json') == amendment['deferred_slots_sha256']):
+        raise ValueError('Deferral drift')
     declared = {row['id']+'-'+system for row in read(BASE/'qualification-matrix.json')
                 for system in row['systems']}
-    assert set(deferred_slots()) <= declared, 'Unknown deferred slot'
+    if not (set(deferred_slots()) <= declared):
+        raise ValueError('Unknown deferred slot')
     for path, sha in amendment['retained_evidence'].items():
-        assert digest(Path(path)) == sha, 'Retained evidence changed'
+        if not (digest(Path(path)) == sha):
+            raise ValueError('Retained evidence changed')
     ready = read(BASE/'readiness.json')
-    assert identity() == ready['identity'], 'Producer/environment/host drift'
+    if not (identity() == ready['identity']):
+        raise ValueError('Producer/environment/host drift')
     for relative, sha in ready['files'].items():
-        assert digest(BASE/relative) == sha, relative
+        if not (digest(BASE / relative) == sha):
+            raise ValueError(relative)
     for path in (BASE/'receipts').glob('*.json'):
         receipt = read(path)
+        if set(receipt['documents']) != {'manifest.json', 'summary.json', 'results.json'}:
+            raise ValueError('Incomplete completion document hashes')
         for name, sha in receipt['documents'].items():
-            assert digest(Path(receipt['export'])/name) == sha, 'Completed export changed'
+            if not (digest(Path(receipt['export']) / name) == sha):
+                raise ValueError('Completed export changed')
+        # Verify the complete manifest/summary artifact closure before tick can skip this slot.
+        read_export(Path(receipt['export']))
 
 
 def paused():
@@ -126,12 +138,15 @@ def checkpoint(run):
     state = json.loads(payload)
     directory = run/'invocation_clock'
     starts = sorted(directory.glob('*_start.json'))
-    assert starts, 'Missing invocation clock'
+    if not (starts):
+        raise ValueError('Missing invocation clock')
     for start in starts:
         a = read_clock(directory, start.name)
         b = read_clock(directory, start.name.replace('_start', '_end'))
-        assert b['start'] == a['sha256'], 'Unclosed or mismatched invocation clock'
-    assert len(starts) == len(list(directory.glob('*_end.json')))
+        if not (b['start'] == a['sha256']):
+            raise ValueError('Unclosed or mismatched invocation clock')
+    if not (len(starts) == len(list(directory.glob('*_end.json')))):
+        raise ValueError('qualification integrity check failed')
     return state
 
 
@@ -168,7 +183,8 @@ def journal_completion(campaign, manifest, case, system, reference):
         slot = slot_id(case, system)
         completed = [e for e in history if e['slot'] == slot and e['kind'] == 'complete']
         if completed:
-            assert len(completed) == 1 and completed[0]['details'] == reference
+            if not (len(completed) == 1 and completed[0]['details'] == reference):
+                raise ValueError('qualification integrity check failed')
         else:
             append_event(campaign, manifest, history, slot, 'complete', reference)
 
@@ -222,13 +238,18 @@ def worker(index, system, outer_fd):
                 command_run(command, BASE/'logs'/f'{ident}-to{target:03d}.log',
                             min(1520, deadline-time.monotonic()), fd)
                 candidates = list(output.iterdir())
-                assert len(candidates) == 1
+                if not (len(candidates) == 1):
+                    raise ValueError('qualification integrity check failed')
                 run = candidates[0]
                 state = checkpoint(run)
-                assert state['completed'] == target, 'Bounded fit target not completed'
-                assert state['attempts'][:completed] == before, 'Prior committed work changed'
-                assert len(state['attempts']) == target
-                assert all(a['status'] == 'ok' for a in state['attempts']), 'Failed/invalid fit'
+                if not (state['completed'] == target):
+                    raise ValueError('Bounded fit target not completed')
+                if not (state['attempts'][:completed] == before):
+                    raise ValueError('Prior committed work changed')
+                if not (len(state['attempts']) == target):
+                    raise ValueError('qualification integrity check failed')
+                if not (all((a['status'] == 'ok' for a in state['attempts']))):
+                    raise ValueError('Failed/invalid fit')
                 write(BASE/'boundaries'/f'{ident}-to{target:03d}.json',
                       dict(at=stamp(), completed=target, prior_completed=completed,
                            attempts_sha256=hashlib.sha256(encoded(state['attempts'])).hexdigest(),
@@ -241,15 +262,18 @@ def worker(index, system, outer_fd):
                        budget=case.budget, seed=case.seed, committed_fits=completed)
                 return
             run, reference = adopted(campaign, manifest, case, system)
-            assert reference is not None, 'No verified complete export'
+            if not (reference is not None):
+                raise ValueError('No verified complete export')
         # With one second remaining this can only adopt; a 1520-second dispatch
         # reservation cannot fit. Keep the standard completion journal/report.
         run_campaign(campaign, session_timeout=1)
     run, reference = adopted(campaign, manifest, case, system)
-    assert reference is not None
+    if not (reference is not None):
+        raise ValueError('qualification integrity check failed')
     journal_completion(campaign, manifest, case, system, reference)
     bundle = read_export(run/'symbiosis')
-    assert bundle.manifest.accounting.failed_evaluations == 0
+    if not (bundle.manifest.accounting.failed_evaluations == 0):
+        raise ValueError('qualification integrity check failed')
     replay = None
     if system != 'contenders':
         status('replaying', active=ident, engine=system, budget=case.budget, seed=case.seed)
@@ -257,7 +281,8 @@ def worker(index, system, outer_fd):
         log = command_run([sys.executable, '-m', MODULES[system], 'replay', str(run)], log,
                     min(180, deadline-time.monotonic()), outer_fd)
         replay = read(log)
-        assert replay['status'] == 'passed' and len(replay['checks']) == 4
+        if not (replay['status'] == 'passed' and len(replay['checks']) == 4):
+            raise ValueError('qualification integrity check failed')
     else:
         attempts = artifact_json(bundle, 'attempts.json')['attempts']
         from evonn_shared.active_catalog import get_benchmark, load_parity_pack
@@ -269,9 +294,10 @@ def worker(index, system, outer_fd):
                 needed = 'cnn_small'
             if 'banknote' in name:
                 needed = 'catboost'
-            assert needed is not None, (name, kind)
-            assert any(a['benchmark_id'] == name and a['status'] == 'ok' and a['family'] == needed
-                       for a in attempts), f'Required enhanced baseline missing: {name}/{needed}'
+            if not (needed is not None):
+                raise ValueError((name, kind))
+            if not (any((a['benchmark_id'] == name and a['status'] == 'ok' and (a['family'] == needed) for a in attempts))):
+                raise ValueError(f'Required enhanced baseline missing: {name}/{needed}')
     write(BASE/'receipts'/(ident+'.json'), dict(at=stamp(), stage=row['stage'], system=system,
           budget=case.budget, seed=case.seed, export=str(run/'symbiosis'),
           accounting=bundle.manifest.accounting.model_dump(mode='json'), replay=replay,

@@ -51,7 +51,9 @@ def main(directory, output):
     record, payload = journal.load_runtime_checkpoint(directory)
     cpu = time.process_time() - cpu
     wall = time.perf_counter() - start
-    assert inputs == {p.name: sha(p) for p in directory.iterdir() if p.is_file()}
+    after = {p.name: sha(p) for p in directory.iterdir() if p.is_file()}
+    if inputs != after:
+        raise ValueError("checkpoint inputs changed during measurement")
     sources = [Path(journal.__file__)]
     if optimized:
         sources.append(sources[0].with_name("_journal_encoding.py"))
@@ -60,19 +62,19 @@ def main(directory, output):
         wall_seconds=wall,
         cpu_seconds=cpu,
         peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * (1 if sys.platform == "darwin" else 1024),
-        checkpoint_directory=str(directory),
+        checkpoint_directory_id=hashlib.sha256(str(directory).encode()).hexdigest(),
         checkpoint_id=record.checkpoint_id,
         logical_sha256=hashlib.sha256(payload).hexdigest(),
         logical_bytes=len(payload),
         state_digests=trace,
         input_files_sha256=hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest(),
-        inputs_unchanged=True,
+        inputs_unchanged=inputs == after,
         fits_started=0,
         python=platform.python_version(),
         platform=platform.platform(),
         source_revision=subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
         source_dirty=bool(subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=no"], text=True)),
-        source_files={str(p): sha(p) for p in sources},
+        source_files={str(p.relative_to(Path(__file__).resolve().parents[2])): sha(p) for p in sources},
         benchmark_script_sha256=sha(Path(__file__)),
         timing_scope="Unprofiled checkpoint load with per-state digest capture; input hashing excluded",
     )

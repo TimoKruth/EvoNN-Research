@@ -686,7 +686,10 @@ A second controller is excluded by the study lock. Native interrupted slots
 use the existing integrity-checked campaign checkpoint recovery.
 
 The old qualification remains 28/30. Its historical planning/recovery scripts
-are preserved verbatim under `EvoNN-Compare/tests/research_archive/`, with recovery
-regressions retained. They are archival fixtures for the frozen prior producer;
+are retained with explicit integrity checks under `EvoNN-Compare/tests/research_archive/`, with recovery
+regressions retained. Their original byte-exact versions remain in the historical commits and frozen producer.
+The archived planner now resolves the repository from its moved location; its
+original protocol document retains the command valid at the time it was frozen.
+These are archival fixtures for the prior producer;
 use the module above for this new follow-up. Historical receipts and results
 have not been relabeled as complete.

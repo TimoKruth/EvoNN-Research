@@ -1,0 +1,564 @@
+{
+  "derived_from": {
+    "path": "profile-after.json",
+    "sha256": "3e9b2f5d30618bd3dcd1d6035980cf2e9a1a848746d1432ffe11984750a730c4"
+  },
+  "projection": {
+    "at": "2026-09-16T10:41:10.127419+00:00",
+    "directory": "local-path-sha256:b4dea9e7826b9fbcad8e798b44d299392144fc88260f61ba6426bbe70c17b37c",
+    "completed": 256,
+    "attempts": 256,
+    "logical_sha256": "6e7324aacbac45d2afe207c8f0d11b0303cd686dfe411301afa42beb0552da73",
+    "profile_wall_seconds": 41.45607258300879,
+    "checkpoint_files": 258,
+    "checkpoint_bytes": 327571983,
+    "inputs_sha256": "d949dc22cc0aa2aafc95e984428c37a903a1f90728caecf55781e62e1344c90c",
+    "inputs_unchanged": true,
+    "fits_started": 0,
+    "scope": "One instrumented replay of full committed chain; inclusive profile times overlap. Not a production speed estimate.",
+    "top_self": [
+      {
+        "file": "source/json/encoder.py",
+        "line": 205,
+        "function": "iterencode",
+        "primitive_calls": 1073040,
+        "calls": 1073040,
+        "self_seconds": 6.37645614,
+        "cumulative_seconds": 6.37645614
+      },
+      {
+        "file": "source/json/decoder.py",
+        "line": 351,
+        "function": "raw_decode",
+        "primitive_calls": 513,
+        "calls": 513,
+        "self_seconds": 6.363773375,
+        "cumulative_seconds": 6.363773375
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 75,
+        "function": "encode",
+        "primitive_calls": 259,
+        "calls": 259,
+        "self_seconds": 4.0241106,
+        "cumulative_seconds": 26.040364123000003
+      },
+      {
+        "file": "local-path-sha256:4b9bb5f105a3979e9f6d53843d348d1d2ecc17a174667458d33b0b1913a0cb13",
+        "line": 119,
+        "function": "deepcopy",
+        "primitive_calls": 6029,
+        "calls": 6124533,
+        "self_seconds": 3.084519749,
+        "cumulative_seconds": 6.488862500000001
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 33,
+        "function": "_render",
+        "primitive_calls": 74730,
+        "calls": 6328268,
+        "self_seconds": 1.8509416600000002,
+        "cumulative_seconds": 4.524822348000001
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 60,
+        "function": "<genexpr>",
+        "primitive_calls": 15848033,
+        "calls": 15848033,
+        "self_seconds": 1.6973948140000001,
+        "cumulative_seconds": 1.6973948140000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<built-in method _hashlib.openssl_sha256>",
+        "primitive_calls": 771,
+        "calls": 771,
+        "self_seconds": 1.591701019,
+        "cumulative_seconds": 1.591701019
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 52,
+        "function": "_build",
+        "primitive_calls": 257,
+        "calls": 1347079,
+        "self_seconds": 1.5726761040000001,
+        "cumulative_seconds": 16.595171888
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'join' of 'bytes' objects>",
+        "primitive_calls": 75240,
+        "calls": 81478,
+        "self_seconds": 1.3777366830000002,
+        "cumulative_seconds": 4.196259598
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<built-in method builtins.any>",
+        "primitive_calls": 751076,
+        "calls": 751076,
+        "self_seconds": 1.3421626020000001,
+        "cumulative_seconds": 3.0408966960000003
+      },
+      {
+        "file": "local-path-sha256:4b9bb5f105a3979e9f6d53843d348d1d2ecc17a174667458d33b0b1913a0cb13",
+        "line": 192,
+        "function": "_deepcopy_list",
+        "primitive_calls": 7421,
+        "calls": 246008,
+        "self_seconds": 1.263510152,
+        "cumulative_seconds": 6.455458014
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<built-in method builtins.id>",
+        "primitive_calls": 17051338,
+        "calls": 17051338,
+        "self_seconds": 1.08035597,
+        "cumulative_seconds": 1.08035597
+      },
+      {
+        "file": "local-path-sha256:911036e53b8c740f7ece4a399fd83c92f94c4cfbb8a1a31e3100bebd0e9e5b28",
+        "line": 183,
+        "function": "dumps",
+        "primitive_calls": 1711827,
+        "calls": 1711827,
+        "self_seconds": 1.0617643110000001,
+        "cumulative_seconds": 8.853119224
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'get' of 'dict' objects>",
+        "primitive_calls": 12243037,
+        "calls": 12243037,
+        "self_seconds": 0.9586683500000001,
+        "cumulative_seconds": 0.9586683500000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'extend' of 'list' objects>",
+        "primitive_calls": 8963334,
+        "calls": 8963334,
+        "self_seconds": 0.8240773410000001,
+        "cumulative_seconds": 0.8240773410000001
+      },
+      {
+        "file": "source/json/encoder.py",
+        "line": 183,
+        "function": "encode",
+        "primitive_calls": 1711827,
+        "calls": 1711827,
+        "self_seconds": 0.8062171370000001,
+        "cumulative_seconds": 7.590185542
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 38,
+        "function": "<genexpr>",
+        "primitive_calls": 290401,
+        "calls": 5681854,
+        "self_seconds": 0.798322547,
+        "cumulative_seconds": 2.866695752
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 16,
+        "function": "_plain",
+        "primitive_calls": 1711827,
+        "calls": 1711827,
+        "self_seconds": 0.623560189,
+        "cumulative_seconds": 9.720933594
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 37,
+        "function": "<genexpr>",
+        "primitive_calls": 585172,
+        "calls": 652647,
+        "self_seconds": 0.518172093,
+        "cumulative_seconds": 3.8412964200000004
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'append' of 'list' objects>",
+        "primitive_calls": 6184405,
+        "calls": 6184405,
+        "self_seconds": 0.38911635,
+        "cumulative_seconds": 0.38911635
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 96,
+        "function": "digest",
+        "primitive_calls": 258,
+        "calls": 258,
+        "self_seconds": 0.35518826200000003,
+        "cumulative_seconds": 27.70658063
+      },
+      {
+        "file": "local-path-sha256:4b9bb5f105a3979e9f6d53843d348d1d2ecc17a174667458d33b0b1913a0cb13",
+        "line": 173,
+        "function": "_deepcopy_atomic",
+        "primitive_calls": 5867769,
+        "calls": 5867769,
+        "self_seconds": 0.290541678,
+        "cumulative_seconds": 0.290541678
+      },
+      {
+        "file": "<string>",
+        "line": 2,
+        "function": "__init__",
+        "primitive_calls": 1246940,
+        "calls": 1246940,
+        "self_seconds": 0.24641163600000002,
+        "cumulative_seconds": 0.516937563
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'encode' of 'str' objects>",
+        "primitive_calls": 1712340,
+        "calls": 1712340,
+        "self_seconds": 0.24450902500000002,
+        "cumulative_seconds": 0.24450902500000002
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<built-in method builtins.isinstance>",
+        "primitive_calls": 2815415,
+        "calls": 2815415,
+        "self_seconds": 0.23102834300000002,
+        "cumulative_seconds": 0.23233688600000002
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 61,
+        "function": "<genexpr>",
+        "primitive_calls": 91890,
+        "calls": 826955,
+        "self_seconds": 0.20206737900000002,
+        "cumulative_seconds": 15.423978597000001
+      },
+      {
+        "file": "source/json/encoder.py",
+        "line": 105,
+        "function": "__init__",
+        "primitive_calls": 1711827,
+        "calls": 1711827,
+        "self_seconds": 0.201169371,
+        "cumulative_seconds": 0.201169371
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+        "line": 214,
+        "function": "load_runtime_checkpoint",
+        "primitive_calls": 1,
+        "calls": 1,
+        "self_seconds": 0.200824943,
+        "cumulative_seconds": 41.442469167000006
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<built-in method builtins.sum>",
+        "primitive_calls": 154372,
+        "calls": 154372,
+        "self_seconds": 0.199087755,
+        "cumulative_seconds": 0.414213575
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 28,
+        "function": "__post_init__",
+        "primitive_calls": 1246940,
+        "calls": 1246940,
+        "self_seconds": 0.191254782,
+        "cumulative_seconds": 0.270525927
+      }
+    ],
+    "top_cumulative": [
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+        "line": 214,
+        "function": "load_runtime_checkpoint",
+        "primitive_calls": 1,
+        "calls": 1,
+        "self_seconds": 0.200824943,
+        "cumulative_seconds": 41.442469167000006
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 96,
+        "function": "digest",
+        "primitive_calls": 258,
+        "calls": 258,
+        "self_seconds": 0.35518826200000003,
+        "cumulative_seconds": 27.70658063
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 75,
+        "function": "encode",
+        "primitive_calls": 259,
+        "calls": 259,
+        "self_seconds": 4.0241106,
+        "cumulative_seconds": 26.040364123000003
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 52,
+        "function": "_build",
+        "primitive_calls": 257,
+        "calls": 1347079,
+        "self_seconds": 1.5726761040000001,
+        "cumulative_seconds": 16.595171888
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 58,
+        "function": "<genexpr>",
+        "primitive_calls": 2313,
+        "calls": 597053,
+        "self_seconds": 0.160063387,
+        "cumulative_seconds": 16.585639187
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 61,
+        "function": "<genexpr>",
+        "primitive_calls": 91890,
+        "calls": 826955,
+        "self_seconds": 0.20206737900000002,
+        "cumulative_seconds": 15.423978597000001
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 16,
+        "function": "_plain",
+        "primitive_calls": 1711827,
+        "calls": 1711827,
+        "self_seconds": 0.623560189,
+        "cumulative_seconds": 9.720933594
+      },
+      {
+        "file": "local-path-sha256:911036e53b8c740f7ece4a399fd83c92f94c4cfbb8a1a31e3100bebd0e9e5b28",
+        "line": 183,
+        "function": "dumps",
+        "primitive_calls": 1711827,
+        "calls": 1711827,
+        "self_seconds": 1.0617643110000001,
+        "cumulative_seconds": 8.853119224
+      },
+      {
+        "file": "source/json/encoder.py",
+        "line": 183,
+        "function": "encode",
+        "primitive_calls": 1711827,
+        "calls": 1711827,
+        "self_seconds": 0.8062171370000001,
+        "cumulative_seconds": 7.590185542
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+        "line": 118,
+        "function": "restore",
+        "primitive_calls": 240,
+        "calls": 240,
+        "self_seconds": 0.0014795040000000002,
+        "cumulative_seconds": 6.526703963
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/runtime_journal.py",
+        "line": 69,
+        "function": "apply_delta",
+        "primitive_calls": 240,
+        "calls": 8952,
+        "self_seconds": 0.028494394000000003,
+        "cumulative_seconds": 6.523490987000001
+      },
+      {
+        "file": "local-path-sha256:4b9bb5f105a3979e9f6d53843d348d1d2ecc17a174667458d33b0b1913a0cb13",
+        "line": 119,
+        "function": "deepcopy",
+        "primitive_calls": 6029,
+        "calls": 6124533,
+        "self_seconds": 3.084519749,
+        "cumulative_seconds": 6.488862500000001
+      },
+      {
+        "file": "local-path-sha256:4b9bb5f105a3979e9f6d53843d348d1d2ecc17a174667458d33b0b1913a0cb13",
+        "line": 192,
+        "function": "_deepcopy_list",
+        "primitive_calls": 7421,
+        "calls": 246008,
+        "self_seconds": 1.263510152,
+        "cumulative_seconds": 6.455458014
+      },
+      {
+        "file": "local-path-sha256:911036e53b8c740f7ece4a399fd83c92f94c4cfbb8a1a31e3100bebd0e9e5b28",
+        "line": 299,
+        "function": "loads",
+        "primitive_calls": 513,
+        "calls": 513,
+        "self_seconds": 0.001439313,
+        "cumulative_seconds": 6.407915196
+      },
+      {
+        "file": "source/json/encoder.py",
+        "line": 205,
+        "function": "iterencode",
+        "primitive_calls": 1073040,
+        "calls": 1073040,
+        "self_seconds": 6.37645614,
+        "cumulative_seconds": 6.37645614
+      },
+      {
+        "file": "source/json/decoder.py",
+        "line": 340,
+        "function": "decode",
+        "primitive_calls": 513,
+        "calls": 513,
+        "self_seconds": 0.001526734,
+        "cumulative_seconds": 6.366586194000001
+      },
+      {
+        "file": "source/json/decoder.py",
+        "line": 351,
+        "function": "raw_decode",
+        "primitive_calls": 513,
+        "calls": 513,
+        "self_seconds": 6.363773375,
+        "cumulative_seconds": 6.363773375
+      },
+      {
+        "file": "local-path-sha256:4b9bb5f105a3979e9f6d53843d348d1d2ecc17a174667458d33b0b1913a0cb13",
+        "line": 218,
+        "function": "_deepcopy_dict",
+        "primitive_calls": 1772,
+        "calls": 10756,
+        "self_seconds": 0.032180071000000005,
+        "cumulative_seconds": 6.338205316000001
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 33,
+        "function": "_render",
+        "primitive_calls": 74730,
+        "calls": 6328268,
+        "self_seconds": 1.8509416600000002,
+        "cumulative_seconds": 4.524822348000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'join' of 'bytes' objects>",
+        "primitive_calls": 75240,
+        "calls": 81478,
+        "self_seconds": 1.3777366830000002,
+        "cumulative_seconds": 4.196259598
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 37,
+        "function": "<genexpr>",
+        "primitive_calls": 585172,
+        "calls": 652647,
+        "self_seconds": 0.518172093,
+        "cumulative_seconds": 3.8412964200000004
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<built-in method builtins.any>",
+        "primitive_calls": 751076,
+        "calls": 751076,
+        "self_seconds": 1.3421626020000001,
+        "cumulative_seconds": 3.0408966960000003
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 38,
+        "function": "<genexpr>",
+        "primitive_calls": 290401,
+        "calls": 5681854,
+        "self_seconds": 0.798322547,
+        "cumulative_seconds": 2.866695752
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 60,
+        "function": "<genexpr>",
+        "primitive_calls": 15848033,
+        "calls": 15848033,
+        "self_seconds": 1.6973948140000001,
+        "cumulative_seconds": 1.6973948140000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<built-in method _hashlib.openssl_sha256>",
+        "primitive_calls": 771,
+        "calls": 771,
+        "self_seconds": 1.591701019,
+        "cumulative_seconds": 1.591701019
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<built-in method builtins.id>",
+        "primitive_calls": 17051338,
+        "calls": 17051338,
+        "self_seconds": 1.08035597,
+        "cumulative_seconds": 1.08035597
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 41,
+        "function": "_branch",
+        "primitive_calls": 77186,
+        "calls": 77186,
+        "self_seconds": 0.09797968700000001,
+        "cumulative_seconds": 1.0487753850000001
+      },
+      {
+        "file": "source/EvoNN-Shared/src/evonn_shared/_journal_encoding.py",
+        "line": 59,
+        "function": "<genexpr>",
+        "primitive_calls": 597053,
+        "calls": 597053,
+        "self_seconds": 0.104387223,
+        "cumulative_seconds": 0.9635443640000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'get' of 'dict' objects>",
+        "primitive_calls": 12243037,
+        "calls": 12243037,
+        "self_seconds": 0.9586683500000001,
+        "cumulative_seconds": 0.9586683500000001
+      },
+      {
+        "file": "~",
+        "line": 0,
+        "function": "<method 'extend' of 'list' objects>",
+        "primitive_calls": 8963334,
+        "calls": 8963334,
+        "self_seconds": 0.8240773410000001,
+        "cumulative_seconds": 0.8240773410000001
+      }
+    ]
+  }
+}

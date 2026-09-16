@@ -1,0 +1,63 @@
+........................................................................ [  8%]
+........................................................................ [ 16%]
+........................................................................ [ 24%]
+........................................................................ [ 32%]
+........................................................................ [ 40%]
+........................................................................ [ 48%]
+........................................................................ [ 56%]
+........................................................................ [ 64%]
+........................................................................ [ 72%]
+........................................................................ [ 80%]
+........................................................................ [ 88%]
+.............................................................F.......... [ 96%]
+.............................                                            [100%]
+=================================== FAILURES ===================================
+__________ test_real_resume_kill_boundaries_export_and_report[prism] ___________
+
+system = 'prism'
+tmp_path = PosixPath('/private/var/folders/j2/c0gc7hs543df6ysfd43ll7k80000gn/T/pytest-of-timokruth/pytest-34/test_real_resume_kill_boundari0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x107a70280>
+
+    @pytest.mark.parametrize("system", ["prism", "topograph", "stratograph", "primordia"])
+    def test_real_resume_kill_boundaries_export_and_report(system, tmp_path, monkeypatch):
+        result = invoke(
+            system,
+            "evolve",
+            "--pack",
+            "tier1_core_smoke",
+            "--budget",
+            8,
+            "--population-size",
+            2,
+            "--epochs",
+            2,
+            "--timeout",
+            220,
+            "--fit-timeout",
+            20,
+            "--backend",
+            os.environ.get("EVONN_TEST_BACKEND", "numpy_fallback"),
+            "--output",
+            tmp_path / "prefix",
+            "--cache",
+            tmp_path / "cache",
+            "--stop-after",
+            7,
+        )
+        assert result.returncode == 0, result.stderr
+        prefix = Path(result.stdout.strip().splitlines()[-1])
+        original_rows = None
+        with open_run_reader(prefix, prefix.name) as reader:
+            original_rows = reader.evaluations()
+        baseline = clone_prefix(prefix, tmp_path / "baseline")
+        completed = invoke(system, "evolve", "--resume", baseline)
+>       assert completed.returncode == 0, completed.stderr
+E       AssertionError: prism: resume configuration/code/dependency drift
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/Users/timokruth/Projekte/EvoNN-checkpoint-json-20260916/.venv/bin/python', '-m', 'prism.cli',...sm_20260916T104303_b1cc33271f'], returncode=1, stdout='', stderr='prism: resume configuration/code/dependency drift\n').returncode
+
+tests/integration/test_phase2_runtime.py:80: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_phase2_runtime.py::test_real_resume_kill_boundaries_export_and_report[prism]
+1 failed, 892 passed in 450.40s (0:07:30)

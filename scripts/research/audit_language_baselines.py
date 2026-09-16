@@ -108,11 +108,25 @@ def main(base, output):
                     receipt_sha256=sha(receipt_path),
                 )
                 if family == "transformer_lm_tiny":
+                    expected_updates = model.epochs * ((len(arrays["x_train"]) + model.batch_size - 1) // model.batch_size)
+                    telemetry = {"completed_epochs", "optimizer_updates", "model_selection"}
+                    if telemetry & set(attempt):
+                        require(telemetry <= set(attempt), "incomplete observed Transformer telemetry")
+                        require(attempt["completed_epochs"] == model.epochs == model.completed_epochs_,
+                                "observed Transformer epoch mismatch")
+                        require(attempt["optimizer_updates"] == expected_updates == model.optimizer_updates_,
+                                "observed Transformer update mismatch")
+                        require(attempt["model_selection"] == "fixed_final_epoch", "Transformer selection mismatch")
+                        row.update(observed_completed_epochs=attempt["completed_epochs"],
+                                   observed_optimizer_updates=attempt["optimizer_updates"],
+                                   telemetry_status="observed_and_model_verified")
+                    else:
+                        row["telemetry_status"] = "historical_not_observed; updates below are inferred"
                     row.update(
                         epochs=model.epochs,
                         batch_size=model.batch_size,
                         learning_rate=model.learning_rate,
-                        updates=model.epochs * ((len(arrays["x_train"]) + model.batch_size - 1) // model.batch_size),
+                        updates=expected_updates,
                         parameter_count=sum(p.numel() for p in model.model.parameters()),
                     )
                 else:

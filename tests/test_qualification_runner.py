@@ -155,3 +155,33 @@ class QualificationRecoveryTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+def test_recovery_revalidates_export_artifacts(tmp_path, monkeypatch):
+    base=tmp_path
+    (base/'receipts').mkdir()
+    (base/'receipts/one.json').write_text('{}')
+    documents={name:'digest' for name in ['manifest.json','summary.json','results.json']}
+    data={
+        'runner-amendment-v5.json':{'runner_sha256':'digest','original_readiness_sha256':'digest',
+                                 'deferred_slots_sha256':'digest','retained_evidence':{}},
+        'qualification-matrix.json':[], 'deferred-slots.json':{'slots':{}},
+        'readiness.json':{'identity':{},'files':{}},
+        'one.json':{'documents':documents,'export':str(base/'export')},
+    }
+    monkeypatch.setattr(runner,'BASE',base)
+    monkeypatch.setattr(runner,'read',lambda p:data[p.name])
+    monkeypatch.setattr(runner,'digest',lambda p:'digest')
+    monkeypatch.setattr(runner,'identity',lambda:{})
+    calls=[]
+    def corrupt_export(path):
+        calls.append(path)
+        raise ValueError('corrupt attempts artifact')
+    monkeypatch.setattr(runner,'read_export',corrupt_export)
+    import pytest
+    with pytest.raises(ValueError,match='corrupt attempts'):
+        runner.check_inputs()
+    assert calls==[base/'export']
+    documents.pop('results.json')
+    with pytest.raises(ValueError,match='Incomplete completion'):
+        runner.check_inputs()

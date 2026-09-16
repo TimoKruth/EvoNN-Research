@@ -76,3 +76,10 @@ The larger research study and original 28/30 qualification remain unchanged.
 A speedup of replay does not qualify baseline adequacy, measured-training budgets
 or the entire timing/recovery protocol. Required hosted checks and integration
 still gate use in a new scientific producer.
+
+The additive [validation bindings](validation-binding.json) retain exact commands,
+full producer revisions and hashes of the raw test logs, including the broad
+run and clean targeted rerun. Fresh focused/lint/import checks are separately
+bound and do not inflate the count of unique tests. The `portable/` projections
+remove local path prefixes while preserving every measured value and binding
+the original reports by checksum. Original frozen measurements remain unchanged.

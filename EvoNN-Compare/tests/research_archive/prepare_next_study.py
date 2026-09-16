@@ -16,7 +16,7 @@ from topograph.config import RunConfig as TopographConfig
 from stratograph.config import RunConfig as StratographConfig
 from evonn_primordia.config import RunConfig as PrimordiaConfig
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 PROTOCOL = ROOT / 'governance/next-research-study-20260914.json'
 SYSTEMS = ['prism', 'topograph', 'stratograph', 'primordia', 'contenders']
 MODELS = dict(prism=PrismConfig, topograph=TopographConfig, stratograph=StratographConfig, primordia=PrimordiaConfig)
@@ -60,12 +60,15 @@ def arms():
 
 def generate(output):
     protocol = json.loads(PROTOCOL.read_text())
-    assert not output.exists(), 'Use a fresh output directory; existing plans are never overwritten'
+    if not (not output.exists()):
+        raise ValueError('Use a fresh output directory; existing plans are never overwritten')
     output.mkdir(parents=True)
     available = arms()
-    assert len(available) == 11
+    if not (len(available) == 11):
+        raise ValueError('qualification integrity check failed')
     all_seeds = [seed for stage in protocol['stages'] for seed in stage['seeds']]
-    assert len(all_seeds) == len(set(all_seeds)), 'Stage seed cohorts overlap'
+    if not (len(all_seeds) == len(set(all_seeds))):
+        raise ValueError('Stage seed cohorts overlap')
     historic_seeds = set()
 
     def scan(value):
@@ -87,11 +90,13 @@ def generate(output):
             continue
         scan(json.loads(path.read_text()))
         checked.append(name)
-    assert not set(all_seeds) & historic_seeds, 'Planned seed previously used in tracked governance'
+    if not (not set(all_seeds) & historic_seeds):
+        raise ValueError('Planned seed previously used in tracked governance')
     plans, configs, symbolic = [], 0, []
     for stage in protocol['stages']:
         for pack in stage['packs']:
-            assert len(load_parity_pack(pack).benchmarks) == 4
+            if not (len(load_parity_pack(pack).benchmarks) == 4):
+                raise ValueError('qualification integrity check failed')
             # Rotate arm order across seeds; reverse on alternate regime blocks.
             for regime_index, regime in enumerate(stage['regimes']):
                 for seed_index, seed in enumerate(stage['seeds']):
@@ -145,9 +150,12 @@ def generate(output):
                         plans.append(row)
     total_runs = sum(row['planned_runs'] for row in plans)
     total_fits = sum(row['maximum_fit_attempts'] for row in plans)
-    assert total_runs == protocol['maximum_runs'] and total_fits == protocol['maximum_fit_attempts']
-    assert all(set(row['systems']) == set(SYSTEMS) for row in plans)
-    assert len({row['id'] for row in plans}) == len(plans)
+    if not (total_runs == protocol['maximum_runs'] and total_fits == protocol['maximum_fit_attempts']):
+        raise ValueError('qualification integrity check failed')
+    if not (all((set(row['systems']) == set(SYSTEMS) for row in plans))):
+        raise ValueError('qualification integrity check failed')
+    if not (len({row['id'] for row in plans}) == len(plans)):
+        raise ValueError('qualification integrity check failed')
     write(output / 'matrix.json', plans)
     write(output / 'arms.json', available)
     write(output / 'validation.json', dict(status='planning_validation_passed', training_started=False,

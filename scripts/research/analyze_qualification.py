@@ -36,27 +36,38 @@ def analyze(base):
     dataset_groups = collections.defaultdict(set)
     actual = set()
     for path in sorted((base/'receipts').glob('*.json')):
-        assert path.stem in required, f'Unexpected slot: {path}'
-        assert path.stem not in actual
+        if not (path.stem in required):
+            raise ValueError(f'Unexpected slot: {path}')
+        if not (path.stem not in actual):
+            raise ValueError('qualification integrity check failed')
         actual.add(path.stem)
         expected, system = required[path.stem]
         receipt = read(path)
-        assert (receipt['system'], receipt['seed'], receipt['budget'], receipt['stage']) == (
-            system, expected['seed'], expected['regime']['proposal_limit'], expected['stage'])
+        if not ((receipt['system'], receipt['seed'], receipt['budget'], receipt['stage']) == (system, expected['seed'], expected['regime']['proposal_limit'], expected['stage'])):
+            raise ValueError('qualification integrity check failed')
         export = Path(receipt['export'])
+        if set(receipt['documents']) != {'manifest.json', 'summary.json', 'results.json'}:
+            raise ValueError('Incomplete completion document hashes')
         for name, digest in receipt['documents'].items():
-            assert sha(export/name) == digest, f'Changed receipt-bound document: {export/name}'
+            if not (sha(export / name) == digest):
+                raise ValueError(f'Changed receipt-bound document: {export / name}')
         manifest, summary, results = [read(export/name) for name in ['manifest.json', 'summary.json', 'results.json']]
-        assert manifest['status'] == 'completed'
-        assert manifest['accounting'] == receipt['accounting'] == summary['accounting']
-        assert manifest['seed'] == receipt['seed'] and manifest['system'] == system
-        assert manifest['pack_id'] == expected['pack']
+        if not (manifest['status'] == 'completed'):
+            raise ValueError('qualification integrity check failed')
+        if not (manifest['accounting'] == receipt['accounting'] == summary['accounting']):
+            raise ValueError('qualification integrity check failed')
+        if not (manifest['seed'] == receipt['seed'] and manifest['system'] == system):
+            raise ValueError('qualification integrity check failed')
+        if not (manifest['pack_id'] == expected['pack']):
+            raise ValueError('qualification integrity check failed')
         artifacts = {r['path']:r['sha256'] for r in manifest['artifacts']}
         artifacts[manifest['config_snapshot']['path']] = manifest['config_snapshot']['sha256']
         consumed = {}
         def artifact(name):
-            assert name in artifacts
-            assert sha(export/name) == artifacts[name], f'Changed analysis input: {export/name}'
+            if not (name in artifacts):
+                raise ValueError('qualification integrity check failed')
+            if not (sha(export / name) == artifacts[name]):
+                raise ValueError(f'Changed analysis input: {export / name}')
             consumed[name] = artifacts[name]
             return read(export/name)
         attempts = artifact('attempts.json')['attempts']
@@ -65,32 +76,42 @@ def analyze(base):
         for data in provenance:
             identity = tuple(data[k] for k in ['definition_sha256', 'raw_sha256', 'split_sha256', 'seed'])
             dataset_groups[(receipt['stage'], receipt['budget'], receipt['seed'], data['benchmark_id'])].add(identity)
-        assert len(attempts) == receipt['budget'] == receipt['accounting']['evaluation_count']
-        assert all(a['status'] == 'ok' and a['charged'] == 1 for a in attempts)
-        assert receipt['accounting']['failed_evaluations'] == receipt['accounting']['invalid_evaluations'] == 0
-        assert len(results['records']) == len(attempts)
+        if not (len(attempts) == receipt['budget'] == receipt['accounting']['evaluation_count']):
+            raise ValueError('qualification integrity check failed')
+        if not (all((a['status'] == 'ok' and a['charged'] == 1 for a in attempts))):
+            raise ValueError('qualification integrity check failed')
+        if not (receipt['accounting']['failed_evaluations'] == receipt['accounting']['invalid_evaluations'] == 0):
+            raise ValueError('qualification integrity check failed')
+        if not (len(results['records']) == len(attempts)):
+            raise ValueError('qualification integrity check failed')
         replay = receipt.get('replay')
         if system != 'contenders':
-            assert replay['status'] == 'passed' and len(replay['checks']) == 4
+            if not (replay['status'] == 'passed' and len(replay['checks']) == 4):
+                raise ValueError('qualification integrity check failed')
         training = sum(a['train_seconds'] for a in attempts)
-        assert math.isfinite(training) and training > 0
+        if not (math.isfinite(training) and training > 0):
+            raise ValueError('qualification integrity check failed')
         metadata = {k:receipt[k] for k in ['stage','system','budget','seed']}
         cost = dict(**metadata, run_id=manifest['run_id'], training_seconds=training,
                     recorded_elapsed_seconds=manifest['timing']['elapsed_seconds'],
                     serialized_winner_bytes=0, replay_checks=len(replay['checks']) if replay else 0,
                     fit_count=len(attempts), git_commit=manifest['git_commit'],
                     config_sha256=manifest['config_snapshot']['sha256'])
-        assert len(summary['best_per_benchmark']) == 4
+        if not (len(summary['best_per_benchmark']) == 4):
+            raise ValueError('qualification integrity check failed')
         for best in summary['best_per_benchmark']:
             benchmark = best['benchmark_id']
             records = [r for r in results['records'] if r['benchmark_id'] == benchmark and r['status'] == 'ok']
             winner = next(r for r in records if r['outcome_id'] == best['outcome_id'])
             choose = max if best['direction'] == 'max' else min
-            assert winner['metric']['value'] == best['value'] == choose(r['metric']['value'] for r in records)
+            if not (winner['metric']['value'] == best['value'] == choose((r['metric']['value'] for r in records))):
+                raise ValueError('qualification integrity check failed')
             if replay:
                 check = next(c for c in replay['checks'] if c['benchmark'] == benchmark)
-                assert check['exported'] == best['value']
-                assert math.isclose(check['observed'], best['value'], rel_tol=1e-6, abs_tol=1e-8)
+                if not (check['exported'] == best['value']):
+                    raise ValueError('qualification integrity check failed')
+                if not (math.isclose(check['observed'], best['value'], rel_tol=1e-06, abs_tol=1e-08)):
+                    raise ValueError('qualification integrity check failed')
             task_attempts = [a for a in attempts if a['benchmark_id'] == benchmark]
             rows.append(dict(**metadata, benchmark=benchmark, metric=best['metric_name'],
                              direction=best['direction'], score=best['value'], outcome_id=best['outcome_id'],
@@ -113,7 +134,8 @@ def analyze(base):
         runs.append(cost)
         sources.append(dict(receipt=str(path), receipt_sha256=sha(path), export=str(export),
                             documents=receipt['documents'], analyzed_artifacts=consumed))
-    assert all(len(identities) == 1 for identities in dataset_groups.values()), 'Dataset mismatch within paired case'
+    if not (all((len(identities) == 1 for identities in dataset_groups.values()))):
+        raise ValueError('Dataset mismatch within paired case')
     groups = collections.defaultdict(list)
     for row in rows:
         groups[(row['stage'],row['budget'],row['system'],row['benchmark'])].append(row)
@@ -128,7 +150,8 @@ def analyze(base):
         for benchmark in CORE:
             low = {r['seed']:r for r in rows if r['stage']=='Q-core' and r['system']==system and r['benchmark']==benchmark and r['budget']==128}
             high = {r['seed']:r for r in rows if r['stage']=='Q-core' and r['system']==system and r['benchmark']==benchmark and r['budget']==256}
-            assert set(low) == set(high) == {1001,1002}
+            if not (set(low) == set(high) == {1001, 1002}):
+                raise ValueError('qualification integrity check failed')
             a, z = mean(r['score'] for r in low.values()), mean(r['score'] for r in high.values())
             scaling.append(dict(system=system,benchmark=benchmark,mean128=a,mean256=z,
                                 relative_reduction_percent=100*(a-z)/a if low[1001]['direction']=='min' else None,
@@ -138,10 +161,14 @@ def analyze(base):
     for r in runs: cost_groups[(r['stage'],r['budget'],r['system'])].append(r)
     costs = [dict(stage=k[0],budget=k[1],system=k[2],training_seconds_mean=mean(r['training_seconds'] for r in v),
                   n=len(v), seeds=sorted(r['seed'] for r in v)) for k,v in sorted(cost_groups.items())]
+    missing_slots = sorted(set(required) - actual)
+    declared_deferred = read(base/'deferred-slots.json')['slots']
+    if set(missing_slots) != set(declared_deferred):
+        raise ValueError('Missing receipts differ from declared deferred slots')
     return dict(generated_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),base=str(base),
                 classification='descriptive qualification analysis; incomplete comparison; no promotion',
-                required_runs=len(required),completed_runs=len(runs),missing_slots=sorted(set(required)-actual),
-                deferred_slots=read(base/'deferred-slots.json')['slots'],
+                required_runs=len(required),completed_runs=len(runs),missing_slots=missing_slots,
+                deferred_slots=declared_deferred,
                 successful_fits=sum(r['fit_count'] for r in runs),
                 native_replay_checks=sum(r['replay_checks'] for r in runs),
                 dataset_parity_groups_checked=len(dataset_groups),
@@ -204,8 +231,10 @@ def render(data):
 if __name__ == '__main__':
     base,output=map(Path,sys.argv[1:3])
     data=analyze(base.resolve())
-    assert data['completed_runs']==28 and data['required_runs']==30
-    assert data['successful_fits']==4352 and data['native_replay_checks']==88
+    if not (data['completed_runs'] == 28 and data['required_runs'] == 30):
+        raise ValueError('qualification integrity check failed')
+    if not (data['successful_fits'] == 4352 and data['native_replay_checks'] == 88):
+        raise ValueError('qualification integrity check failed')
     output.mkdir(parents=True,exist_ok=False)
     (output/'analysis.json').write_text(json.dumps(data,indent=2,allow_nan=False)+'\n')
     (output/'report.md').write_text(render(data))
