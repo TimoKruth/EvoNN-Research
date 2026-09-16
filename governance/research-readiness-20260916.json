@@ -1,0 +1,1117 @@
+{
+  "historical_qualification": {
+    "producer_revision": "aabc7f913153535f1e53258221201f4e2abb7fef",
+    "completed": 28,
+    "declared": 30,
+    "status": "incomplete",
+    "missing": [
+      "Primordia language_breadth_v1 budget 64 seed 1003: loader failed before fitting",
+      "Primordia language_breadth_v1 budget 64 seed 1004: blocked, not attempted"
+    ],
+    "historical_results_changed": false
+  },
+  "repaired_runtime_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+  "audit_inputs": [
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/governance/next-research-study-20260914.json",
+      "sha256": "3ad93796cb5f38dea2a2d08ddca12f367510744d51542a57b51c919c5025b65e"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN/reports/qualification-20260916/analysis.json",
+      "sha256": "e6c990a4b286b3b40f4c13bce9a7faa73347f4550b4dd174dac469afc4442b01"
+    }
+  ],
+  "audits": [
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN-readiness-pr-20260916/reports/readiness-20260916/dataset-parity.json",
+      "sha256": "13863c48b2e9335cef97a2ecfd7da236b416d605814f419f563204ef645fbec7"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN-readiness-pr-20260916/reports/readiness-20260916/language-baselines.json",
+      "sha256": "7dc78fa8f394b6aab88eb1bf58d937a720c388b66e8d60cba5f81e8c982edbf6"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN-readiness-pr-20260916/reports/readiness-20260916/checkpoint-profile-256.json",
+      "sha256": "ee0fa3bc10b191c3e7a63d42bf73f70f187e5de92b084492d79910520732bd62"
+    }
+  ],
+  "audit_scripts": [
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/scripts/research/audit_language_baselines.py",
+      "sha256": "f445d9c199b9557553e0b4a29177aac503991e1d9ee69ef433ace6ab8fb8a1b3"
+    },
+    {
+      "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/scripts/research/profile_checkpoint_read.py",
+      "sha256": "338ad34d2584a4b4f27d490a52477fc3603e2aaa1f26b070398577a255714374"
+    }
+  ],
+  "audit_model_fits": 0,
+  "protected_test_access": false,
+  "local_tests": {
+    "passed": 32,
+    "command": ".venv/bin/python -m pytest -q EvoNN-Primordia/tests tests/integration/test_primordia_breadth.py",
+    "new_loader_tests_included": 13
+  },
+  "comparison_scope": "Contract validation only; runtime support does not close scientific qualification.",
+  "runtime_contract": {
+    "status": "passed",
+    "runs": 15,
+    "fits": 240,
+    "native_winner_replays": 48,
+    "enhanced_pool": false,
+    "scope": "Minimum-floor runtime contract, not baseline adequacy or scientific qualification",
+    "all_core_outcome_scores_identical_before_after": true,
+    "core_outcomes_checked": 100,
+    "protocol": {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/readiness-20260916/protocol.json",
+      "sha256": "651c8a09af4edf77755fc38f5b9e9ed315ec1199c9118140b55a37a21cd10e06"
+    },
+    "campaigns": [
+      {
+        "label": "before-core",
+        "pack": "tier_b_core_v2",
+        "budget": 16,
+        "seed": 1411,
+        "campaign": {
+          "path": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/readiness-contract-20260916/tier_b_core_v2/campaign/campaign.json",
+          "sha256": "547662be84fa5f470fca78a39cd01c561cc79d498bf26ea12050c26ac57c079b"
+        },
+        "runs": [
+          {
+            "system": "primordia",
+            "run_id": "primordia_20260916T084759_dc1e1f91f6",
+            "producer_revision": "aabc7f913153535f1e53258221201f4e2abb7fef",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/readiness-contract-20260916/tier_b_core_v2/campaign/runs/tier_b_core_v2_b16_s1411_primordia/primordia_20260916T084759_dc1e1f91f6/symbiosis/manifest.json",
+              "sha256": "5fa6ce1154820db6429e9cf350c06b2fa27a1ada6544757db4999703610a9f11"
+            }
+          },
+          {
+            "system": "topograph",
+            "run_id": "topograph_20260916T084735_1de91bfd48",
+            "producer_revision": "aabc7f913153535f1e53258221201f4e2abb7fef",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/readiness-contract-20260916/tier_b_core_v2/campaign/runs/tier_b_core_v2_b16_s1411_topograph/topograph_20260916T084735_1de91bfd48/symbiosis/manifest.json",
+              "sha256": "3b84aa03a8f74e230533f7eff396242b027ddf56f71816a6282fa023deb654de"
+            }
+          },
+          {
+            "system": "stratograph",
+            "run_id": "stratograph_20260916T084748_4213da4713",
+            "producer_revision": "aabc7f913153535f1e53258221201f4e2abb7fef",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/readiness-contract-20260916/tier_b_core_v2/campaign/runs/tier_b_core_v2_b16_s1411_stratograph/stratograph_20260916T084748_4213da4713/symbiosis/manifest.json",
+              "sha256": "a488acfb9d94de8ae2072df5997d20468c6d3553ed4e6041def411d0bc859e79"
+            }
+          },
+          {
+            "system": "prism",
+            "run_id": "prism_20260916T084724_0ecc81ffd5",
+            "producer_revision": "aabc7f913153535f1e53258221201f4e2abb7fef",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/readiness-contract-20260916/tier_b_core_v2/campaign/runs/tier_b_core_v2_b16_s1411_prism/prism_20260916T084724_0ecc81ffd5/symbiosis/manifest.json",
+              "sha256": "5ddb0c5d92ce7456485157756baedc93a413588d99d08179fbb103ce9264f6ce"
+            }
+          },
+          {
+            "system": "contenders",
+            "run_id": "contenders_20260916T084655_913a4242507e",
+            "producer_revision": "aabc7f913153535f1e53258221201f4e2abb7fef",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/readiness-contract-20260916/tier_b_core_v2/campaign/runs/tier_b_core_v2_b16_s1411_contenders/contenders_20260916T084655_913a4242507e/symbiosis/manifest.json",
+              "sha256": "c535e298640b85851b063e26ef022f3348a4acafded2ebc231ab08eb36e56302"
+            }
+          }
+        ],
+        "replays": [
+          {
+            "engine": "prism",
+            "checks": [
+              {
+                "benchmark": "banknote_classification",
+                "exported": 0.9163636363636364,
+                "observed": 0.9163636363636364
+              },
+              {
+                "benchmark": "diabetes_regression",
+                "exported": 5091.792187676828,
+                "observed": 5091.792187676828
+              },
+              {
+                "benchmark": "digits_image",
+                "exported": 0.40555555555555556,
+                "observed": 0.40555555555555556
+              },
+              {
+                "benchmark": "shakespeare_byte_lm",
+                "exported": 98.51436070819591,
+                "observed": 98.51436070819591
+              }
+            ],
+            "receipt": {
+              "path": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/readiness-contract-20260916/tier_b_core_v2/prism-replay.json",
+              "sha256": "9a9d2ec840e01952c60af9e1b10df4e81e9b42475262f4f2416372cf4ac2ff4a"
+            }
+          },
+          {
+            "engine": "topograph",
+            "checks": [
+              {
+                "benchmark": "banknote_classification",
+                "exported": 0.8472727272727273,
+                "observed": 0.8472727272727273
+              },
+              {
+                "benchmark": "diabetes_regression",
+                "exported": 5757.9436447586595,
+                "observed": 5757.9436447586595
+              },
+              {
+                "benchmark": "digits_image",
+                "exported": 0.8027777777777778,
+                "observed": 0.8027777777777778
+              },
+              {
+                "benchmark": "shakespeare_byte_lm",
+                "exported": 118.82454247791601,
+                "observed": 118.82454247791601
+              }
+            ],
+            "receipt": {
+              "path": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/readiness-contract-20260916/tier_b_core_v2/topograph-replay.json",
+              "sha256": "f1d2691d87f61fcefc242020831db6f11365100a1540659ac3d2aedfe1bb5c62"
+            }
+          },
+          {
+            "engine": "stratograph",
+            "checks": [
+              {
+                "benchmark": "banknote_classification",
+                "exported": 0.9709090909090909,
+                "observed": 0.9709090909090909
+              },
+              {
+                "benchmark": "diabetes_regression",
+                "exported": 3899.37283003988,
+                "observed": 3899.3728300398802
+              },
+              {
+                "benchmark": "digits_image",
+                "exported": 0.6222222222222222,
+                "observed": 0.6222222222222222
+              },
+              {
+                "benchmark": "shakespeare_byte_lm",
+                "exported": 62.10885721470729,
+                "observed": 62.10885721470729
+              }
+            ],
+            "receipt": {
+              "path": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/readiness-contract-20260916/tier_b_core_v2/stratograph-replay.json",
+              "sha256": "ce7683eef89bdfc1b35f0305e3958642cd0c561aa192b915290a7b91304ae0a4"
+            }
+          },
+          {
+            "engine": "primordia",
+            "checks": [
+              {
+                "benchmark": "banknote_classification",
+                "exported": 0.9236363636363636,
+                "observed": 0.9236363636363636
+              },
+              {
+                "benchmark": "diabetes_regression",
+                "exported": 4948.855990939165,
+                "observed": 4948.855990939164
+              },
+              {
+                "benchmark": "digits_image",
+                "exported": 0.6972222222222222,
+                "observed": 0.6972222222222222
+              },
+              {
+                "benchmark": "shakespeare_byte_lm",
+                "exported": 39.05782944087598,
+                "observed": 39.05782944087598
+              }
+            ],
+            "receipt": {
+              "path": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914/.artifacts/readiness-contract-20260916/tier_b_core_v2/primordia-replay.json",
+              "sha256": "eb1016e432b8cccb1ea99f6f2bbedd2e5e0bc9ed8e0fb4230e2e785c6e926910"
+            }
+          }
+        ]
+      },
+      {
+        "label": "after-core",
+        "pack": "tier_b_core_v2",
+        "budget": 16,
+        "seed": 1411,
+        "campaign": {
+          "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/tier_b_core_v2/campaign/campaign.json",
+          "sha256": "e8d5a7751fee0fbefb535967fc845beeee944980be1f941805f38aa92d31191b"
+        },
+        "runs": [
+          {
+            "system": "primordia",
+            "run_id": "primordia_20260916T085200_d4a7488a1a",
+            "producer_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/tier_b_core_v2/campaign/runs/tier_b_core_v2_b16_s1411_primordia/primordia_20260916T085200_d4a7488a1a/symbiosis/manifest.json",
+              "sha256": "132e9fce85a6b84a0f1d4ee6ff7ef209ca32b041d5f5612617f3262161b90fe5"
+            }
+          },
+          {
+            "system": "topograph",
+            "run_id": "topograph_20260916T085136_bed1f9c8df",
+            "producer_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/tier_b_core_v2/campaign/runs/tier_b_core_v2_b16_s1411_topograph/topograph_20260916T085136_bed1f9c8df/symbiosis/manifest.json",
+              "sha256": "e2e79919eff2f39892552e9bed6885f4e9562e32414d19de4b1a1c996a5558a7"
+            }
+          },
+          {
+            "system": "stratograph",
+            "run_id": "stratograph_20260916T085148_5ea2ace251",
+            "producer_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/tier_b_core_v2/campaign/runs/tier_b_core_v2_b16_s1411_stratograph/stratograph_20260916T085148_5ea2ace251/symbiosis/manifest.json",
+              "sha256": "79331323fc0696eef6578fcd41df079b846608c871f4cfdf5325edce3e99bab5"
+            }
+          },
+          {
+            "system": "prism",
+            "run_id": "prism_20260916T085125_ba547fad87",
+            "producer_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/tier_b_core_v2/campaign/runs/tier_b_core_v2_b16_s1411_prism/prism_20260916T085125_ba547fad87/symbiosis/manifest.json",
+              "sha256": "ea0d91631756e37053c760f3da931d4564206efcf12842546910ffd0c04db086"
+            }
+          },
+          {
+            "system": "contenders",
+            "run_id": "contenders_20260916T085052_19f974badffd",
+            "producer_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/tier_b_core_v2/campaign/runs/tier_b_core_v2_b16_s1411_contenders/contenders_20260916T085052_19f974badffd/symbiosis/manifest.json",
+              "sha256": "c4315b4a0009b55f733bebe059027f7645c73e1c50dc69e619d607a760d94419"
+            }
+          }
+        ],
+        "replays": [
+          {
+            "engine": "prism",
+            "checks": [
+              {
+                "benchmark": "banknote_classification",
+                "exported": 0.9163636363636364,
+                "observed": 0.9163636363636364
+              },
+              {
+                "benchmark": "diabetes_regression",
+                "exported": 5091.792187676828,
+                "observed": 5091.792187676828
+              },
+              {
+                "benchmark": "digits_image",
+                "exported": 0.40555555555555556,
+                "observed": 0.40555555555555556
+              },
+              {
+                "benchmark": "shakespeare_byte_lm",
+                "exported": 98.51436070819591,
+                "observed": 98.51436070819591
+              }
+            ],
+            "receipt": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/tier_b_core_v2/prism-replay.json",
+              "sha256": "c81dd3ed33f9d5076d031209af7e52463b560831e17224356ed538757254098f"
+            }
+          },
+          {
+            "engine": "topograph",
+            "checks": [
+              {
+                "benchmark": "banknote_classification",
+                "exported": 0.8472727272727273,
+                "observed": 0.8472727272727273
+              },
+              {
+                "benchmark": "diabetes_regression",
+                "exported": 5757.9436447586595,
+                "observed": 5757.9436447586595
+              },
+              {
+                "benchmark": "digits_image",
+                "exported": 0.8027777777777778,
+                "observed": 0.8027777777777778
+              },
+              {
+                "benchmark": "shakespeare_byte_lm",
+                "exported": 118.82454247791601,
+                "observed": 118.82454247791601
+              }
+            ],
+            "receipt": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/tier_b_core_v2/topograph-replay.json",
+              "sha256": "e41e83b94a2605ec5c70cfa6c86dc7264731631e28b29dcb5295dff84c3acc0a"
+            }
+          },
+          {
+            "engine": "stratograph",
+            "checks": [
+              {
+                "benchmark": "banknote_classification",
+                "exported": 0.9709090909090909,
+                "observed": 0.9709090909090909
+              },
+              {
+                "benchmark": "diabetes_regression",
+                "exported": 3899.37283003988,
+                "observed": 3899.3728300398802
+              },
+              {
+                "benchmark": "digits_image",
+                "exported": 0.6222222222222222,
+                "observed": 0.6222222222222222
+              },
+              {
+                "benchmark": "shakespeare_byte_lm",
+                "exported": 62.10885721470729,
+                "observed": 62.10885721470729
+              }
+            ],
+            "receipt": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/tier_b_core_v2/stratograph-replay.json",
+              "sha256": "d0223aec3378ec3553d9cff9c105711f4aaffe758db56d5b96f3e85b1c60a08a"
+            }
+          },
+          {
+            "engine": "primordia",
+            "checks": [
+              {
+                "benchmark": "banknote_classification",
+                "exported": 0.9236363636363636,
+                "observed": 0.9236363636363636
+              },
+              {
+                "benchmark": "diabetes_regression",
+                "exported": 4948.855990939165,
+                "observed": 4948.855990939164
+              },
+              {
+                "benchmark": "digits_image",
+                "exported": 0.6972222222222222,
+                "observed": 0.6972222222222222
+              },
+              {
+                "benchmark": "shakespeare_byte_lm",
+                "exported": 39.05782944087598,
+                "observed": 39.05782944087598
+              }
+            ],
+            "receipt": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/tier_b_core_v2/primordia-replay.json",
+              "sha256": "3df615c47939e03feb89f4eff75c246d4bfb4638aaa092cede82640bb517e2e0"
+            }
+          }
+        ]
+      },
+      {
+        "label": "after-breadth",
+        "pack": "language_breadth_v1",
+        "budget": 16,
+        "seed": 1411,
+        "campaign": {
+          "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/language_breadth_v1/campaign/campaign.json",
+          "sha256": "b5fb228ee6a317b8f7d72f048d156e5c8268de98e594d4596fc81a26ba6ae895"
+        },
+        "runs": [
+          {
+            "system": "primordia",
+            "run_id": "primordia_20260916T085545_729dd9c964",
+            "producer_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/language_breadth_v1/campaign/runs/language_breadth_v1_b16_s1411_primordia/primordia_20260916T085545_729dd9c964/symbiosis/manifest.json",
+              "sha256": "347bb41ab0b5d49cc1b2ed959017472185890bd0f8d8fdd4a122619989051f46"
+            }
+          },
+          {
+            "system": "prism",
+            "run_id": "prism_20260916T085429_e277397f62",
+            "producer_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/language_breadth_v1/campaign/runs/language_breadth_v1_b16_s1411_prism/prism_20260916T085429_e277397f62/symbiosis/manifest.json",
+              "sha256": "2b5fd150f1e3400bb276231f022e36db239069d4d009eb449b795688f9109eff"
+            }
+          },
+          {
+            "system": "topograph",
+            "run_id": "topograph_20260916T085446_7837c6d1bf",
+            "producer_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/language_breadth_v1/campaign/runs/language_breadth_v1_b16_s1411_topograph/topograph_20260916T085446_7837c6d1bf/symbiosis/manifest.json",
+              "sha256": "c1ac207f355fd72d06acb2fa35f5c3646d34bd8b4b18fcf7e9e3bdf8d74a365f"
+            }
+          },
+          {
+            "system": "contenders",
+            "run_id": "contenders_20260916T085405_cf251395b0d2",
+            "producer_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/language_breadth_v1/campaign/runs/language_breadth_v1_b16_s1411_contenders/contenders_20260916T085405_cf251395b0d2/symbiosis/manifest.json",
+              "sha256": "9f257de126675041fd4c69a91c3e0b977d91321be222617bc77a798e1e901f1e"
+            }
+          },
+          {
+            "system": "stratograph",
+            "run_id": "stratograph_20260916T085519_95b4ac2649",
+            "producer_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+            "fits": 16,
+            "manifest": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/language_breadth_v1/campaign/runs/language_breadth_v1_b16_s1411_stratograph/stratograph_20260916T085519_95b4ac2649/symbiosis/manifest.json",
+              "sha256": "f468c4497bcb721532ad419a4908785e6444c5c177fcfbf3bd5a95c1ec8bc3e1"
+            }
+          }
+        ],
+        "replays": [
+          {
+            "engine": "prism",
+            "checks": [
+              {
+                "benchmark": "aesop_context64_lm",
+                "exported": 25.81818484216696,
+                "observed": 25.81818484216696
+              },
+              {
+                "benchmark": "delayed_copy_lm",
+                "exported": 16.613553049842086,
+                "observed": 16.613553049842086
+              },
+              {
+                "benchmark": "shakespeare_byte_lm",
+                "exported": 98.51436070819591,
+                "observed": 98.51436070819591
+              },
+              {
+                "benchmark": "shakespeare_context64_lm",
+                "exported": 36.63015474689812,
+                "observed": 36.63015474689812
+              }
+            ],
+            "receipt": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/language_breadth_v1/prism-replay.json",
+              "sha256": "5d7087aa3c26f60a7718fe69226aff5cea0def9f746064593d30b4e48a2b471f"
+            }
+          },
+          {
+            "engine": "topograph",
+            "checks": [
+              {
+                "benchmark": "aesop_context64_lm",
+                "exported": 27.637368995589046,
+                "observed": 27.637368995589046
+              },
+              {
+                "benchmark": "delayed_copy_lm",
+                "exported": 15.409683035995124,
+                "observed": 15.409683035995124
+              },
+              {
+                "benchmark": "shakespeare_byte_lm",
+                "exported": 117.66878418833093,
+                "observed": 117.66878418833093
+              },
+              {
+                "benchmark": "shakespeare_context64_lm",
+                "exported": 32.56432094155923,
+                "observed": 32.56432094155923
+              }
+            ],
+            "receipt": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/language_breadth_v1/topograph-replay.json",
+              "sha256": "75bc40713be232eab05be182c455c8bb1ab26432d06827b9581ac95a28f97d2c"
+            }
+          },
+          {
+            "engine": "stratograph",
+            "checks": [
+              {
+                "benchmark": "aesop_context64_lm",
+                "exported": 19.857800777348505,
+                "observed": 19.857800777348505
+              },
+              {
+                "benchmark": "delayed_copy_lm",
+                "exported": 15.39872752527981,
+                "observed": 15.39872752527981
+              },
+              {
+                "benchmark": "shakespeare_byte_lm",
+                "exported": 75.84472397325841,
+                "observed": 75.84472397325841
+              },
+              {
+                "benchmark": "shakespeare_context64_lm",
+                "exported": 25.26305211139586,
+                "observed": 25.26305211139586
+              }
+            ],
+            "receipt": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/language_breadth_v1/stratograph-replay.json",
+              "sha256": "c76430fb9b31a21dcb40ff4b10f2a745e0f5a22db4f458d3e1be93825fa2732b"
+            }
+          },
+          {
+            "engine": "primordia",
+            "checks": [
+              {
+                "benchmark": "aesop_context64_lm",
+                "exported": 25.002451374616285,
+                "observed": 25.002451374616285
+              },
+              {
+                "benchmark": "delayed_copy_lm",
+                "exported": 15.99433248577068,
+                "observed": 15.99433248577068
+              },
+              {
+                "benchmark": "shakespeare_byte_lm",
+                "exported": 34.00722298311759,
+                "observed": 34.00722298311759
+              },
+              {
+                "benchmark": "shakespeare_context64_lm",
+                "exported": 29.41763779552353,
+                "observed": 29.41763779552353
+              }
+            ],
+            "receipt": {
+              "path": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916/.artifacts/readiness-contract-20260916/language_breadth_v1/primordia-replay.json",
+              "sha256": "bebe657069aa3852640724cdbb1ab8ee29aa37079ad17b0b0fa332cbd7efe57d"
+            }
+          }
+        ]
+      }
+    ],
+    "replay_comparison": {
+      "method": "math.isclose",
+      "relative_tolerance": 1e-06,
+      "absolute_tolerance": 1e-08,
+      "scope": "Saved-winner replay only; before/after exported scores are exactly identical."
+    }
+  },
+  "local_governance_check": {
+    "status": "environment_blocked",
+    "reason": "System /usr/bin/git returns exit 69 because local Xcode license is unaccepted; required hosted governance checks must pass before merge. No bypass applied."
+  },
+  "registry_contract": {
+    "validation": {
+      "status": "passed",
+      "decision_category": "needs more seeds",
+      "run_ids": [
+        "contenders_20260916T084655_913a4242507e",
+        "contenders_20260916T085052_19f974badffd",
+        "primordia_20260916T084759_dc1e1f91f6",
+        "primordia_20260916T085200_d4a7488a1a",
+        "prism_20260916T084724_0ecc81ffd5",
+        "prism_20260916T085125_ba547fad87",
+        "stratograph_20260916T084748_4213da4713",
+        "stratograph_20260916T085148_5ea2ace251",
+        "topograph_20260916T084735_1de91bfd48",
+        "topograph_20260916T085136_bed1f9c8df"
+      ],
+      "case_ids": [
+        "tier_b_core_v2_b16_s1411"
+      ],
+      "target_engines": [
+        "primordia"
+      ],
+      "before_revision": "aabc7f913153535f1e53258221201f4e2abb7fef",
+      "after_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a"
+    },
+    "historical_rows_preserved": 38,
+    "new_runs": 10,
+    "new_fits": 160,
+    "replayed_native_winners": 32,
+    "analysis": {
+      "schema_version": 1,
+      "before": "readiness-before",
+      "after": "readiness-after",
+      "groups": [
+        {
+          "pack": "tier_b_core_v2",
+          "budget": 16,
+          "engine": "primordia",
+          "seeds": [
+            1411
+          ],
+          "benchmarks": [
+            "banknote_classification",
+            "diabetes_regression",
+            "digits_image",
+            "shakespeare_byte_lm"
+          ],
+          "n": 1,
+          "effect_mean": 0.0,
+          "bootstrap_ci95": null,
+          "standardized_effect": null,
+          "rank_biserial": null,
+          "bootstrap_method": "4096 percentile resamples of independent paired seed means; RNG seed 0",
+          "wilcoxon": {
+            "status": "insufficient_data",
+            "n": 1,
+            "reason": "requires at least six nonzero independent paired seeds"
+          },
+          "materiality": 0.01,
+          "statistical_label": "needs_more_runs",
+          "aggregation_label": "blocked",
+          "blockers": [
+            "at least 3 paired independent seeds required"
+          ],
+          "level": "L3",
+          "minimum_seeds": 3,
+          "ceiling_ties": 0,
+          "raw_deltas": [
+            {
+              "seed": 1411,
+              "benchmark": "banknote_classification",
+              "delta": 0.0
+            },
+            {
+              "seed": 1411,
+              "benchmark": "diabetes_regression",
+              "delta": -0.0
+            },
+            {
+              "seed": 1411,
+              "benchmark": "digits_image",
+              "delta": 0.0
+            },
+            {
+              "seed": 1411,
+              "benchmark": "shakespeare_byte_lm",
+              "delta": -0.0
+            }
+          ],
+          "seed_effects": [
+            0.0
+          ],
+          "runtime_tradeoffs": {
+            "complete": true,
+            "per_label": {
+              "readiness-after": {
+                "wall_clock": 8.767186,
+                "evals_per_second": 1.8249869456402543,
+                "seconds_per_success": 0.547949125
+              },
+              "readiness-before": {
+                "wall_clock": 8.730841,
+                "evals_per_second": 1.8325840546174188,
+                "seconds_per_success": 0.5456775625
+              }
+            },
+            "score_per_second": [
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "banknote_classification",
+                "value": 0.0862721101575393
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "banknote_classification",
+                "value": 0.10327767033282348
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "banknote_classification",
+                "value": 0.08959026824052158
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "banknote_classification",
+                "value": 0.1053515191346874
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "diabetes_regression",
+                "value": 676.3294662359225
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "diabetes_regression",
+                "value": 600.4541856580623
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "diabetes_regression",
+                "value": 564.4748487073464
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "diabetes_regression",
+                "value": 673.8843878667868
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "digits_image",
+                "value": 0.027564906991441342
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "digits_image",
+                "value": 0.06558546835894663
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "digits_image",
+                "value": 0.027248068980045465
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "digits_image",
+                "value": 0.07952634086036525
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "shakespeare_byte_lm",
+                "value": 23.19103490536129
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "shakespeare_byte_lm",
+                "value": 4.455001803415141
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "shakespeare_byte_lm",
+                "value": 26.71236420967806
+              },
+              {
+                "label": "readiness-after",
+                "run_id": "primordia_20260916T085200_d4a7488a1a",
+                "benchmark": "shakespeare_byte_lm",
+                "value": 23.4023101864941
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "banknote_classification",
+                "value": 0.08663124621827799
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "banknote_classification",
+                "value": 0.10370759763630392
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "banknote_classification",
+                "value": 0.08996321722667329
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "banknote_classification",
+                "value": 0.10579007951655099
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "diabetes_regression",
+                "value": 679.1449102979946
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "diabetes_regression",
+                "value": 602.9537738853296
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "diabetes_regression",
+                "value": 566.8246610995625
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "diabetes_regression",
+                "value": 676.689653485187
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "digits_image",
+                "value": 0.027679654991617265
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "digits_image",
+                "value": 0.06585848946281349
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "digits_image",
+                "value": 0.02736149803769063
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "digits_image",
+                "value": 0.07985739543558544
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "shakespeare_byte_lm",
+                "value": 23.287575223027748
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "shakespeare_byte_lm",
+                "value": 4.473547215082256
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "shakespeare_byte_lm",
+                "value": 26.823563219853686
+              },
+              {
+                "label": "readiness-before",
+                "run_id": "primordia_20260916T084759_dc1e1f91f6",
+                "benchmark": "shakespeare_byte_lm",
+                "value": 23.499730007073598
+              }
+            ],
+            "family_allocation": [
+              {
+                "label": "readiness-after",
+                "family": "primitive",
+                "seconds": 0.7577195829944685
+              },
+              {
+                "label": "readiness-before",
+                "family": "primitive",
+                "seconds": 0.7505181650922168
+              }
+            ],
+            "note": "family allocation covers exported outcomes; raw lower-is-better score/time is not utility"
+          },
+          "portability_only": false,
+          "excluded_benchmarks": [],
+          "uncertainty_reason": null,
+          "friedman": {
+            "status": "insufficient_data",
+            "reason": "paired before/after has only two systems"
+          },
+          "effect_scale": "symmetric relative difference, direction-aware, equal benchmark weight"
+        }
+      ],
+      "request": {
+        "schema_version": 1,
+        "policy": "paired-seed-relative-v1",
+        "before": "readiness-before",
+        "after": "readiness-after",
+        "before_revision": "aabc7f913153535f1e53258221201f4e2abb7fef",
+        "after_revision": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+        "panels": [
+          {
+            "pack": "tier_b_core_v2",
+            "budget": 16,
+            "engine": "primordia",
+            "benchmarks": [
+              "banknote_classification",
+              "digits_image",
+              "diabetes_regression",
+              "shakespeare_byte_lm"
+            ],
+            "seeds": [
+              1411
+            ]
+          }
+        ],
+        "materiality": 0.01,
+        "claim_scope": "contract_validation"
+      },
+      "decision_category": "needs more seeds",
+      "diagnostics": {
+        "transfer_proof": {
+          "status": "not_applicable",
+          "native_claim_ready": false,
+          "sources": []
+        },
+        "lm_flatline": [
+          {
+            "label": "readiness-after",
+            "engine": "contenders",
+            "benchmark": "shakespeare_byte_lm",
+            "seed": 1411,
+            "budgets": [
+              16
+            ],
+            "status": "insufficient_data"
+          },
+          {
+            "label": "readiness-after",
+            "engine": "primordia",
+            "benchmark": "shakespeare_byte_lm",
+            "seed": 1411,
+            "budgets": [
+              16
+            ],
+            "status": "insufficient_data"
+          },
+          {
+            "label": "readiness-after",
+            "engine": "prism",
+            "benchmark": "shakespeare_byte_lm",
+            "seed": 1411,
+            "budgets": [
+              16
+            ],
+            "status": "insufficient_data"
+          },
+          {
+            "label": "readiness-after",
+            "engine": "stratograph",
+            "benchmark": "shakespeare_byte_lm",
+            "seed": 1411,
+            "budgets": [
+              16
+            ],
+            "status": "insufficient_data"
+          },
+          {
+            "label": "readiness-after",
+            "engine": "topograph",
+            "benchmark": "shakespeare_byte_lm",
+            "seed": 1411,
+            "budgets": [
+              16
+            ],
+            "status": "insufficient_data"
+          },
+          {
+            "label": "readiness-before",
+            "engine": "contenders",
+            "benchmark": "shakespeare_byte_lm",
+            "seed": 1411,
+            "budgets": [
+              16
+            ],
+            "status": "insufficient_data"
+          },
+          {
+            "label": "readiness-before",
+            "engine": "primordia",
+            "benchmark": "shakespeare_byte_lm",
+            "seed": 1411,
+            "budgets": [
+              16
+            ],
+            "status": "insufficient_data"
+          },
+          {
+            "label": "readiness-before",
+            "engine": "prism",
+            "benchmark": "shakespeare_byte_lm",
+            "seed": 1411,
+            "budgets": [
+              16
+            ],
+            "status": "insufficient_data"
+          },
+          {
+            "label": "readiness-before",
+            "engine": "stratograph",
+            "benchmark": "shakespeare_byte_lm",
+            "seed": 1411,
+            "budgets": [
+              16
+            ],
+            "status": "insufficient_data"
+          },
+          {
+            "label": "readiness-before",
+            "engine": "topograph",
+            "benchmark": "shakespeare_byte_lm",
+            "seed": 1411,
+            "budgets": [
+              16
+            ],
+            "status": "insufficient_data"
+          }
+        ],
+        "engine_roles": [
+          {
+            "engine": "primordia",
+            "role": "watch",
+            "status": "insufficient_data",
+            "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+          },
+          {
+            "engine": "prism",
+            "role": "watch",
+            "status": "insufficient_data",
+            "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+          },
+          {
+            "engine": "stratograph",
+            "role": "watch",
+            "status": "insufficient_data",
+            "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+          },
+          {
+            "engine": "topograph",
+            "role": "watch",
+            "status": "insufficient_data",
+            "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+          }
+        ]
+      },
+      "limitations": [
+        "Bootstrap uncertainty at few seeds is descriptive; likely_gain is not promotion.",
+        "Source revision is the declared intervention; observational comparisons do not prove causality."
+      ]
+    },
+    "before_source": "aabc7f913153535f1e53258221201f4e2abb7fef",
+    "after_source": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a"
+  },
+  "registry_transport": "evidence/source_bundle.json"
+}

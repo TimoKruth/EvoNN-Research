@@ -92,6 +92,12 @@ The [Primordia README](EvoNN-Primordia/README.md) documents its v2 genome and
 `legacy_v1` control. All completed measurements below retain their frozen legacy
 producer; the new policy has no demonstrated quality/runtime gain yet.
 
+Primordia's owned loader supports the experimental language breadth pack,
+including pinned Aesop byte ranges and seeded delayed-copy examples. It applies
+the same source checksums, train/validation splits and cache verification as the
+shared loader. This is dataset-runtime support, not scientific qualification;
+historical failed breadth runs and their frozen producer remain unchanged.
+
 The guardian for that completed confirmation is in terminal `complete` state.
 The [all-engine comparison](governance/all-engines-high-budget-20260910.json)
 completed on **2026-09-10**, with final exports verified at **23:18 CEST** and
@@ -274,6 +280,23 @@ memory task has independently generated examples and a seeded 80/20 split.
 These tasks are experimental, **not admitted as full-fidelity local-safe**;
 their runtime and baseline adequacy still require qualification. The existing
 tabular/image pack and all frozen definitions remain available unchanged.
+
+The [September 16 readiness audit](reports/readiness-20260916/report.md) records
+the loader repair, retained-baseline generalization gaps and checkpoint replay
+profile. To repeat either read-only audit, use the frozen producer's Python
+environment and a fresh output path:
+
+```sh
+<producer>/.venv/bin/python scripts/research/audit_language_baselines.py \
+  <producer>/.artifacts/qualification <new-output>/language-baselines.json
+<producer>/.venv/bin/python EvoNN-Shared/tests/profile_checkpoint_read.py \
+  <completed-run>/checkpoints <new-output>/checkpoint-profile.json
+```
+
+The model audit deserializes retained local models: use only trusted run
+artifacts. Neither audit fits models or evaluates protected test data. The
+checkpoint profiler adds instrumentation overhead and cannot measure an
+optimization speedup by itself.
 
 Campaigns can also freeze `primordia_research` with `search_policy`, `max_width`
 and `max_depth`. New plans record its defaults explicitly and require the full

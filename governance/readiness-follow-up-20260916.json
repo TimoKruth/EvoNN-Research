@@ -1,0 +1,148 @@
+{
+  "status": "prepared_gated_not_launched",
+  "historical_protocol": {
+    "path": "/Users/timokruth/Projekte/EvoNN/governance/next-research-study-20260914.json",
+    "sha256": "3ad93796cb5f38dea2a2d08ddca12f367510744d51542a57b51c919c5025b65e"
+  },
+  "systems": [
+    "prism",
+    "topograph",
+    "stratograph",
+    "primordia",
+    "contenders"
+  ],
+  "preserve_historical_comparison": true,
+  "protected_test_access": false,
+  "work_packages": [
+    {
+      "id": "loader_contract",
+      "status": "local_tests_and_all_runtime_contracts_passed_hosted_checks_pending",
+      "requirements": [
+        "32 Primordia tests pass",
+        "Exact arrays and provenance for every breadth task",
+        "All-five-system core before/after and repaired breadth contract at budget 16 seed 1411",
+        "Native winner replay",
+        "Required hosted checks and merge before any new scientific producer"
+      ]
+    },
+    {
+      "id": "baseline_adequacy",
+      "status": "audit_complete_adequacy_open",
+      "implementation_required": [
+        "Add versioned per-family baseline hyperparameters to campaign identity, dispatch and export; do not overload native epochs",
+        "Retain current enhanced-pool configuration as an explicit reference",
+        "Record actual epoch/update counts and model-selection rule"
+      ],
+      "proposed_diagnostic": {
+        "pack": "language_breadth_v1",
+        "budget": 64,
+        "seeds": [
+          1421,
+          1422
+        ],
+        "arms": [
+          {
+            "id": "reference",
+            "transformer_epochs": 20,
+            "ngram_alpha": 1.0
+          },
+          {
+            "id": "transformer_2_epochs",
+            "transformer_epochs": 2,
+            "ngram_alpha": 1.0
+          },
+          {
+            "id": "transformer_5_epochs",
+            "transformer_epochs": 5,
+            "ngram_alpha": 1.0
+          },
+          {
+            "id": "transformer_10_epochs",
+            "transformer_epochs": 10,
+            "ngram_alpha": 1.0
+          },
+          {
+            "id": "ngram_alpha_0_1",
+            "transformer_epochs": 20,
+            "ngram_alpha": 0.1
+          },
+          {
+            "id": "ngram_alpha_0_01",
+            "transformer_epochs": 20,
+            "ngram_alpha": 0.01
+          }
+        ],
+        "all_systems_every_arm": true,
+        "runs": 60,
+        "fit_attempt_ceiling": 3840,
+        "enhanced_pool": true,
+        "native_epochs": 12,
+        "interpretation": "Descriptive adequacy screening; unchanged native controls are not independent extra seeds. No significance or architecture claim. No optimal-epoch claim from retained final models.",
+        "launch_gates": [
+          "Validate seed disjointness again at manifest freeze",
+          "Implement and qualify explicit baseline parameter controls; no executable specs exist yet",
+          "Pre-register baseline choice and coverage rules before screening",
+          "Merge reviewed runtime and freeze a new source/dependency/data producer"
+        ]
+      }
+    },
+    {
+      "id": "checkpoint_optimization",
+      "status": "profile_complete_implementation_open",
+      "requirements": [
+        "Versioned optimization preserving all integrity guarantees",
+        "Exact state, fit ledger and winner equivalence at 16/128/256 committed attempts",
+        "Corruption and process-death tests",
+        "Paired profiled/unprofiled all-system checks with disjoint phase timers",
+        "Record overhead and full wall time separately from model training time"
+      ]
+    },
+    {
+      "id": "mechanisms_and_confirmation",
+      "status": "gated",
+      "requirements": [
+        "Requalify corrected source separately; do not relabel historical 28/30 as complete",
+        "Close Q-core timing/recovery and policy-aware analysis gates before stage A",
+        "Preserve all-five-system roster in every arm",
+        "Freeze nomination before inspecting confirmation seeds",
+        "Keep stages C and D blocked on measured-compute contract and breadth adequacy respectively"
+      ],
+      "existing_stage_A": {
+        "pack": "tier_b_core_v2",
+        "budget": 128,
+        "seeds": [
+          1011,
+          1012,
+          1013,
+          1014,
+          1015,
+          1016
+        ],
+        "arms": 11,
+        "runs": 330,
+        "fit_attempt_ceiling": 42240
+      },
+      "existing_stage_B": {
+        "pack": "tier_b_core_v2",
+        "budget": 128,
+        "seeds": [
+          1101,
+          1102,
+          1103,
+          1104,
+          1105,
+          1106,
+          1107,
+          1108,
+          1109,
+          1110,
+          1111,
+          1112
+        ],
+        "maximum_arms": 2,
+        "maximum_runs": 120,
+        "maximum_fit_attempt_ceiling": 15360
+      }
+    }
+  ]
+}
