@@ -54,6 +54,8 @@ class CampaignSpec(BaseModel):
     prism_research: PrismResearchPolicy | None = None
     primordia_research: PrimordiaResearchPolicy | None = None
     topograph_variant: Literal["legacy", "mechanics", "training", "archive", "broad", "open"] | None = None
+    contender_pool: Literal["lm_screen_v1_reference", "lm_screen_v1_epochs2", "lm_screen_v1_epochs5",
+                            "lm_screen_v1_epochs10", "lm_screen_v1_alpha01", "lm_screen_v1_alpha001"] | None = None
     enhanced: bool = False
     timeout: float = Field(default=300.0, gt=0, le=1740)
     fit_timeout: float = Field(default=90.0, gt=0, le=1800)
@@ -62,6 +64,11 @@ class CampaignSpec(BaseModel):
 
     @model_validator(mode="after")
     def valid(self):
+        if self.contender_pool is not None:
+            if set(self.systems) != set(SYSTEMS) or not self.enhanced:
+                raise ValueError("baseline screening requires every engine and enhanced Contenders")
+            if self.pack != "language_breadth_v1" or any(b < 16 or b % 16 for b in self.budgets):
+                raise ValueError("language baseline screening requires breadth and all four families per task")
         if self.primordia_research is not None and set(self.systems) != set(SYSTEMS):
             raise ValueError("Primordia research campaigns require every engine and Contenders")
         if self.topograph_variant is not None and set(self.systems) != set(SYSTEMS):
@@ -92,6 +99,12 @@ class CampaignSpec(BaseModel):
                     budget // len(pack.benchmarks) < len(get_benchmark(name).required_contenders) for name in pack.benchmarks):
                 raise ValueError("campaign budget cannot cover the required contender floor")
         return self
+
+
+def contender_pool_path(spec):
+    """Select only a versioned, repository-owned pool; its bytes are source-bound."""
+    name = "pools.yaml" if spec.contender_pool is None else "research_pools/" + spec.contender_pool + ".yaml"
+    return "EvoNN-Contenders/src/evonn_contenders/" + name
 
 
 def sha(value):
@@ -161,6 +174,10 @@ def preflight(root):
     spec = CampaignSpec.model_validate(manifest["spec"])
     if identity() != manifest["identity"]:
         raise ValueError("campaign source, environment, host or catalog drift")
+    if spec.contender_pool is not None:
+        # This is a mandatory family in this experiment, even though the generic CLI treats it as optional.
+        subprocess.run([sys.executable, "-c", "import torch; from torch import nn; nn.TransformerEncoderLayer(64, 4)"],
+                       check=True, capture_output=True, timeout=30)
     if spec.backend == "mlx_native":
         # Verify availability through Shared backend discovery, without fitting.
         if platform.system() != "Darwin" or platform.machine() != "arm64":
@@ -306,7 +323,7 @@ def match_config(config, manifest, case, system):
     elif config["fit_timeout_seconds"] != spec.fit_timeout or config["enhanced"] != spec.enhanced:
         raise ValueError("campaign contender settings mismatch")
     if system == "contenders":
-        pool_path = "EvoNN-Contenders/src/evonn_contenders/pools.yaml"
+        pool_path = contender_pool_path(spec)
         expected_sha = manifest["identity"]["data_files"][pool_path]
         payload = read_verified_artifact(ROOT, ArtifactReference(path=pool_path, sha256=expected_sha))
         if config["pool_sha256"] != expected_sha or config["pools"] != yaml.safe_load(payload):
@@ -353,10 +370,19 @@ def adopted(root, manifest, case, system):
     acceptance = evaluate_case(case, [bundle], no_contenders=system != "contenders")
     if acceptance["blockers"]:
         raise ValueError("campaign export incomplete or invalid: " + "; ".join(acceptance["blockers"]))
-    audit = benchmark_audit(case.pack, [bundle])
+    audit = benchmark_audit(case.pack, [bundle], parameter_screening=spec.contender_pool is not None)
     # A single engine has no floor; contender admission itself must be valid.
     if system == "contenders" and audit["blockers"]:
         raise ValueError("campaign contender audit failed: " + "; ".join(audit["blockers"]))
+    if system == "contenders" and spec.contender_pool is not None:
+        attempts = artifact_json(bundle, "attempts.json")["attempts"]
+        for benchmark in load_parity_pack(case.pack).benchmarks:
+            for family in ("unigram_lm", "bigram_lm", "trigram_lm", "transformer_lm_tiny"):
+                expected = case.budget // 16
+                successful = [a for a in attempts if a["benchmark_id"] == benchmark
+                              and a["contender_id"] == family and a["status"] == "ok"]
+                if len(successful) != expected:
+                    raise ValueError("baseline screening family coverage incomplete")
     references = [ArtifactReference(path=name, sha256=hashlib.sha256(read_document(bundle.root, name)).hexdigest()).model_dump(mode="json")
                   for name in ("manifest.json", "results.json", "summary.json")]
     return run, {"system": system, "run_id": bundle.manifest.run_id, "export": str(bundle.root.relative_to(root)), "documents": references}
@@ -410,6 +436,8 @@ def run_campaign(root, *, session_timeout=1800, max_runs=None):
                 command += ["--backend", spec.backend, "--epochs", str(spec.epochs)]
             elif spec.enhanced:
                 command.append("--enhanced")
+            if system == "contenders" and spec.contender_pool is not None:
+                command += ["--pools", str(ROOT / contender_pool_path(spec))]
             if system == "stratograph" and spec.stratograph_research is not None:
                 command += ["--research", json.dumps(spec.stratograph_research.model_dump(mode="json"), sort_keys=True)]
             if system == "topograph" and spec.topograph_variant is not None:

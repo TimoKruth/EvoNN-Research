@@ -1,0 +1,117 @@
+"""Baseline screening cannot inherit floor trust or silently lose a family."""
+
+from copy import deepcopy
+
+import pytest
+
+from evonn_compare import campaign as c
+from evonn_compare.audit import benchmark_audit, reviewed_ngram_parameters
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("systems", ["contenders"]),
+        ("enhanced", False),
+        ("pack", "tier_b_core_v2"),
+        ("budgets", [12]),
+        ("budgets", [20]),
+        ("contender_pool", "../../pools"),
+    ],
+)
+def test_screen_rejects_invalid_scope(field, value):
+    settings = dict(pack="language_breadth_v1", budgets=[64], enhanced=True, contender_pool="lm_screen_v1_reference")
+    settings[field] = value
+    with pytest.raises(ValueError):
+        c.CampaignSpec(**settings)
+
+
+def test_historical_campaign_uses_unchanged_pool():
+    assert c.contender_pool_path(c.CampaignSpec()) == "EvoNN-Contenders/src/evonn_contenders/pools.yaml"
+    assert not reviewed_ngram_parameters("bigram_lm", {"alpha": 0.1})
+    with pytest.raises(ValueError, match="descriptive"):
+        benchmark_audit("language_breadth_v1", [], decision_grade=True, parameter_screening=True)
+
+
+@pytest.mark.parametrize(
+    "suffix,epochs,alpha",
+    [
+        ("reference", 20, 1.0),
+        ("epochs2", 2, 1.0),
+        ("epochs5", 5, 1.0),
+        ("epochs10", 10, 1.0),
+        ("alpha01", 20, 0.1),
+        ("alpha001", 20, 0.01),
+    ],
+)
+def test_pool_changes_only_declared_baseline_parameters(suffix, epochs, alpha):
+    spec = c.CampaignSpec(
+        pack="language_breadth_v1", budgets=[64], enhanced=True, contender_pool="lm_screen_v1_" + suffix
+    )
+    original = c.yaml.safe_load((c.ROOT / c.contender_pool_path(c.CampaignSpec())).read_bytes())
+    actual = c.yaml.safe_load((c.ROOT / c.contender_pool_path(spec)).read_bytes())
+    expected = deepcopy(original)
+    expected["models"]["transformer_lm_tiny"]["parameters"]["epochs"] = epochs
+    for family in ("unigram_lm", "bigram_lm", "trigram_lm"):
+        expected["models"][family]["parameters"]["alpha"] = alpha
+    assert actual == expected
+    identity = {
+        "commit": "a" * 40,
+        "source_sha256": "b" * 64,
+        "versions": c.versions(),
+        "data_files": {
+            c.contender_pool_path(spec): c.hashlib.sha256(
+                (c.ROOT / c.contender_pool_path(spec)).read_bytes()
+            ).hexdigest()
+        },
+    }
+    manifest = {"spec": spec.model_dump(mode="json"), "identity": identity, "cache": "/pinned/cache"}
+    config = {
+        "git_commit": identity["commit"],
+        "code_dirty": False,
+        "dataset_versions": {
+            name: identity["versions"][name] for name in ("numpy", "scipy", "scikit-learn", "pandas", "openml")
+        },
+        "fit_timeout_seconds": 90.0,
+        "enhanced": True,
+        "pools": actual,
+        "pool_sha256": identity["data_files"][c.contender_pool_path(spec)],
+    }
+    case = c.Case(spec.pack, 64, 42)
+    c.match_config(config, manifest, case, "contenders")
+    with pytest.raises(ValueError, match="pool mismatch"):
+        c.match_config({**config, "pool_sha256": "0" * 64}, manifest, case, "contenders")
+    altered = deepcopy(config)
+    altered["pools"]["models"]["transformer_lm_tiny"]["parameters"]["epochs"] = 99
+    with pytest.raises(ValueError, match="pool mismatch"):
+        c.match_config(altered, manifest, case, "contenders")
+
+
+def test_study_roster_coverage_and_nomination_are_preregistered():
+    from evonn_compare.baseline_study import ARMS, matrix, nominate
+
+    rows = matrix()
+    assert len(rows) == 12
+    assert sum(len(row["spec"]["systems"]) for row in rows) == 60
+    assert sum(row["spec"]["budgets"][0] * 5 for row in rows) == 3840
+    assert {row["seed"] for row in rows} == {1421, 1422}
+    assert {row["seed"] for row in matrix(qualification=True)} == {1431}
+    baselines = []
+    for arm in ARMS:
+        for seed in [1421, 1422]:
+            for task in ["real1", "real2", "real3", "delayed_copy_lm"]:
+                for family in ["transformer_lm_tiny", "bigram_lm"]:
+                    value = 100.0
+                    if arm == "epochs2" and family == "transformer_lm_tiny":
+                        value = 80.0 if task != "delayed_copy_lm" else 111.0
+                    if arm == "epochs5" and family == "transformer_lm_tiny":
+                        value = 90.0
+                    if arm == "alpha01" and family == "bigram_lm":
+                        value = 97.0
+                    baselines.append(dict(arm=arm, seed=seed, benchmark=task, family=family, value=value))
+    result = nominate(baselines)
+    assert result["transformer"]["nomination"] == "epochs5"  # best real score fails control guard
+    assert result["ngram"]["nomination"] == "alpha01"
+    for row in baselines:
+        row["value"] = 100.0
+    assert all(v["nomination"] == "reference" for v in nominate(baselines).values())

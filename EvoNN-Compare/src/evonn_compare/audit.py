@@ -62,7 +62,10 @@ def benchmark_audit(
     dashboard_present: bool = False,
     output_levels: dict | None = None,
     cache_roots: dict | None = None,
+    parameter_screening: bool = False,
 ) -> dict:
+    if parameter_screening and (decision_grade or pack_name != "language_breadth_v1"):
+        raise ValueError("parameter screening is descriptive language breadth only")
     pack = load_parity_pack(pack_name)
     definitions = [get_benchmark(name) for name in pack.benchmarks]
     blockers, warnings, runs = [], [], []
@@ -172,7 +175,12 @@ def benchmark_audit(
                     and name != "hist_gb_leaf63"
                     and not reviewed_ngram_parameters(model["model"], parameters)
                 ):
-                    state["weak"].append(f"{name}: custom parameters require independent adequacy assessment")
+                    if (parameter_screening and model["model"] in NGRAM_MODELS
+                            and set(parameters) == {"alpha"} and type(parameters["alpha"]) in {int, float}
+                            and parameters["alpha"] in (0.1, 0.01)):
+                        warnings.append(f"{name}: experimental smoothing; independent adequacy assessment pending")
+                    else:
+                        state["weak"].append(f"{name}: custom parameters require independent adequacy assessment")
                 for parameter, minimum in (("n_estimators", 64), ("max_iter", 100)):
                     if parameter in parameters and parameters[parameter] < minimum:
                         state["weak"].append(f"{name}: reduced {parameter}")
@@ -282,6 +290,8 @@ def benchmark_audit(
             blockers.append(f"{definition.id}: weakened floor: {', '.join(state['weak'])}")
         elif missing:
             label = "weak_floor"
+        elif parameter_screening:
+            label = "experimental_unqualified"
         elif state["enhanced"]:
             # Enhanced fit alone is not reproducibility proof of a strong floor.
             label = (
@@ -336,7 +346,7 @@ def benchmark_audit(
     return {
         "schema_version": "1.0.0",
         "pack": pack_name,
-        "scope": "decision_grade" if decision_grade else "phase1_contract",
+        "scope": "parameter_screening" if parameter_screening else ("decision_grade" if decision_grade else "phase1_contract"),
         "status": "blocked" if blockers else "passed",
         "blocker_count": len(set(blockers)),
         "blockers": sorted(set(blockers)),
