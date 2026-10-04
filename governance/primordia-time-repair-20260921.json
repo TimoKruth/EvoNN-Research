@@ -1,0 +1,44 @@
+{
+  "schema_version": "evonn.primordia-time-repair/v1",
+  "recorded_at": "2026-09-21T15:06:26.013171+00:00",
+  "status": "running",
+  "cause": "Original cumulative wall time exhausted at 1740.048 seconds after 248 successful attempts; saved clock correctly prevents renewed allowance.",
+  "original_study": "/Users/timokruth/Projekte/EvoNN/.artifacts/primordia-only-20260921/study",
+  "continuation": "/Users/timokruth/Projekte/EvoNN/.artifacts/primordia-only-20260921/amendment-20260921/study-v2",
+  "producer_commit": "38c62e269977efc45a684e912ade3f97071d65c1",
+  "preserved_qualification_runs": 26,
+  "preserved_comparison_runs": 22,
+  "retained_exhausted_attempts": 248,
+  "cumulative_safety_seconds": 36000,
+  "invocation_seconds": 1740,
+  "fit_timeout_seconds": 120,
+  "verification": {
+    "frozen_tests_passed": 102,
+    "automatic_session_pause_and_resume": true,
+    "replay_passed": true,
+    "import_boundaries": "passed",
+    "log_sha256": "b7c034fbd1f1792e69fe53f4e241ea1604b84a0cacd30d492ccf1889a53b34b0",
+    "initial_frozen_validation_log": "frozen-validation.initial.log",
+    "historical_verifier_regression_log": "frozen-validation.log",
+    "targeted_dispatch_tests_passed": 34,
+    "targeted_dispatch_log_sha256": "dc59e823d6783b220e527289c74804c077380da9a199eac8c7ba42e35816000b"
+  },
+  "source_changes": [
+    "Primordia total-time ceiling and pre-fit session boundary",
+    "Campaign bounded dispatch and checkpoint progress recovery",
+    "Explicit continuation provenance, inheritance, cost accounting and paired reporting"
+  ],
+  "amendment_sha256": "cbb5a36317edb70065a1eb4eec063fca844643b805f9e3a687cb7cc659bc763c",
+  "verified_at": "2026-09-21T15:34:42.185831+00:00",
+  "active": {
+    "arm": "full_steady",
+    "campaign": "comparison/full_steady/language_breadth_v1",
+    "pack": "language_breadth_v1",
+    "phase": "comparison",
+    "seed": 23101
+  },
+  "completed_attempt_statuses": {
+    "ok": 9
+  },
+  "controller_pid": 37914
+}

@@ -1,0 +1,20 @@
+........................................................................ [ 56%]
+.........................................F..............                 [100%]
+=================================== FAILURES ===================================
+_____________ test_single_engine_exception_is_explicit_and_narrow ______________
+
+    def test_single_engine_exception_is_explicit_and_narrow():
+        with pytest.raises(ValueError, match='every engine'):
+            c.CampaignSpec(systems=['primordia'], primordia_research=PrimordiaResearchPolicy())
+        for change in (dict(systems=['prism']), dict(primordia_research=None), dict(enhanced=True),
+                       dict(topograph_variant='next'), dict(systems=list(c.SYSTEMS))):
+>           with pytest.raises(ValueError, match='variant scope'):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AssertionError: Regex pattern did not match.
+E             Expected regex: 'variant scope'
+E             Actual message: "1 validation error for CampaignSpec\ntopograph_variant\n  Input should be 'legacy', 'mechanics', 'training', 'archive', 'broad' or 'open' [type=literal_error, input_value='next', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error"
+
+EvoNN-Compare/tests/test_primordia_study.py:19: AssertionError
+=========================== short test summary info ============================
+FAILED EvoNN-Compare/tests/test_primordia_study.py::test_single_engine_exception_is_explicit_and_narrow
+1 failed, 127 passed in 96.43s (0:01:36)

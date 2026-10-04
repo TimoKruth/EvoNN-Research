@@ -82,8 +82,9 @@ def test_new_plan_freezes_primordia_defaults(tmp_path, monkeypatch):
     assert spec.primordia_research is None
 
 
-def test_dispatch_roundtrips_explicit_primordia_controls(tmp_path, monkeypatch):
-    policy = PrimordiaResearchPolicy(search_policy='legacy_v1', max_width=24, max_depth=4)
+@pytest.mark.parametrize('declared', [True, False])
+def test_dispatch_roundtrips_explicit_primordia_controls(tmp_path, monkeypatch, declared):
+    policy = PrimordiaResearchPolicy(search_policy='legacy_v1', max_width=24, max_depth=4) if declared else None
     spec = c.CampaignSpec(seeds=[42], primordia_research=policy)
     manifest = dict(schema_version='evonn.campaign/v1', spec=spec.model_dump(mode='json'),
                     identity={}, cache='/cache', datasets=[], workspace=str(tmp_path))
@@ -97,9 +98,52 @@ def test_dispatch_roundtrips_explicit_primordia_controls(tmp_path, monkeypatch):
     def dispatch(command, *args, **kwargs):
         event = json.loads(Path(command[-2]).read_bytes())
         argv = event['details']['command']
-        for key, value in policy.model_dump().items():
+        for key, value in (policy or PrimordiaResearchPolicy()).model_dump().items():
             assert argv[argv.index('--' + key.replace('_', '-')) + 1] == str(value)
         finished[event['slot']] = dict(system='primordia', run_id='primordia', export='fixture', documents=[])
     monkeypatch.setattr(c, '_bounded_process', dispatch)
     monkeypatch.setattr(c, 'workspace_report', lambda root: {})
     assert c.run_campaign(tmp_path, max_runs=1)['new_runs'] == 1
+
+
+@pytest.mark.parametrize('change', [dict(architecture_policy='attention_v3'),
+    dict(architecture_policy='conv_pool_v3'), dict(optimization_policy='stable_v3'),
+    dict(optimization_policy='steady_v3'), dict(proposal_policy='progress_v3'),
+    dict(inheritance_policy='disabled')])
+def test_research_v3_controls_bind_adoption_and_fingerprint(binding, monkeypatch, change):
+    manifest, case, config = binding
+    bundle = SimpleNamespace(manifest=SimpleNamespace(system=SimpleNamespace(value='primordia'),
+        runtime=SimpleNamespace(model_dump=lambda **kwargs: {'backend': 'mlx_native'}),
+        config_snapshot=SimpleNamespace(path='config.yaml')))
+    monkeypatch.setattr(evidence, 'artifact_json', lambda *args: config)
+    before = evidence.protocol_fingerprint(bundle)
+    policy = PrimordiaResearchPolicy(**change)
+    config.update(**policy.model_dump(), training_policy=policy.training_policy)
+    assert evidence.protocol_fingerprint(bundle) != before
+    with pytest.raises(ValueError, match='Primordia research'):
+        c.match_config(config, manifest, case, 'primordia')
+    manifest['spec']['primordia_research'] = policy.model_dump()
+    c.match_config(config, manifest, case, 'primordia')
+
+
+def test_historical_v2_controls_without_new_fields_still_match(binding):
+    from evonn_shared.primordia_policy import RESEARCH_DEFAULTS
+    manifest, case, config = binding
+    for key in RESEARCH_DEFAULTS:
+        config.pop(key)
+    manifest['spec']['primordia_research'] = dict(search_policy='breadth_v2', max_width=48, max_depth=8)
+    c.match_config(config, manifest, case, 'primordia')
+
+
+def test_all_research_arm_specs_are_valid_complete_campaigns():
+    from evonn_primordia.experiments import specifications, ARMS, SYSTEMS
+    specs = specifications(pack='tier_b_core_v2', budgets=[128, 256], seeds=[1901, 1902])
+    assert set(specs) == set(ARMS)
+    for arm, payload in specs.items():
+        spec = c.CampaignSpec.model_validate(payload)
+        assert set(spec.systems) == set(SYSTEMS)
+        assert len(c.slots(spec)) == 20
+        assert spec.primordia_research == PrimordiaResearchPolicy(**ARMS[arm])
+    for changes in (dict(budgets=[True]), dict(seeds=[1, 1]), dict(budgets=[1]), dict(arms=['missing'])):
+        with pytest.raises(ValueError):
+            specifications(**{**dict(pack='tier_b_core_v2', budgets=[128], seeds=[1901]), **changes})

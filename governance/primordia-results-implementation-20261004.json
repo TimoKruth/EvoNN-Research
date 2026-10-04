@@ -1,0 +1,66 @@
+{
+  "schema": "evonn.primordia-results-implementation/v1",
+  "created_at": "2026-10-04T18:16:59.496189+00:00",
+  "evidence_report": "reports/primordia-confidence-20261004/evidence.json",
+  "evidence_sha256": "fd4d7e7cd0e1c76a41944bd9dfa90d96048f037c4ee3b5e70f5098c1aff6109b",
+  "complete_comparisons": 416,
+  "qualifications": 26,
+  "scientific_scope": "Within-Primordia validation only; mixed time caps and producer revisions; no protected-test or equal-wall-time claim.",
+  "standard": {
+    "alias_of": "full_steady",
+    "scope": "Bare fresh CLI runs only; explicit configs/policies, campaigns, low-level APIs and resumes retain prior defaults.",
+    "reason": "Supported material gains on images and four language endpoints; regression inconclusive; practical quality-first selection, not a universal winner.",
+    "training_time_ratio_descriptive": 3.735734184223917
+  },
+  "experimental": [
+    "portfolio",
+    "portfolio_stable"
+  ],
+  "new_behavior": "Recurring per-benchmark family rotation for language and image founders/fresh restarts, v2 tabular representations, saved allocation counters and ledger-verified telemetry. No benchmark-ID routing.",
+  "preserved": "All 13 historical policies and study ARMS; existing frozen study/producers/results unchanged.",
+  "followup": "Fresh paired-seed comparisons must include all four engines and Contenders for every declared case. No new scientific training study launched.",
+  "validation": "See reports/primordia-confidence-20261004/validation.json",
+  "validation_summary": {
+    "checked_at": "2026-10-04T18:20:06.116308+00:00",
+    "unit_and_study_tests": {
+      "passed": 83,
+      "seconds": 46.15
+    },
+    "native_integration_tests": {
+      "passed": 2,
+      "seconds": 71.93,
+      "backend": "mlx_native",
+      "coverage": [
+        "real fits",
+        "SIGKILL transaction recovery",
+        "unchanged search state and hash-chain tip versus uninterrupted resume",
+        "saved winner replay",
+        "export/cache integrity",
+        "policy and portfolio counter tamper rejection"
+      ]
+    },
+    "historical_search_compatibility": {
+      "passed": true,
+      "arms": 13,
+      "benchmarks": 3,
+      "observations_per_benchmark": 32
+    },
+    "ruff": "passed",
+    "frozen_producer_diff": "none",
+    "repository_import_policy": {
+      "status": "passed",
+      "count": 0,
+      "scope": "isolated main release checkout"
+    },
+    "scientific_training_started": false,
+    "main_release_validation": {
+      "checked_at": "2026-10-04T21:02:16.477980+00:00",
+      "focused_tests_passed": 128,
+      "native_integration_tests_passed": 2,
+      "scope_test_retest": "Passed after using the existing legacy Topograph variant to exercise cross-engine rejection.",
+      "import_policy": "passed",
+      "ruff": "passed",
+      "isolated_from_uncommitted_other_engine_changes": true
+    }
+  }
+}

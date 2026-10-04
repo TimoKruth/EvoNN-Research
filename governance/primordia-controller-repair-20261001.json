@@ -1,0 +1,29 @@
+{
+  "schema": "evonn.primordia-controller-repair/v1",
+  "created_at": "2026-10-01T14:20:45.150227+00:00",
+  "completed_before_resume": 379,
+  "last_run_saved_fits": 256,
+  "diagnostic": "Power log confirms low-power sleep at 1% battery from 2026-09-30 22:11:23+02:00 until 2026-10-01 16:14:37+02:00, explaining the prolonged completion gap. After wake the live controller was rebuilding report quality classifications. It was interrupted for diagnosis before sleep was confirmed; no training worker was interrupted and no training failure occurred.",
+  "change": "External controller memoizes successful model parsing keyed by exact payload bytes, model class and diagnostic label. Deep copies isolate callers. All file reads, integrity checks, acceptance gates, replays, report rebuilds and training subprocesses retained.",
+  "frozen_producer": "38c62e269977efc45a684e912ade3f97071d65c1",
+  "study_sha256": "cbb5a36317edb70065a1eb4eec063fca844643b805f9e3a687cb7cc659bc763c",
+  "controller_sha256": "9c54b6fb7aad8ea51f1d6ab7dad9df17ac3b29db8e1331fc30f18f2085fff089",
+  "catalog_sha256": "aef1d2ccfe82ef932b7046f765e65e4f054d289922e92ce093e0049205ce4be6",
+  "validation": {
+    "status": "passed",
+    "same_classification": true,
+    "original_seconds": 9.30540179205127,
+    "cached_seconds": 1.2792025420349091,
+    "classification": {
+      "path": "/Users/timokruth/Projekte/EvoNN/.artifacts/primordia-only-20260921/amendment-20260921/study-v2/comparison/steady_training/tier_b_core_v2/runs/tier_b_core_v2_b256_s23115_primordia/primordia_20260930T200530_46134d7c84/symbiosis",
+      "run_id": "primordia_20260930T200530_46134d7c84",
+      "level": "L3",
+      "gaps": [],
+      "next_level": "L4 requires multi-seed effect sizes and decision support (Phase 3)"
+    }
+  },
+  "launcher_sha256": "d4c93de62c389fe3544d66bcf4fde599ebd0b37a2f33c1076d2099c7a1b1a927",
+  "status": "resumed_verifying_saved_results",
+  "resumed_controller_pid": 9967,
+  "updated_at": "2026-10-01T14:21:35.158851+00:00"
+}

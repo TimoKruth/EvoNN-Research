@@ -10,7 +10,7 @@ from .runtime_io import prepare_worker, boundary_ownership
 from .export_reader import read_document, read_export
 
 
-def main(search_type, genome_type, run_engine, evaluation_worker, config_type, replay_export, argv=None, *, dataset_loader=None, inspect_extra=None, run_options=None):
+def main(search_type, genome_type, run_engine, evaluation_worker, config_type, replay_export, argv=None, *, dataset_loader=None, inspect_extra=None, run_options=None, run_defaults=None):
     run_options = run_options or {}
     argv = sys.argv[1:] if argv is None else argv
     if argv and argv[0] in {"_prepare", "_worker"}:
@@ -59,6 +59,9 @@ def main(search_type, genome_type, run_engine, evaluation_worker, config_type, r
         "--crash-at", choices=["worker", "transaction", "row", "stage", "payload", "manifest"], help=argparse.SUPPRESS
     )
     run.add_argument("--crash-step", type=int, default=1, help=argparse.SUPPRESS)
+    # Engine-owned fresh-run defaults. Explicit YAML/flags win; resume restores saved values below.
+    if run_defaults:
+        run.set_defaults(**run_defaults)
     for verb in ("inspect", "report", "symbiosis-export", "replay"):
         command = sub.add_parser(verb)
         command.add_argument("run_directory", type=Path)

@@ -1,0 +1,43 @@
+{
+  "checked_at": "2026-10-04T18:20:06.116308+00:00",
+  "unit_and_study_tests": {
+    "passed": 83,
+    "seconds": 46.15
+  },
+  "native_integration_tests": {
+    "passed": 2,
+    "seconds": 71.93,
+    "backend": "mlx_native",
+    "coverage": [
+      "real fits",
+      "SIGKILL transaction recovery",
+      "unchanged search state and hash-chain tip versus uninterrupted resume",
+      "saved winner replay",
+      "export/cache integrity",
+      "policy and portfolio counter tamper rejection"
+    ]
+  },
+  "historical_search_compatibility": {
+    "passed": true,
+    "arms": 13,
+    "benchmarks": 3,
+    "observations_per_benchmark": 32
+  },
+  "ruff": "passed",
+  "frozen_producer_diff": "none",
+  "repository_import_policy": {
+    "status": "passed",
+    "count": 0,
+    "scope": "isolated main release checkout"
+  },
+  "scientific_training_started": false,
+  "main_release_validation": {
+    "checked_at": "2026-10-04T21:02:16.477980+00:00",
+    "focused_tests_passed": 128,
+    "native_integration_tests_passed": 2,
+    "scope_test_retest": "Passed after using the existing legacy Topograph variant to exercise cross-engine rejection.",
+    "import_policy": "passed",
+    "ruff": "passed",
+    "isolated_from_uncommitted_other_engine_changes": true
+  }
+}

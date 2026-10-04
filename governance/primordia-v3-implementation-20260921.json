@@ -1,0 +1,88 @@
+{
+  "schema_version": "primordia.research-implementation/v1",
+  "date": "2026-09-21",
+  "status": "implemented_opt_in_scientific_comparison_pending",
+  "basis": "reports/qualification-20260916/findings.md",
+  "historical_qualification": "28/30 remains incomplete; frozen results preserved",
+  "presets": [
+    "attention",
+    "control",
+    "full",
+    "full_cold",
+    "full_steady",
+    "multiscale",
+    "progress_search",
+    "representations",
+    "spatial_flat",
+    "spatial_pool",
+    "stable_training",
+    "steady_training",
+    "temporal_convolution"
+  ],
+  "defaults": "breadth_v2, architecture v2, optimization v2, proposal v2, inheritance enabled",
+  "scientific_gain": null,
+  "new_comparison_executed": false,
+  "validation": [
+    {
+      "scope": "Primordia package unit tests, comparison-policy tests, native end-to-end recovery/replay",
+      "passed": 79,
+      "seconds": 54.06
+    },
+    {
+      "scope": "final NumPy end-to-end recovery/replay",
+      "passed": 1,
+      "seconds": 37.99
+    },
+    {
+      "scope": "existing Primordia v2 breadth and process-death runtime regressions",
+      "passed": 3,
+      "deselected_other_engines": 7,
+      "seconds": 121.98
+    },
+    {
+      "scope": "Shared runtime journal, numerical runtime and worker imports",
+      "passed": 26,
+      "seconds": 4.36
+    },
+    {
+      "scope": "Primordia search snapshot ownership",
+      "passed": 1
+    },
+    {
+      "scope": "repository import, backend capability and workspace dependency policies",
+      "status": "passed"
+    },
+    {
+      "scope": "ruff and scoped git diff whitespace",
+      "status": "passed"
+    }
+  ],
+  "runtime_test_snapshot": "/tmp/evonn-primordia-v3-20260921",
+  "runtime_test_source_binding": {
+    "EvoNN-Primordia/src/evonn_primordia/run.py": "a27cd07abccf4bdfd041a30928dc9bbf266aed9d7b52040f7fd73acead855d3c",
+    "EvoNN-Primordia/src/evonn_primordia/config.py": "d1b9a3a9ba38815fcdd87e9a19f22c04e5cf377db884e77328c101c0ea601f2d",
+    "EvoNN-Primordia/src/evonn_primordia/compiler.py": "c34936d6dad6c69bc37bb532b142193e196da62c15c1360c9c7be33604fe08b2",
+    "EvoNN-Primordia/src/evonn_primordia/research.py": "95cdb94c4cf8199dc251489fcb59d5b3ffa9bf2bd0b1a96e140fcd875bc4df53",
+    "EvoNN-Primordia/src/evonn_primordia/tensors.py": "3ce1dfc1411d28a279520af628f631b4deabe46a92a08f2988bb0d1fd4e82e22",
+    "EvoNN-Primordia/src/evonn_primordia/datasets.py": "c34886d72b5487db3334afc32c696df527eefde9ec96e79700527f456f627cbf",
+    "EvoNN-Primordia/src/evonn_primordia/__init__.py": "69465acc12cca3df9d99077c2dd320ae19225b42e2ab4f666a4d276776052496",
+    "EvoNN-Primordia/src/evonn_primordia/experiments.py": "4db1bf2cde0ceef1199923de101d4f42aa3916c3a14f79fcf577a03aa593f172",
+    "EvoNN-Primordia/src/evonn_primordia/cli.py": "392b6df50f9354665c05a5f7b41f92e371bc6a8e74d0fcbe3b1df7f58a1357f8",
+    "EvoNN-Primordia/src/evonn_primordia/search.py": "d1e262cd47662f771b49258b395c05c0d37682418dae274f5c3367a7217aa77b",
+    "EvoNN-Primordia/src/evonn_primordia/artifacts.py": "31750d06979c762bc6a6353349156617e28dbd4b1ed01ee64e1fbce2d7494a72",
+    "EvoNN-Primordia/src/evonn_primordia/genome.py": "f8781034b880790bf64ac0273b1bd68e24c98c6199631d3f7b138167618ef32f",
+    "EvoNN-Primordia/src/evonn_primordia/training.py": "d47100459d6a52c0f1aa1b028e3ae7315510746ee79e16339bf5bbf8ef0a853d",
+    "EvoNN-Shared/src/evonn_shared/primordia_policy.py": "eff5c9b2cec4626ea7dc7d89e7467d27af0dcf359d696cd0d5212bf2286f7ee1",
+    "EvoNN-Shared/src/evonn_shared/engine_evidence.py": "840d0f025ebc15d67981f694fb3aae927995d0f2e84cf5714f81c011167c02b9",
+    "EvoNN-Compare/src/evonn_compare/campaign.py": "7d3835429774e8972660bd064e8253c7f614d2afc3e67ec024ad5c0cee3f4b94",
+    "EvoNN-Compare/src/evonn_compare/evidence.py": "03bb9e311b853194ad420a0b3642bdc5bbb60263ed2024bf12a8136e5206b3cc"
+  },
+  "primordia_source_matches_runtime_snapshot": true,
+  "scope": [
+    "CPU implementations of NumPy and MLX tested; no GPU performance qualification",
+    "Implementation tests are not an all-engine scientific comparison",
+    "Other engines were being edited concurrently; runtime tests used an isolated source snapshot",
+    "All generated comparison arms include Prism, Topograph, Stratograph, Primordia and Contenders",
+    "Actual compute matching, independent confirmation and protected-test evidence remain pending"
+  ]
+}

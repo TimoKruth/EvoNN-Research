@@ -13,6 +13,7 @@ from .export_reader import read_document
 from .rng import derive_stream, StreamName
 from .runtime_catalog import runtime_manifest as read_runtime_manifest
 from .runtime_budget import MAX_ENGINE_EVALUATIONS
+from .primordia_policy import PrimordiaResearchPolicy, RESEARCH_DEFAULTS, uses_v3, portfolio_families
 
 MANDATORY_TELEMETRY = {
     "stratograph": ("hierarchy", "occupied_niches", "operator_success", "inheritance", "generations"),
@@ -139,6 +140,35 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
             if telemetry["primitive_usage"][benchmark] != counts or telemetry["archive_size"][benchmark] != len(search["archive"]) or telemetry["lineage"][benchmark] != search["lineage"]:
                 raise ValueError("primitive bank telemetry differs from checkpoint")
             if config.get("search_policy") == "breadth_v2":
+                policy = PrimordiaResearchPolicy.model_validate({key: config[key] for key in PrimordiaResearchPolicy.model_fields if key in config})
+                if any((state["search"][key] if key in state["search"] else default) != policy.model_dump()[key] for key, default in RESEARCH_DEFAULTS.items()):
+                    raise ValueError("primitive research policy differs from checkpoint")
+                if any(key in config for key in RESEARCH_DEFAULTS) and telemetry.get("research") != policy.model_dump():
+                    raise ValueError("primitive research telemetry differs from policy")
+                if policy.architecture_policy == "portfolio_v4":
+                    definition = get_benchmark(benchmark)
+                    task, modality = definition.task_kind.value, definition.input_modality.value
+                    rows = [a for a in attempts if a["benchmark_id"] == benchmark]
+                    def family(g):
+                        return (g["temporal_mode"] if task == "language_modeling"
+                                else g["spatial_mode"] if modality == "image" else "v2")
+                    measured = dict(Counter(family(a["genome"]) for a in rows))
+                    fresh = [a["genome"] for a in rows if a["proposal"]["operator"] in {"founder", "restart"}]
+                    pending = [g for g, meta in zip(search["population"][search["cursor"]:],
+                               search["proposal_meta"][search["cursor"]:], strict=True)
+                               if meta["operator"] in {"founder", "restart"}]
+                    counters = state["search"].get("portfolio_counts", {})
+                    count = counters[benchmark] if benchmark in counters else None
+                    fresh_counts = telemetry.get("portfolio_fresh_proposals", {})
+                    family_counts = telemetry.get("portfolio_family_attempts", {})
+                    families = portfolio_families(task, modality)
+                    if (type(count) is not int or count != len(fresh) + len(pending)
+                            or benchmark not in fresh_counts or fresh_counts[benchmark] != count
+                            or search.get("family_attempts") != measured
+                            or benchmark not in family_counts or family_counts[benchmark] != measured
+                            or families and any(family(g) != families[i % len(families)]
+                                                for i, g in enumerate(fresh + pending))):
+                        raise ValueError("primitive portfolio exploration differs from ledger")
                 envelope = {key: config[key] for key in ("max_width", "max_depth")}
                 if (any(type(envelope[k]) is not int or not low <= envelope[k] <= high
                         for k, low, high in (("max_width", 2, 256), ("max_depth", 1, 32)))
@@ -246,18 +276,34 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
             raise ValueError("engine attempt RNG/backend mismatch")
         breadth = system == "primordia" and config.get("search_policy", "legacy_v1") == "breadth_v2"
         if breadth:
-            if (config.get("training_policy") != "learning_progress_with_patient_slots/v2"
+            policy = PrimordiaResearchPolicy.model_validate({key: config[key] for key in PrimordiaResearchPolicy.model_fields if key in config})
+            definition = get_benchmark(attempt["benchmark_id"])
+            v3 = uses_v3(policy.architecture_policy, definition.task_kind.value, definition.input_modality.value)
+            if v3 and policy.architecture_policy == "portfolio_v4":
+                field = "temporal_mode" if definition.task_kind.value == "language_modeling" else "spatial_mode"
+                if (field not in attempt["genome"] or attempt["genome"][field] not in
+                        portfolio_families(definition.task_kind.value, definition.input_modality.value)):
+                    raise ValueError("primitive family differs from portfolio policy")
+            if v3:
+                fixed = policy.architecture_policy.removesuffix("_v3")
+                field = "temporal_mode" if fixed in {"attention", "convolution", "multiscale"} else "spatial_mode"
+                if fixed in {"attention", "convolution", "multiscale", "conv_flat", "conv_pool"} and (attempt["genome"][field] if field in attempt["genome"] else None) != fixed:
+                    raise ValueError("primitive family differs from fixed research arm")
+            if (config.get("training_policy") != policy.training_policy
                     or state["search"].get("search_policy") != "breadth_v2"
                     or attempt.get("training_policy") != config["training_policy"]
-                    or attempt["genome"].get("version") != 2
+                    or attempt["genome"].get("version") != (3 if v3 else 2)
                     or attempt["full_epochs"] != config["epochs"]
                     or attempt["genome"]["width"] > config["max_width"]
                     or len(attempt["genome"]["primitives"]) > config["max_depth"]):
                 raise ValueError("primitive breadth policy/envelope differs from frozen run")
             proposal = attempt.get("proposal", {})
-            if (proposal.get("lane") not in {"founder", "quality", "novelty", "young", "reservoir", "fresh", "patient", "fresh_retrain", "cost"}
+            lanes = {"founder", "quality", "novelty", "young", "reservoir", "fresh", "patient", "fresh_retrain", "cost"}
+            if policy.proposal_policy == "progress_v3":
+                lanes.update({"elite", "progress", "recombine"})
+            if (proposal.get("lane") not in lanes
                     or type(proposal.get("fresh")) is not bool
-                    or (proposal["fresh"] and attempt["inheritance"]["mode"] != "none")):
+                    or ((proposal["fresh"] or policy.inheritance_policy == "disabled") and attempt["inheritance"]["mode"] != "none")):
                 raise ValueError("primitive exploration proposal/inheritance mismatch")
         elif system == "primordia":
             if config.get("search_policy", "legacy_v1") != "legacy_v1" or attempt["genome"].get("version", 1) != 1:
@@ -352,6 +398,16 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
                         or attempt["epochs"] < min(config["epochs"], 4)
                         or (attempt["proposal"]["lane"] == "patient" and attempt["epochs"] != config["epochs"])):
                     raise ValueError("primitive learning-progress/patient evidence differs from policy")
+                if policy.optimization_policy != "v2":
+                    initial, selected = attempt.get("initial_validation_loss"), attempt.get("selected_epoch")
+                    if (type(initial) not in (int, float) or not math.isfinite(initial)
+                            or type(selected) is not int or not 0 <= selected <= len(curve)
+                            or attempt.get("initial_checkpoint_selected") is not (selected == 0)
+                            or attempt["validation_loss"] != ([initial] + curve)[selected]
+                            or attempt["validation_loss"] > min(initial, *curve) + 1e-8
+                            or attempt["epochs"] < min(config["epochs"], max(4, math.ceil(config["epochs"] / 2)))
+                            or (attempt["proposal"]["lane"] == "progress" and attempt["epochs"] != config["epochs"])):
+                        raise ValueError("primitive initial checkpoint selection evidence differs from policy")
             if attempt["charged"] != 1 or record.metric.value != attempt["metric_value"]:
                 raise ValueError("engine successful metric/charge mismatch")
             quality = -attempt["metric_value"] if record.metric.direction.value == "min" else attempt["metric_value"]
@@ -453,7 +509,7 @@ def _validate_primitive_artifacts(bundle, config, attempts, data):
             benchmark=definition.id,pack=manifest.pack_id,seed=manifest.seed,
             budget_spent=sum(a["charged"] for a in attempts),runtime=manifest.runtime.model_dump(mode="json"))
         version = genome.get("version", 1)
-        if type(version) is not int or version not in (1, 2):
+        if type(version) is not int or version not in (1, 2, 3):
             raise ValueError("unsupported primitive encoding version")
         encoding = f"primordia.primitive/v{version}"
         if canonical_sha256(genome, schema_version=encoding, digest_field=None) != row["genome_id"]:

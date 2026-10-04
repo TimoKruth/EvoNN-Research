@@ -17,14 +17,19 @@ class PrimitiveGenome(BaseModel):
     primitives: tuple[Primitive, ...] = Field(min_length=1, max_length=32)
     learning_rate: float = Field(default=.006, gt=0, le=.1)
     weight_decay: float = Field(default=.001, ge=0, le=.1)
-    version: Literal[1, 2] = 1
+    version: Literal[1, 2, 3] = 1
     # Node i consumes earlier states 0..i; state 0 is the input projection.
     # Empty wiring means the original sequential circuit. Reusing a state
     # fans out the same computed subcircuit, without copying its weights.
     sources: tuple[tuple[StrictInt, ...], ...] = ()
     sparse_offsets: tuple[StrictInt, ...] = (0, 1)
-    temporal_mode: Literal['prefix_mean', 'lag'] = 'prefix_mean'
+    temporal_mode: Literal['prefix_mean', 'lag', 'attention', 'convolution', 'multiscale'] = 'prefix_mean'
     temporal_lag: int = Field(default=1, ge=1, le=32, strict=True)
+    spatial_mode: Literal['flatten', 'conv_flat', 'conv_pool'] = 'flatten'
+    normalization: Literal['none', 'rms'] = 'none'
+    readout: Literal['last', 'skip'] = 'last'
+    dropout: float = Field(default=0., ge=0., le=.5)
+    temporal_dilation: int = Field(default=1, ge=1, le=32, strict=True)
 
     @model_validator(mode='before')
     @classmethod
@@ -35,6 +40,10 @@ class PrimitiveGenome(BaseModel):
 
     @model_validator(mode='after')
     def validate_structure(self):
+        if self.version < 3 and (self.temporal_mode not in ('prefix_mean', 'lag')
+                or self.spatial_mode != 'flatten' or self.normalization != 'none'
+                or self.readout != 'last' or self.dropout != 0 or self.temporal_dilation != 1):
+            raise ValueError('v3 features require genome version 3')
         if self.version == 1:
             if (self.width > 24 or len(self.primitives) > 4 or self.sources
                     or self.sparse_offsets != (0, 1) or self.temporal_mode != 'prefix_mean'
@@ -62,6 +71,9 @@ class PrimitiveGenome(BaseModel):
     @model_serializer(mode='wrap')
     def serialize(self, handler):
         data = handler(self)
+        if self.version < 3:
+            for key in ('spatial_mode', 'normalization', 'readout', 'dropout', 'temporal_dilation'):
+                del data[key]
         if self.version == 1:
             for key in ('version', 'sources', 'sparse_offsets', 'temporal_mode', 'temporal_lag'):
                 if key in data:
@@ -88,7 +100,7 @@ def caps(task, modality, slot=0):
 
 
 def clamp(genome, task, modality):
-    if genome.version == 2:
+    if genome.version >= 2:
         return genome
     limit = caps(task, modality)
     return PrimitiveGenome.model_validate({**genome.model_dump(), 'width': min(genome.width, limit['width']),
@@ -150,7 +162,7 @@ def mutate_broad(genome, rng, *, max_width=48, max_depth=8, operation=None):
     if operation not in BREADTH_OPERATORS:
         raise ValueError('unknown breadth mutation')
     data = genome.model_dump()
-    data['version'] = 2
+    data['version'] = max(2, genome.version)
     nodes = list(genome.primitives)
     sources = list(genome.sources or tuple((i,) for i in range(len(nodes))))
     index = rng.randrange(len(nodes))

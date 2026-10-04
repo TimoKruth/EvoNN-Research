@@ -25,6 +25,8 @@ class TrainConfig:
     warmup_fraction: float = 0.1
     schedule: str = "cosine"
     timeout: float = 120.0
+    select_initial: bool = False
+    label_smoothing: float = 0.0
 
     def __post_init__(self):
         for value in (self.epochs, self.batch_size, self.patience, self.min_epochs):
@@ -39,6 +41,8 @@ class TrainConfig:
             raise ValueError("invalid training bounds")
         if not 0 <= self.warmup_fraction < 1 or self.schedule not in {"cosine", "constant"}:
             raise ValueError("invalid schedule")
+        if type(self.select_initial) is not bool or not 0 <= self.label_smoothing < 1:
+            raise ValueError("invalid initial selection or label smoothing")
 
 
 def learning_rate(config, step, total):
@@ -91,7 +95,13 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         logits = logits.reshape((-1, logits.shape[-1]))
         shifted = logits - b.array(b.numpy(logits).max(axis=-1, keepdims=True))
         log_probs = shifted - b.log(b.exp(shifted).sum(axis=-1, keepdims=True))
+        if model.genome.version >= 3:
+            selected = b.gather(log_probs, (np.arange(logits.shape[0]), targets.reshape(-1)))
+            smoothing = config.label_smoothing if training else 0.
+            return -((1 - smoothing) * selected + smoothing * log_probs.mean(axis=-1)).mean()
         hot = np.eye(logits.shape[-1], dtype=np.float32)[targets.reshape(-1)]
+        if training and config.label_smoothing:
+            hot = hot * (1 - config.label_smoothing) + config.label_smoothing / logits.shape[-1]
         return -(b.array(hot) * log_probs).sum(axis=-1).mean()
 
     moments = {k: np.zeros_like(v) for k, v in model.weights.items()}
@@ -101,6 +111,12 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
     best_loss, stale, updates, epochs_done = math.inf, 0, 0, 0
     total = config.epochs * math.ceil(len(x) / config.batch_size)
     initial_weights = {k: v.copy() for k, v in model.weights.items()}
+    initial_loss, selected_epoch = None, 0
+    if config.select_initial:
+        initial_loss = float(b.numpy(loss({k: b.array(v) for k, v in model.weights.items()}, xv, yv)))
+        if not math.isfinite(initial_loss):
+            raise ValueError("nonfinite initial validation loss")
+        best_loss = initial_loss
     validation_curve = []
     for epoch in range(config.epochs):
         order = rng.permutation(len(x))
@@ -135,6 +151,7 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         validation_curve.append(value)
         if value < best_loss - 1e-8:
             best_loss, stale = value, 0
+            selected_epoch = epochs_done
             best = {k: v.copy() for k, v in model.weights.items()}
             best_buffers = deepcopy(model.buffers)
         else:
@@ -183,6 +200,9 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         "updates": updates,
         "validation_loss": best_loss,
         "validation_curve": validation_curve,
+        "initial_validation_loss": initial_loss,
+        "selected_epoch": selected_epoch,
+        "initial_checkpoint_selected": config.select_initial and selected_epoch == 0,
         "behavior_descriptor": descriptor,
         "early_stopped": epochs_done < config.epochs,
         "train_seconds": time.monotonic() - started,
