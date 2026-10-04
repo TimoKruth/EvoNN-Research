@@ -693,3 +693,41 @@ original protocol document retains the command valid at the time it was frozen.
 These are archival fixtures for the prior producer;
 use the module above for this new follow-up. Historical receipts and results
 have not been relabeled as complete.
+
+### Primordia v3 research implementation — September 21
+
+Primordia now offers opt-in trainable causal attention, dilated/multiscale temporal
+filters, spatial image circuits, normalized residual/skip circuits, safer continued
+training and progress-based search. Thirteen presets separate representation,
+optimizer schedule, search and inheritance alternatives. Defaults remain the v2
+control. See [Primordia's research controls](EvoNN-Primordia/README.md#opt-in-v3-research-arms)
+for exact semantics and the generator for complete all-engine comparison specs.
+This implements hypotheses from the September 16 results; it does not establish
+new quality/runtime gains or close the historical incomplete qualification.
+
+
+### Prepared Primordia-only confidence comparison
+
+The September 21 user instruction explicitly requests Primordia only, overriding
+the usual all-engine roster for this one study. The
+[Primordia study runner](EvoNN-Primordia/README.md#primordia-only-confidence-study--september-21)
+freezes 13 presets × 16 matched seeds × core/breadth packs, with a separate
+qualification phase, replay-gated completion and multiplicity-corrected paired
+inference. Preparation does not start training. Other research campaigns retain
+the all-engine default and its validation guard.
+
+The completed amended study is at `.artifacts/primordia-only-20260921`, with
+416/416 comparisons and 26/26 qualifications. See the
+[October 4 findings and implementation](reports/primordia-confidence-20261004/README.md).
+Bare fresh Primordia CLI runs now select `standard`, the tested `full_steady`
+combination. All 13 original presets remain selectable; `portfolio` and
+`portfolio_stable` are new experimental alternatives requiring fresh confirmation.
+Explicit configs/campaign policies and saved resumes retain their prior defaults.
+
+The active Primordia time-budget continuation is recorded in
+`.artifacts/primordia-only-20260921/active-study.json`. The existing `study.sh`
+launcher now forwards to the amended `study-v2` protocol and `producer-v2`.
+It preserves 22 completed comparisons and all 26 qualifications, resumes long
+runs across bounded sessions, and dispatches the scheduled seed directly. The
+original exhausted run and its 248 attempts remain preserved and separately
+accounted for; the original frozen study remains incomplete.

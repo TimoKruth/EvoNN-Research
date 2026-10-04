@@ -5,8 +5,10 @@ from random import Random
 from collections import Counter
 import math
 from evonn_shared.weight_cache import WeightCache
+from evonn_shared.primordia_policy import PrimordiaResearchPolicy, RESEARCH_DEFAULTS
 from .genome import PrimitiveGenome, seed_genome, mutate, caps, fresh_genome, mutate_broad
 from .compiler import compile_genome
+from .research import fresh_research, mutate_research, recombine
 
 
 def work_cost(parameter_count, updates):
@@ -26,7 +28,8 @@ class Search:
     evaluator_fidelity = "end_to_end_primitive"
 
     def __init__(self, definitions, *, seed, population_size=4, state=None, budget=64,
-                 search_policy="breadth_v2", max_width=48, max_depth=8, training_epochs=12):
+                 search_policy="breadth_v2", max_width=48, max_depth=8, training_epochs=12,
+                 architecture_policy="v2", optimization_policy="v2", proposal_policy="v2", inheritance_policy="enabled"):
         if not 2 <= population_size <= 16:
             raise ValueError("population size must be in [2,16]")
         self.rng, self.size, self.budget = Random(seed), population_size, budget
@@ -39,12 +42,26 @@ class Search:
         if type(max_width) is not int or not 2 <= max_width <= 256 or type(max_depth) is not int or not 1 <= max_depth <= 32:
             raise ValueError("invalid explicit architecture envelope")
         self.policy, self.max_width, self.max_depth = search_policy, max_width, max_depth
+        options = dict(architecture_policy=architecture_policy, optimization_policy=optimization_policy,
+                       proposal_policy=proposal_policy, inheritance_policy=inheritance_policy)
+        if state is not None:
+            options = {key: (state[key] if key in state else value) for key, value in RESEARCH_DEFAULTS.items()}
+        self.research = PrimordiaResearchPolicy(search_policy=search_policy, max_width=max_width, max_depth=max_depth, **options)
         if type(training_epochs) is not int or not 1 <= training_epochs <= 1000:
             raise ValueError("invalid training envelope")
         self.training_epochs = training_epochs
         self.definitions = {definition.id: definition for definition in definitions}
+        self.portfolio_counts = {name: 0 for name in self.definitions}
+        if state is not None and self.research.architecture_policy == "portfolio_v4":
+            counts = state.get("portfolio_counts")
+            if (not isinstance(counts, dict) or set(counts) != set(self.definitions)
+                    or any(type(v) is not int or v < population_size for v in counts.values())):
+                raise ValueError("missing or invalid portfolio exploration counters")
+            self.portfolio_counts = dict(counts)
         self.cache = WeightCache(2 * population_size * len(definitions))
         self.cache_quality = {}
+        self.cache_loss = {}
+        self.cache_genomes = {}
         self.benchmarks, self.operator_stats = {}, {}
         if state is not None:
             state = deepcopy(state)
@@ -52,12 +69,14 @@ class Search:
             self.benchmarks, self.operator_stats = state["benchmarks"], state["operator_stats"]
             self.cache = WeightCache(2 * population_size * len(definitions), state["cache"])
             self.cache_quality = state.get("cache_quality", {})
+            self.cache_loss = state.get("cache_loss", {})
+            self.cache_genomes = state.get("cache_genomes", {})
             self.budget = state["budget"]
         else:
             for definition in definitions:
                 self.benchmarks[definition.id] = dict(
                     population=[
-                        (fresh_genome(self.rng, max_width=max_width, max_depth=max_depth, founder=i)
+                        (self._fresh(definition, founder=i)
                          if self.policy == "breadth_v2" else
                          seed_genome(i, definition.task_kind.value, definition.input_modality.value)).model_dump(mode="json")
                         for i in range(population_size)
@@ -79,10 +98,23 @@ class Search:
                         exploration=dict(lanes={}, structural_changes=0, structure_unchanged=0,
                                          resource_deferred=0, failed=0, boundary_proposals=0),
                     )
+                if self.research.architecture_policy == "portfolio_v4":
+                    self.benchmarks[definition.id]["family_attempts"] = {}
 
     def candidate(self, benchmark):
         state = self.benchmarks[benchmark]
         return PrimitiveGenome.model_validate(state["population"][state["cursor"]])
+
+    def _fresh(self, definition, founder=None):
+        if self.research.architecture_policy == "v2":
+            return fresh_genome(self.rng, max_width=self.max_width, max_depth=self.max_depth, founder=founder)
+        index = None
+        if self.research.architecture_policy == "portfolio_v4":
+            index = self.portfolio_counts[definition.id]
+            self.portfolio_counts[definition.id] += 1
+        return fresh_research(self.rng, definition, self.research.architecture_policy,
+                              max_width=self.max_width, max_depth=self.max_depth, founder=founder,
+                              portfolio_index=index)
 
     def compile(self, genome, definition, **options):
         return compile_genome(
@@ -103,6 +135,8 @@ class Search:
         )["epochs"]
 
     def inherit(self, model, benchmark, namespace):
+        if self.research.inheritance_policy == "disabled":
+            return dict(mode="none", source=None, copied_parameters=0)
         state = self.benchmarks[benchmark]
         identity = model.genome.genome_id
         if self.policy == "breadth_v2":
@@ -115,6 +149,8 @@ class Search:
                 return dict(mode="none", source=None, copied_parameters=0)
         else:
             parents = state["parents"][identity] if identity in state["parents"] else []
+        if model.genome.version == 3:
+            return self._inherit_v3(model, namespace, [identity, *parents])
         return self.cache.inherit(
             model,
             namespace=namespace,
@@ -125,20 +161,72 @@ class Search:
             compatible_groups=[model.genome.family],
         )
 
+    def _inherit_v3(self, model, namespace, identities):
+        # Shape equality alone is insufficient when a tensor's role changes.
+        for identity in dict.fromkeys(identities):
+            key = namespace + ":" + identity
+            if key not in self.cache.entries or key not in self.cache_genomes:
+                continue
+            previous = PrimitiveGenome.model_validate(self.cache_genomes[key])
+            current = model.genome
+            if previous.width != current.width:
+                continue
+            copied = 0
+            for name, value in model.weights.items():
+                group = name.split('.')[0]
+                compatible = True
+                if group == "input":
+                    compatible = previous.spatial_mode == current.spatial_mode
+                elif group == "output":
+                    compatible = (previous.spatial_mode, previous.readout) == (current.spatial_mode, current.readout)
+                elif group == "temporal":
+                    compatible = (previous.temporal_mode, previous.temporal_dilation) == (current.temporal_mode, current.temporal_dilation)
+                elif group.startswith("p"):
+                    index = int(group[1:])
+                    compatible = index < len(previous.primitives) and previous.primitives[index].operator == current.primitives[index].operator
+                old = (self.cache.entries[key]["weights"][name] if name in self.cache.entries[key]["weights"] else None)
+                if old is not None and compatible:
+                    import numpy as np
+                    old = np.asarray(old, dtype=np.float32)
+                    if old.shape == value.shape:
+                        model.weights[name] = old.copy()
+                        copied += old.size
+            if copied:
+                self.cache.entries.move_to_end(key)
+                return dict(mode="exact" if identity == current.genome_id and copied == model.parameter_count else "partial",
+                            source=identity, copied_parameters=copied)
+        return dict(mode="none", source=None, copied_parameters=0)
+
     def remember(self, model, namespace, result=None):
         key = namespace + ":" + model.genome.genome_id
         if self.policy == "breadth_v2" and result is not None:
-            if key in self.cache.entries and result["score"] <= (self.cache_quality[key] if key in self.cache_quality else -math.inf):
-                return
+            if key in self.cache.entries:
+                old_quality = self.cache_quality[key] if key in self.cache_quality else -math.inf
+                better_loss = (self.research.optimization_policy != "v2" and result["score"] == old_quality
+                               and result.get("validation_loss", math.inf) < (self.cache_loss[key] if key in self.cache_loss else math.inf))
+                if result["score"] <= old_quality and not better_loss:
+                    return
         self.cache.put(
             namespace, model.genome.genome_id, "primitive", model.genome.family, model.weights, model.buffers
         )
+        if self.research.architecture_policy != "v2":
+            self.cache_genomes[key] = model.genome.model_dump(mode="json")
+            self.cache_genomes = {k: v for k, v in self.cache_genomes.items() if k in self.cache.entries}
         if self.policy == "breadth_v2" and result is not None:
             self.cache_quality[key] = result["score"]
             self.cache_quality = {k: v for k, v in self.cache_quality.items() if k in self.cache.entries}
+            if self.research.optimization_policy != "v2" and "validation_loss" in result:
+                self.cache_loss[key] = result["validation_loss"]
+                self.cache_loss = {k: v for k, v in self.cache_loss.items() if k in self.cache.entries}
 
     def observe(self, benchmark, genome, result):
         state = self.benchmarks[benchmark]
+        if self.research.architecture_policy == "portfolio_v4":
+            definition = self.definitions[benchmark]
+            family = (genome.temporal_mode if definition.task_kind.value == "language_modeling"
+                      else genome.spatial_mode if definition.input_modality.value == "image" else "v2")
+            counts = state["family_attempts"]
+            counts[family] = (counts[family] if family in counts else 0) + 1
         entry = dict(
             genome=genome.model_dump(mode="json"),
             identity=genome.genome_id,
@@ -149,6 +237,10 @@ class Search:
         if self.policy == "breadth_v2":
             entry["behavior"] = result.get("behavior_descriptor", [])
             entry["birth"] = state["evaluated"]
+            if self.research.proposal_policy == "progress_v3":
+                curve = result.get("validation_curve", [])
+                entry["learning_progress"] = (max(0., (curve[-2] - curve[-1]) / max(abs(curve[-2]), 1e-8))
+                                              if len(curve) >= 2 else 0.)
             self._retain_broad(benchmark, state, entry, result)
         state["scores"].append(entry)
         state["evaluated"] += 1
@@ -287,27 +379,44 @@ class Search:
         state = self.benchmarks[benchmark]
         # Guaranteed recurring opportunities, independent of current quality.
         lanes = ("quality", "novelty", "young", "reservoir", "fresh", "patient", "fresh_retrain", "cost")
+        progress = self.research.proposal_policy == "progress_v3"
+        if progress:
+            lanes = ("quality", "elite", "novelty", "progress", "fresh", "young",
+                     "quality", "recombine", "reservoir", "patient", "fresh_retrain", "cost")
         children, metadata = [], []
         for i in range(self.size):
             lane = lanes[(state["evaluated"] - self.size + i) % len(lanes)]
             pools = {"quality": state["archive"], "novelty": state["novelty"], "young": state["young"],
                     "reservoir": state["reservoir"], "patient": state["reservoir"],
                     "fresh_retrain": state["archive"], "cost": state["pareto"]}
+            if progress:
+                pools.update(elite=state["archive"][:1], recombine=state["novelty"],
+                             progress=sorted(state["young"] + state["archive"],
+                                             key=lambda item: (-item.get("learning_progress", 0.), -item["quality"], item["identity"]))[:1])
             pool = pools[lane] if lane in pools else []
             if not pool or lane == "fresh":
-                child = fresh_genome(self.rng, max_width=self.max_width, max_depth=self.max_depth)
+                child = self._fresh(self.definitions[benchmark])
                 meta = dict(lane="fresh", fresh=True, parents=[], operator="restart", baseline=None)
             else:
                 parent = self.rng.choice(pool)
                 original = PrimitiveGenome.model_validate(parent["genome"])
-                if lane in {"patient", "fresh_retrain"}:
+                if lane in {"patient", "fresh_retrain", "elite", "progress"}:
                     child, operation = original, lane
+                elif self.research.architecture_policy != "v2":
+                    child, operation = mutate_research(original, self.rng, self.definitions[benchmark],
+                        self.research.architecture_policy, max_width=self.max_width, max_depth=self.max_depth)
                 else:
                     child, operation = mutate_broad(original, self.rng, max_width=self.max_width, max_depth=self.max_depth)
-                structural = any(child.model_dump()[key] != original.model_dump()[key]
-                                 for key in ("width", "primitives", "sources", "sparse_offsets", "temporal_mode", "temporal_lag"))
+                parents = [parent["identity"]]
+                if lane == "recombine":
+                    donor = self.rng.choice(state["archive"] or pool)
+                    child, operation = recombine(original, PrimitiveGenome.model_validate(donor["genome"]), self.rng), "recombine"
+                    parents = list(dict.fromkeys([*parents, donor["identity"]]))
+                structural = any(value != (original.model_dump()[key] if key in original.model_dump() else None)
+                                 for key, value in child.model_dump().items() if key not in {"learning_rate", "weight_decay", "dropout"})
                 meta = dict(lane=lane, fresh=lane == "fresh_retrain", parents=[parent["identity"]],
                             operator=operation, baseline=parent["quality"], structural_change=structural)
+                meta["parents"] = parents
             children.append(child.model_dump(mode="json"))
             metadata.append(meta)
         state.update(population=children, proposal_meta=metadata, cursor=0, generation=state["generation"] + 1,
@@ -333,6 +442,7 @@ class Search:
             promotion_screen="disabled",
         )
         if self.policy == "breadth_v2":
+            result["research"] = self.research.model_dump()
             result.update(search_policy=self.policy, architecture_envelope=dict(max_width=self.max_width, max_depth=self.max_depth),
                           exploration={key: {**state["exploration"],
                               "retention_sizes": {name: len(state[name]) for name in ("archive", "young", "novelty", "reservoir", "pareto")},
@@ -340,6 +450,10 @@ class Search:
                                                          for b in state["novelty"][i + 1:])
                                                      / max(1, len(state["novelty"]) * (len(state["novelty"]) - 1) / 2))}
                                        for key, state in self.benchmarks.items()})
+        if self.research.architecture_policy == "portfolio_v4":
+            result["portfolio_fresh_proposals"] = dict(self.portfolio_counts)
+            result["portfolio_family_attempts"] = {
+                benchmark: dict(state["family_attempts"]) for benchmark, state in self.benchmarks.items()}
         return result
 
     def state(self):
@@ -353,4 +467,9 @@ class Search:
         if self.policy == "breadth_v2":
             result.update(search_policy=self.policy, max_width=self.max_width, max_depth=self.max_depth,
                           training_epochs=self.training_epochs, cache_quality=self.cache_quality)
+            result.update({key: self.research.model_dump()[key] for key in RESEARCH_DEFAULTS})
+            result["cache_genomes"] = self.cache_genomes
+            result["cache_loss"] = self.cache_loss
+            if self.research.architecture_policy == "portfolio_v4":
+                result["portfolio_counts"] = dict(self.portfolio_counts)
         return result

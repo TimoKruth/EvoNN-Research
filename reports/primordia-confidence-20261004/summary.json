@@ -1,0 +1,296 @@
+{
+  "source": "reports/primordia-confidence-20261004/evidence.json",
+  "source_sha256": "fd4d7e7cd0e1c76a41944bd9dfa90d96048f037c4ee3b5e70f5098c1aff6109b",
+  "comparison_complete": 416,
+  "qualification_complete": 26,
+  "interpretation": "Amended fixed-fit comparison; reuse completed original runs. Original study remains incomplete. Mixed time caps and producer revisions; no equal-wall-time or protected-test claim. Original paired inference policy retained.",
+  "family_size": 468,
+  "decisions": {
+    "inconclusive": 223,
+    "after_supported_material_gain": 142,
+    "within_materiality_interval": 37,
+    "after_supported_material_loss": 57,
+    "observed_exact_tie": 9
+  },
+  "standard_vs_control": [
+    {
+      "after": "full_steady",
+      "before": "control",
+      "benchmark": "digits_image",
+      "decision": "after_supported_material_gain",
+      "effect_scale": "accuracy_difference",
+      "holm_pvalue": 0.0142822265625,
+      "materiality": 0.005,
+      "mean_effect": 0.02430555555555558,
+      "n": 16,
+      "pack": "tier_b_core_v2",
+      "pointwise_ci95": [
+        0.02048611111111115,
+        0.02829861111111112
+      ],
+      "pvalue": 3.0517578125e-05,
+      "seed_effects": [
+        0.01388888888888895,
+        0.02777777777777779,
+        0.019444444444444486,
+        0.01388888888888895,
+        0.01388888888888895,
+        0.030555555555555558,
+        0.030555555555555558,
+        0.022222222222222254,
+        0.0444444444444444,
+        0.030555555555555558,
+        0.022222222222222254,
+        0.025000000000000022,
+        0.02777777777777779,
+        0.022222222222222254,
+        0.01388888888888895,
+        0.030555555555555558
+      ],
+      "simultaneous_ci95": [
+        0.01687785129916096,
+        0.0317332598119502
+      ],
+      "zero_sample_variance": false,
+      "raw_means": {
+        "control": 0.9723958333333333,
+        "full_steady": 0.9967013888888889
+      }
+    },
+    {
+      "after": "full_steady",
+      "before": "control",
+      "benchmark": "diabetes_regression",
+      "decision": "inconclusive",
+      "effect_scale": "log_ratio",
+      "holm_pvalue": 0.0333251953125,
+      "materiality": 0.01980262729617973,
+      "mean_effect": 0.06155599152590577,
+      "n": 16,
+      "pack": "tier_b_core_v2",
+      "pointwise_ci95": [
+        0.03483986738601603,
+        0.0935440989859153
+      ],
+      "pvalue": 0.0001220703125,
+      "seed_effects": [
+        0.06031240196608187,
+        0.02524345913773318,
+        0.16607199937935488,
+        0.01880216996782206,
+        0.07784673277036766,
+        0.09202621514579164,
+        0.012157197670351467,
+        0.054317159641592026,
+        0.07087138835661119,
+        0.005291115530369509,
+        0.0038282456550052233,
+        0.22845880620753853,
+        0.07320570043808713,
+        0.08461083570833446,
+        0.019421047922786993,
+        -0.007568611083335489
+      ],
+      "simultaneous_ci95": [
+        0.005867582117766973,
+        0.11724440093404456
+      ],
+      "zero_sample_variance": false,
+      "raw_means": {
+        "control": 2596.8176111243442,
+        "full_steady": 2446.730064325159
+      }
+    },
+    {
+      "after": "full_steady",
+      "before": "control",
+      "benchmark": "shakespeare_byte_lm",
+      "decision": "after_supported_material_gain",
+      "effect_scale": "log_ratio",
+      "holm_pvalue": 0.0142822265625,
+      "materiality": 0.01980262729617973,
+      "mean_effect": 0.16128379106521606,
+      "n": 16,
+      "pack": "tier_b_core_v2",
+      "pointwise_ci95": [
+        0.1177640963345766,
+        0.20963111557066427
+      ],
+      "pvalue": 3.0517578125e-05,
+      "seed_effects": [
+        0.025225400924682437,
+        0.09681224822998068,
+        0.11623549461364749,
+        0.18584799766540513,
+        0.17759871482849138,
+        0.20172715187072748,
+        0.12474822998046874,
+        0.33193993568420405,
+        0.18240928649902347,
+        0.12824130058288574,
+        0.15474009513854972,
+        0.11748695373535145,
+        0.38505601882934576,
+        0.23720049858093262,
+        0.032311916351318366,
+        0.0829594135284424
+      ],
+      "simultaneous_ci95": [
+        0.07587588631904223,
+        0.2466916958113899
+      ],
+      "zero_sample_variance": false,
+      "raw_means": {
+        "control": 17.20926831741371,
+        "full_steady": 14.605388386062073
+      }
+    },
+    {
+      "after": "full_steady",
+      "before": "control",
+      "benchmark": "shakespeare_context64_lm",
+      "decision": "after_supported_material_gain",
+      "effect_scale": "log_ratio",
+      "holm_pvalue": 0.0142822265625,
+      "materiality": 0.01980262729617973,
+      "mean_effect": 0.19599235057830813,
+      "n": 16,
+      "pack": "language_breadth_v1",
+      "pointwise_ci95": [
+        0.1632263496518135,
+        0.2402497235685587
+      ],
+      "pvalue": 3.0517578125e-05,
+      "seed_effects": [
+        0.23373484611511244,
+        0.24417281150817874,
+        0.10499477386474611,
+        0.15340757369995117,
+        0.17133951187133792,
+        0.20911216735839852,
+        0.19150757789611816,
+        0.1588568687438965,
+        0.12263655662536618,
+        0.18884587287902838,
+        0.20892763137817388,
+        0.13461160659790045,
+        0.15596103668212893,
+        0.46886491775512695,
+        0.17055702209472648,
+        0.21834683418273917
+      ],
+      "simultaneous_ci95": [
+        0.12281796392269423,
+        0.26916673723392204
+      ],
+      "zero_sample_variance": false,
+      "raw_means": {
+        "control": 14.744110560095951,
+        "full_steady": 12.082851299730184
+      }
+    },
+    {
+      "after": "full_steady",
+      "before": "control",
+      "benchmark": "aesop_context64_lm",
+      "decision": "after_supported_material_gain",
+      "effect_scale": "log_ratio",
+      "holm_pvalue": 0.0142822265625,
+      "materiality": 0.01980262729617973,
+      "mean_effect": 0.22764159739017487,
+      "n": 16,
+      "pack": "language_breadth_v1",
+      "pointwise_ci95": [
+        0.19832503609359264,
+        0.2626676436513662
+      ],
+      "pvalue": 3.0517578125e-05,
+      "seed_effects": [
+        0.28705883026123036,
+        0.20160079002380363,
+        0.25617718696594227,
+        0.24922323226928716,
+        0.2711849212646484,
+        0.2344400882720948,
+        0.4200038909912109,
+        0.2450807094573975,
+        0.1427209377288819,
+        0.18175673484802252,
+        0.25084376335144026,
+        0.1975374221801758,
+        0.14604401588439933,
+        0.15908169746398923,
+        0.19850778579711914,
+        0.20100355148315419
+      ],
+      "simultaneous_ci95": [
+        0.1678860873823581,
+        0.2873971073979916
+      ],
+      "zero_sample_variance": false,
+      "raw_means": {
+        "control": 12.760240224821112,
+        "full_steady": 10.156257544257855
+      }
+    },
+    {
+      "after": "full_steady",
+      "before": "control",
+      "benchmark": "delayed_copy_lm",
+      "decision": "after_supported_material_gain",
+      "effect_scale": "log_ratio",
+      "holm_pvalue": 0.0142822265625,
+      "materiality": 0.04879016416943205,
+      "mean_effect": 2.766386764238754,
+      "n": 16,
+      "pack": "language_breadth_v1",
+      "pointwise_ci95": [
+        2.7650283664356117,
+        2.7676838889064372
+      ],
+      "pvalue": 3.0517578125e-05,
+      "seed_effects": [
+        2.764476298122871,
+        2.765728892932543,
+        2.7704862696371038,
+        2.7674989671241947,
+        2.7605059295892715,
+        2.7623410204561747,
+        2.7662699193489266,
+        2.7637712940937136,
+        2.7674119330034044,
+        2.771049733859738,
+        2.764559030532837,
+        2.7681631963427487,
+        2.7675673900580993,
+        2.767349240838028,
+        2.766573164392412,
+        2.768435947487996
+      ],
+      "simultaneous_ci95": [
+        2.7639286173819553,
+        2.7688449110955524
+      ],
+      "zero_sample_variance": false,
+      "raw_means": {
+        "control": 15.90547958104654,
+        "full_steady": 1.0002749444689703
+      }
+    }
+  ],
+  "total_measured_train_seconds": {
+    "attention": 21699.206657455652,
+    "control": 7221.474124124681,
+    "full": 28010.173571614665,
+    "full_cold": 31078.229218078137,
+    "full_steady": 26977.50774598104,
+    "multiscale": 30531.94516353804,
+    "progress_search": 7538.574274820159,
+    "representations": 27094.259847634996,
+    "spatial_flat": 10489.655669327301,
+    "spatial_pool": 11444.088680405286,
+    "stable_training": 7722.098814315163,
+    "steady_training": 8575.79740495974,
+    "temporal_convolution": 25041.89175394131
+  }
+}

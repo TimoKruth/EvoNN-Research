@@ -1,0 +1,510 @@
+{
+  "schema_version": 1,
+  "purpose": "single-seed implementation contract; no performance claim",
+  "analysis_request": {
+    "schema_version": 1,
+    "policy": "paired-seed-relative-v1",
+    "before": "primordia-release-before",
+    "after": "primordia-release-after",
+    "before_revision": "d4ba3ba4342defe094e0b1e6a241fe59c3355166",
+    "after_revision": "f5ec6ea538cb9c79909ada3be110b6fe5c666179",
+    "panels": [
+      {
+        "pack": "tier_b_core_v2",
+        "budget": 16,
+        "engine": "primordia",
+        "benchmarks": [
+          "banknote_classification",
+          "digits_image",
+          "diabetes_regression",
+          "shakespeare_byte_lm"
+        ],
+        "seeds": [
+          24104
+        ]
+      }
+    ],
+    "materiality": 0.01,
+    "claim_scope": "contract_validation"
+  },
+  "analysis": {
+    "schema_version": 1,
+    "before": "primordia-release-before",
+    "after": "primordia-release-after",
+    "groups": [
+      {
+        "pack": "tier_b_core_v2",
+        "budget": 16,
+        "engine": "primordia",
+        "seeds": [
+          24104
+        ],
+        "benchmarks": [
+          "banknote_classification",
+          "diabetes_regression",
+          "digits_image",
+          "shakespeare_byte_lm"
+        ],
+        "n": 0,
+        "effect_mean": null,
+        "bootstrap_ci95": null,
+        "standardized_effect": null,
+        "rank_biserial": null,
+        "bootstrap_method": "4096 percentile resamples of independent paired seed means; RNG seed 0",
+        "wilcoxon": {
+          "status": "insufficient_data",
+          "n": 0,
+          "reason": "requires at least six nonzero independent paired seeds"
+        },
+        "materiality": 0.01,
+        "statistical_label": "needs_more_runs",
+        "aggregation_label": "blocked",
+        "blockers": [
+          "at least 3 paired independent seeds required",
+          "backend, host, data or training protocol drift"
+        ],
+        "level": "L3",
+        "minimum_seeds": 3,
+        "ceiling_ties": 0,
+        "raw_deltas": [],
+        "seed_effects": [],
+        "runtime_tradeoffs": {
+          "complete": true,
+          "per_label": {
+            "primordia-release-after": {
+              "wall_clock": 23.561727,
+              "evals_per_second": 0.6790673705709263,
+              "seconds_per_success": 1.4726079375
+            },
+            "primordia-release-before": {
+              "wall_clock": 10.480311,
+              "evals_per_second": 1.52667225237877,
+              "seconds_per_success": 0.6550194375
+            }
+          },
+          "score_per_second": [
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "banknote_classification",
+              "value": 0.04228737716737132
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "banknote_classification",
+              "value": 0.04244171066068289
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "banknote_classification",
+              "value": 0.04244171066068289
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "banknote_classification",
+              "value": 0.04228737716737132
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "diabetes_regression",
+              "value": 188.46674686767562
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "diabetes_regression",
+              "value": 143.0665512544229
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "diabetes_regression",
+              "value": 148.50113290059898
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "diabetes_regression",
+              "value": 137.6439662510996
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "digits_image",
+              "value": 0.04149856153488994
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "digits_image",
+              "value": 0.042088029738510536
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "digits_image",
+              "value": 0.04149856153488994
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "digits_image",
+              "value": 0.04149856153488994
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 0.8264227524214605
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 0.7021560657725049
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 0.7236075060750017
+            },
+            {
+              "label": "primordia-release-after",
+              "run_id": "primordia_20261004T210815_d8caba999b",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 0.9366813962288232
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "banknote_classification",
+              "value": 0.06627145459189661
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "banknote_classification",
+              "value": 0.09541701577367312
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "banknote_classification",
+              "value": 0.09298821900852508
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "banknote_classification",
+              "value": 0.09021245127692731
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "diabetes_regression",
+              "value": 480.0014141702719
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "diabetes_regression",
+              "value": 355.28217487090916
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "diabetes_regression",
+              "value": 323.934900468743
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "diabetes_regression",
+              "value": 298.26415356459376
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "digits_image",
+              "value": 0.057780303996279835
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "digits_image",
+              "value": 0.0776588489491284
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "digits_image",
+              "value": 0.0874655977925337
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "digits_image",
+              "value": 0.055659925867975996
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 2.636690520089046
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 4.28818016956696
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 2.821491640127588
+            },
+            {
+              "label": "primordia-release-before",
+              "run_id": "primordia_20261004T211024_22e5d9fa94",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 2.7796325923515623
+            }
+          ],
+          "family_allocation": [
+            {
+              "label": "primordia-release-after",
+              "family": "primitive",
+              "seconds": 13.103269415907562
+            },
+            {
+              "label": "primordia-release-before",
+              "family": "primitive",
+              "seconds": 2.090593039873056
+            }
+          ],
+          "note": "family allocation covers exported outcomes; raw lower-is-better score/time is not utility"
+        },
+        "portability_only": false,
+        "excluded_benchmarks": [],
+        "uncertainty_reason": null,
+        "friedman": {
+          "status": "insufficient_data",
+          "reason": "paired before/after has only two systems"
+        },
+        "effect_scale": "symmetric relative difference, direction-aware, equal benchmark weight"
+      }
+    ],
+    "request": {
+      "schema_version": 1,
+      "policy": "paired-seed-relative-v1",
+      "before": "primordia-release-before",
+      "after": "primordia-release-after",
+      "before_revision": "d4ba3ba4342defe094e0b1e6a241fe59c3355166",
+      "after_revision": "f5ec6ea538cb9c79909ada3be110b6fe5c666179",
+      "panels": [
+        {
+          "pack": "tier_b_core_v2",
+          "budget": 16,
+          "engine": "primordia",
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            24104
+          ]
+        }
+      ],
+      "materiality": 0.01,
+      "claim_scope": "contract_validation"
+    },
+    "decision_category": "needs more seeds",
+    "diagnostics": {
+      "transfer_proof": {
+        "status": "not_applicable",
+        "native_claim_ready": false,
+        "sources": []
+      },
+      "lm_flatline": [
+        {
+          "label": "primordia-release-after",
+          "engine": "contenders",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24104,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "primordia-release-after",
+          "engine": "primordia",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24104,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "primordia-release-after",
+          "engine": "prism",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24104,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "primordia-release-after",
+          "engine": "stratograph",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24104,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "primordia-release-after",
+          "engine": "topograph",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24104,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "primordia-release-before",
+          "engine": "contenders",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24104,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "primordia-release-before",
+          "engine": "primordia",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24104,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "primordia-release-before",
+          "engine": "prism",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24104,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "primordia-release-before",
+          "engine": "stratograph",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24104,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "primordia-release-before",
+          "engine": "topograph",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24104,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        }
+      ],
+      "engine_roles": [
+        {
+          "engine": "primordia",
+          "role": "watch",
+          "status": "insufficient_data",
+          "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+        },
+        {
+          "engine": "prism",
+          "role": "watch",
+          "status": "insufficient_data",
+          "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+        },
+        {
+          "engine": "stratograph",
+          "role": "watch",
+          "status": "insufficient_data",
+          "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+        },
+        {
+          "engine": "topograph",
+          "role": "watch",
+          "status": "insufficient_data",
+          "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+        }
+      ]
+    },
+    "limitations": [
+      "Bootstrap uncertainty at few seeds is descriptive; likely_gain is not promotion.",
+      "Source revision is the declared intervention; observational comparisons do not prove causality."
+    ]
+  },
+  "validation": {
+    "status": "passed",
+    "decision_category": "needs more seeds",
+    "run_ids": [
+      "contenders_20261004T210649_d8b1430bdd11",
+      "contenders_20261004T210904_4a5682f25b1b",
+      "primordia_20261004T210815_d8caba999b",
+      "primordia_20261004T211024_22e5d9fa94",
+      "prism_20261004T210730_9dc85e4d44",
+      "prism_20261004T210939_872e260c6b",
+      "stratograph_20261004T210803_5fb57a1d8d",
+      "stratograph_20261004T211012_0c457758d1",
+      "topograph_20261004T210748_8584498aae",
+      "topograph_20261004T210957_7451145391"
+    ],
+    "case_ids": [
+      "tier_b_core_v2_b16_s24104"
+    ],
+    "target_engines": [
+      "primordia"
+    ],
+    "before_revision": "d4ba3ba4342defe094e0b1e6a241fe59c3355166",
+    "after_revision": "f5ec6ea538cb9c79909ada3be110b6fe5c666179"
+  },
+  "systems": [
+    "contenders",
+    "prism",
+    "topograph",
+    "stratograph",
+    "primordia"
+  ],
+  "runs": 10,
+  "fits": 160,
+  "dashboard_slices_reviewed": [
+    "Overall Leaderboard: Projects Only",
+    "Aggregate Evidence: Projects Only",
+    "Per-Seed Aggregate Snapshots: Projects Only",
+    "Engine Rank By Benchmark Family: Projects Only",
+    "Benchmark Trend View"
+  ]
+}

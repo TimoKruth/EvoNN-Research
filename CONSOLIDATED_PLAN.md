@@ -1396,3 +1396,61 @@ readiness is declared. The actual follow-up remains unstarted until requested.
 This diagnostic does not unlock stages A–D automatically: mechanism timing and
 recovery, fresh-seed nomination, measured-compute execution and scientific breadth
 adequacy keep their original stage gates. Preserve the old 28/30 qualification.
+
+## Primordia research implementation — September 21
+
+The requested Primordia development adds opt-in v3 representation, training and
+search arms, documented in [the package operation guide](EvoNN-Primordia/README.md#opt-in-v3-research-arms).
+The baseline remains `breadth_v2` with v2 controls. Fixed temporal and spatial
+families, training-only/search-only arms and full/cold controls are available for
+later comparisons; the generator includes every engine and Contenders in each arm.
+Numerical and runtime implementation checks are separate from scientific evidence.
+Next: freeze a bounded arm subset on a clean producer, requalify it including the
+repaired breadth loader, then run complete all-engine core/breadth matrices with
+fresh seeds and measured work. Preserve historical results and mark any new failed
+matrix incomplete. No large comparison was started by this implementation task.
+
+
+## Requested Primordia-only comparison — September 21
+
+The user explicitly selected a comprehensive, Primordia-only comparison: all 13
+current presets, 16 paired seeds, core and language breadth. This is a scoped
+exception to the standing all-engine roster, not a change to other comparisons.
+The executable frozen protocol is `evonn_compare.primordia_study.POLICY`;
+[operation and statistical scope](EvoNN-Primordia/README.md#primordia-only-confidence-study--september-21)
+are documented in the package guide. The isolated clean producer and all 119
+cached train/validation splits are prepared at `.artifacts/primordia-only-20260921`,
+frozen at commit `933c82adada3a4a25f4b5ff745453d1eb3e01ae7`. The amended study
+has now completed all 26 qualifications and 416 comparison slots with replays. Report
+failures and uncertainty explicitly; no automatic engine promotion or access to
+protected tests. Other development in the main working tree remains separate
+from this frozen execution producer.
+
+
+## Primordia time-budget repair — September 21
+
+User-authorized fix/resume after `full_steady` / language breadth / seed 23101
+exhausted 1,740 seconds at 248 successful fits. The isolated continuation is
+`.artifacts/primordia-only-20260921/amendment-20260921`; its active producer is `38c62e2` (`producer-v2`), with protocol `study-v2`.
+Retain the original 26 qualifications and 22 completed comparisons. Preserve and
+charge the interrupted run separately; restart it once under the amended source
+and time policy. Uniform cumulative allowance for unfinished slots is 36,000
+seconds, with checkpointed invocations capped at 1,740 seconds. No change to
+fit/epoch counts, seeds, model math, replay requirements or paired inference.
+Use the continuation launcher and report; do not treat the original frozen study
+as complete or bypass a retained fit failure.
+
+
+## Primordia completed-study implementation — October 4
+
+[Analysis and confidence intervals](reports/primordia-confidence-20261004/README.md)
+support spatial representations and richer temporal models within Primordia.
+Bare fresh CLI runs now use `standard`, an exact alias of tested `full_steady`;
+historical presets, explicit controls/configs, low-level APIs and resumes remain
+compatible. Regression remains inconclusive and no universal winner is declared.
+The new `portfolio`/`portfolio_stable` policies rotate language and image families
+on fresh proposals, retain v2 tabular proposals, persist allocation on resume,
+and verify family telemetry against the exported ledger. These are hypotheses,
+not completed comparative evidence. Next: fresh paired seeds for control,
+standard and both portfolios, with all four engines and Contenders in every
+declared case. No new scientific study was launched by this implementation.

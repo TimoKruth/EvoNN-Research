@@ -1,0 +1,16 @@
+pack: tier_b_core_v2
+budget: 128
+seed: 42
+epochs: 12
+population_size: 4
+backend: mlx_native
+target_device: cpu
+timeout: 1740.0
+fit_timeout: 120.0
+search_policy: breadth_v2
+max_width: 48
+max_depth: 8
+architecture_policy: expressive_v3
+optimization_policy: stable_v3
+proposal_policy: progress_v3
+inheritance_policy: disabled

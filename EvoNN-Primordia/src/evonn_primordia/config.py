@@ -1,11 +1,12 @@
 """Bounded, explicit engine run configuration."""
 
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
+from evonn_shared.primordia_policy import PrimordiaResearchPolicy
 from evonn_shared.runtime_budget import MAX_ENGINE_EVALUATIONS
 
 
-class RunConfig(BaseModel):
+class RunConfig(PrimordiaResearchPolicy):
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
     schema_version: Literal[1] = 1
     pack: str = "tier1_core"
@@ -15,7 +16,7 @@ class RunConfig(BaseModel):
     population_size: int = Field(default=4, ge=2, le=16, strict=True)
     backend: Literal["numpy_fallback", "mlx_native"] = "numpy_fallback"
     target_device: Literal["cpu", "gpu"] = "cpu"
-    timeout: float = Field(default=1200, gt=0, le=1800)
+    timeout: float = Field(default=1200, gt=0, le=36000)
     fit_timeout: float = Field(default=120, gt=0, le=1800)
     search_policy: Literal["legacy_v1", "breadth_v2"] = "breadth_v2"
     max_width: int = Field(default=48, ge=2, le=256, strict=True)

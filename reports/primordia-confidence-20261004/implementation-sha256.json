@@ -1,0 +1,13 @@
+{
+  "EvoNN-Primordia/src/evonn_primordia/presets.py": "69f875d7d816cfc609733fdada7be1b239ad7a040a57a64afb69df2a4e7dc4e5",
+  "EvoNN-Primordia/src/evonn_primordia/cli.py": "588d81412746375517addfe6d59ab1d0ba8b8a239549afcd06ef81c96c9536b5",
+  "EvoNN-Primordia/src/evonn_primordia/search.py": "78aaa662c66a59101d21f464bf1524009be7ffdd56166ee5d62d48654e92bf1c",
+  "EvoNN-Primordia/src/evonn_primordia/research.py": "2be79fc01f068960a8a421e693fb83f91313fc223d806a158a0b389dcbca0940",
+  "EvoNN-Primordia/src/evonn_primordia/experiments.py": "64309f0271e41cd3b58c8223ccf8f3384911e7218fbdd6341244a875da0e9277",
+  "EvoNN-Shared/src/evonn_shared/primordia_policy.py": "27db1188c7d60475747dae60cf5f2ab0a1d0edd2005d6033daf4fdb8e6400017",
+  "EvoNN-Shared/src/evonn_shared/primordia_presets.py": "955382da7ac8ae5e5a526fb6b654497166effd074db7769b3734438612e585f8",
+  "EvoNN-Shared/src/evonn_shared/engine_evidence.py": "502e0d0b4b430cd36ef1dab60441469cc9eaec4cbcc30765b673904d3cf54e8d",
+  "EvoNN-Primordia/tests/test_presets.py": "7d79ea8480b91743933e577e40445ba1eee854bdaa28f3bea214c7484a4abf3a",
+  "tests/integration/test_primordia_research_v3.py": "bc668369830d01983ee7d2ccddc1deea988394845a72fe66ed664f19f228350c",
+  "EvoNN-Compare/src/evonn_compare/campaign.py": "b3da1311b28d3143e1ac0081f1b58539ab6202313c4e14ad0c2920d05727ef67"
+}

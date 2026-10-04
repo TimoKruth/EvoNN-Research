@@ -31,7 +31,7 @@ from evonn_shared.runtime_budget import execution_budget
 from evonn_shared.runtime_journal import load_runtime_checkpoint
 from evonn_shared.hierarchy_policy import HierarchyResearchPolicy
 from evonn_shared.prism_policy import PrismResearchPolicy
-from evonn_shared.primordia_policy import PrimordiaResearchPolicy
+from evonn_shared.primordia_policy import PrimordiaResearchPolicy, RESEARCH_DEFAULTS
 from evonn_shared.telemetry import ArtifactReference
 from .audit import artifact_json, benchmark_audit
 from .cases import Case, evaluate_case
@@ -53,23 +53,31 @@ class CampaignSpec(BaseModel):
     stratograph_research: HierarchyResearchPolicy | None = None
     prism_research: PrismResearchPolicy | None = None
     primordia_research: PrimordiaResearchPolicy | None = None
+    comparison_scope: Literal["all_engines", "primordia_variants_v1"] = "all_engines"
     topograph_variant: Literal["legacy", "mechanics", "training", "archive", "broad", "open"] | None = None
     contender_pool: Literal["lm_screen_v1_reference", "lm_screen_v1_epochs2", "lm_screen_v1_epochs5",
                             "lm_screen_v1_epochs10", "lm_screen_v1_alpha01", "lm_screen_v1_alpha001"] | None = None
     enhanced: bool = False
-    timeout: float = Field(default=300.0, gt=0, le=1740)
+    timeout: float = Field(default=300.0, gt=0, le=36000)
     fit_timeout: float = Field(default=90.0, gt=0, le=1800)
     min_free_bytes: int = Field(default=1024**3, ge=0)
     analysis: str = "descriptive_repeated_seed_no_superiority_claim"
 
     @model_validator(mode="after")
     def valid(self):
+        primordia_only = self.comparison_scope == "primordia_variants_v1"
+        if self.timeout > 1740 and (not primordia_only or self.timeout <= 1800):
+            raise ValueError("extended total time requires an explicitly scoped segmented Primordia campaign")
+        if primordia_only and (self.systems != ["primordia"] or self.primordia_research is None
+                or self.prism_research is not None or self.topograph_variant is not None
+                or self.stratograph_research is not None or self.contender_pool is not None or self.enhanced):
+            raise ValueError("Primordia variant scope requires only Primordia and an explicit policy")
         if self.contender_pool is not None:
             if set(self.systems) != set(SYSTEMS) or not self.enhanced:
                 raise ValueError("baseline screening requires every engine and enhanced Contenders")
             if self.pack != "language_breadth_v1" or any(b < 16 or b % 16 for b in self.budgets):
                 raise ValueError("language baseline screening requires breadth and all four families per task")
-        if self.primordia_research is not None and set(self.systems) != set(SYSTEMS):
+        if self.primordia_research is not None and not primordia_only and set(self.systems) != set(SYSTEMS):
             raise ValueError("Primordia research campaigns require every engine and Contenders")
         if self.topograph_variant is not None and set(self.systems) != set(SYSTEMS):
             raise ValueError("Topograph research campaigns require every engine and Contenders")
@@ -332,7 +340,7 @@ def match_config(config, manifest, case, system):
             policy = spec.primordia_research or PrimordiaResearchPolicy()
             settings = {**policy.model_dump(), "training_policy": policy.training_policy}
             if spec.primordia_research is not None or any(key in config for key in settings):
-                if any(key not in config or config[key] != value for key, value in settings.items()):
+                if any((config[key] if key in config else RESEARCH_DEFAULTS[key] if key in RESEARCH_DEFAULTS else None) != value for key, value in settings.items()):
                     raise ValueError("campaign Primordia research policy mismatch")
         if any(config[key] != value for key, value in expected.items()):
             raise ValueError("campaign export training settings mismatch")
@@ -426,7 +434,7 @@ def active_dispatch(root, history, slot):
             raise ValueError("prior dispatch process group may still be alive; refusing duplicate work")
 
 
-def run_campaign(root, *, session_timeout=1800, max_runs=None):
+def run_campaign(root, *, session_timeout=1800, max_runs=None, only_case=None):
     if not 0 < session_timeout <= 1800 or (max_runs is not None and (type(max_runs) is not int or max_runs < 1)):
         raise ValueError("session limit must be at most 1800 seconds; max-runs positive")
     root = root.absolute()
@@ -435,8 +443,14 @@ def run_campaign(root, *, session_timeout=1800, max_runs=None):
         preflight(root)
         manifest = read_manifest(root)
         spec = CampaignSpec.model_validate(manifest["spec"])
+        segment_timeout = min(spec.timeout, 1740.0)
         history = events(root, manifest)
-        for case, system in slots(spec):
+        selected_slots = slots(spec)
+        if only_case is not None:
+            selected_slots = [(case, system) for case, system in selected_slots if case == only_case]
+            if not selected_slots:
+                raise ValueError("requested case is outside the declared campaign matrix")
+        for case, system in selected_slots:
             slot = slot_id(case, system)
             active_dispatch(root, history, slot)
             run, reference = adopted(root, manifest, case, system)
@@ -448,7 +462,7 @@ def run_campaign(root, *, session_timeout=1800, max_runs=None):
             if reference is not None:
                 append_event(root, manifest, history, slot, "complete", reference)
                 continue
-            if (max_runs is not None and launched >= max_runs) or deadline - time.monotonic() < spec.timeout + 20:
+            if (max_runs is not None and launched >= max_runs) or deadline - time.monotonic() < segment_timeout + 20:
                 break  # Never shrink a later slot's declared budget.
             preflight(root)
             output = create_artifact_directory(root / "runs" / slot)
@@ -465,33 +479,43 @@ def run_campaign(root, *, session_timeout=1800, max_runs=None):
                 command += ["--research", json.dumps(spec.stratograph_research.model_dump(mode="json"), sort_keys=True)]
             if system == "topograph" and spec.topograph_variant is not None:
                 command += ["--variant", spec.topograph_variant]
-            if system == "primordia" and spec.primordia_research is not None:
-                for key, value in spec.primordia_research.model_dump().items():
+            if system == "primordia":
+                policy = spec.primordia_research or PrimordiaResearchPolicy()
+                for key, value in policy.model_dump().items():
                     command += ["--" + key.replace("_", "-"), str(value)]
             if system == "prism" and spec.prism_research is not None:
                 for key, value in spec.prism_research.model_dump().items():
                     if value is not None:
                         command += ["--" + key.replace("_", "-"), json.dumps(value, sort_keys=True) if isinstance(value, dict) else value]
+            previous_completed = 0
             if run is not None:
                 if system == "contenders":
                     raise ValueError("incomplete Contenders run has no resume contract; retained without restarting")
                 match_config(json.loads(read_document(run, "config.yaml")), manifest, case, system)
                 _, payload = load_runtime_checkpoint(run / "checkpoints")
                 state = json.loads(payload)
+                previous_completed = state["completed"]
                 if state["completed"] > case.budget or (state["elapsed"] >= spec.timeout and state["completed"] < case.budget):
                     raise ValueError("incomplete slot exhausted its budget; no automatic replacement")
                 command += ["--resume", str(run)]
-            if deadline - time.monotonic() < spec.timeout + 20:
+            if deadline - time.monotonic() < segment_timeout + 20:
                 break  # Preflight/recovery must not consume the reserved slot budget.
             event = append_event(root, manifest, history, slot, "dispatch", {"command": command})
             dispatch = create_artifact_directory(root / "dispatch")
             description = dispatch / f"{event['sequence']:06d}.json"
             publish_artifact(description, encoded(event))
             _bounded_process([sys.executable, "-m", "evonn_compare.campaign_worker", "dispatch", str(description), str(fd)],
-                             spec.timeout + 20, dispatch / f"{event['sequence']:06d}.log", pass_fds=(fd,))
+                             segment_timeout + 20, dispatch / f"{event['sequence']:06d}.log", pass_fds=(fd,))
             launched += 1
-            _, reference = adopted(root, manifest, case, system)
+            current_run, reference = adopted(root, manifest, case, system)
             if reference is None:
+                if spec.timeout > 1800 and current_run is not None:
+                    _, payload = load_runtime_checkpoint(current_run / "checkpoints")
+                    progress = json.loads(payload)
+                    if (previous_completed < progress["completed"] < case.budget
+                            and progress["elapsed"] < spec.timeout
+                            and all(a["status"] == "ok" for a in progress["attempts"])):
+                        break
                 raise ValueError("run ended without a verified complete export; preserved for resume")
             append_event(root, manifest, history, slot, "complete", reference)
         completed = {e["slot"]: e["details"] for e in history if e["kind"] == "complete"}

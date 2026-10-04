@@ -1,6 +1,7 @@
 """Package-local search coordinator and worker using the shared publication boundary."""
 
 from datetime import datetime, timezone
+from dataclasses import asdict
 import hashlib
 import importlib.metadata
 import io
@@ -38,12 +39,12 @@ from evonn_shared.runtime_io import (
     _crash,
     derived,
     export_run,
-    vars_free_training,
 )
 from .artifacts import build_artifacts
 from .tensors import Backend
 from .training import TrainConfig, fit
 from .config import RunConfig
+from evonn_shared.primordia_policy import PrimordiaResearchPolicy
 
 
 def evaluation_worker(request, output, search_type, genome_type):
@@ -134,13 +135,17 @@ def run_engine(
     search_policy="breadth_v2",
     max_width=48,
     max_depth=8,
+    architecture_policy="v2",
+    optimization_policy="v2",
+    proposal_policy="v2",
+    inheritance_policy="enabled",
     resume=None,
     stop_after=None,
     crash_at=None,
     crash_step=1,
 ):
-    if not all(math.isfinite(v) and 0 < v <= 1800 for v in (timeout, fit_timeout)):
-        raise ValueError("run and fit limits must be in (0,1800] seconds")
+    if not (math.isfinite(timeout) and 0 < timeout <= 36000 and math.isfinite(fit_timeout) and 0 < fit_timeout <= 1800):
+        raise ValueError("total run limit must be in (0,36000] and fit limit in (0,1800] seconds")
     if type(seed) is not int or not 0 <= seed < 2**32:
         raise ValueError("seed must be a 32-bit unsigned integer")
     cache_root = Path(".artifacts/dataset-cache") if cache_root is None else cache_root
@@ -149,6 +154,9 @@ def run_engine(
         raise ValueError("population_size must be an integer in [2,16]")
     # Validate policy before creating artifacts or preparing data.
     RunConfig(search_policy=search_policy, max_width=max_width, max_depth=max_depth, epochs=epochs)
+    research = PrimordiaResearchPolicy(search_policy=search_policy, max_width=max_width, max_depth=max_depth,
+        architecture_policy=architecture_policy, optimization_policy=optimization_policy,
+        proposal_policy=proposal_policy, inheritance_policy=inheritance_policy)
     selection = Backend(backend, device)
     root = shared_root()
     pack = load_parity_pack(pack_name, shared_root=root)
@@ -182,12 +190,11 @@ def run_engine(
         },
     }
     configuration["evaluator_fidelity"] = search_type.evaluator_fidelity
-    configuration.update(search_policy=search_policy, max_width=max_width, max_depth=max_depth,
-                         training_policy="learning_progress_with_patient_slots/v2" if search_policy == "breadth_v2" else "legacy/v1")
+    configuration.update(**research.model_dump(), training_policy=research.training_policy)
     configuration["engine_version"] = importlib.metadata.version("evonn-" + system)
     invocation_start = time.monotonic()
     invocation_started = utc()
-    deadline = invocation_start + timeout
+    deadline = invocation_start + (1740.0 if timeout > 1800 else timeout)
     if resume is None:
         identifier = system + "_" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S") + "_" + uuid.uuid4().hex[:10]
         workspace = create_run_workspace(create_artifact_directory(output_parent), identifier)
@@ -209,7 +216,7 @@ def run_engine(
         publish_artifact(workspace.root / "dataset_provenance.json", encode(provenance))
         search = search_type(
             definitions, seed=int(derive_stream(seed, StreamName.SEARCH)), population_size=population_size, budget=budget,
-            search_policy=search_policy, max_width=max_width, max_depth=max_depth, training_epochs=epochs
+            **research.model_dump(), training_epochs=epochs
         )
         state = {
             "config": configuration,
@@ -259,6 +266,9 @@ def run_engine(
                 raise ValueError("checkpoint does not bind committed row prefix")
             search = None
             while state["completed"] < target and time.monotonic() < deadline:
+                # Amended long runs pause before a fit rather than shortening its allowance.
+                if timeout > 1800 and deadline - time.monotonic() < fit_timeout + 10:
+                    break
                 step = state["completed"] + 1
                 transaction_path = workspace.root / f"transaction_{step:06d}.json"
                 if transaction_path.exists():
@@ -310,6 +320,12 @@ def run_engine(
                             weight_decay=genome.weight_decay,
                             timeout=min(fit_timeout, max(0.001, deadline - time.monotonic())),
                         )
+                        if research.optimization_policy != "v2":
+                            training = TrainConfig(**{**asdict(training), "select_initial": True,
+                                "label_smoothing": .05 if definition.task_kind.value == "classification" else 0.,
+                                "min_epochs": min(allocated, max(4, math.ceil(allocated / 2))),
+                                "patience": allocated if proposal.get("lane") in {"patient", "progress"} else max(4, allocated // 2),
+                                "schedule": "constant" if research.optimization_policy == "steady_v3" else "cosine"})
                         request = {
                             "benchmark": definition.id,
                             "shared_root": str(root),
@@ -320,7 +336,7 @@ def run_engine(
                             "data": data,
                             "weights": {k: v.tolist() for k, v in model.weights.items()},
                             "buffers": {k: [np.asarray(a).tolist() for a in v] for k, v in model.buffers.items()},
-                            "training": {**vars_free_training(training), "min_epochs": training.min_epochs},
+                            "training": asdict(training),
                             "source_sha256": configuration["source_sha256"],
                         }
                     except (ValueError, TypeError, OverflowError) as error:

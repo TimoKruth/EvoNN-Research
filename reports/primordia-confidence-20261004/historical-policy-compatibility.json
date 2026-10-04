@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "arms": 13,
+  "attempts_per_benchmark": 32,
+  "benchmarks": 3,
+  "state_sha256": {
+    "attention": "6406998366292e9b7e49559da552850fdaf1cee647c09b911bfee405a74aa891",
+    "control": "023bcfb8d475e30f001a4426fd5e310aaf318a0203fead12be4bb8f0cc100a65",
+    "full": "558ab5c5be81a0e51b4e76e31566b158ce55f11b5de511c193aadc347baecaf0",
+    "full_cold": "85f56d2836cdf790793f79d3e94a3ca6812aa38be2fe58bca9f5d6e35e10919f",
+    "full_steady": "e8b158dbd29e33f4afda6df07c985b6c00faff9bd89ff127330dc8edd450eb61",
+    "multiscale": "baddb940ada0b5eed73facdec61cbd1e14d7a49b699e20ff3d0249510b5d3d66",
+    "progress_search": "668c716a4b6250615715c5bc3a824515e12ed31b35826bf065c7f27960c804dd",
+    "representations": "f097d641e9101f8ebc78726aba5a5cccbe47f8363c5eabc4dc0f7cea54eccf48",
+    "spatial_flat": "90b1ff3407bd231192cb8cf2ad1584c3019dabf45146e3f543ec118418b93330",
+    "spatial_pool": "071c7bb4819bd7f409eda459904888d81dc6c981bc7b1c88a730104f435e7a70",
+    "stable_training": "39a46071b3c8bb3bdcab9a686045a55c41349f177260c42c3ce50ea497b1a7c9",
+    "steady_training": "f026a240e62b211e65e38e68160c0c55b9ffe7255d1dc92f21f0fb12edf47b7b",
+    "temporal_convolution": "763abc50d8d61e640d205b4d95f3b8cb455faf6c198edde8e08bfbb7640c24cd"
+  }
+}
