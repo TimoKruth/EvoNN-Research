@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "decision_category": "needs more seeds",
+  "run_ids": [
+    "contenders_20261004T210649_d8b1430bdd11",
+    "contenders_20261004T210904_4a5682f25b1b",
+    "primordia_20261004T210815_d8caba999b",
+    "primordia_20261004T211024_22e5d9fa94",
+    "prism_20261004T210730_9dc85e4d44",
+    "prism_20261004T210939_872e260c6b",
+    "stratograph_20261004T210803_5fb57a1d8d",
+    "stratograph_20261004T211012_0c457758d1",
+    "topograph_20261004T210748_8584498aae",
+    "topograph_20261004T210957_7451145391"
+  ],
+  "case_ids": [
+    "tier_b_core_v2_b16_s24104"
+  ],
+  "target_engines": [
+    "primordia"
+  ],
+  "before_revision": "d4ba3ba4342defe094e0b1e6a241fe59c3355166",
+  "after_revision": "f5ec6ea538cb9c79909ada3be110b6fe5c666179"
+}
+Dependency archive packed
+Pinned 58-record evidence bundle

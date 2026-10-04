@@ -38,6 +38,9 @@
     "scope_test_retest": "Passed after using the existing legacy Topograph variant to exercise cross-engine rejection.",
     "import_policy": "passed",
     "ruff": "passed",
-    "isolated_from_uncommitted_other_engine_changes": true
+    "isolated_from_uncommitted_other_engine_changes": true,
+    "shared_foundation_tests_passed": 857,
+    "compare_package_tests_passed": 183,
+    "release_contract": "reports/primordia-confidence-20261004/release-contract.json"
   }
 }
