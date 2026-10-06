@@ -118,3 +118,34 @@ def test_size_failure_requires_exact_uncharged_rejection():
         with pytest.raises(ValueError,match='uncharged oversized proposal'):
             continuation.size_failure(state,256)
         attempts[-1][field]=saved
+
+
+@pytest.mark.parametrize('corruption', [None, 'controller', 'producer', 'patch', 'schedule'])
+def test_historical_manifest_read_checks_bindings_without_executing_code(tmp_path, monkeypatch, corruption):
+    controller = tmp_path/'controller.py'
+    controller.write_text('raise RuntimeError("historical code must never execute")\n')
+    patch = tmp_path/'producer.patch'
+    patch.write_text('bound producer patch\n')
+    parent = {'sha256':'a'*64, 'schedule':[{'slot':1}]}
+    identity = {'producer':'expected'}
+    plan = dict(schema_version='evonn.prism-budget-continuation/v1', controller_sha256=continuation.digest(controller),
+                producer_patch=str(patch), producer_patch_sha256=continuation.digest(patch),
+                parent=str(tmp_path/'original'), parent_sha256=parent['sha256'], schedule=parent['schedule'],
+                identity=identity, campaigns={}, retained_failures=[])
+    (tmp_path/'continuation.json').write_bytes(c.encoded({**plan, 'sha256':c.sha(plan)}))
+    monkeypatch.setattr(continuation.study, 'read_plan', lambda root: parent)
+    monkeypatch.setattr(c, 'identity', lambda: identity)
+    if corruption == 'controller':
+        controller.write_text('changed controller')
+    elif corruption == 'producer':
+        monkeypatch.setattr(c, 'identity', lambda: {'producer':'different'})
+    elif corruption == 'patch':
+        patch.write_text('changed patch')
+    elif corruption == 'schedule':
+        parent = {**parent, 'schedule':[]}
+    if corruption:
+        with pytest.raises(ValueError, match='drift'):
+            continuation._read_manifest(tmp_path, controller)
+    else:
+        actual, original = continuation._read_manifest(tmp_path, controller)
+        assert actual['identity'] == identity and original == parent

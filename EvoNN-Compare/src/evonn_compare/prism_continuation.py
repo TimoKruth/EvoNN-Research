@@ -1,7 +1,6 @@
 """Explicit fixed-fit Prism continuation; deploy outside the frozen producer."""
 import argparse
 from contextlib import ExitStack
-import importlib.util
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -163,10 +162,7 @@ def prepare_fit(root, predecessor):
     if root.exists():
         raise ValueError('use a fresh continuation directory')
     controller = predecessor.parent/'controller.py'
-    module_spec = importlib.util.spec_from_file_location('historical_prism_controller', controller)
-    previous = importlib.util.module_from_spec(module_spec)
-    module_spec.loader.exec_module(previous)
-    old, original = previous.read(predecessor)
+    old, original = _read_manifest(predecessor, controller)
     failure_path = predecessor/'failure.json'
     failure = json.loads(failure_path.read_bytes())
     entry = original['schedule'][52]
@@ -238,10 +234,7 @@ def size_failure(state, budget):
 def size_parent(root):
     """Bind already journaled evidence; semantic verification happens before dispatch."""
     controller=root.parent/'controller.py'
-    spec=importlib.util.spec_from_file_location('previous_prism_controller',controller)
-    previous=importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(previous)
-    old, original=previous.read(root)
+    old, original=_read_manifest(root,controller)
     failure=json.loads((root/'failure.json').read_bytes())
     if failure['completed'] != 163 or failure['active'] != original['schedule'][163]:
         raise ValueError('unexpected failed continuation coverage')
@@ -358,10 +351,15 @@ def verify_record(record):
 
 
 def read(root):
+    return _read_manifest(root, Path(__file__))
+
+
+def _read_manifest(root, controller):
+    """Verify bound historical data without importing or executing its controller."""
     plan = json.loads((root/'continuation.json').read_bytes())
     if (plan['schema_version'] != 'evonn.prism-budget-continuation/v1'
             or plan['sha256'] != c.sha({k:v for k,v in plan.items() if k != 'sha256'})
-            or plan['controller_sha256'] != digest(Path(__file__))
+            or plan['controller_sha256'] != digest(controller)
             or digest(Path(plan['producer_patch'])) != plan['producer_patch_sha256']):
         raise ValueError('continuation manifest/controller/patch drift')
     parent = study.read_plan(Path(plan['parent']))

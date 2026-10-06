@@ -37,7 +37,7 @@ def summarize(source=SOURCE):
         descriptions.append(dict(panel=panel, arm=arm, benchmark=task, n=len(values),
             direction=values[0]['direction'], metric_mean=mean(r['value'] for r in values),
             metric_median=median(r['value'] for r in values),
-            winner_fit_seconds_mean=mean(r['training_seconds'] for r in values),
+            search_training_seconds_mean=mean(r['training_seconds'] for r in values),
             winner_parameter_count_median=median(r['parameter_count'] for r in values)))
     stats = data['statistics']
     return dict(source=str(source.relative_to(ROOT)), source_sha256=hashlib.sha256(payload).hexdigest(),
@@ -45,7 +45,7 @@ def summarize(source=SOURCE):
         inference={k: v for k, v in stats.items() if k != 'contrasts'},
         contrasts=[{k: v for k, v in c.items() if k != 'paired_effects'} for c in stats['contrasts']],
         per_task_descriptive=descriptions,
-        cost_note='Winner-fit seconds describe only selected fits, not total search cost or equal-compute efficiency.',
+        cost_note='Training seconds sum all successful fits for each task; means are per task/seed, not total run wall time or equal-compute efficiency.',
         retained_continuation_cost=[{k: r[k] for k in ('charged_attempts', 'invalid_proposals', 'measured_train_seconds') if k in r}
                                     for r in data['retained_failure_cost']])
 

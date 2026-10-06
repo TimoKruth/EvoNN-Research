@@ -332,8 +332,9 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
                 raise ValueError("Prism fixed architecture control differs from saved search")
             flags = prism_policy_flags(prism_policy.variant, task=get_benchmark(attempt["benchmark_id"]).task_kind.value)
             if prism_policy.variant in V3_VARIANTS:
+                resolved = telemetry.get("resolved_policies", {})
                 if (attempt.get("resolved_policy") != flags or
-                        telemetry.get("resolved_policies", {}).get(attempt["benchmark_id"]) != flags):
+                        attempt["benchmark_id"] not in resolved or resolved[attempt["benchmark_id"]] != flags):
                     raise ValueError("Prism resolved task policy differs from configuration")
                 if attempt["status"] == "ok":
                     task = get_benchmark(attempt["benchmark_id"]).task_kind.value

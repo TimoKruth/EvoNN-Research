@@ -4,7 +4,7 @@
   "source_sha256": "f72b0b23c03678800f3c131b877eca1f88445f361bf393bb8d69acb2efe3ec22",
   "working_tree": "uncommitted implementation; unrelated existing changes preserved",
   "results_summary": "reports/prism-confidence-20260921/results-summary.json",
-  "results_summary_sha256": "17e2a843049134c3067ed3db3d9f665b49cbe2dd666a6a22d848e5b1fc96d042",
+  "results_summary_sha256": "820f21b4a520fb31493ecf6ca72446800644ce4fdc55d0b5672e64d724ebb8ff",
   "variants": [
     "routed_v3",
     "lean_v3",
@@ -44,5 +44,9 @@
       "suite": "ruff, git diff whitespace, uv lock check, package identity, three YAML templates",
       "status": "passed"
     }
-  ]
+  ],
+  "results_summary_correction": {
+    "previous_sha256": "17e2a843049134c3067ed3db3d9f665b49cbe2dd666a6a22d848e5b1fc96d042",
+    "reason": "Correct training_seconds label: cumulative successful fits per task, not winner fit only. Numerical results and frozen inference unchanged."
+  }
 }

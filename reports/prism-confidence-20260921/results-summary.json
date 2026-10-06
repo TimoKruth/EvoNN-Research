@@ -2312,7 +2312,7 @@
       }
     }
   ],
-  "cost_note": "Winner-fit seconds describe only selected fits, not total search cost or equal-compute efficiency.",
+  "cost_note": "Training seconds sum all successful fits for each task; means are per task/seed, not total run wall time or equal-compute efficiency.",
   "inference": {
     "alpha_familywise": 0.05,
     "bootstrap_intervals": "95% descriptive paired-seed percentile intervals; not simultaneous intervals",
@@ -2335,7 +2335,7 @@
       "metric_median": 10.80882557600474,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 127.85432169169071,
+      "search_training_seconds_mean": 127.85432169169071,
       "winner_parameter_count_median": 13120.0
     },
     {
@@ -2346,7 +2346,7 @@
       "metric_median": 1.0004229226195305,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 45.555977778908954,
+      "search_training_seconds_mean": 45.555977778908954,
       "winner_parameter_count_median": 2976.0
     },
     {
@@ -2357,7 +2357,7 @@
       "metric_median": 16.11903448049781,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 14.576398016545378,
+      "search_training_seconds_mean": 14.576398016545378,
       "winner_parameter_count_median": 11420.0
     },
     {
@@ -2368,7 +2368,7 @@
       "metric_median": 12.656746695181237,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 124.58930505539563,
+      "search_training_seconds_mean": 124.58930505539563,
       "winner_parameter_count_median": 13120.0
     },
     {
@@ -2379,7 +2379,7 @@
       "metric_median": 9.999798082187265,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 288.2544101946444,
+      "search_training_seconds_mean": 288.2544101946444,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2390,7 +2390,7 @@
       "metric_median": 1.000000192479388,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 96.28496514306364,
+      "search_training_seconds_mean": 96.28496514306364,
       "winner_parameter_count_median": 3792.0
     },
     {
@@ -2401,7 +2401,7 @@
       "metric_median": 14.70965311900644,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 30.936758426497303,
+      "search_training_seconds_mean": 30.936758426497303,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2412,7 +2412,7 @@
       "metric_median": 12.154864876697872,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 245.38351765995031,
+      "search_training_seconds_mean": 245.38351765995031,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2423,7 +2423,7 @@
       "metric_median": 9.593653675098057,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 351.7050309306709,
+      "search_training_seconds_mean": 351.7050309306709,
       "winner_parameter_count_median": 42852.0
     },
     {
@@ -2434,7 +2434,7 @@
       "metric_median": 1.0000000037798045,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 103.85062806401207,
+      "search_training_seconds_mean": 103.85062806401207,
       "winner_parameter_count_median": 70723.0
     },
     {
@@ -2445,7 +2445,7 @@
       "metric_median": 14.323237268461977,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 41.404188868050305,
+      "search_training_seconds_mean": 41.404188868050305,
       "winner_parameter_count_median": 56234.0
     },
     {
@@ -2456,7 +2456,7 @@
       "metric_median": 11.97243412197298,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 246.22442226339092,
+      "search_training_seconds_mean": 246.22442226339092,
       "winner_parameter_count_median": 10376.0
     },
     {
@@ -2467,7 +2467,7 @@
       "metric_median": 10.11891454893553,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 268.9584322579302,
+      "search_training_seconds_mean": 268.9584322579302,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2478,7 +2478,7 @@
       "metric_median": 1.000000160641789,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 83.22497499776848,
+      "search_training_seconds_mean": 83.22497499776848,
       "winner_parameter_count_median": 3792.0
     },
     {
@@ -2489,7 +2489,7 @@
       "metric_median": 14.710395917453159,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 27.53276537124572,
+      "search_training_seconds_mean": 27.53276537124572,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2500,7 +2500,7 @@
       "metric_median": 12.117351538598388,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 227.01977385404172,
+      "search_training_seconds_mean": 227.01977385404172,
       "winner_parameter_count_median": 10256.0
     },
     {
@@ -2511,7 +2511,7 @@
       "metric_median": 9.856604189766571,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 465.44609113024006,
+      "search_training_seconds_mean": 465.44609113024006,
       "winner_parameter_count_median": 13120.0
     },
     {
@@ -2522,7 +2522,7 @@
       "metric_median": 1.008909115552384,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 181.3430195557555,
+      "search_training_seconds_mean": 181.3430195557555,
       "winner_parameter_count_median": 9904.0
     },
     {
@@ -2533,7 +2533,7 @@
       "metric_median": 14.99532456935047,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 48.43388491258956,
+      "search_training_seconds_mean": 48.43388491258956,
       "winner_parameter_count_median": 15064.0
     },
     {
@@ -2544,7 +2544,7 @@
       "metric_median": 12.078654193683436,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 450.7910089721476,
+      "search_training_seconds_mean": 450.7910089721476,
       "winner_parameter_count_median": 13344.0
     },
     {
@@ -2555,7 +2555,7 @@
       "metric_median": 10.644161547352056,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 142.96886350725543,
+      "search_training_seconds_mean": 142.96886350725543,
       "winner_parameter_count_median": 12560.0
     },
     {
@@ -2566,7 +2566,7 @@
       "metric_median": 1.00000004986437,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 57.94650517954724,
+      "search_training_seconds_mean": 57.94650517954724,
       "winner_parameter_count_median": 5216.0
     },
     {
@@ -2577,7 +2577,7 @@
       "metric_median": 15.730438699819796,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 16.981232418548704,
+      "search_training_seconds_mean": 16.981232418548704,
       "winner_parameter_count_median": 11528.0
     },
     {
@@ -2588,7 +2588,7 @@
       "metric_median": 12.17770738587103,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 179.157037361882,
+      "search_training_seconds_mean": 179.157037361882,
       "winner_parameter_count_median": 12680.0
     },
     {
@@ -2599,7 +2599,7 @@
       "metric_median": 10.11891454893553,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 288.97015523568456,
+      "search_training_seconds_mean": 288.97015523568456,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2610,7 +2610,7 @@
       "metric_median": 1.000000160641789,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 85.70842396667189,
+      "search_training_seconds_mean": 85.70842396667189,
       "winner_parameter_count_median": 3792.0
     },
     {
@@ -2621,7 +2621,7 @@
       "metric_median": 14.710395917453159,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 28.811007263005013,
+      "search_training_seconds_mean": 28.811007263005013,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2632,7 +2632,7 @@
       "metric_median": 12.117351538598388,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 235.79905408151873,
+      "search_training_seconds_mean": 235.79905408151873,
       "winner_parameter_count_median": 10256.0
     },
     {
@@ -2643,7 +2643,7 @@
       "metric_median": 10.058249522991296,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 240.69206492908222,
+      "search_training_seconds_mean": 240.69206492908222,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2654,7 +2654,7 @@
       "metric_median": 1.0180434741280973,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 77.7664245458572,
+      "search_training_seconds_mean": 77.7664245458572,
       "winner_parameter_count_median": 4048.0
     },
     {
@@ -2665,7 +2665,7 @@
       "metric_median": 14.923184439401354,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 26.938528355958017,
+      "search_training_seconds_mean": 26.938528355958017,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2676,7 +2676,7 @@
       "metric_median": 12.075991659220325,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 228.02435947500442,
+      "search_training_seconds_mean": 228.02435947500442,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2687,7 +2687,7 @@
       "metric_median": 10.095203343103202,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 280.90983670090986,
+      "search_training_seconds_mean": 280.90983670090986,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2698,7 +2698,7 @@
       "metric_median": 1.0000000225334607,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 104.49081158289725,
+      "search_training_seconds_mean": 104.49081158289725,
       "winner_parameter_count_median": 2911.0
     },
     {
@@ -2709,7 +2709,7 @@
       "metric_median": 14.858309635880484,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 29.39986912882693,
+      "search_training_seconds_mean": 29.39986912882693,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2720,7 +2720,7 @@
       "metric_median": 12.126159263031598,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 304.02290525429805,
+      "search_training_seconds_mean": 304.02290525429805,
       "winner_parameter_count_median": 13120.0
     },
     {
@@ -2731,7 +2731,7 @@
       "metric_median": 10.152463280597058,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 442.5596399994218,
+      "search_training_seconds_mean": 442.5596399994218,
       "winner_parameter_count_median": 14716.0
     },
     {
@@ -2742,7 +2742,7 @@
       "metric_median": 1.000000014828471,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 181.0392313519124,
+      "search_training_seconds_mean": 181.0392313519124,
       "winner_parameter_count_median": 7512.0
     },
     {
@@ -2753,7 +2753,7 @@
       "metric_median": 14.970176157280909,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 40.75615680066403,
+      "search_training_seconds_mean": 40.75615680066403,
       "winner_parameter_count_median": 11364.0
     },
     {
@@ -2764,7 +2764,7 @@
       "metric_median": 11.978065031389068,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 464.3082674845956,
+      "search_training_seconds_mean": 464.3082674845956,
       "winner_parameter_count_median": 15552.0
     },
     {
@@ -2775,7 +2775,7 @@
       "metric_median": 10.576011637603893,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 190.69728531658959,
+      "search_training_seconds_mean": 190.69728531658959,
       "winner_parameter_count_median": 11444.0
     },
     {
@@ -2786,7 +2786,7 @@
       "metric_median": 1.0000000094495163,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 82.88208950569194,
+      "search_training_seconds_mean": 82.88208950569194,
       "winner_parameter_count_median": 3744.0
     },
     {
@@ -2797,7 +2797,7 @@
       "metric_median": 15.102186903091756,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 19.976861806883242,
+      "search_training_seconds_mean": 19.976861806883242,
       "winner_parameter_count_median": 11504.0
     },
     {
@@ -2808,7 +2808,7 @@
       "metric_median": 12.229344704976157,
       "n": 30,
       "panel": "breadth128",
-      "winner_fit_seconds_mean": 211.31434002012637,
+      "search_training_seconds_mean": 211.31434002012637,
       "winner_parameter_count_median": 13120.0
     },
     {
@@ -2819,7 +2819,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 3.747996091543852,
+      "search_training_seconds_mean": 3.747996091543852,
       "winner_parameter_count_median": 187.0
     },
     {
@@ -2830,7 +2830,7 @@
       "metric_median": 2968.316974399344,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 2.0292071138333996,
+      "search_training_seconds_mean": 2.0292071138333996,
       "winner_parameter_count_median": 388.0
     },
     {
@@ -2841,7 +2841,7 @@
       "metric_median": 0.975,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 23.956698937995437,
+      "search_training_seconds_mean": 23.956698937995437,
       "winner_parameter_count_median": 1810.0
     },
     {
@@ -2852,7 +2852,7 @@
       "metric_median": 16.16127905351285,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 16.280547169070147,
+      "search_training_seconds_mean": 16.280547169070147,
       "winner_parameter_count_median": 13104.0
     },
     {
@@ -2863,7 +2863,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 7.234524124350476,
+      "search_training_seconds_mean": 7.234524124350476,
       "winner_parameter_count_median": 300.0
     },
     {
@@ -2874,7 +2874,7 @@
       "metric_median": 2998.8454221863367,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 3.2488414627402866,
+      "search_training_seconds_mean": 3.2488414627402866,
       "winner_parameter_count_median": 575.0
     },
     {
@@ -2885,7 +2885,7 @@
       "metric_median": 0.9736111111111111,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 50.60589164298144,
+      "search_training_seconds_mean": 50.60589164298144,
       "winner_parameter_count_median": 3872.5
     },
     {
@@ -2896,7 +2896,7 @@
       "metric_median": 14.571064061616102,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 28.644118848553624,
+      "search_training_seconds_mean": 28.644118848553624,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2907,7 +2907,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 5.147530094262523,
+      "search_training_seconds_mean": 5.147530094262523,
       "winner_parameter_count_median": 215.0
     },
     {
@@ -2918,7 +2918,7 @@
       "metric_median": 3107.5547248179446,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 2.5177645953993,
+      "search_training_seconds_mean": 2.5177645953993,
       "winner_parameter_count_median": 598.0
     },
     {
@@ -2929,7 +2929,7 @@
       "metric_median": 0.9791666666666666,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 34.75344528760179,
+      "search_training_seconds_mean": 34.75344528760179,
       "winner_parameter_count_median": 13246.0
     },
     {
@@ -2940,7 +2940,7 @@
       "metric_median": 14.937712373623922,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 29.326094127991624,
+      "search_training_seconds_mean": 29.326094127991624,
       "winner_parameter_count_median": 20815.0
     },
     {
@@ -2951,7 +2951,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 7.234775126205447,
+      "search_training_seconds_mean": 7.234775126205447,
       "winner_parameter_count_median": 300.0
     },
     {
@@ -2962,7 +2962,7 @@
       "metric_median": 2909.3358171058226,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 3.489635438842621,
+      "search_training_seconds_mean": 3.489635438842621,
       "winner_parameter_count_median": 575.0
     },
     {
@@ -2973,7 +2973,7 @@
       "metric_median": 0.9694444444444444,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 47.753128304177274,
+      "search_training_seconds_mean": 47.753128304177274,
       "winner_parameter_count_median": 2410.0
     },
     {
@@ -2984,7 +2984,7 @@
       "metric_median": 14.591191104617451,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 29.046936957505142,
+      "search_training_seconds_mean": 29.046936957505142,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -2995,7 +2995,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 8.449509593332186,
+      "search_training_seconds_mean": 8.449509593332186,
       "winner_parameter_count_median": 2786.0
     },
     {
@@ -3006,7 +3006,7 @@
       "metric_median": 2776.3607477656124,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 4.776813183525034,
+      "search_training_seconds_mean": 4.776813183525034,
       "winner_parameter_count_median": 2151.0
     },
     {
@@ -3017,7 +3017,7 @@
       "metric_median": 0.9916666666666667,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 174.61250468836903,
+      "search_training_seconds_mean": 174.61250468836903,
       "winner_parameter_count_median": 12474.0
     },
     {
@@ -3028,7 +3028,7 @@
       "metric_median": 15.11444264103347,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 42.96988973569629,
+      "search_training_seconds_mean": 42.96988973569629,
       "winner_parameter_count_median": 14976.0
     },
     {
@@ -3039,7 +3039,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 3.853424362021421,
+      "search_training_seconds_mean": 3.853424362021421,
       "winner_parameter_count_median": 187.0
     },
     {
@@ -3050,7 +3050,7 @@
       "metric_median": 3039.9168749294713,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 2.0031264250632375,
+      "search_training_seconds_mean": 2.0031264250632375,
       "winner_parameter_count_median": 428.0
     },
     {
@@ -3061,7 +3061,7 @@
       "metric_median": 0.9763888888888889,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 17.93433209458987,
+      "search_training_seconds_mean": 17.93433209458987,
       "winner_parameter_count_median": 2270.0
     },
     {
@@ -3072,7 +3072,7 @@
       "metric_median": 16.16495950705508,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 16.276512393541633,
+      "search_training_seconds_mean": 16.276512393541633,
       "winner_parameter_count_median": 11504.0
     },
     {
@@ -3083,7 +3083,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 7.075513027470636,
+      "search_training_seconds_mean": 7.075513027470636,
       "winner_parameter_count_median": 300.0
     },
     {
@@ -3094,7 +3094,7 @@
       "metric_median": 2952.4391936656557,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 3.2396574745129327,
+      "search_training_seconds_mean": 3.2396574745129327,
       "winner_parameter_count_median": 575.0
     },
     {
@@ -3105,7 +3105,7 @@
       "metric_median": 0.9708333333333333,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 48.20363622964554,
+      "search_training_seconds_mean": 48.20363622964554,
       "winner_parameter_count_median": 2860.0
     },
     {
@@ -3116,7 +3116,7 @@
       "metric_median": 14.612809384579705,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 27.5280945506917,
+      "search_training_seconds_mean": 27.5280945506917,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -3127,7 +3127,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 6.750853526157638,
+      "search_training_seconds_mean": 6.750853526157638,
       "winner_parameter_count_median": 300.0
     },
     {
@@ -3138,7 +3138,7 @@
       "metric_median": 2958.8512531748975,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 3.1446765199769287,
+      "search_training_seconds_mean": 3.1446765199769287,
       "winner_parameter_count_median": 465.0
     },
     {
@@ -3149,7 +3149,7 @@
       "metric_median": 0.975,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 48.84427284161211,
+      "search_training_seconds_mean": 48.84427284161211,
       "winner_parameter_count_median": 6722.5
     },
     {
@@ -3160,7 +3160,7 @@
       "metric_median": 14.834737975095063,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 27.99830515116143,
+      "search_training_seconds_mean": 27.99830515116143,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -3171,7 +3171,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 7.2740486236696595,
+      "search_training_seconds_mean": 7.2740486236696595,
       "winner_parameter_count_median": 308.0
     },
     {
@@ -3182,7 +3182,7 @@
       "metric_median": 2787.6648761900333,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 3.209452121995855,
+      "search_training_seconds_mean": 3.209452121995855,
       "winner_parameter_count_median": 475.0
     },
     {
@@ -3193,7 +3193,7 @@
       "metric_median": 0.9777777777777777,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 51.80416033892543,
+      "search_training_seconds_mean": 51.80416033892543,
       "winner_parameter_count_median": 4553.0
     },
     {
@@ -3204,7 +3204,7 @@
       "metric_median": 14.640705299971284,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 31.84124348454449,
+      "search_training_seconds_mean": 31.84124348454449,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -3215,7 +3215,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 8.79330449460928,
+      "search_training_seconds_mean": 8.79330449460928,
       "winner_parameter_count_median": 2562.0
     },
     {
@@ -3226,7 +3226,7 @@
       "metric_median": 2881.042712708741,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 3.692165722391413,
+      "search_training_seconds_mean": 3.692165722391413,
       "winner_parameter_count_median": 1441.0
     },
     {
@@ -3237,7 +3237,7 @@
       "metric_median": 0.9805555555555555,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 129.04365924935166,
+      "search_training_seconds_mean": 129.04365924935166,
       "winner_parameter_count_median": 8970.0
     },
     {
@@ -3248,7 +3248,7 @@
       "metric_median": 15.19723205340699,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 39.592941876599795,
+      "search_training_seconds_mean": 39.592941876599795,
       "winner_parameter_count_median": 14240.0
     },
     {
@@ -3259,7 +3259,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 5.020487363679179,
+      "search_training_seconds_mean": 5.020487363679179,
       "winner_parameter_count_median": 170.0
     },
     {
@@ -3270,7 +3270,7 @@
       "metric_median": 3015.217877724678,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 2.2831164389906915,
+      "search_training_seconds_mean": 2.2831164389906915,
       "winner_parameter_count_median": 391.0
     },
     {
@@ -3281,7 +3281,7 @@
       "metric_median": 0.9777777777777777,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 21.053792560777705,
+      "search_training_seconds_mean": 21.053792560777705,
       "winner_parameter_count_median": 1810.0
     },
     {
@@ -3292,7 +3292,7 @@
       "metric_median": 14.620277358319239,
       "n": 30,
       "panel": "core128",
-      "winner_fit_seconds_mean": 21.542552085698116,
+      "search_training_seconds_mean": 21.542552085698116,
       "winner_parameter_count_median": 11504.0
     },
     {
@@ -3303,7 +3303,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 8.098932564355588,
+      "search_training_seconds_mean": 8.098932564355588,
       "winner_parameter_count_median": 187.0
     },
     {
@@ -3314,7 +3314,7 @@
       "metric_median": 2804.2041053051153,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 4.238770775855907,
+      "search_training_seconds_mean": 4.238770775855907,
       "winner_parameter_count_median": 337.0
     },
     {
@@ -3325,7 +3325,7 @@
       "metric_median": 0.9791666666666666,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 54.94113754028027,
+      "search_training_seconds_mean": 54.94113754028027,
       "winner_parameter_count_median": 2410.0
     },
     {
@@ -3336,7 +3336,7 @@
       "metric_median": 15.345390726982515,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 35.33146140803195,
+      "search_training_seconds_mean": 35.33146140803195,
       "winner_parameter_count_median": 13120.0
     },
     {
@@ -3347,7 +3347,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 15.002432142101073,
+      "search_training_seconds_mean": 15.002432142101073,
       "winner_parameter_count_median": 300.0
     },
     {
@@ -3358,7 +3358,7 @@
       "metric_median": 2867.505800072771,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 6.588592120649992,
+      "search_training_seconds_mean": 6.588592120649992,
       "winner_parameter_count_median": 575.0
     },
     {
@@ -3369,7 +3369,7 @@
       "metric_median": 0.9805555555555555,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 102.534230920913,
+      "search_training_seconds_mean": 102.534230920913,
       "winner_parameter_count_median": 7135.0
     },
     {
@@ -3380,7 +3380,7 @@
       "metric_median": 14.233967962891665,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 63.35723691154853,
+      "search_training_seconds_mean": 63.35723691154853,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -3391,7 +3391,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 11.301196277836182,
+      "search_training_seconds_mean": 11.301196277836182,
       "winner_parameter_count_median": 300.0
     },
     {
@@ -3402,7 +3402,7 @@
       "metric_median": 2755.6437576235244,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 5.1624652226979375,
+      "search_training_seconds_mean": 5.1624652226979375,
       "winner_parameter_count_median": 1723.0
     },
     {
@@ -3413,7 +3413,7 @@
       "metric_median": 0.9861111111111112,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 169.3928813753766,
+      "search_training_seconds_mean": 169.3928813753766,
       "winner_parameter_count_median": 15108.5
     },
     {
@@ -3424,7 +3424,7 @@
       "metric_median": 14.098740747463616,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 70.0265760533434,
+      "search_training_seconds_mean": 70.0265760533434,
       "winner_parameter_count_median": 26086.0
     },
     {
@@ -3435,7 +3435,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 13.656488240197843,
+      "search_training_seconds_mean": 13.656488240197843,
       "winner_parameter_count_median": 300.0
     },
     {
@@ -3446,7 +3446,7 @@
       "metric_median": 2821.752353202797,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 7.0279179077770095,
+      "search_training_seconds_mean": 7.0279179077770095,
       "winner_parameter_count_median": 847.0
     },
     {
@@ -3457,7 +3457,7 @@
       "metric_median": 0.9777777777777777,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 124.90223123555964,
+      "search_training_seconds_mean": 124.90223123555964,
       "winner_parameter_count_median": 8822.5
     },
     {
@@ -3468,7 +3468,7 @@
       "metric_median": 14.28031713595346,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 61.73520728574173,
+      "search_training_seconds_mean": 61.73520728574173,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -3479,7 +3479,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 17.260360041586683,
+      "search_training_seconds_mean": 17.260360041586683,
       "winner_parameter_count_median": 2786.0
     },
     {
@@ -3490,7 +3490,7 @@
       "metric_median": 2690.3498224470295,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 9.541316506819566,
+      "search_training_seconds_mean": 9.541316506819566,
       "winner_parameter_count_median": 1851.0
     },
     {
@@ -3501,7 +3501,7 @@
       "metric_median": 0.9944444444444445,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 377.3336574498583,
+      "search_training_seconds_mean": 377.3336574498583,
       "winner_parameter_count_median": 20426.0
     },
     {
@@ -3512,7 +3512,7 @@
       "metric_median": 14.238643970092735,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 90.99573400097239,
+      "search_training_seconds_mean": 90.99573400097239,
       "winner_parameter_count_median": 13448.0
     },
     {
@@ -3523,7 +3523,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 8.56153265571144,
+      "search_training_seconds_mean": 8.56153265571144,
       "winner_parameter_count_median": 187.0
     },
     {
@@ -3534,7 +3534,7 @@
       "metric_median": 2812.823177114002,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 4.199935962632298,
+      "search_training_seconds_mean": 4.199935962632298,
       "winner_parameter_count_median": 537.0
     },
     {
@@ -3545,7 +3545,7 @@
       "metric_median": 0.9805555555555555,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 44.526609230200606,
+      "search_training_seconds_mean": 44.526609230200606,
       "winner_parameter_count_median": 2410.0
     },
     {
@@ -3556,7 +3556,7 @@
       "metric_median": 15.45157077959519,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 40.375750597341295,
+      "search_training_seconds_mean": 40.375750597341295,
       "winner_parameter_count_median": 11668.0
     },
     {
@@ -3567,7 +3567,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 14.062857338846273,
+      "search_training_seconds_mean": 14.062857338846273,
       "winner_parameter_count_median": 300.0
     },
     {
@@ -3578,7 +3578,7 @@
       "metric_median": 2884.3500641139017,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 6.652080063857526,
+      "search_training_seconds_mean": 6.652080063857526,
       "winner_parameter_count_median": 575.0
     },
     {
@@ -3589,7 +3589,7 @@
       "metric_median": 0.9805555555555555,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 100.90637261458129,
+      "search_training_seconds_mean": 100.90637261458129,
       "winner_parameter_count_median": 11035.0
     },
     {
@@ -3600,7 +3600,7 @@
       "metric_median": 14.42241208116096,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 60.72647268072663,
+      "search_training_seconds_mean": 60.72647268072663,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -3611,7 +3611,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 13.073063766917524,
+      "search_training_seconds_mean": 13.073063766917524,
       "winner_parameter_count_median": 300.0
     },
     {
@@ -3622,7 +3622,7 @@
       "metric_median": 2838.6587330412303,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 6.28226908139186,
+      "search_training_seconds_mean": 6.28226908139186,
       "winner_parameter_count_median": 667.0
     },
     {
@@ -3633,7 +3633,7 @@
       "metric_median": 0.9819444444444444,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 99.60548022332563,
+      "search_training_seconds_mean": 99.60548022332563,
       "winner_parameter_count_median": 9347.5
     },
     {
@@ -3644,7 +3644,7 @@
       "metric_median": 14.374109394613155,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 60.47555833312993,
+      "search_training_seconds_mean": 60.47555833312993,
       "winner_parameter_count_median": 9960.0
     },
     {
@@ -3655,7 +3655,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 13.419484684455286,
+      "search_training_seconds_mean": 13.419484684455286,
       "winner_parameter_count_median": 308.0
     },
     {
@@ -3666,7 +3666,7 @@
       "metric_median": 2738.599481412307,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 6.080895397777203,
+      "search_training_seconds_mean": 6.080895397777203,
       "winner_parameter_count_median": 585.0
     },
     {
@@ -3677,7 +3677,7 @@
       "metric_median": 0.9833333333333333,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 135.82968611516407,
+      "search_training_seconds_mean": 135.82968611516407,
       "winner_parameter_count_median": 10972.5
     },
     {
@@ -3688,7 +3688,7 @@
       "metric_median": 14.351686427854954,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 63.796779560551904,
+      "search_training_seconds_mean": 63.796779560551904,
       "winner_parameter_count_median": 9840.0
     },
     {
@@ -3699,7 +3699,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 16.782160253704447,
+      "search_training_seconds_mean": 16.782160253704447,
       "winner_parameter_count_median": 2562.0
     },
     {
@@ -3710,7 +3710,7 @@
       "metric_median": 2771.950572092679,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 6.973535180119021,
+      "search_training_seconds_mean": 6.973535180119021,
       "winner_parameter_count_median": 1779.0
     },
     {
@@ -3721,7 +3721,7 @@
       "metric_median": 0.9861111111111112,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 264.2644406882328,
+      "search_training_seconds_mean": 264.2644406882328,
       "winner_parameter_count_median": 12168.0
     },
     {
@@ -3732,7 +3732,7 @@
       "metric_median": 14.665368870747011,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 83.16810389015203,
+      "search_training_seconds_mean": 83.16810389015203,
       "winner_parameter_count_median": 15248.0
     },
     {
@@ -3743,7 +3743,7 @@
       "metric_median": 1.0,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 10.570143907977036,
+      "search_training_seconds_mean": 10.570143907977036,
       "winner_parameter_count_median": 170.0
     },
     {
@@ -3754,7 +3754,7 @@
       "metric_median": 2854.525059337334,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 4.881373882386834,
+      "search_training_seconds_mean": 4.881373882386834,
       "winner_parameter_count_median": 769.0
     },
     {
@@ -3765,7 +3765,7 @@
       "metric_median": 0.9777777777777777,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 61.34393032757992,
+      "search_training_seconds_mean": 61.34393032757992,
       "winner_parameter_count_median": 2410.0
     },
     {
@@ -3776,7 +3776,7 @@
       "metric_median": 14.293761491365762,
       "n": 30,
       "panel": "core256",
-      "winner_fit_seconds_mean": 51.47191688520834,
+      "search_training_seconds_mean": 51.47191688520834,
       "winner_parameter_count_median": 12224.0
     }
   ],
