@@ -27,6 +27,75 @@ Product and interop; Product implementation is outside this repository's plan.
 
 ## Immediate Next Actions
 
+**Prism completion and next candidates (2026-10-06):** all 1,012 study runs are
+complete. The [result review](reports/prism-confidence-20260921/results-20261006.md)
+records the 110 frozen contrasts and all task/sentinel means. Neither primary
+panel has a unique supported winner; retain `open` as default. Implemented
+`routed_v3`, `lean_v3`, and `aligned_v3` test task routing, component removal and
+accuracy-aligned checkpoint selection, with portable policy validation and resume.
+Next: freeze fresh-seed confirmation contrasts and qualify resources for a new
+full-roster comparison using `evonn_compare.prism_followup`. No follow-up study
+has been launched. The eleven-arm Prism-only exception remains historical.
+
+**Historical Prism-only comparison preparation (2026-09-21):** the user explicitly narrowed
+this study to Prism and selected all eleven current variants. The
+[frozen design](reports/prism-confidence-20260921/protocol.md) defines 30 fresh
+paired seeds, core at 128/256 and language breadth at 128, a 22-run qualification
+gate, 990 main runs, and 110 primary pairwise contrasts with one Holm correction.
+The complete ceiling is 169,664 fit attempts. Preparation freezes source,
+environment, data, order and interpretation; it does not launch study training.
+The controller stops on failure, supports bounded batches and pause/resume, and
+blocks inference on incomplete coverage. This explicit exception is limited to
+the named study and establishes no contender or other-engine claim. Its originally planned
+execution step was the prepared qualification stage; a main comparison can proceed
+only after every declared qualification slot and winner replay succeeds.
+The [preparation receipt](governance/prism-version-confidence-20260921.json)
+records clean producer `8b8c3db`, all 55 preflights, verified data and zero study
+dispatches at preparation. The user subsequently authorized the full run. The
+[launch receipt](governance/prism-version-confidence-launch-20260921.json) records
+the persistent launchd job: qualification first, then the gated main comparison,
+with no automatic restart on failure. A pre-dispatch PATH issue was corrected in
+the [operational relaunch](governance/prism-version-confidence-relaunch-20260921.json)
+without changing the frozen producer or study. That original study subsequently
+stopped at `search_v2` export admission after five qualification completions and
+zero main dispatches. The user authorized repair and restart. The
+[recovery note](reports/prism-confidence-20260921/recovery.md) records the corrected
+validator and separate replacement producer `f5915a2`; original evidence remains
+unchanged. The replacement repeats qualification and retains the full original
+main design. Current execution artifacts are under
+`.artifacts/prism-confidence-repair-20260921/`. That replacement qualified all
+22 cells and completed 30 main cells before `frontier_v2` exhausted its cumulative
+1,500-second allowance after 98 successful fits. The user authorized another fix
+and resume. The [budget continuation](reports/prism-confidence-20260921/budget-continuation.md)
+retains verified completed cells and restarts only the exhausted cell with a
+uniform allowance derived from each remaining fit budget. Current execution
+artifacts moved to `.artifacts/prism-confidence-fit-resume-20260922/` after
+one of 128 attempts hit its 120-second per-fit cap. The
+[per-fit continuation](reports/prism-confidence-20260921/fit-continuation.md)
+retains all 52 completed cells and uses uniform 1,800-second fit / 43,200-second
+run safety caps for unfinished cells, with unchanged training and inference.
+After 141 main completions, `broad` core@256 seed21605 produced one oversized
+convolution proposal. The [size continuation](reports/prism-confidence-20260921/size-continuation.md)
+retains 163 total completions, bounds oversized evolved proposals deterministically
+within the existing parameter cap, and restarts the failed cell separately.
+The completed continuation is `.artifacts/prism-confidence-size-resume-20260923/`;
+its final analysis closes all 1,012 cells. Earlier failed execution workspaces remain
+preserved; all eleven variants and inference rules remain fixed.
+
+**Prism development (2026-09-21):** the requested improvement pass adds selectable
+`search_v2`, `representation_v2`, `regularized_v2`, `averaged_v2`,
+`calibrated_v2` and combined `frontier_v2` experiments, based on the latest
+two-seed Q findings. See [runtime switches](README.md#prism-frontier-experiments-september-21).
+Keep `open` as the control. The [implementation record](reports/prism-frontier-20260921/implementation.md)
+qualifies gradient/causality, exact search recovery, real interrupted-fit recovery,
+saved-winner replay, optimizer-state binding and all-system campaign policy
+propagation on an isolated snapshot. The preparation utility
+copies a supplied full-system specification into matched arms; it starts no fits.
+After implementation checks, compare each mechanism and the combined policy using
+all four engines plus Contenders, preserving weak/failed cells. Report added
+validation overhead and validation-selection exposure. No automatic nomination,
+scientific-stage advancement or protected-test access follows from these changes.
+
 **Topograph integration and cross-engine comparison (2026-09-29):** the
 within-Topograph confirmation is complete at 128/128 verified runs. The user
 authorized integrating the winning configuration and comparing other engines.

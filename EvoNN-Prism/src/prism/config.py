@@ -17,7 +17,7 @@ class RunConfig(BaseModel):
     population_size: int = Field(default=4, ge=2, le=16, strict=True)
     backend: Literal["numpy_fallback", "mlx_native"] = "numpy_fallback"
     target_device: Literal["cpu", "gpu"] = "cpu"
-    timeout: float = Field(default=1200, gt=0, le=1800)
+    timeout: float = Field(default=1200, gt=0, le=43200)
     fit_timeout: float = Field(default=120, gt=0, le=1800)
     variant: Variant = "open"
     inheritance_policy: Literal["enabled", "disabled"] = "enabled"

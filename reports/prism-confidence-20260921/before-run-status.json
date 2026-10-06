@@ -1,0 +1,13 @@
+{
+  "status": "incomplete",
+  "missing_runs": 1012,
+  "required_runs": 1012,
+  "inference": "blocked until every declared slot succeeds and replays",
+  "next_missing": {
+    "arm": "legacy",
+    "campaign": "campaigns/qualification-qcore-legacy",
+    "panel": "qcore",
+    "seed": 21600,
+    "stage": "qualification"
+  }
+}

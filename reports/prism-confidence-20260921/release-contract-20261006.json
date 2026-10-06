@@ -1,0 +1,594 @@
+{
+  "schema_version": 1,
+  "purpose": "single-seed implementation contract; no performance claim",
+  "analysis_request": {
+    "schema_version": 1,
+    "policy": "paired-seed-relative-v1",
+    "before": "prism-release-before",
+    "after": "prism-release-after",
+    "before_revision": "2543e8271c1459ee88d9b932590d51d48cb25bd9",
+    "after_revision": "85105326b8665e4f8ead893ae2bd3640d30e9d05",
+    "panels": [
+      {
+        "pack": "tier_b_core_v2",
+        "budget": 16,
+        "engine": "prism",
+        "benchmarks": [
+          "banknote_classification",
+          "digits_image",
+          "diabetes_regression",
+          "shakespeare_byte_lm"
+        ],
+        "seeds": [
+          24606
+        ]
+      }
+    ],
+    "materiality": 0.01,
+    "claim_scope": "contract_validation"
+  },
+  "analysis": {
+    "schema_version": 1,
+    "before": "prism-release-before",
+    "after": "prism-release-after",
+    "groups": [
+      {
+        "pack": "tier_b_core_v2",
+        "budget": 16,
+        "engine": "prism",
+        "seeds": [
+          24606
+        ],
+        "benchmarks": [
+          "banknote_classification",
+          "diabetes_regression",
+          "digits_image",
+          "shakespeare_byte_lm"
+        ],
+        "n": 0,
+        "effect_mean": null,
+        "bootstrap_ci95": null,
+        "standardized_effect": null,
+        "rank_biserial": null,
+        "bootstrap_method": "4096 percentile resamples of independent paired seed means; RNG seed 0",
+        "wilcoxon": {
+          "status": "insufficient_data",
+          "n": 0,
+          "reason": "requires at least six nonzero independent paired seeds"
+        },
+        "materiality": 0.01,
+        "statistical_label": "needs_more_runs",
+        "aggregation_label": "blocked",
+        "blockers": [
+          "at least 3 paired independent seeds required",
+          "backend, host, data or training protocol drift"
+        ],
+        "level": "L3",
+        "minimum_seeds": 3,
+        "ceiling_ties": 0,
+        "raw_deltas": [],
+        "seed_effects": [],
+        "runtime_tradeoffs": {
+          "complete": true,
+          "per_label": {
+            "prism-release-after": {
+              "wall_clock": 13.950994,
+              "evals_per_second": 1.1468716852720315,
+              "seconds_per_success": 0.871937125
+            },
+            "prism-release-before": {
+              "wall_clock": 11.933976,
+              "evals_per_second": 1.3407099193093737,
+              "seconds_per_success": 0.7458735
+            }
+          },
+          "score_per_second": [
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "banknote_classification",
+              "value": 0.0664664272146291
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "banknote_classification",
+              "value": 0.07089752236227104
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "banknote_classification",
+              "value": 0.056300973640627
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "banknote_classification",
+              "value": 0.06620577455888545
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "diabetes_regression",
+              "value": 524.4023676546129
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "diabetes_regression",
+              "value": 410.81491829671796
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "diabetes_regression",
+              "value": 474.12911776720046
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "diabetes_regression",
+              "value": 353.4321027703661
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "digits_image",
+              "value": 0.015729663738974043
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "digits_image",
+              "value": 0.04559611387626653
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "digits_image",
+              "value": 0.03902549484606218
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "digits_image",
+              "value": 0.06391420329380593
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 16.599833543801246
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 10.951565606911903
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 12.090556624701607
+            },
+            {
+              "label": "prism-release-after",
+              "run_id": "prism_20261006T062523_fe82603454",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 19.714980355168375
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "banknote_classification",
+              "value": 0.07770023395997505
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "banknote_classification",
+              "value": 0.06886373676452691
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "banknote_classification",
+              "value": 0.046315433576142
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "banknote_classification",
+              "value": 0.034736575182106495
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "diabetes_regression",
+              "value": 451.09422653038666
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "diabetes_regression",
+              "value": 502.6792447980612
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "diabetes_regression",
+              "value": 479.5236055904178
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "diabetes_regression",
+              "value": 572.1181532039876
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "digits_image",
+              "value": 0.010939820522142459
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "digits_image",
+              "value": 0.007913912718145608
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "digits_image",
+              "value": 0.010707058383373469
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "digits_image",
+              "value": 0.021879641044284918
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 13.005157032857158
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 8.307324882451713
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 9.14030633462404
+            },
+            {
+              "label": "prism-release-before",
+              "run_id": "prism_20261006T062602_77298fad5c",
+              "benchmark": "shakespeare_byte_lm",
+              "value": 16.086057138266806
+            }
+          ],
+          "family_allocation": [
+            {
+              "label": "prism-release-after",
+              "family": "attention",
+              "seconds": 0.09270245907828212
+            },
+            {
+              "label": "prism-release-after",
+              "family": "causal_transformer",
+              "seconds": 0.09074716700706631
+            },
+            {
+              "label": "prism-release-after",
+              "family": "composite",
+              "seconds": 1.1972314157756045
+            },
+            {
+              "label": "prism-release-after",
+              "family": "conv2d",
+              "seconds": 0.7570340000092983
+            },
+            {
+              "label": "prism-release-after",
+              "family": "embedding",
+              "seconds": 0.059196250047534704
+            },
+            {
+              "label": "prism-release-after",
+              "family": "lite_conv2d",
+              "seconds": 1.0992770829470828
+            },
+            {
+              "label": "prism-release-after",
+              "family": "mlp",
+              "seconds": 0.173725125961937
+            },
+            {
+              "label": "prism-release-after",
+              "family": "moe_mlp",
+              "seconds": 0.12994050001725554
+            },
+            {
+              "label": "prism-release-after",
+              "family": "sparse_mlp",
+              "seconds": 0.11353954207152128
+            },
+            {
+              "label": "prism-release-before",
+              "family": "attention",
+              "seconds": 0.1441847919486463
+            },
+            {
+              "label": "prism-release-before",
+              "family": "causal_transformer",
+              "seconds": 0.15503687504678965
+            },
+            {
+              "label": "prism-release-before",
+              "family": "composite",
+              "seconds": 0.8259264589287341
+            },
+            {
+              "label": "prism-release-before",
+              "family": "conv2d",
+              "seconds": 0.21956987492740154
+            },
+            {
+              "label": "prism-release-before",
+              "family": "embedding",
+              "seconds": 0.08647745905909687
+            },
+            {
+              "label": "prism-release-before",
+              "family": "lite_conv2d",
+              "seconds": 0.22356645797844976
+            },
+            {
+              "label": "prism-release-before",
+              "family": "mlp",
+              "seconds": 0.1397998338798061
+            },
+            {
+              "label": "prism-release-before",
+              "family": "moe_mlp",
+              "seconds": 0.10178566607646644
+            },
+            {
+              "label": "prism-release-before",
+              "family": "sparse_mlp",
+              "seconds": 0.08857158408500254
+            }
+          ],
+          "note": "family allocation covers exported outcomes; raw lower-is-better score/time is not utility"
+        },
+        "portability_only": false,
+        "excluded_benchmarks": [],
+        "uncertainty_reason": null,
+        "friedman": {
+          "status": "insufficient_data",
+          "reason": "paired before/after has only two systems"
+        },
+        "effect_scale": "symmetric relative difference, direction-aware, equal benchmark weight"
+      }
+    ],
+    "request": {
+      "schema_version": 1,
+      "policy": "paired-seed-relative-v1",
+      "before": "prism-release-before",
+      "after": "prism-release-after",
+      "before_revision": "2543e8271c1459ee88d9b932590d51d48cb25bd9",
+      "after_revision": "85105326b8665e4f8ead893ae2bd3640d30e9d05",
+      "panels": [
+        {
+          "pack": "tier_b_core_v2",
+          "budget": 16,
+          "engine": "prism",
+          "benchmarks": [
+            "banknote_classification",
+            "digits_image",
+            "diabetes_regression",
+            "shakespeare_byte_lm"
+          ],
+          "seeds": [
+            24606
+          ]
+        }
+      ],
+      "materiality": 0.01,
+      "claim_scope": "contract_validation"
+    },
+    "decision_category": "needs more seeds",
+    "diagnostics": {
+      "transfer_proof": {
+        "status": "not_applicable",
+        "native_claim_ready": false,
+        "sources": []
+      },
+      "lm_flatline": [
+        {
+          "label": "prism-release-after",
+          "engine": "contenders",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24606,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "prism-release-after",
+          "engine": "primordia",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24606,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "prism-release-after",
+          "engine": "prism",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24606,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "prism-release-after",
+          "engine": "stratograph",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24606,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "prism-release-after",
+          "engine": "topograph",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24606,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "prism-release-before",
+          "engine": "contenders",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24606,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "prism-release-before",
+          "engine": "primordia",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24606,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "prism-release-before",
+          "engine": "prism",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24606,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "prism-release-before",
+          "engine": "stratograph",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24606,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        },
+        {
+          "label": "prism-release-before",
+          "engine": "topograph",
+          "benchmark": "shakespeare_byte_lm",
+          "seed": 24606,
+          "budgets": [
+            16
+          ],
+          "status": "insufficient_data"
+        }
+      ],
+      "engine_roles": [
+        {
+          "engine": "primordia",
+          "role": "watch",
+          "status": "insufficient_data",
+          "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+        },
+        {
+          "engine": "prism",
+          "role": "watch",
+          "status": "insufficient_data",
+          "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+        },
+        {
+          "engine": "stratograph",
+          "role": "watch",
+          "status": "insufficient_data",
+          "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+        },
+        {
+          "engine": "topograph",
+          "role": "watch",
+          "status": "insufficient_data",
+          "reason": "paired change evidence; portfolio leadership needs repeated all-system family comparisons"
+        }
+      ]
+    },
+    "limitations": [
+      "Bootstrap uncertainty at few seeds is descriptive; likely_gain is not promotion.",
+      "Source revision is the declared intervention; observational comparisons do not prove causality."
+    ]
+  },
+  "validation": {
+    "status": "passed",
+    "decision_category": "needs more seeds",
+    "run_ids": [
+      "contenders_20261006T062440_c183b87c4cd6",
+      "contenders_20261006T062522_b004c85386ee",
+      "primordia_20261006T062607_3d1deea666",
+      "primordia_20261006T062642_8e9aecc7d2",
+      "prism_20261006T062523_fe82603454",
+      "prism_20261006T062602_77298fad5c",
+      "stratograph_20261006T062555_092babec4e",
+      "stratograph_20261006T062630_765ee28660",
+      "topograph_20261006T062539_fe6acd100c",
+      "topograph_20261006T062615_84a4f2a0ef"
+    ],
+    "case_ids": [
+      "tier_b_core_v2_b16_s24606"
+    ],
+    "target_engines": [
+      "prism"
+    ],
+    "before_revision": "2543e8271c1459ee88d9b932590d51d48cb25bd9",
+    "after_revision": "85105326b8665e4f8ead893ae2bd3640d30e9d05"
+  },
+  "systems": [
+    "contenders",
+    "prism",
+    "topograph",
+    "stratograph",
+    "primordia"
+  ],
+  "runs": 10,
+  "fits": 160,
+  "dashboard_slices_reviewed": [
+    "Overall Leaderboard: Projects Only",
+    "Aggregate Evidence: Projects Only",
+    "Per-Seed Aggregate Snapshots: Projects Only",
+    "Engine Rank By Benchmark Family: Projects Only",
+    "Benchmark Trend View"
+  ],
+  "before_variant": "open",
+  "after_variant": "aligned_v3",
+  "prior_registry_records": 58,
+  "total_registry_records": 68
+}

@@ -1,8 +1,11 @@
 {
+  "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-prism-release-20261006/prism-dependencies.tar.gz",
   "descriptor": {
-    "archive_sha256": "8479dddf4aca11aadc9339a241e3ab7c898374b53260f71c579d252074477982",
-    "archive_size_bytes": 126295119,
-    "index_sha256": "4069d5f74804e2a9445b571a92636e0b483dc4f0ac2b83db2373feb7501e1ffe",
+    "schema_version": 1,
+    "archive_sha256": "60da24f074a41dc82c90d350918ee26027f120f061629e178ed4b7319f563f17",
+    "archive_size_bytes": 127867683,
+    "index_sha256": "a310b4476cbfbe7afcbbbf2fe28e3d8571e863cd79901180dc6dac5b58fe1ab6",
+    "transport_manifest_sha256": "077ca87fb00aaf174198a31e411e79231feb41e43448eb1ea8b496ed8a588c96",
     "run_ids": [
       "contenders_20260908T130048_80d3ce4b375c",
       "contenders_20260908T180234_3b4ee464a852",
@@ -14,8 +17,8 @@
       "contenders_20260916T085052_19f974badffd",
       "contenders_20261004T210649_d8b1430bdd11",
       "contenders_20261004T210904_4a5682f25b1b",
-      "contenders_20261006T060809_d6daaf4274d8",
-      "contenders_20261006T061133_9d99e15d9416",
+      "contenders_20261006T062440_c183b87c4cd6",
+      "contenders_20261006T062522_b004c85386ee",
       "primordia_20260908T125740_387fcbee29",
       "primordia_20260908T175220_62ee2fefb9",
       "primordia_20260908T175337_0de17f115a",
@@ -28,8 +31,8 @@
       "primordia_20260916T085200_d4a7488a1a",
       "primordia_20261004T210815_d8caba999b",
       "primordia_20261004T211024_22e5d9fa94",
-      "primordia_20261006T060753_53ac4f531a",
-      "primordia_20261006T061121_b3a3e7b989",
+      "primordia_20261006T062607_3d1deea666",
+      "primordia_20261006T062642_8e9aecc7d2",
       "prism_20260908T125832_129983a9d4",
       "prism_20260908T175231_f787d48282",
       "prism_20260908T175404_43bdca6eeb",
@@ -42,8 +45,8 @@
       "prism_20260916T085125_ba547fad87",
       "prism_20261004T210730_9dc85e4d44",
       "prism_20261004T210939_872e260c6b",
-      "prism_20261006T060703_fa0a140624",
-      "prism_20261006T061035_cd85162528",
+      "prism_20261006T062523_fe82603454",
+      "prism_20261006T062602_77298fad5c",
       "stratograph_20260908T125705_ba14d39ecc",
       "stratograph_20260908T175129_c771d22d7c",
       "stratograph_20260908T175257_16224a1363",
@@ -56,8 +59,8 @@
       "stratograph_20260916T085148_5ea2ace251",
       "stratograph_20261004T210803_5fb57a1d8d",
       "stratograph_20261004T211012_0c457758d1",
-      "stratograph_20261006T060736_0c74d1979d",
-      "stratograph_20261006T061105_4310d4c592",
+      "stratograph_20261006T062555_092babec4e",
+      "stratograph_20261006T062630_765ee28660",
       "topograph_20260908T125911_3d6bcd8164",
       "topograph_20260908T175243_860c1f4042",
       "topograph_20260908T175450_930b686cef",
@@ -70,17 +73,14 @@
       "topograph_20260916T085136_bed1f9c8df",
       "topograph_20261004T210748_8584498aae",
       "topograph_20261004T210957_7451145391",
-      "topograph_20261006T060718_6025f47562",
-      "topograph_20261006T061049_bb5fc61659"
-    ],
-    "schema_version": 1,
-    "transport_manifest_sha256": "a734bf424d97918b546eecdfd36bec9ca4354683498977725501abecef74c7c1"
+      "topograph_20261006T062539_fe6acd100c",
+      "topograph_20261006T062615_84a4f2a0ef"
+    ]
   },
   "registry_snapshot": {
-    "archive_sha256": "ca8ea32e7905b3769444d4d0a16bb6634dc345e051603d645b901d77c70bc80d",
-    "archive_size_bytes": 13504772,
-    "index_sha256": "4069d5f74804e2a9445b571a92636e0b483dc4f0ac2b83db2373feb7501e1ffe",
-    "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-consolidation-20261006/consolidation-registry.tar.gz"
-  },
-  "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-consolidation-20261006/consolidation-dependencies.tar.gz"
+    "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-prism-release-20261006/prism-registry.tar.gz",
+    "archive_sha256": "9cc7a26e3c84e39cdf61888939a5ff3483bf76aee24f811ca52d47146d386a08",
+    "archive_size_bytes": 13247045,
+    "index_sha256": "a310b4476cbfbe7afcbbbf2fe28e3d8571e863cd79901180dc6dac5b58fe1ab6"
+  }
 }

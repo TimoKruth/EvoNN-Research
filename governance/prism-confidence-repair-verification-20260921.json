@@ -1,0 +1,61 @@
+{
+  "schema_version": "evonn.prism-confidence-repair-verification/v1",
+  "checked_at": "2026-09-21T14:22:00.967512+00:00",
+  "status": "running",
+  "qualification_completed_and_replayed": 7,
+  "main_completed": 0,
+  "original_failure_cleared": "search_v2 core qualification export and winner replay succeeded",
+  "completed": [
+    {
+      "arm": "legacy",
+      "campaign": "campaigns/qualification-qcore-legacy",
+      "panel": "qcore",
+      "seed": 21600,
+      "stage": "qualification"
+    },
+    {
+      "arm": "archive",
+      "campaign": "campaigns/qualification-qcore-archive",
+      "panel": "qcore",
+      "seed": 21600,
+      "stage": "qualification"
+    },
+    {
+      "arm": "training",
+      "campaign": "campaigns/qualification-qcore-training",
+      "panel": "qcore",
+      "seed": 21600,
+      "stage": "qualification"
+    },
+    {
+      "arm": "broad",
+      "campaign": "campaigns/qualification-qcore-broad",
+      "panel": "qcore",
+      "seed": 21600,
+      "stage": "qualification"
+    },
+    {
+      "arm": "open",
+      "campaign": "campaigns/qualification-qcore-open",
+      "panel": "qcore",
+      "seed": 21600,
+      "stage": "qualification"
+    },
+    {
+      "arm": "search_v2",
+      "campaign": "campaigns/qualification-qcore-search_v2",
+      "panel": "qcore",
+      "seed": 21600,
+      "stage": "qualification"
+    },
+    {
+      "arm": "representation_v2",
+      "campaign": "campaigns/qualification-qcore-representation_v2",
+      "panel": "qcore",
+      "seed": 21600,
+      "stage": "qualification"
+    }
+  ],
+  "search_v2_replay": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-repair-20260921/study/campaigns/qualification-qcore-search_v2/replays/tier_b_core_v2_b32_s21600_prism.json",
+  "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-repair-20260921/run.log"
+}

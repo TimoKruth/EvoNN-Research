@@ -75,6 +75,9 @@ class ModelGenome(BaseModel):
     kv_heads: Literal[1, 2, 4, 8] = 1
     ffn_ratio: Literal[1, 2, 4] = 2
     blocks: tuple[BlockGene, ...] = ()
+    readout: Literal["mean", "spatial_pyramid"] = "mean"
+    input_skip: bool = False
+    pre_norm: bool = False
 
     @model_validator(mode="before")
     @classmethod
@@ -109,6 +112,14 @@ class ModelGenome(BaseModel):
                     raise ValueError("skip must reference input or an earlier block; cycles are forbidden")
         elif self.blocks:
             raise ValueError("blocks require the composite family")
+        if self.readout != "mean" and self.family not in {"conv2d", "lite_conv2d"}:
+            raise ValueError("spatial readout requires a 2D convolution family")
+        if self.input_skip and self.family not in {"mlp", "sparse_mlp", "moe_mlp"}:
+            raise ValueError("input skip requires an MLP family")
+        if self.pre_norm and self.family not in {"attention", "sparse_attention", "causal_transformer"}:
+            raise ValueError("pre-normalization requires an attention family")
+        if self.pre_norm and self.norm_type not in {"layer", "rms"}:
+            raise ValueError("pre-normalization requires layer or RMS normalization")
         return self
 
     @property
@@ -116,7 +127,14 @@ class ModelGenome(BaseModel):
         data = self.model_dump(mode="json")
         if not self.blocks:
             del data["blocks"]  # Preserve all historical family genome identities.
-        return canonical_sha256(data, schema_version="prism.genome/v2" if self.blocks else "prism.genome/v1", digest_field=None)
+        extension = False
+        for key, default in {"readout": "mean", "input_skip": False, "pre_norm": False}.items():
+            if data[key] == default:
+                del data[key]
+            else:
+                extension = True
+        version = "prism.genome/v3" if extension else "prism.genome/v2" if self.blocks else "prism.genome/v1"
+        return canonical_sha256(data, schema_version=version, digest_field=None)
 
 
 def compatible_families(modality, task="classification"):
@@ -197,7 +215,8 @@ def mutate(genome, rng: Random, allowed, operator=None, task="classification", *
 
     widths = list(genome.hidden_layers)
     if operator == "family" and len(allowed) > 1:
-        updates = {"family": other(genome.family, allowed), "residual": False}
+        updates = {"family": other(genome.family, allowed), "residual": False,
+                   "input_skip": False, "readout": "mean", "pre_norm": False}
         updates["blocks"] = ([{"kind": "dense"}, {"kind": "gated", "skip_from": 0}]
                              if updates["family"] == "composite" else [])
     elif operator in {"width", "morph_widen"}:
@@ -221,6 +240,7 @@ def mutate(genome, rng: Random, allowed, operator=None, task="classification", *
     elif operator == "norm":
         updates["norm_type"] = other(
             genome.norm_type,
+            ["layer", "rms"] if genome.pre_norm else
             ["none", "layer", "rms"] if task == "language_modeling" else ["none", "layer", "rms", "batch"],
         )
     elif operator == "dropout":
@@ -322,6 +342,8 @@ def crossover(a, b, rng: Random, mode="uniform", *, task="classification", broad
             if block["skip_from"] is not None and block["skip_from"] > i:
                 block["skip_from"] = None
     data["residual"] = data["residual"] and GROUPS[data["family"]] == "mlp"
+    if data["pre_norm"] and data["norm_type"] not in {"layer", "rms"}:
+        data["norm_type"] = "layer"
     if task == "language_modeling" and data["norm_type"] == "batch":
         data["norm_type"] = "layer"
     return ModelGenome.model_validate(data)

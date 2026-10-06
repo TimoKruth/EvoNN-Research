@@ -16,6 +16,45 @@ Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
+## Prism confidence completion and post-study implementation — 2026-10-06
+
+The amended continuation completed 22 qualification and 990 main runs across all
+11 variants and 30 main seeds. No universal winner passed the frozen Holm rule.
+The [results review](reports/prism-confidence-20260921/results-20261006.md) binds the
+final analysis and records task trade-offs. Three opt-in candidates (`routed_v3`,
+`lean_v3`, `aligned_v3`) implement task-specific policies, a lean ablation and
+accuracy-aligned classification checkpoints. `open` remains default. Runtime,
+resume/replay and portable evidence validation support all three. New comparison
+preparation requires fresh seeds and all four engines plus Contenders.
+
+## Prism-only confidence study prepared — 2026-09-21
+
+The user explicitly requested only Prism and selected all eleven variants. The
+[preparation receipt](governance/prism-version-confidence-20260921.json) binds
+producer `8b8c3db`, its separate environment, 55 preflight-checked campaigns and
+217 unique data splits. Thirty fresh main seeds define 990 main runs; 22
+qualification runs gate execution. The fixed ceiling is 169,664 fit attempts.
+All 110 primary pairwise contrasts share one Holm correction; incomplete runs
+cannot yield inference. Historical evidence and the maintained working tree's
+other engine changes remain separate from execution in the frozen producer.
+The bounded controller, pause/resume, orphan adoption and statistical checks
+passed. **Preparation started no study training and installed no scheduler.**
+
+## Prism frontier implementation — 2026-09-21
+
+The [implementation record](reports/prism-frontier-20260921/implementation.md)
+documents five opt-in mechanisms and combined `frontier_v2`, motivated by the
+latest qualification's regression plateau and image/language trade-offs. Search,
+representation, regularization, weight averaging and calibrated regression
+selection have separate controls. `open` remains the default. An all-system spec
+generator preserves every declared engine/Contenders cell for later comparisons.
+
+An isolated snapshot passes numerical and policy tests, NumPy/MLX CPU interrupted
+recovery and winner replay, fixed-finalist integration, and import boundaries.
+Bounded original-source probes retain exact neutral model/training outputs across
+16 families and six legacy/open search traces. These are implementation checks;
+no new benchmark improvement, study advancement or protected-test claim follows.
+
 ## JEPA repeated exploratory training — 2026-09-16
 
 The JEPA branch completed its full transfer preset at source `69d3670`: 648 worker
@@ -868,6 +907,111 @@ and 32 passing native winner replays. The separate
 source revisions and the versioned evidence transport. All exports reached L3;
 the recomputed decision remains `needs more seeds`. Historical registry events
 are preserved, with ten new rows appended under `pr36-before`/`pr36-after`.
+
+## Prism-only confidence study launch — 2026-09-21
+
+The user authorized the prepared eleven-variant study with “Run it”. The
+[launch receipt](governance/prism-version-confidence-launch-20260921.json) records
+a persistent Standard launchd job with sleep prevention and no automatic restart
+on failure. An initial preflight failure selected Apple's Git through launchd's
+default PATH; the [operational correction](governance/prism-version-confidence-relaunch-20260921.json)
+selects the installed Homebrew Git used for preparation. No fits were dispatched
+by the failed launch; its log and configuration are retained. The frozen source,
+study, budgets and statistical plan were unchanged.
+
+Launch verification observed the first legacy/core qualification run and saved
+winner replay succeed, followed by archive/core starting. All 22 qualification
+runs gate automatic execution of 990 main runs. The separate Stratograph study
+was also active, so elapsed runtime can reflect shared machine load. Live output
+is `.artifacts/prism-confidence-20260921/run.log`; no study conclusion is yet available.
+
+
+## Prism confidence validator repair and replacement — 2026-09-21
+
+The original study stopped on its sixth qualification export (`search_v2`):
+training had succeeded, but Shared still applied legacy inheritance discounts
+to the six v2 policies. Corrected the validator's policy selection, including
+fresh-proposal inheritance enforcement. The failed export passes the corrected
+validator without changing its artifacts. All 54 targeted tests, lint and 55
+replacement campaign preflights passed.
+
+On explicit user instruction, launched a separately frozen replacement from
+producer `f5915a2`, derived only from the original producer plus the validator
+fix and regression test. No historical result is adopted or overwritten. All
+qualification slots are repeated; all eleven variants and the original main
+seeds, schedule, budgets and inference remain fixed. The original study had
+zero main dispatches. The [recovery note](reports/prism-confidence-20260921/recovery.md)
+and [launch receipt](governance/prism-confidence-repair-launch-20260921.json)
+record the new paths, provenance and full qualification-gated restart.
+
+
+## Prism fixed-fit budget continuation — 2026-09-21
+
+The user requested another fix and resume after `frontier_v2` language breadth
+exhausted its cumulative 1,500-second cap at 98 successful attempts. All 22
+qualification runs and 30 completed main runs were semantically revalidated and
+their winner replay receipts checked for reuse. The interrupted run remains
+unchanged, with its 98 attempts separately charged. Only that cell restarts;
+all 960 remaining main cells use the same fit-derived safety-allowance rule.
+
+Producer `3991748` descends from `f5915a2` with three narrowly changed timeout
+admission files. Search, training, per-fit caps, cumulative clocks, defaults and
+data are unchanged. The external controller retains the original matrix and
+110-contrast inference, binds provenance and stops on failure. Validation passed
+23 targeted tests, a native 16-fit pause/resume/export/replay check, lint, and
+all 33 amended campaign preflights. The [protocol amendment](reports/prism-confidence-20260921/budget-continuation.md)
+and [launch receipt](governance/prism-confidence-budget-resume-20260921.json)
+record the background continuation, mixed safety caps and preserved ancestry.
+
+
+## Prism per-fit timeout continuation — 2026-09-22
+
+The preceding fixed-fit continuation completed 128 attempts but failed admission
+because one attention-model fit hit its 120-second cap. The exact saved candidate
+succeeded in a separate native diagnostic: 12 epochs, 768 updates, 79.25 training
+seconds. The user requested repair and resume.
+
+The [per-fit amendment](reports/prism-confidence-20260921/fit-continuation.md)
+retains all 22 qualification and 30 main completions, restarts the failed cell
+separately, and preserves both failed continuations and their 226 charged
+attempts as extra cost. One diagnostic fit is separately excluded from results.
+All unfinished slots receive uniform 1,800-second per-fit / 43,200-second run
+safety caps. Producer `3991748`, training settings, fit budgets, all eleven
+variants, seeds and inference remain unchanged. Five recovery tests passed.
+
+The [launch receipt](governance/prism-confidence-fit-resume-20260922.json)
+records launchd startup at 07:53 CEST, the frozen amendment and controller,
+and the diagnostic evidence. Execution lives under
+`.artifacts/prism-confidence-fit-resume-20260922/`; startup revalidates inherited
+runs and amended manifests before training. Historical studies stay incomplete;
+this amendment supports fixed-fit within-Prism conclusions only, after full
+coverage and winner replay.
+
+
+## Prism parameter-size repair and continuation — 2026-09-23
+
+After 22 qualification and 141 main completions, `broad` core@256 seed21605
+produced a 3,367,792-parameter convolution proposal. The existing runtime cap
+rejected it before training: 255 charged fits plus one invalid proposal left
+the cell incomplete. The user requested repair and resume.
+
+Producer `7cf5bbb` deterministically constrains oversized evolved candidates
+within the unchanged 2-million cap before training; valid candidates remain
+unchanged. Original/effective genomes and counts are recorded, parent lineage
+is retained, and resized candidates cannot claim function-preserving widening.
+The [size continuation](reports/prism-confidence-20260921/size-continuation.md)
+retains all 163 completed cells and separately restarts the failed cell, reporting
+481 charged attempts plus one invalid proposal across failed predecessors.
+Settings, ordering, budgets and inference rules remain frozen; conclusions are
+scoped to the amended within-Prism runtime-size policy.
+
+Validation passed 70 Prism tests, six controller tests, and eight native smoke
+fits with export validation and winner replay, including the exact rejected
+genome resized to 1,885,990 parameters. Historical-producer exports also passed
+cross-producer admission checks. The [launch receipt](governance/prism-confidence-size-resume-20260923.json)
+records the persistent job start at 14:05 CEST. Execution artifacts now live in
+`.artifacts/prism-confidence-size-resume-20260923/`, with startup progress in
+`run.log` and run status in `study/status.json`. Previous evidence is unchanged.
 
 ## Topograph next implementation — 2026-09-21
 
