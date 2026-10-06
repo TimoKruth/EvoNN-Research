@@ -1,0 +1,7 @@
+{
+  "status": "ready_for_qualification",
+  "runs": 1012,
+  "fit_attempts": 169664,
+  "study_sha256": "765af9582c2aec08e1a4bf71572336a50abd37dcd32b32809c1d049db1b7771f",
+  "training_started": false
+}

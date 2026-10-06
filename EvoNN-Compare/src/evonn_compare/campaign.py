@@ -30,7 +30,7 @@ from evonn_shared.runtime_host import host_fields
 from evonn_shared.runtime_budget import execution_budget
 from evonn_shared.runtime_journal import load_runtime_checkpoint
 from evonn_shared.hierarchy_policy import HierarchyResearchPolicy
-from evonn_shared.prism_policy import PrismResearchPolicy
+from evonn_shared.prism_policy import PrismResearchPolicy, V3_VARIANTS
 from evonn_shared.primordia_policy import PrimordiaResearchPolicy, RESEARCH_DEFAULTS
 from evonn_shared.telemetry import ArtifactReference
 from .audit import artifact_json, benchmark_audit
@@ -52,22 +52,30 @@ class CampaignSpec(BaseModel):
     epochs: int = Field(default=12, ge=1, le=100)
     stratograph_research: HierarchyResearchPolicy | None = None
     prism_research: PrismResearchPolicy | None = None
+    prism_version_study: Literal["user-requested-20260921"] | None = None
     primordia_research: PrimordiaResearchPolicy | None = None
     comparison_scope: Literal["all_engines", "primordia_variants_v1"] = "all_engines"
     topograph_variant: Literal["legacy", "mechanics", "training", "archive", "broad", "open"] | None = None
     contender_pool: Literal["lm_screen_v1_reference", "lm_screen_v1_epochs2", "lm_screen_v1_epochs5",
                             "lm_screen_v1_epochs10", "lm_screen_v1_alpha01", "lm_screen_v1_alpha001"] | None = None
     enhanced: bool = False
-    timeout: float = Field(default=300.0, gt=0, le=36000)
+    timeout: float = Field(default=300.0, gt=0, le=43200)
     fit_timeout: float = Field(default=90.0, gt=0, le=1800)
     min_free_bytes: int = Field(default=1024**3, ge=0)
     analysis: str = "descriptive_repeated_seed_no_superiority_claim"
 
     @model_validator(mode="after")
     def valid(self):
+        if self.prism_version_study is not None:
+            if (self.systems != ["prism"] or self.prism_research is None or self.enhanced
+                    or self.contender_pool is not None or self.stratograph_research is not None
+                    or self.primordia_research is not None or self.topograph_variant is not None):
+                raise ValueError("Prism-only version study requires exclusively Prism and its explicit policy")
+            if self.prism_research.variant in V3_VARIANTS:
+                raise ValueError("the historical Prism-only exception covers only the eleven original variants")
         primordia_only = self.comparison_scope == "primordia_variants_v1"
-        if self.timeout > 1740 and (not primordia_only or self.timeout <= 1800):
-            raise ValueError("extended total time requires an explicitly scoped segmented Primordia campaign")
+        if self.timeout > 1740 and self.prism_version_study is None and (not primordia_only or self.timeout <= 1800 or self.timeout > 36000):
+            raise ValueError("extended total time requires an explicitly scoped Prism or segmented Primordia campaign")
         if primordia_only and (self.systems != ["primordia"] or self.primordia_research is None
                 or self.prism_research is not None or self.topograph_variant is not None
                 or self.stratograph_research is not None or self.contender_pool is not None or self.enhanced):
@@ -81,7 +89,7 @@ class CampaignSpec(BaseModel):
             raise ValueError("Primordia research campaigns require every engine and Contenders")
         if self.topograph_variant is not None and set(self.systems) != set(SYSTEMS):
             raise ValueError("Topograph research campaigns require every engine and Contenders")
-        if self.prism_research is not None and set(self.systems) != set(SYSTEMS):
+        if self.prism_research is not None and set(self.systems) != set(SYSTEMS) and self.prism_version_study is None:
             raise ValueError("Prism research campaigns require every engine and Contenders")
         if self.stratograph_research is not None:
             if set(self.systems) != set(SYSTEMS):

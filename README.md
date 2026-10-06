@@ -50,7 +50,8 @@ qualification of v2 is pending; legacy defaults and historical evidence remain.
 [Phase 2](governance/phase2-runtime-evidence.json) and
 [Phase 3](governance/phase3-runtime-evidence.json) retain their scoped evidence.
 
-All four engine runtimes accept at most **256 proposals** and **30 minutes** per run.
+All four engine runtimes accept at most **256 proposals**. Prism permits up to
+12 hours per run and 30 minutes per fit as explicit safety allowances.
 Each committed checkpoint appends one attempt and a state delta; every 16 steps
 it includes a compact search-state snapshot. Weight-cache changes are keyed, so
 LRU reordering does not rewrite all weights. The **128 MiB** publication guard
@@ -312,7 +313,110 @@ derived training policy; frozen historical configurations retain their original
 identities. Within-cohort and before/after reports keep every declared contrast
 in the Holm correction, including unavailable tests.
 
+### Prism frontier experiments (September 21)
+
+The [latest qualification findings](reports/qualification-20260916/findings.md)
+motivate opt-in improvements: Prism's regression winners plateau between 128/256
+fits, image quality trails the contender pool, and language quality is promising.
+These two-seed observations motivate hypotheses, not mechanism attribution.
+`open` remains the default and all earlier controls remain available.
+
+| `--variant` | Addition to `open` |
+| --- | --- |
+| `search_v2` | Diverse independent founders; benchmark/family-conditioned local mutations; quality-archive reproduction; replace plateaued continuation slots with local alternatives, retaining periodic continuation and protected family rotation |
+| `representation_v2` | Global-plus-four-cell spatial readouts for CNNs; zero-initialized linear input skips for MLP families; pre-normalized attention residual blocks. The original architecture choices remain reachable |
+| `regularized_v2` | Training-only label smoothing (0.05 classification, 0.02 LM); weight decay on matrices, leaving bias and other vectors unpenalized |
+| `averaged_v2` | Per-update exponential weight averaging (decay 0.9); select between raw and averaged validation checkpoints |
+| `calibrated_v2` | Select regression checkpoints by the final calibrated MSE; calibration coefficients use training labels only |
+| `frontier_v2` | Combine all five additions |
+
+The representation-only arm retains the original founder training settings;
+the search-only arm uses original representations. Later adaptive proposals can
+diverge with scores. Fixed-genome controls remain available for matched training
+diagnostics. Existing `inheritance_policy`, `optimizer_policy` and
+`optimizer_backend` switches compose with every new variant.
+
+Validation cross-entropy/perplexity remains unsmoothed. Averaging restarts from
+each fit's initialization, includes all its optimizer updates, and publishes a
+single selected model. If averaged weights win, Adam continuation resets because
+the raw optimizer moments do not describe those weights. Averaged candidates use
+the current training-only normalization buffers; no extra batch-statistics
+recalibration is performed. Averaging and calibrated selection add validation
+work inside the measured fit time and timeout, without extra optimizer updates.
+They can overfit validation selection or cost more time; no quality/speedup claim
+is established by implementation tests.
+
+The new architecture fields are `readout: spatial_pyramid`, `input_skip: true`
+and `pre_norm: true`. Nonneutral fields use the v3 genome identity; neutral defaults
+retain historical identities. Model export/replay, cache bounds and the 256-fit limit continue to apply. Per-attempt records and `research-report`
+expose proposal origins, selected raw/averaged weights, selection metric, epoch
+allowances and completed work.
+
+`EvoNN-Prism/configs/frontier_research.yaml` is a single-run configuration template.
+For later comparisons, generate matched campaign specs from an explicit base spec
+with the desired pack, budgets, seeds and complete system roster:
+
+```sh
+uv run --all-packages python -m evonn_compare.prism_frontier \
+  --base-spec <all-system-campaign.json> --output <new-spec-directory>
+```
+
+This writes seven specs (`open` plus the six experimental variants), performs no
+fits or data preparation, and refuses to overwrite a directory. `--variants`
+selects a subset of Prism policies; every emitted arm retains **all four engines
+and Contenders** on the same declared cells. Other engine and optimizer policies
+are copied unchanged. Use the campaign planning/preflight/run commands below for
+each spec in a separate workspace and a frozen source checkout. Compare quality,
+failure rates, diversity, optimizer work and measured time; fresh confirmation
+and baseline adequacy gates still apply. The old incomplete Q comparison is not
+repaired or superseded by these implementation checks.
+
+### Prism post-study candidates (October 6)
+
+The [completed eleven-variant study](reports/prism-confidence-20260921/results-20261006.md)
+contains all 1,012 runs. No universal winner passed the frozen confidence rule;
+`open` remains the default. Three new, opt-in hypotheses separate promising
+regression/image behavior from language behavior:
+
+- `routed_v3`: frontier_v2 for classification/regression; broad for language modeling.
+- `lean_v3`: that routing with smoothing, matrix-only decay and averaging disabled.
+- `aligned_v3`: lean plus classification checkpoints selected by validation accuracy,
+  with unsmoothed cross-entropy breaking ties. Regression uses calibrated MSE.
+
+Routing uses task kind only. Resolved per-task policies are exported, validated and
+restored on resume. All original variants and frozen evidence remain available.
+Use `EvoNN-Prism/configs/aligned_v3.yaml` (or `routed_v3.yaml` / `lean_v3.yaml`)
+with `python -m prism.cli run --config <path>`; these are experimental candidates,
+not established improvements over open.
+
+Prepare matched follow-up specifications without running training:
+
+```sh
+.venv/bin/python -m evonn_compare.prism_followup \
+  --base-spec <all-engine-spec.json> --output <new-spec-directory>
+```
+
+This emits open, broad, frontier_v2 and the three new variants; `--variants`
+selects a subset. It requires fresh seeds outside 21600–21630 and preserves
+Prism, Topograph, Stratograph, Primordia and Contenders on every declared cell.
+The old Prism-only exception does not cover these new candidates. Freeze
+confirmation contrasts and qualify time allowances before starting a new study.
+
 ## Campaign planning and recovery
+
+The user-authorized [Prism-only version study](reports/prism-confidence-20260921/protocol.md)
+is a scoped exception: all eleven Prism variants, 30 paired seeds, frozen
+all-pair inference and a qualification gate. It uses
+`python -m evonn_compare.prism_confidence` and the explicit
+`prism_version_study: user-requested-20260921` campaign field. The protocol lists
+prepared paths and exact start/pause/resume commands. Preparation runs no study
+fits. The [September 21 recovery note](reports/prism-confidence-20260921/recovery.md)
+records the separate replacement following a v2 export-validator mismatch and
+the [subsequent budget continuation](reports/prism-confidence-20260921/budget-continuation.md)
+records the cumulative-cap repair. The [September 22 per-fit continuation](reports/prism-confidence-20260921/fit-continuation.md)
+records the load-sensitive fit timeout repair. The [September 23 size continuation](reports/prism-confidence-20260921/size-continuation.md)
+provides current paths after an oversized proposal was rejected before training. All-system generators and their normal roster
+checks remain unchanged.
 
 Every new comparison must run **all four engines: Prism, Topograph, Stratograph
 and Primordia**, on each declared benchmark/budget/seed combination, with

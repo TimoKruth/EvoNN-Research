@@ -324,14 +324,31 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
             if research_epochs is not None:
                 expected_epochs = research_epochs
         if system == "prism" and "variant" in config:
-            from .prism_policy import PrismResearchPolicy
+            from .prism_policy import PrismResearchPolicy, prism_policy_flags, V3_VARIANTS
             prism_policy = PrismResearchPolicy.model_validate({key: config[key] if key in config else None for key in PrismResearchPolicy.model_fields})
             if state["search"].get("variant") != prism_policy.variant or telemetry.get("research_variant") != prism_policy.variant:
                 raise ValueError("Prism search policy disagrees with frozen configuration")
             if state["search"].get("fixed_genomes") != prism_policy.fixed_genomes:
                 raise ValueError("Prism fixed architecture control differs from saved search")
+            flags = prism_policy_flags(prism_policy.variant, task=get_benchmark(attempt["benchmark_id"]).task_kind.value)
+            if prism_policy.variant in V3_VARIANTS:
+                resolved = telemetry.get("resolved_policies", {})
+                if (attempt.get("resolved_policy") != flags or
+                        attempt["benchmark_id"] not in resolved or resolved[attempt["benchmark_id"]] != flags):
+                    raise ValueError("Prism resolved task policy differs from configuration")
+                if attempt["status"] == "ok":
+                    task = get_benchmark(attempt["benchmark_id"]).task_kind.value
+                    selection = ("classification_error" if flags["aligned"] else
+                                 "calibrated_mse" if flags["calibrated"] and task == "regression" else "validation_loss")
+                    smoothing = (.02 if task == "language_modeling" else .05) if flags["regularized"] and task != "regression" else 0.
+                    if (attempt.get("selection_metric") != selection
+                            or attempt.get("selection_tiebreaker") != ("validation_loss" if flags["aligned"] else None)
+                            or attempt.get("ema_decay") != (.9 if flags["averaged"] else 0.)
+                            or attempt.get("decay_policy") != ("matrix" if flags["regularized"] else "all")
+                            or attempt.get("label_smoothing") != smoothing):
+                        raise ValueError("Prism executed training differs from resolved task policy")
             if prism_policy.fixed_genomes is not None:
-                if set(prism_policy.fixed_genomes) != set(pack.benchmarks) or prism_policy.variant not in {"training", "open"}:
+                if set(prism_policy.fixed_genomes) != set(pack.benchmarks) or not all(prism_policy_flags(prism_policy.variant, task=get_benchmark(name).task_kind.value)["training"] for name in pack.benchmarks):
                     raise ValueError("Prism fixed architecture control must cover the complete pack at full training")
                 if attempt["genome"] != prism_policy.fixed_genomes[attempt["benchmark_id"]]:
                     raise ValueError("Prism fixed architecture control changed its genome")
@@ -348,9 +365,11 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
                 raise ValueError("Prism proposal provenance is missing")
             if prism_policy.inheritance_policy == "disabled" and mode != "none":
                 raise ValueError("Prism fresh-initialization control inherited weights")
-            if prism_policy.variant in {"archive", "open"} and proposal.get("origin") in {"fresh", "initial"} and mode != "none":
+            archive_policy = flags["archive"]
+            training_policy = flags["training"]
+            if archive_policy and proposal.get("origin") in {"fresh", "initial"} and mode != "none":
                 raise ValueError("Prism fresh exploration inherited weights")
-            if prism_policy.variant in {"training", "open"}:
+            if training_policy:
                 if attempt["full_epochs"] != config["epochs"]:
                     raise ValueError("Prism full training allocation differs from declared cap")
                 copied = attempt["inheritance"]["copied_parameters"]

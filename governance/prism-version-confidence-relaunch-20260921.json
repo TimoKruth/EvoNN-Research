@@ -1,0 +1,19 @@
+{
+  "schema_version": "evonn.prism-confidence-operational-relaunch/v1",
+  "launched_at": "2026-09-21T09:52:35.406147+00:00",
+  "launchd_service": "gui/501/com.evonn.prism-confidence-20260921",
+  "prior_attempt": {
+    "exit_code": 1,
+    "failure": "Preflight used Apple git via launchd default PATH; Xcode license blocks this executable.",
+    "study_dispatches": 0,
+    "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-20260921/launch-attempt-1.log",
+    "configuration": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-20260921/launch-attempt-1.plist"
+  },
+  "correction": "Launcher PATH selects installed Homebrew git, as used during preparation. Frozen producer, package environment, study manifests, execution priority and budgets unchanged.",
+  "configuration": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-20260921/launch.plist",
+  "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-20260921/run.log",
+  "environment_variables": {
+    "PYTHONUNBUFFERED": "1",
+    "PATH": "/opt/homebrew/bin:/opt/homebrew/sbin:/usr/bin:/bin:/usr/sbin:/sbin"
+  }
+}

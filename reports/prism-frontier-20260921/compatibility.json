@@ -1,0 +1,54 @@
+{
+  "baseline_commit": "d4ba3ba4342defe094e0b1e6a241fe59c3355166",
+  "exact_model_and_training_parity": [
+    "mlp",
+    "sparse_mlp",
+    "moe_mlp",
+    "conv2d",
+    "lite_conv2d",
+    "conv1d",
+    "lite_conv1d",
+    "gru",
+    "embedding",
+    "attention",
+    "sparse_attention",
+    "state_space",
+    "sparse_state_space",
+    "gated_state_space",
+    "causal_transformer",
+    "composite"
+  ],
+  "exact_search_trace_parity": [
+    {
+      "benchmark": "iris_classification",
+      "variant": "legacy",
+      "proposals": 128
+    },
+    {
+      "benchmark": "iris_classification",
+      "variant": "open",
+      "proposals": 128
+    },
+    {
+      "benchmark": "digits_image",
+      "variant": "legacy",
+      "proposals": 128
+    },
+    {
+      "benchmark": "digits_image",
+      "variant": "open",
+      "proposals": 128
+    },
+    {
+      "benchmark": "shakespeare_byte_lm",
+      "variant": "legacy",
+      "proposals": 128
+    },
+    {
+      "benchmark": "shakespeare_byte_lm",
+      "variant": "open",
+      "proposals": 128
+    }
+  ],
+  "scope": "synthetic implementation regression checks; no benchmark quality claim"
+}

@@ -31,3 +31,12 @@ def test_optimizer_and_inheritance_controls_do_not_merge_into_one_protocol(monke
         assert evidence.protocol_fingerprint(bundle) != original
         config.clear()
         config.update(before)
+
+
+@pytest.mark.parametrize("variant", ["search_v2", "representation_v2", "regularized_v2",
+                                     "averaged_v2", "calibrated_v2", "frontier_v2"])
+def test_frontier_policies_roundtrip_through_complete_campaign_specs(variant):
+    spec = campaign.CampaignSpec(prism_research=PrismResearchPolicy(variant=variant))
+    restored = campaign.CampaignSpec.model_validate_json(spec.model_dump_json())
+    assert restored.prism_research.variant == variant
+    assert set(restored.systems) == {"prism", "topograph", "stratograph", "primordia", "contenders"}

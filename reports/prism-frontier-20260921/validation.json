@@ -1,0 +1,95 @@
+{
+  "date": "2026-09-21",
+  "scope": "implementation_contract_validation_no_scientific_promotion",
+  "base_commit": "d4ba3ba4342defe094e0b1e6a241fe59c3355166",
+  "verification_source": "isolated base checkout plus listed Prism implementation files; concurrent other-engine changes excluded",
+  "isolated_source_sha256": "b4ae0ee404ef16cb3ea2b0398fea4540586978b8289c1005db8a826078f5d929",
+  "files_sha256": {
+    "EvoNN-Prism/src/prism/compiler.py": "5ba24bbd7edd06ad373035ac2a0eb7b8973107f07a5704bb492e9d67955a60cf",
+    "EvoNN-Prism/src/prism/genome.py": "814abe89cef5687d1235f841d30b225b51b897d97b4e6d54bc72c89fd2b34ea0",
+    "EvoNN-Prism/src/prism/frontier.py": "9b047effa99c64e73b52c8cf78878bf03b968e62d26615a6f28781082b620721",
+    "EvoNN-Prism/src/prism/research.py": "01866d2468002772089d474ef4cbcfe96635a83f1a99ce96c2863276308fc6f2",
+    "EvoNN-Prism/src/prism/run.py": "2d4f21dd4abfad0a108fe188b591343db7f1c32ccdd79950d18ecf0ab7e83cf7",
+    "EvoNN-Prism/src/prism/search.py": "a1e8457af5be06ca7b4591bbd67a40e916303bcf55236fffdc7da5d5b01bda76",
+    "EvoNN-Prism/src/prism/training.py": "4f4e4fad42cc4642f44cb3e64be77e38ec311894038f4fc61efc2c2968412eb7",
+    "EvoNN-Shared/src/evonn_shared/prism_policy.py": "25efe63a2bdd3e1403b485353a93c411b17999f2d7e9c547ceee7fb2d896a6aa",
+    "EvoNN-Compare/src/evonn_compare/prism_frontier.py": "530e26e035f887562a59b856f05627fa266db8557fd1ee3f3a07293d3f711b4c",
+    "EvoNN-Prism/tests/test_research.py": "5086f01b1d7c999917c8dec49fdd0032498932affee0e51d1ea13b184f0af049",
+    "EvoNN-Prism/tests/test_frontier.py": "913223ce05cb7778b80b89e9bbca46705c108bd6476c481c03a70014109801e2",
+    "EvoNN-Compare/tests/test_prism_policy.py": "5d4c86ecdd69b2ce7af67d4b5c5a320ecc6d7895b3667c8482b4f239cd823a8d",
+    "tests/test_prism_frontier_plan.py": "26ca088c2e396da3e75140c58be027ec7f0963768b543621a5f6c2f58f484f45",
+    "tests/integration/test_prism_frontier.py": "53a83ddb94d8f9a3cb9652302d11fc064d12ab26f8de2e525bc98449db91fd6a"
+  },
+  "default_variant": "open",
+  "experimental_variants": [
+    "search_v2",
+    "representation_v2",
+    "regularized_v2",
+    "averaged_v2",
+    "calibrated_v2",
+    "frontier_v2"
+  ],
+  "checks": [
+    {
+      "command": "bash scripts/ci/prism-checks.sh",
+      "status": "passed",
+      "package_tests": 104,
+      "includes": [
+        "uv lock --check",
+        "ruff",
+        "package identity"
+      ]
+    },
+    {
+      "command": "pytest -q EvoNN-Prism/tests EvoNN-Compare/tests/test_prism_policy.py tests/test_prism_frontier_plan.py tests/integration/test_prism_frontier.py",
+      "status": "passed",
+      "tests": 115,
+      "seconds": 32.07,
+      "log": "final-tests.txt"
+    },
+    {
+      "command": "EVONN_TEST_BACKEND=mlx_native pytest -q tests/integration/test_prism_frontier.py",
+      "status": "passed",
+      "tests": 1,
+      "seconds": 26.04,
+      "log": "native-recovery.txt"
+    },
+    {
+      "command": "pytest -q tests/integration/test_prism_frontier.py tests/integration/test_prism_finalists.py",
+      "status": "passed",
+      "tests": 2,
+      "backend": "numpy_fallback",
+      "seconds": 73.5
+    },
+    {
+      "command": "EVONN_TEST_BACKEND=mlx_native pytest -q tests/integration/test_prism_frontier.py tests/integration/test_prism_finalists.py",
+      "status": "passed",
+      "tests": 2,
+      "backend": "mlx_native_cpu",
+      "seconds": 78.6
+    },
+    {
+      "command": "python scripts/policy/validate_import_boundaries.py",
+      "status": "passed"
+    },
+    {
+      "command": "ruff check changed Prism, portable-policy, Compare planning and integration files",
+      "status": "passed"
+    },
+    {
+      "command": "original-source synthetic compatibility probe",
+      "status": "passed",
+      "artifact": "compatibility.json",
+      "families": 16,
+      "search_traces": 6,
+      "proposals_per_trace": 128
+    }
+  ],
+  "limits": [
+    "No new all-system scientific comparison executed",
+    "Two-seed prior Q remains incomplete at 28/30",
+    "No speedup, quality superiority or protected-test claim",
+    "EMA/calibrated selection add validation work and selection exposure",
+    "NumPy and MLX CPU tested; GPU qualification not claimed"
+  ]
+}

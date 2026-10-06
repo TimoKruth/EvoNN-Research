@@ -1,0 +1,25 @@
+{
+  "schema_version": "evonn.prism-confidence-launch/v1",
+  "launched_at": "2026-09-21T09:51:53.259381+00:00",
+  "authorization": "User: Run it. Full eleven-variant study, qualification followed by gated main comparison.",
+  "launchd_service": "gui/501/com.evonn.prism-confidence-20260921",
+  "launch_configuration": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-20260921/launch.plist",
+  "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-20260921/run.log",
+  "command": [
+    "/usr/bin/caffeinate",
+    "-i",
+    "-m",
+    "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-20260921/run.sh"
+  ],
+  "keep_alive": false,
+  "process_type": "Standard",
+  "scope": {
+    "qualification_runs": 22,
+    "main_runs": 990,
+    "fit_attempts": 169664
+  },
+  "producer_commit": "8b8c3db80774be628e1dc97971cdd446a71c348a",
+  "source_sha256": "d4964dcaa293ce822efc31067b25150cd74cd437dfc8c77c9d0730ad6ce1de54",
+  "study_sha256": "765af9582c2aec08e1a4bf71572336a50abd37dcd32b32809c1d049db1b7771f",
+  "concurrent_study_observed": "stratograph-only-20260921; elapsed runtime may reflect shared machine load"
+}

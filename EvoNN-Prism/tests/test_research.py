@@ -18,8 +18,9 @@ from prism.weight_cache import PrismWeightCache
 
 def test_historical_genome_identity_is_preserved():
     genome = ModelGenome(hidden_layers=(8,))
-    legacy = genome.model_dump(mode="json", exclude={"blocks"})
+    legacy = genome.model_dump(mode="json", exclude={"blocks", "readout", "input_skip", "pre_norm"})
     assert genome.genome_id == canonical_sha256(legacy, schema_version="prism.genome/v1", digest_field=None)
+    assert genome.genome_id == "7c0110413cbbc7265b57a7ce03089fc03711a96544103d90c7cd84c917d40a14"
 
 
 def test_protected_lineages_survive_weak_scores_and_archives_reenter_after_resume():

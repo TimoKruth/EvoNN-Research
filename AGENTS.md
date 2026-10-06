@@ -11,3 +11,9 @@ resolved. Preserve frozen historical protocols and results; this rule governs
 new comparisons and does not authorize changing completed evidence.
 
 Use README.md for operation and CONSOLIDATED_PLAN.md for current next steps.
+
+Study-specific exception, explicitly requested by the user on 2026-09-21:
+the `evonn.prism-version-confidence/v1` study compares only Prism's eleven
+current variants. Its `prism_version_study: user-requested-20260921` declaration
+records this exception. It supports within-Prism conclusions only. The full
+engine/Contenders requirement above continues to govern other new comparisons.
