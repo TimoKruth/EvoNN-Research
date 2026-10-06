@@ -23,7 +23,7 @@ class GenomeV2(Genome):
     schema_version: Literal[2] = 2
     layers: tuple[LayerV2, ...]
     connections: tuple[ConnectionV2, ...]
-    input_adapter: Literal["flat", "token_attention", "spatial"] = "flat"
+    input_adapter: Literal["flat", "token_attention", "spatial", "token_query", "token_mixer"] = "flat"
     adapter_width: int = Field(default=16, ge=4, le=256)
     adapter_heads: Literal[1, 2, 4] = 1
 

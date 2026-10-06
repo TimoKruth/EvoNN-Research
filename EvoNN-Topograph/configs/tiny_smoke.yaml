@@ -1,4 +1,7 @@
 schema_version: 1
+variant: next
+research_options:
+  adapters: mixer
 pack: tier1_core_smoke
 budget: 16
 seed: 42

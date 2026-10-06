@@ -134,7 +134,8 @@ def main(argv):
                 seed=seed,
                 backend=options.backend,
                 epochs=options.epochs,
-                research=options.research,
+                research=options.research if any(arg.split('=', 1)[0] == '--research' for arg in argv)
+                         else RunConfig().research,
                 population_size=options.population_size,
                 timeout=options.run_timeout,
                 fit_timeout=options.fit_timeout,

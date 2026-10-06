@@ -22,8 +22,10 @@ def _unbroadcast(value, shape):
 class Tensor:
     __array_priority__ = 1000
 
-    def __init__(self, data, parents=()):
-        self.data = np.asarray(data, dtype=np.float32)
+    def __init__(self, data, parents=(), *, dtype=None):
+        if dtype is None:
+            dtype = np.float64 if any(parent.data.dtype == np.float64 for parent, _ in parents) else np.float32
+        self.data = np.asarray(data, dtype=dtype)
         self.parents = parents
         self.grad = None
 
@@ -149,6 +151,8 @@ class Backend:
         if name == "numpy_fallback" and device != "cpu":
             raise ValueError("NumPy fallback supports CPU only")
         self.name, self.device = name, device
+        self.stable_backward = False
+        self.dtype = np.float32
         self.mx = None
         if name == "mlx_native":
             if platform.system() != "Darwin" or platform.machine() != "arm64":
@@ -160,7 +164,9 @@ class Backend:
         self.version = importlib.metadata.version("numpy" if self.mx is None else "mlx")
 
     def array(self, value):
-        return tensor(value) if self.mx is None else self.mx.array(value, dtype=self.mx.float32)
+        if self.mx is None:
+            return value if isinstance(value, Tensor) else Tensor(value, dtype=self.dtype)
+        return self.mx.array(value, dtype=self.mx.float32)
 
     def numpy(self, value):
         return value.data if isinstance(value, Tensor) else np.asarray(value)
@@ -201,7 +207,16 @@ class Backend:
         if name == "silu":
             return value * self.sigmoid(value)
         if name == "gelu":
-            return 0.5 * value * (1 + self.tanh(0.7978845608 * (value + 0.044715 * value**3)))
+            argument = value
+            if self.stable_backward:
+                # tanh is saturated outside this interval in float32. Avoid an
+                # overflowing cubic and its undefined zero-times-infinity VJP.
+                if self.mx is not None:
+                    argument = self.mx.clip(value, -10., 10.)
+                else:
+                    argument = Tensor(np.clip(value.data, -10., 10.),
+                                      ((value, lambda g: g * (np.abs(value.data) < 10.)),))
+            return 0.5 * value * (1 + self.tanh(0.7978845608 * (argument + 0.044715 * argument**3)))
         raise ValueError("unknown activation")
 
     def softmax(self, value):
@@ -230,6 +245,16 @@ class Backend:
             parents.append((value, lambda g, index=selection: g[index]))
             offset += value.shape[axis]
         return Tensor(np.concatenate([v.data for v in values], axis=axis), tuple(parents))
+
+    def precise_gradients(self, forward, parameters):
+        """Recompute a failed backward pass in host float64 without model mutation."""
+        native, dtype, stable = self.mx, self.dtype, self.stable_backward
+        self.mx, self.dtype, self.stable_backward = None, np.float64, True
+        try:
+            converted = {key: self.array(self.numpy(value)) for key, value in parameters.items()}
+            return self.gradients(forward, converted)
+        finally:
+            self.mx, self.dtype, self.stable_backward = native, dtype, stable
 
     def gradients(self, forward, parameters):
         if self.mx is not None:

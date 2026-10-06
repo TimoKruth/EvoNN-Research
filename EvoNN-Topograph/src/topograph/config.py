@@ -1,9 +1,11 @@
 """Bounded, explicit Phase-2 run configuration."""
 
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from evonn_shared.runtime_budget import MAX_ENGINE_EVALUATIONS
+from evonn_shared.topograph_policy import TopographResearchPolicy
 from .research import Variant
+from .presets import new_run_policy
 
 
 class RunConfig(BaseModel):
@@ -16,9 +18,19 @@ class RunConfig(BaseModel):
     population_size: int = Field(default=4, ge=2, le=16, strict=True)
     backend: Literal["numpy_fallback", "mlx_native"] = "numpy_fallback"
     target_device: Literal["cpu", "gpu"] = "cpu"
-    timeout: float = Field(default=1200, gt=0, le=1800)
+    timeout: float = Field(default=1200, gt=0, le=43200)
     fit_timeout: float = Field(default=120, gt=0, le=1800)
 
     benchmark_pooling: bool = False
     novelty_weight: float = Field(default=0, ge=0, le=1)
-    variant: Variant = "legacy"
+    variant: Variant = "next"
+    research_options: TopographResearchPolicy | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def default_policy(cls, value):
+        if isinstance(value, dict):
+            value = dict(value)
+            value["variant"], value["research_options"] = new_run_policy(
+                value.get("variant"), value.get("research_options"))
+        return value

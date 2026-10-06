@@ -5,12 +5,13 @@ from copy import deepcopy
 from random import Random
 import numpy as np
 from evonn_shared.weight_cache import WeightCache
+from evonn_shared.topograph_policy import TopographResearchPolicy
 from .genome import Innovations, OPERATORS, seed_genome
 from .genome_v2 import GenomeV2
 from .compiler_v2 import compile_genome, parameter_estimate
 from .search import architecture_id, descriptor, species, tuples
 from .operators import CORE, BROAD, edit, crossover, adapters, reachability_catalog, execution_topology
-from .research import policy, lookup, take
+from .research import policy, lookup, take, progressing
 
 
 class ResearchSearch:
@@ -26,10 +27,18 @@ class ResearchSearch:
         benchmark_pooling=False,
         novelty_weight=0.0,
         variant="open",
+        research_options=None,
     ):
         if not 2 <= population_size <= 16:
             raise ValueError("population must lie in [2,16]")
         self.variant = state["variant"] if state else variant
+        self.settings = (TopographResearchPolicy.model_validate({} if research_options is None else research_options)
+                         if self.variant == "next" else None)
+        if research_options is not None and self.settings is None:
+            raise ValueError("research_options require variant next")
+        if state and self.settings and state.get("research_options") != self.settings.model_dump():
+            raise ValueError("research options differ from saved search")
+        self.parameter_cap = self.settings.parameter_cap if self.settings else 2_000_000
         self.policy = policy(self.variant)
         if self.variant == "legacy":
             raise ValueError("legacy search must use the v1 implementation")
@@ -43,7 +52,7 @@ class ResearchSearch:
         self.progress, self.cache_history, self.training_ledger = 0.0, {}, {}
         self.inflight, self.pending_cache = {}, {}
         if state:
-            if state.get("research_schema") != 2:
+            if state.get("research_schema") != (3 if self.settings else 2):
                 raise ValueError("unsupported research search state")
             self.rng.setstate(tuples(state["rng"]))
             self.reservoir_rng.setstate(tuples(state["reservoir_rng"]))
@@ -98,9 +107,17 @@ class ResearchSearch:
         )
         if self.policy["broad"]:
             data = genome.model_dump()
-            data["input_adapter"] = self.rng.choice(adapters(definition))
+            choices = self.adapter_choices(definition)
+            data["input_adapter"] = (choices[index % len(choices)] if self.settings else self.rng.choice(choices))
             genome = GenomeV2.model_validate(data)
         return genome
+
+    def adapter_choices(self, definition):
+        choices = adapters(definition)
+        if self.settings and self.settings.adapters != "legacy" and "token_attention" in choices:
+            return (lookup({"query": ["token_query"], "mixer": ["token_mixer"]}, self.settings.adapters)
+                    or ["token_query", "token_mixer", "token_attention", "flat"])
+        return choices
 
     @staticmethod
     def proposal_record(source, *, parents=(), fresh=False, protected=False, **details):
@@ -139,7 +156,7 @@ class ResearchSearch:
     def inherit(self, model, benchmark, namespace):
         proposal = self.proposal(benchmark)
         empty = dict(mode="none", source=None, copied_parameters=0, ancestor_attempts=[], source_genome=None)
-        if proposal["fresh"]:
+        if proposal["fresh"] or (self.settings and self.settings.inheritance == "disabled"):
             self.inflight[benchmark] = empty
             return empty
         if not self.policy["training"]:
@@ -168,7 +185,14 @@ class ResearchSearch:
             item = self.cache.entries[key]
             copied = 0
             widening = proposal["preservation"] == "zero_pad_widen" and candidate != identity
+            source_genome = lookup(records, item["family"], {}).get("genome", {})
+            same_adapter = source_genome.get("input_adapter") == model.genome.input_adapter
+            # Last-query and full attention have identical parameter/readout semantics.
+            equivalent_attention = {source_genome.get("input_adapter"), model.genome.input_adapter} <= {"token_attention", "token_query"}
+            input_edges = {f"edge{e.innovation}.w" for e in model.edges if e.source == -1}
             for name, value in model.weights.items():
+                if self.settings and not (same_adapter or equivalent_attention) and (name.startswith("adapter.") or name in input_edges):
+                    continue
                 if name not in item["weights"]:
                     continue
                 old = np.asarray(item["weights"][name], dtype=np.float32)
@@ -192,6 +216,10 @@ class ResearchSearch:
                     source_genome=item["family"],
                     ancestor_attempts=list(lookup(self.cache_history, key, [])),
                 )
+                if self.settings:
+                    ancestors = result["ancestor_attempts"]
+                    previous = lookup(self.training_ledger, ancestors[-1], {}) if ancestors else {}
+                    result["source_progress"] = progressing(previous.get("validation_curve", []), previous.get("selected_epoch", 0))
                 if proposal["preservation"] and candidate != identity and item["family"] in records:
                     parent = self.compile(
                         GenomeV2.model_validate(records[item["family"]]["genome"]),
@@ -297,9 +325,9 @@ class ResearchSearch:
     def vary(self, benchmark, parent, mate):
         s = self.benchmarks[benchmark]
         child, cross = parent, "not_selected"
-        if parent.genome_id != mate.genome_id and self.rng.random() < 0.25:
+        if parent.genome_id != mate.genome_id and self.rng.random() < (self.settings.crossover_probability if self.settings else 0.25):
             child, cross = crossover(parent, mate, self.rng, self.innovations)
-            if parameter_estimate(child, self.definitions[benchmark]) > 2_000_000:
+            if parameter_estimate(child, self.definitions[benchmark]) > self.parameter_cap:
                 child, cross = parent, "resource_parameter_cap"
         names = list(CORE + (BROAD if self.policy["broad"] else ()))
         first = names[(s["operator_cursor"] // 3) % len(names)]
@@ -312,11 +340,13 @@ class ResearchSearch:
         rejected = []
         for op in [first, *remaining]:
             result = edit(
-                child, self.rng, self.innovations, op, self.definitions[benchmark], broad=self.policy["broad"]
+                child, self.rng, self.innovations, op, self.definitions[benchmark], broad=self.policy["broad"],
+                adapter_choices=self.adapter_choices(self.definitions[benchmark]) if self.settings else None,
+                local=bool(self.settings and self.settings.mutation_scale == "local"),
             )
             if result is not None:
                 candidate, detail = result
-                if parameter_estimate(candidate, self.definitions[benchmark]) > 2_000_000:
+                if parameter_estimate(candidate, self.definitions[benchmark]) > self.parameter_cap:
                     rejected.append(op + ":resource_parameter_cap")
                     continue
                 detail["mutation_topology_changed"] = detail["topology_changed"]
@@ -351,6 +381,12 @@ class ResearchSearch:
         for slot in range(breeding_slots):
             group = groups[slot % len(groups)]
             index = max(group, key=scores.__getitem__)
+            if self.settings and self.settings.selection == "cost_aware":
+                best_score = scores[index]
+                eligible = [i for i in group if s["scores"][i]["status"] == "ok"
+                            and best_score - scores[i] <= max(abs(best_score), 1e-8) * self.settings.quality_tolerance]
+                if eligible:
+                    index = min(eligible, key=lambda i: (s["scores"][i]["parameters"], -scores[i], i))
             parent = population[index]
             for i in group:
                 s["species_last"][population[i].genome_id] = s["generation"]
@@ -485,6 +521,9 @@ class ResearchSearch:
         inheritance = take(self.inflight, benchmark, {})
         attempt_id = result.get("outcome_id", f"{benchmark}:{s['evaluated']}")
         self.training_ledger[attempt_id] = {k: lookup(result, k, 0) for k in ("epochs", "updates", "train_seconds")}
+        if self.settings:
+            self.training_ledger[attempt_id].update(validation_curve=result.get("validation_curve", []),
+                                                    selected_epoch=result.get("selected_epoch", 0))
         ancestry = sorted(set(inheritance.get("ancestor_attempts", []) + [attempt_id]))
         result["ancestral_training"] = {
             k: sum(self.training_ledger[a][k] for a in ancestry) for k in ("epochs", "updates", "train_seconds")
@@ -517,8 +556,9 @@ class ResearchSearch:
             else "disabled",
             benchmark_pooling=dict(enabled=self.benchmark_pooling, candidate_count=len(self.pool_scores)),
             research=dict(
-                version=2,
+                version=3 if self.settings else 2,
                 variant=self.variant,
+                **({"options": self.settings.model_dump()} if self.settings else {}),
                 reachability=reachability_catalog(),
                 archive={
                     b: dict(
@@ -544,8 +584,9 @@ class ResearchSearch:
         return {
             **deepcopy(
                 dict(
-                    research_schema=2,
+                    research_schema=3 if self.settings else 2,
                     variant=self.variant,
+                    **({"research_options": self.settings.model_dump()} if self.settings else {}),
                     rng=self.rng.getstate(),
                     reservoir_rng=self.reservoir_rng.getstate(),
                     innovations=self.innovations.state(),

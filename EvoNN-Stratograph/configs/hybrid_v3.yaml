@@ -1,0 +1,35 @@
+# Unqualified research configuration; select mlx_native for Apple Silicon.
+pack: tier_b_core_v2
+budget: 16
+seed: 42
+epochs: 12
+backend: numpy_fallback
+timeout: 300
+fit_timeout: 90
+research:
+  version: 3
+  evaluator: trainable
+  normalization: rms
+  evolve_representation: false
+  readout: final
+  residual: false
+  inheritance: compatible
+  selection: diverse
+  screen_epochs: 0
+  archive_size: 32
+  max_macro_nodes: 8
+  max_cell_nodes: 6
+  max_width: 64
+  head_width: 16
+  temporal: hybrid
+  embedding_width: 32
+  position: relative
+  cell_normalization: rms
+  residual_mode: gated
+  merge: learned
+  readout_skip: true
+  select_initial: true
+  weight_decay_scope: matrices
+  evolve_temporal: false
+  dropout: 0.0
+  niche_policy: representation

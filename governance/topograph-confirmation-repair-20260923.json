@@ -1,0 +1,53 @@
+{
+  "schema": "evonn.topograph-confirmation-repair-launch/v1",
+  "launched_at": "2026-09-23T12:02:57.046781+00:00",
+  "authorization": "User: Fix and resume",
+  "producer_commit": "5c0bc174c0ee221aa129a5c7c07d67bd10486acc",
+  "plan_sha256": "0e7d41ffdef5db130fdfe1306b83d57dd89a3952c2c7fefc8a9a1edd1e05691e",
+  "workspace": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-confirmation-repair-20260923/study",
+  "command": [
+    "/usr/bin/caffeinate",
+    "-i",
+    "-m",
+    "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-confirmation-repair-20260923/studyctl",
+    "run"
+  ],
+  "pid": 27311,
+  "controller_sha256": "e46b3707ce29bde1c4fd1dd69e278c509a0db45073de02b8b4967000e629c34c",
+  "cause": "Three oversized legacy proposals were invalid before fitting; 253 actual fits instead of 256.",
+  "repair": "Reject oversized legacy mutations before accepting a child; retain valid parent under existing two-million-parameter cap.",
+  "confirmation_policy": "Repeat all 128 confirmation cells under one repaired source identity; retain complete screening and fixed mixer nomination. Historical confirmation stays incomplete and excluded from inference.",
+  "tests": {
+    "topograph_suite": 104,
+    "frozen_producer_focused": 46,
+    "controller_working_tree": 7,
+    "controller_frozen_environment": 7,
+    "ruff": "passed",
+    "preflight": "ready"
+  },
+  "retained_confirmation": [
+    {
+      "campaign": "confirmation/s32801-language_breadth_v1-next",
+      "charged_fits": 256,
+      "rejected_candidates": 0,
+      "run": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-study-20260921/study/confirmation/s32801-language_breadth_v1-next/runs/language_breadth_v1_b256_s32801_topograph/topograph_20260923T090440_a8405154f6",
+      "successful_fits": 256,
+      "successful_training_seconds": 310.69228045793716
+    },
+    {
+      "campaign": "confirmation/s32801-language_breadth_v1-legacy",
+      "charged_fits": 253,
+      "rejected_candidates": 3,
+      "run": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-study-20260921/study/confirmation/s32801-language_breadth_v1-legacy/runs/language_breadth_v1_b256_s32801_topograph/topograph_20260923T092722_a500c1404e",
+      "successful_fits": 253,
+      "successful_training_seconds": 403.7918472152087
+    }
+  ],
+  "status_path": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-confirmation-repair-20260923/study/status.json",
+  "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-confirmation-repair-20260923/run.log",
+  "resumption_verified": {
+    "at": "2026-09-23T14:03:49.825359+02:00",
+    "active": "confirmation/s32801-language_breadth_v1-next",
+    "training_worker_observed": true
+  }
+}

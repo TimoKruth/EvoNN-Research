@@ -30,8 +30,10 @@ from evonn_shared.runtime_host import host_fields
 from evonn_shared.runtime_budget import execution_budget
 from evonn_shared.runtime_journal import load_runtime_checkpoint
 from evonn_shared.hierarchy_policy import HierarchyResearchPolicy
+from evonn_shared.hierarchy_presets import standard_hierarchy_policy
 from evonn_shared.prism_policy import PrismResearchPolicy, V3_VARIANTS
 from evonn_shared.primordia_policy import PrimordiaResearchPolicy, RESEARCH_DEFAULTS
+from evonn_shared.topograph_policy import TopographResearchPolicy
 from evonn_shared.telemetry import ArtifactReference
 from .audit import artifact_json, benchmark_audit
 from .cases import Case, evaluate_case
@@ -54,8 +56,9 @@ class CampaignSpec(BaseModel):
     prism_research: PrismResearchPolicy | None = None
     prism_version_study: Literal["user-requested-20260921"] | None = None
     primordia_research: PrimordiaResearchPolicy | None = None
-    comparison_scope: Literal["all_engines", "primordia_variants_v1"] = "all_engines"
-    topograph_variant: Literal["legacy", "mechanics", "training", "archive", "broad", "open"] | None = None
+    comparison_scope: Literal["all_engines", "primordia_variants_v1", "topograph_variants_v1"] = "all_engines"
+    topograph_variant: Literal["legacy", "mechanics", "training", "archive", "broad", "open", "next"] | None = None
+    topograph_research: TopographResearchPolicy | None = None
     contender_pool: Literal["lm_screen_v1_reference", "lm_screen_v1_epochs2", "lm_screen_v1_epochs5",
                             "lm_screen_v1_epochs10", "lm_screen_v1_alpha01", "lm_screen_v1_alpha001"] | None = None
     enhanced: bool = False
@@ -66,20 +69,28 @@ class CampaignSpec(BaseModel):
 
     @model_validator(mode="after")
     def valid(self):
+        topograph_only = self.comparison_scope == "topograph_variants_v1"
+        if topograph_only and (self.systems != ["topograph"] or self.topograph_variant is None
+                or self.prism_research is not None or self.primordia_research is not None
+                or self.stratograph_research is not None or self.contender_pool is not None or self.enhanced):
+            raise ValueError("Topograph variant scope requires only Topograph and an explicit variant")
         if self.prism_version_study is not None:
             if (self.systems != ["prism"] or self.prism_research is None or self.enhanced
                     or self.contender_pool is not None or self.stratograph_research is not None
-                    or self.primordia_research is not None or self.topograph_variant is not None):
+                    or self.primordia_research is not None or self.topograph_variant is not None or self.topograph_research is not None):
                 raise ValueError("Prism-only version study requires exclusively Prism and its explicit policy")
             if self.prism_research.variant in V3_VARIANTS:
                 raise ValueError("the historical Prism-only exception covers only the eleven original variants")
         primordia_only = self.comparison_scope == "primordia_variants_v1"
-        if self.timeout > 1740 and self.prism_version_study is None and (not primordia_only or self.timeout <= 1800 or self.timeout > 36000):
-            raise ValueError("extended total time requires an explicitly scoped Prism or segmented Primordia campaign")
+        if self.timeout > 1740 and not topograph_only and self.prism_version_study is None and (not primordia_only or self.timeout <= 1800 or self.timeout > 36000):
+            raise ValueError("extended total time requires an explicitly scoped Prism, Topograph or segmented Primordia campaign")
         if primordia_only and (self.systems != ["primordia"] or self.primordia_research is None
                 or self.prism_research is not None or self.topograph_variant is not None
-                or self.stratograph_research is not None or self.contender_pool is not None or self.enhanced):
+                or self.topograph_research is not None or self.stratograph_research is not None
+                or self.contender_pool is not None or self.enhanced):
             raise ValueError("Primordia variant scope requires only Primordia and an explicit policy")
+        if self.topograph_research is not None and self.topograph_variant != "next":
+            raise ValueError("Topograph research options require variant next")
         if self.contender_pool is not None:
             if set(self.systems) != set(SYSTEMS) or not self.enhanced:
                 raise ValueError("baseline screening requires every engine and enhanced Contenders")
@@ -87,7 +98,7 @@ class CampaignSpec(BaseModel):
                 raise ValueError("language baseline screening requires breadth and all four families per task")
         if self.primordia_research is not None and not primordia_only and set(self.systems) != set(SYSTEMS):
             raise ValueError("Primordia research campaigns require every engine and Contenders")
-        if self.topograph_variant is not None and set(self.systems) != set(SYSTEMS):
+        if self.topograph_variant is not None and not topograph_only and set(self.systems) != set(SYSTEMS):
             raise ValueError("Topograph research campaigns require every engine and Contenders")
         if self.prism_research is not None and set(self.systems) != set(SYSTEMS) and self.prism_version_study is None:
             raise ValueError("Prism research campaigns require every engine and Contenders")
@@ -233,11 +244,24 @@ def preflight(root):
             "maximum_dispatch_seconds": len(slots(spec)) * (spec.timeout + 20), "training_started": False}
 
 
-def prepare_plan(root, spec, cache, *, timeout=1800):
-    """Prepare/verify all datasets in bounded subprocesses, then freeze the plan."""
+def new_plan_defaults(spec):
+    """Freeze defaults for new plans without reinterpreting historical manifests."""
+    if "stratograph" in spec.systems and "stratograph_research" not in spec.model_fields_set:
+        # Omission selects the standard; explicit null remains a legacy control.
+        spec = CampaignSpec.model_validate({**spec.model_dump(), "stratograph_research": standard_hierarchy_policy()})
+    if "topograph" in spec.systems and spec.topograph_variant is None:
+        # Resolve only NEW plans. An absent field in a historical manifest remains legacy.
+        spec = CampaignSpec.model_validate({**spec.model_dump(), "topograph_variant": "next",
+                                           "topograph_research": TopographResearchPolicy(adapters="mixer")})
     if "primordia" in spec.systems and spec.primordia_research is None:
         # Freeze new defaults explicitly; reading historical manifests stays additive.
         spec = CampaignSpec.model_validate({**spec.model_dump(), "primordia_research": PrimordiaResearchPolicy()})
+    return spec
+
+
+def prepare_plan(root, spec, cache, *, timeout=1800):
+    """Prepare/verify all datasets in bounded subprocesses, then freeze the plan."""
+    spec = new_plan_defaults(spec)
     if not 0 < timeout <= 1800:
         raise ValueError("planning preparation cap must be at most 1800 seconds")
     root, cache = root.absolute(), cache.absolute()
@@ -344,6 +368,9 @@ def match_config(config, manifest, case, system):
             expected.update(benchmark_pooling=False, novelty_weight=0.0)
             if config.get("variant", "legacy") != (spec.topograph_variant or "legacy"):
                 raise ValueError("campaign Topograph research policy mismatch")
+            policy = (spec.topograph_research or TopographResearchPolicy()).model_dump() if spec.topograph_variant == "next" else None
+            if config.get("research_options") != policy:
+                raise ValueError("campaign Topograph research options mismatch")
         if system == "primordia":
             policy = spec.primordia_research or PrimordiaResearchPolicy()
             settings = {**policy.model_dump(), "training_policy": policy.training_policy}
@@ -483,10 +510,14 @@ def run_campaign(root, *, session_timeout=1800, max_runs=None, only_case=None):
                 command.append("--enhanced")
             if system == "contenders" and spec.contender_pool is not None:
                 command += ["--pools", str(ROOT / contender_pool_path(spec))]
-            if system == "stratograph" and spec.stratograph_research is not None:
-                command += ["--research", json.dumps(spec.stratograph_research.model_dump(mode="json"), sort_keys=True)]
-            if system == "topograph" and spec.topograph_variant is not None:
-                command += ["--variant", spec.topograph_variant]
+            if system == "stratograph":
+                # Historical manifests without a policy must never pick up a new CLI default.
+                policy = spec.stratograph_research.model_dump(mode="json") if spec.stratograph_research else None
+                command += ["--research", json.dumps(policy, sort_keys=True)]
+            if system == "topograph":
+                command += ["--variant", spec.topograph_variant or "legacy"]
+                if spec.topograph_research is not None:
+                    command += ["--research-options", json.dumps(spec.topograph_research.model_dump(mode="json"), sort_keys=True)]
             if system == "primordia":
                 policy = spec.primordia_research or PrimordiaResearchPolicy()
                 for key, value in policy.model_dump().items():

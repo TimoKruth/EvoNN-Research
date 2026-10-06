@@ -71,7 +71,7 @@ def widths(node, broad=True):
     ]
 
 
-def edit(genome, rng, innovations, operator, definition, *, broad=False):
+def edit(genome, rng, innovations, operator, definition, *, broad=False, adapter_choices=None, local=False):
     """Return None when inapplicable. Never relabel an LR change as a structural edit."""
     data = deepcopy(genome.model_dump(mode="json"))
     nodes, edges = data["layers"], data["connections"]
@@ -179,7 +179,9 @@ def edit(genome, rng, innovations, operator, definition, *, broad=False):
         )
         if not field(
             "width",
-            lambda n: [w for w in widths(LayerV2.model_validate(n), broad) if operator != "widen" or w > n["width"]],
+            lambda n: [w for w in widths(LayerV2.model_validate(n), broad)
+                       if (operator != "widen" or w > n["width"])
+                       and (not local or abs(w - n["width"]) <= max(8, n["width"] // 4))],
             candidates,
         ):
             return None
@@ -251,13 +253,14 @@ def edit(genome, rng, innovations, operator, definition, *, broad=False):
             ).model_dump()
         )
     elif operator == "adapter":
-        choices = [v for v in adapters(definition) if v != genome.input_adapter]
+        choices = [v for v in (adapter_choices if adapter_choices is not None else adapters(definition))
+                   if v != genome.input_adapter]
         if not choices:
             return None
         data["input_adapter"] = rng.choice(choices)
     elif operator in ("adapter_width", "adapter_heads"):
         if genome.input_adapter == "flat" or (
-            operator == "adapter_heads" and genome.input_adapter != "token_attention"
+            operator == "adapter_heads" and not genome.input_adapter.startswith("token_")
         ):
             return None
         name = operator
@@ -268,12 +271,16 @@ def edit(genome, rng, innovations, operator, definition, *, broad=False):
             if v != data[name]
             and (v % data["adapter_heads"] == 0 if name == "adapter_width" else data["adapter_width"] % v == 0)
         ]
+        if local and name == "adapter_width":
+            choices = [v for v in choices if abs(v - data[name]) <= max(8, data[name] // 4)]
         if not choices:
             return None
         data[name] = rng.choice(choices)
     elif operator in ("lr", "weight_decay"):
         key = "learning_rate" if operator == "lr" else "weight_decay"
         values = (1e-5, 0.0001, 0.001, 0.003, 0.01, 0.03, 0.1) if operator == "lr" else (0, 0.0001, 0.001, 0.01, 0.1)
+        if local and operator == "lr":
+            values = tuple(sorted({max(1e-5, min(0.1, data[key] * factor)) for factor in (0.5, 0.8, 1.25, 2)}))
         data[key] = rng.choice([v for v in values if v != data[key]])
     else:
         raise ValueError("unregistered mutation")

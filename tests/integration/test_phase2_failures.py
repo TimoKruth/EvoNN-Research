@@ -69,7 +69,10 @@ def test_failed_candidate_advances_once_and_preserves_charge(tmp_path, monkeypat
         class Oversized:
             parameter_count = 2_000_001
 
-        monkeypatch.setattr(search, "compile", lambda *args, **kwargs: Oversized())
+        # Inject into the selected compiler: new Topograph runs use the mixer
+        # research runtime even when the historical Search type is passed in.
+        active_search = runtime.select_runtime(search, variant="next")[0] if runtime is topograph_run else search
+        monkeypatch.setattr(active_search, "compile", lambda *args, **kwargs: Oversized())
     root = runtime.run_engine(
         search, pack_name="tier1_core_smoke", budget=8, output_parent=tmp_path / "runs", stop_after=1
     )

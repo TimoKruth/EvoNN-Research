@@ -31,7 +31,7 @@ Exact integrations and review decisions are recorded in project history.
 | Reference fixtures | Real kill/resume, failed/invalid accounting, seed/label binding, read-only diagnostics and hosted integrity reports | Broader scientific qualification and future producer interoperability |
 | Contenders + Compare | Fixed CPU pools, bounded isolated fits, complete verified exports, case/budget audit, append-only trends, L0–L3 quality, append-only evidence registry, paired-seed L4 analysis and evidence dashboard | Scientific acceptance, targeted confirmation and native transfer |
 | Prism + Topograph | Package-local MLX/NumPy models including real next-token LM, bounded search, inheritance, atomic resume, portable exports and Compare ingestion | Targeted confirmation, stronger baselines and native transfer evidence |
-| Stratograph | Legacy proxy plus opt-in v2 normalized proxy/trainable shared cells, protected exploration, charged revisits, resume/replay | Repeated v2 scientific qualification and transfer evidence |
+| Stratograph | Quality-first evolving v3 default; explicit legacy/v2 and ten alternative study presets, protected exploration and resume/replay | Repeated all-engine v3 qualification and transfer evidence |
 | Primordia | Trained circuits, versioned exploration/retention and training policy, extensible v2 graph/temporal genomes, verified motif/seed bank | Scientific qualification of breadth_v2, native cross-engine ingestion and proven transfer gains |
 
 The [Phase 4 receipt](governance/phase4-runtime-evidence.json) records **13 short
@@ -45,13 +45,18 @@ Historical Stratograph evidence uses deterministic hierarchy features with a tra
 The [opt-in v2 research implementation](EvoNN-Stratograph/README.md#explicit-version-2-research-execution)
 adds normalized/local projections, breadth-preserving search, charged archive
 revisits and a separately labeled trainable shared hierarchy. Scientific
-qualification of v2 is pending; legacy defaults and historical evidence remain.
+qualification of v2 remains scoped to its recorded studies; historical evidence
+and explicit legacy controls remain. The completed
+[eleven-preset comparison](governance/stratograph-results-20260930.md) supports
+the user-selected [quality-first evolving v3 standard](EvoNN-Stratograph/README.md#quality-first-standard).
 [Phase 1](governance/phase1-runtime-evidence.json),
 [Phase 2](governance/phase2-runtime-evidence.json) and
 [Phase 3](governance/phase3-runtime-evidence.json) retain their scoped evidence.
 
-All four engine runtimes accept at most **256 proposals**. Prism permits up to
-12 hours per run and 30 minutes per fit as explicit safety allowances.
+All four engine runtimes accept at most **256 proposals**. Total-run caps are
+engine-specific: Prism permits up to 12 hours per run and 30 minutes per fit;
+Stratograph accepts up to 24 hours, with its new standard using 128 fits,
+12 epochs and full-budget safety allowances.
 Each committed checkpoint appends one attempt and a state delta; every 16 steps
 it includes a compact search-state snapshot. Weight-cache changes are keyed, so
 LRU reordering does not rewrite all weights. The **128 MiB** publication guard
@@ -481,13 +486,101 @@ scientific conclusions still require the registry's separate analysis gate.
 
 ## Topograph research modes
 
+The September 29 completed confirmation supports **mixer** as the selected
+Topograph default for new runs: aggregate gains over legacy, open and next,
+with a substantial delayed-copy regression. Use `evonn-topograph run --preset
+mixer` or `EvoNN-Topograph/configs/mixer.yaml` for its exact settings. Explicit
+`next`, `open` and `legacy` presets preserve comparison alternatives. Legacy
+requires explicit selection; saved runs restore their original policy. Newly
+planned campaigns freeze the mixer settings explicitly. The already-running
+frozen comparison is unchanged. The [new all-engine protocol](governance/topograph-cross-engine-20260929.md)
+compares it with all three other engines and required Contenders, at 128 fits
+on 16 fresh seeds across core and breadth, with a separate corrected memory
+endpoint. It does not claim that unfinished engine variants are inferior.
+
+The user-authorized **Topograph-only staged comparison** was launched September 21
+under `.artifacts/topograph-study-20260921/`, with a frozen producer and a serial
+supervisor. It covers all 19 current variants/settings, four screening seeds and
+16 fresh confirmation seeds. The [protocol](governance/topograph-only-study-20260921.md)
+fixes the nomination rule, aggregate endpoint, corrected confidence criteria and
+failure gates. Its explicit `topograph_variants_v1` scope is an exception for this
+requested within-Topograph study; general all-engine templates remain unchanged.
+See the [preparation receipt](governance/topograph-only-preparation-20260921.json)
+and [launch receipt](governance/topograph-only-launch-20260921.json), plus
+`.artifacts/topograph-study-20260921/README.md` for operation and status paths.
+After completed screening selected `mixer`, a legacy resource-admission failure
+required an [amended confirmation restart](governance/topograph-confirmation-repair-20260923.md).
+Current execution is in `.artifacts/topograph-confirmation-repair-20260923/`;
+the original study and its failed confirmation remain preserved.
+The [September 27 total-time continuation](governance/topograph-budget-resume-20260927.md)
+now runs under `.artifacts/topograph-budget-resume-20260927/`, retaining two verified
+confirmation cells and restarting only the unfinished work with a budget-derived
+total allowance. The per-fit cap and inference plan remain unchanged.
+
+
+The **September 21 experimental `next` variant** builds on the
+[latest qualification findings](reports/qualification-20260916/findings.md):
+Topograph improved with more fits, but its recorded training cost grew 3.68×
+and its language models remained relatively large. These observations motivate
+implementation hypotheses; the new policy has no demonstrated comparative gain.
+Existing variants, defaults and frozen results remain available.
+
+`--variant next` accepts `--research-options '<JSON>'` or the `research_options`
+object in a run configuration. Options are frozen into checkpoints, exports and
+comparison fingerprints; resume and campaign adoption reject substitutions.
+
+| Switch | Default | Alternatives / effect |
+| --- | --- | --- |
+| `adapters` | `diverse` | Rotate query attention, positional mixer, old attention and flat language founders; `query`, `mixer`, or `legacy` restrict the language adapter choices for an ablation |
+| `allocation` | `progress` | Keep the full epoch allowance for inherited sources with recent selected improvement; otherwise use copied-fraction discounts. `full` and `coverage` isolate allocation choices |
+| `selection` | `cost_aware` | Within each species, prefer fewer parameters among candidates within 1% of its best score; `quality` restores quality-only selection |
+| `mutation_scale` | `local` | Limit width changes to nearby sizes and learning-rate multipliers to 0.5–2×; `broad` restores broad jumps |
+| `inheritance` | `enabled` | `disabled` initializes every candidate afresh and charges its training; divergent search paths make this a policy control, not a matched-finalist test |
+| `label_smoothing` | `0.05` | Smooth training targets only; validation selection, exported scores and replay use unsmoothed metrics. Set `0.0` for the control |
+| `decay` | `matrix` | Decay weight matrices, excluding position embeddings; scalar gates and biases are exempt. `all` restores decay on every parameter |
+| `parameter_cap` | `500000` | Configurable through the existing two-million-parameter safety ceiling; oversized variations are rejected with recorded reasons |
+| `crossover_probability` | `0.1` | Control branch growth separately; historical research modes use `0.25` |
+| `patience` / `validation_batch_size` | `3` / `128` | Unprotected early stopping and bounded language validation batches; protected candidates receive their full allocation |
+
+`token_query` computes only the last attention query, which is the old attention
+adapter's only consumed output. It retains the same weights and readout semantics,
+while its attention matrix grows linearly with context length. `token_mixer` is
+an alternative: each head learns a distribution over historical positions and
+combines value channels with a last-token residual. Neither sees target tokens.
+Both train token embeddings and positional parameters, support native and portable
+backends, and retain the evolved DAG after their compact context representation.
+No wall-clock speedup or delayed-copy/generalization gain is claimed from this
+implementation alone.
+
+Training records now include the selected epoch (including the initial checkpoint),
+initial validation loss and per-epoch training objectives. Progress-based allocation
+is checked against the actual charged source ancestry. Adapter changes avoid copying
+input weights with incompatible representations. Optimizer state still resets per fit.
+Parameter count is a selection proxy, not measured runtime or matched compute.
+
+```sh
+uv run evonn-topograph run --config EvoNN-Topograph/configs/research_next.yaml
+uv run evonn-topograph run --variant next --pack tier_b_core_v2 --budget 16 --epochs 2 \
+  --research-options '{"adapters":"query","allocation":"full"}'
+uv run python -m topograph.experiments --output .artifacts/topograph-next-configs
+```
+
+The generator writes **14 editable arms** (an `open` control, `next`, and twelve
+individual interventions), each with a smoke run configuration and a complete
+five-system campaign template. It performs no fits and refuses to overwrite an
+existing directory. Review and freeze an execution protocol before using campaign
+templates; all four engines and Contenders remain required for every declared
+benchmark/budget/seed combination. See [implementation checks and limits](reports/topograph-next-20260921.md).
+
+
 Topograph's FP16 quantizer saturates finite values to the representable range
 before casting, while retaining the straight-through gradient. This prevents
 finite image activations above 65,504 from becoming infinite validation losses.
 Nonfinite inputs still fail the training checks. This numerical fix requires a
 fresh producer and comparison; frozen historical runs retain their original code.
 
-Topograph has an explicit additive `--variant` option. The default `legacy`
+Topograph has an explicit additive `--variant` option. New runs default to
+`next` with mixer research settings (`--preset mixer`). Explicit `--preset legacy`
 preserves the historical search and genome identities. `mechanics` introduces
 truthful mutation attribution, reversible graph edits, branch crossover,
 independently sampled founder precision and corrected niche allocation.
@@ -600,6 +693,60 @@ uv run --locked --all-packages evonn-compare fair-matrix \
 
 The preset selects 16 evaluations per system. Each invocation caps five minutes;
 this command starts a short qualification, not the larger repeated campaign.
+
+## Experimental JEPA pilots
+
+`evonn-compare jepa` provides separate fixed-architecture experiments for masked
+latent prediction and frozen representation transfer. Every arm includes Prism,
+Topograph, trainable-v2 Stratograph, Primordia and a raw-feature Contenders pool.
+The four basic arms are short supervised, longer supervised, masked reconstruction
+and EMA-JEPA with variance/covariance regularization. The transfer preset adds
+full-input distillation and masked prediction of the same frozen Prism teacher.
+These are custom feasibility objectives, not reproductions of T-JEPA or LeJEPA.
+
+Prepare and run the small complete qualification (no downloads):
+
+```sh
+uv sync --all-packages --group dev --frozen
+uv run evonn-compare jepa plan --spec research/jepa/smoke.json \
+  --workspace .artifacts/jepa-smoke
+uv run evonn-compare jepa run .artifacts/jepa-smoke --max-cases 5
+uv run evonn-compare jepa run .artifacts/jepa-smoke
+uv run evonn-compare jepa report .artifacts/jepa-smoke
+```
+
+The smoke preset is **90 worker cases / 108 fits**, including both regressors in
+Contenders; two optimizer steps per phase establish execution only. `local.json`
+prepares **432 worker cases / 480 fits**, and `transfer.json` prepares **648 worker
+cases / 720 fits**; these use two fixed candidates, 64 updates per phase, two
+classification tasks, three seeds and 10%/100% training-label fractions. Planning
+performs no fits. The latter presets use MLX CPU; set `backend` to
+`numpy_fallback` for Linux/portability before freezing the plan. JSON specs reject
+missing engines/controls and unknown fields. Reuse a run command to continue
+pending cases; `--session-timeout` is bounded to 1–1800 seconds. Source/dependency
+changes require a fresh workspace. Failures stop the run and remain visible.
+
+`report.md` and `report.json` contain all candidates, quality/occlusion metrics,
+representation diagnostics and paired treatment/control deltas. Receipts record
+updates, encoder forward work, timings, initial-weight identities, saved-weight
+replay and teacher provenance. Equal updates are not equal compute. Teacher
+training is `reported_prior`; no native motif-transfer proof follows. New
+`jepa_pilot_*` train/validation datasets and a disclosed small contender pool are
+not canonical benchmark exports, protected-test evidence or L3/L4 promotion.
+See [the experiment design](research/jepa/DESIGN.md) for objective details and
+limitations, and the consolidated plan for acceptance and follow-on work.
+
+The [2026-09-16 repeated evaluation](research/jepa/ASSESSMENT-20260916.md) completed
+the full transfer preset: 720 fits with all 576 neural replays passing. Results
+are mostly negative, with a small Prism low-label tabular signal and no consistent
+masked-transfer benefit. All seed-level contrasts and costs are retained in the
+[tables](research/jepa/repeated-20260916.md) and JSON companion. Regenerate the
+summary from a complete local workspace with:
+
+```sh
+uv run python research/jepa/analyze.py .artifacts/jepa-repeated-20260916 \
+  --output research/jepa/repeated-20260916
+```
 
 ## Architecture and authority
 
@@ -808,7 +955,6 @@ control. See [Primordia's research controls](EvoNN-Primordia/README.md#opt-in-v3
 for exact semantics and the generator for complete all-engine comparison specs.
 This implements hypotheses from the September 16 results; it does not establish
 new quality/runtime gains or close the historical incomplete qualification.
-
 
 ### Prepared Primordia-only confidence comparison
 

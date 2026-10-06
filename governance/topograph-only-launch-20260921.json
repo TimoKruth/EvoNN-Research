@@ -1,0 +1,35 @@
+{
+  "schema": "evonn.topograph-study-launch/v1",
+  "launched_at": "2026-09-21T09:53:11.830643+00:00",
+  "authorization": "User: Run it; previously selected Topograph only, all 19 settings, staged screening and confirmation.",
+  "study": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-study-20260921/study",
+  "study_sha256": "7ebf433b46ecb04202a5dc6bf35618a16d44b2f390e8abd68accf0ac1f3596ba",
+  "producer_commit": "05a387e52e0a04363fb548651755c51dd537ce72",
+  "command": [
+    "/usr/bin/caffeinate",
+    "-i",
+    "-m",
+    "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-study-20260921/producer/.venv/bin/python",
+    "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-study-20260921/supervise.py"
+  ],
+  "launcher_pid": 99052,
+  "supervisor_sha256": "53e7880c6d54ab311414c6dd28b55e727b681b41481b6d39721a1ea4f199a084",
+  "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-study-20260921/supervisor.log",
+  "status": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-study-20260921/execution-status.json",
+  "stages": [
+    "qualification",
+    "screening",
+    "nomination",
+    "prepare-confirmation",
+    "confirmation",
+    "report"
+  ],
+  "concurrent_studies_at_launch": [
+    "stratograph-only-20260921",
+    "primordia-only-20260921"
+  ],
+  "timing_caveat": "Nonexclusive host use; training times are descriptive, not isolated speed comparisons.",
+  "power": "AC; caffeinate -i -m while supervisor lives",
+  "auto_restart": false,
+  "failure_policy": "Stop and retain failed evidence; no automatic source edits, seed replacement or arm exclusion."
+}

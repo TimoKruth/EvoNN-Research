@@ -96,6 +96,148 @@ all four engines plus Contenders, preserving weak/failed cells. Report added
 validation overhead and validation-selection exposure. No automatic nomination,
 scientific-stage advancement or protected-test access follows from these changes.
 
+**Topograph integration and cross-engine comparison (2026-09-29):** the
+within-Topograph confirmation is complete at 128/128 verified runs. The user
+authorized integrating the winning configuration and comparing other engines.
+The exact mixer policy now has a reusable CLI/config preset and, on the user's
+subsequent instruction, is the default for fresh CLI/API/config runs and newly
+planned campaigns. Legacy remains explicit; saved runs and the frozen comparison
+retain their original policies. The
+[new protocol](governance/topograph-cross-engine-20260929.md) freezes 10
+qualification runs followed by 160 all-engine runs (16 fresh paired seeds,
+core/breadth, 128 fits). All four engines and required Contenders remain in
+every cell. Qualification/replay gates precede main work; aggregate and
+delayed-copy effects share corrected inference. Next: qualify and execute the
+isolated producer, retain failures, and evaluate complete outputs. The
+[launch receipt](governance/topograph-cross-engine-launch-20260929.json) records
+the September 29 persistent launch; current progress is
+`.artifacts/topograph-cross-engine-20260929/study/status.json`. Do not
+interpret the previous aggregate win as memory-task or universal superiority.
+
+**Topograph-only staged preparation (2026-09-21):** the user explicitly narrowed
+this study to Topograph and selected all 19 variants/settings. The
+[protocol](governance/topograph-only-study-20260921.md) separates 38 qualification
+runs, 152 screening runs and 96–128 confirmation runs on 16 fresh paired seeds.
+Only this study uses the explicit `topograph_variants_v1` roster exception.
+Freeze the nominee before confirmation, correct the three primary contrasts,
+retain every declared arm/failure, and do not treat preparation as training launch
+or as a change to the general all-engine comparison requirement.
+The [authorized launch](governance/topograph-only-launch-20260921.json) began on
+September 21 at 11:53 CEST. A detached serial supervisor advances through all
+stages, freezes the nominee before confirmation and stops on any failure or
+pause. Concurrent host use is recorded; elapsed training costs are descriptive.
+After 42 screening completions, cumulative verification exhausted the scheduler's
+pre-dispatch allowance. The [controller repair](governance/topograph-controller-repair-20260921.json)
+moves the dispatch-window start past preliminary verification in an external
+controller, preserving the frozen producer and completed evidence, and resumes
+the same study with all failure gates intact.
+Qualification and screening subsequently completed, nominating `mixer`. Three
+oversized legacy proposals blocked original confirmation at 1/128 completions.
+The user-authorized [resource-admission repair](governance/topograph-confirmation-repair-20260923.md)
+restarts all 128 confirmation cells under one repaired producer while preserving
+the screening nomination and all original evidence. Current status is
+`.artifacts/topograph-confirmation-repair-20260923/study/status.json`.
+That restart completed two cells before `open` exhausted its total time allowance.
+The user requested resumption on September 27. The
+[budget-derived continuation](governance/topograph-budget-resume-20260927.md)
+retains both complete cells and all failed work, preserves the 120-second fit cap,
+and raises only unfinished cells' cumulative allowance to 39,000 seconds.
+Current status: `.artifacts/topograph-budget-resume-20260927/study/status.json`.
+Checkpoint boundaries every 32 fits support safe pauses.
+
+
+**Stratograph-only preparation (2026-09-21):** the user explicitly requested a
+within-Stratograph comparison and confirmed all eleven presets. The
+[frozen design](governance/stratograph-only-study-20260921.md) uses 22 qualification
+runs followed by 352 main runs on 16 paired seeds, with 30 predeclared reference
+contrasts and Holm correction. This scoped user override does not change the
+ordinary all-engine campaign rule. The [preparation receipt](governance/stratograph-only-preparation-20260921.json)
+records the clean producer snapshot, 119 verified dataset splits and launchers;
+the [authorized launch](governance/stratograph-only-launch-20260921.json) started
+qualification on September 21. Main runs follow only after every qualification
+export and winner replay passes. No v3 superiority claim follows
+from preparation or the earlier implementation checks.
+
+After 35 verified runs, language-breadth `dilated_only` seed 1701 exhausted the
+1,500-second run cap. On the user's explicit resume request, the
+[recorded continuation](governance/stratograph-only-continuation-20260921.md)
+retains those completions, preserves the interrupted run's 127 charged attempts,
+and restarts that cell with a 1,800-second cap for all unfinished slots. Frozen
+engine code, seeds, fits and statistical tests remain unchanged. The original
+study stays incomplete; the amended fixed-fit comparison discloses mixed safety
+caps. That continuation reached 39 completed runs before `hybrid` language breadth
+seed 1701 exhausted the 30-minute cap at attempt 107. On “Fix and resume”, the
+[budget-based amendment](governance/stratograph-only-budget-resume-20260921.md)
+retains those 39 completions and both failed runs (234 charged attempts). A new
+clean producer changes only the total-run timeout validators. Every unfinished
+128-fit cell receives 19,800 seconds, covering each existing 120-second fit limit
+plus overhead; models, fit counts, paired seeds and statistical tests stay fixed.
+Current status is in
+`.artifacts/stratograph-only-budget-resume-20260921/study/status.json`.
+
+On September 22, that continuation reached 87 completed runs and stopped on a
+nonfinite gradient in `attention_only`, language breadth, seed 1703. The user's
+“Fix and resume please” authorized the
+[backward-overflow repair](governance/stratograph-stability-resume-20260922.md).
+The original failing fit now completes 12 epochs within its unchanged fit cap;
+ordinary finite training remains unchanged, verified by exact control weights
+and curves. A separate frozen producer performs one host-float64 backward recovery
+only when finite loss has nonfinite gradients, before existing clipping and the
+float32 optimizer. All 87 completed runs and three failed-run histories remain
+preserved. Active status is now
+`.artifacts/stratograph-stability-resume-20260922/study/status.json`.
+
+That continuation reached 105 completions before evolving language breadth,
+seed 1704, exceeded the 120-second per-fit deadline on attempt 121. On the user's
+“fix and resume”, the [fit-time amendment](governance/stratograph-fit-resume-20260922.md)
+raises unfinished fits to 600 seconds and derives sufficient total run allowance
+from the unchanged fit budget. A separate producer changes only total-time
+validators. The saved timed-out fit passed all 12 epochs under current load; 105
+full-epoch completions and four failed-run histories remain preserved. Active
+status moves to `.artifacts/stratograph-fit-resume-20260922/study/status.json`.
+
+**Stratograph study complete (2026-09-30):** all 374 runs and the frozen final
+analysis completed. The [results report](governance/stratograph-results-20260930.md)
+records 17 material gains among 30 prespecified contrasts. Attention and evolving
+gain on core, real text and memory; hybrid dropout has the largest observed
+real-text mean, while pure dilation regresses on delayed-copy memory. All 30
+independently recomputed estimates, intervals and Holm p-values match the final
+controller report. These are within-Stratograph validation-selection results
+under the recorded producer/time-cap amendments, not a unique-winner,
+protected-test or cross-engine superiority claim. The user subsequently requested
+a quality-first standard: fresh Stratograph runs now select the exact evolving
+policy with 128 fits and 12 full epochs, native MLX CPU on Apple Silicon and
+600-second fit / 81,240-second total safety caps. All study presets remain
+selectable; saved policies and historical manifests retain their meaning. New
+campaigns explicitly freeze evolving when the Stratograph policy is omitted,
+while preserving their declared matched allocations.
+
+**Stratograph implementation (2026-09-21):** the opt-in
+[v3 temporal alternatives](EvoNN-Stratograph/README.md#version-3-temporal-research)
+address the September 16 delayed-copy diagnostic with learned attention,
+dilated convolution and hybrid shared cells. Eleven named controls/ablations and
+an all-engine specification generator are ready for later comparison. First
+qualify the selected source and configurations, then freeze matched fresh-seed
+comparisons retaining all four engines and Contenders. Report temporal memory
+separately from real text, plus image/tabular retention and measured training
+cost. Implementation tests do not close the incomplete historical 28/30 study
+or establish improvement; its frozen evidence remains unchanged.
+
+**Topograph next implementation (2026-09-21):** the user-requested follow-up adds
+an opt-in `next` policy with last-query attention and positional-mixer alternatives,
+progress-aware allocation, near-tie parameter-aware selection, bounded local
+mutations and independent regularization/inheritance controls. See
+[operation and switches](README.md#topograph-research-modes) and
+[implementation verification](reports/topograph-next-20260921.md).
+Next: review/freeze the generated all-five-system ablation inputs, qualify the
+new producer on core and breadth, then assess paired quality, model size, measured
+training and orchestration separately. The 14 generated arms are editable inputs,
+not a launched or registered scientific study. Keep the two-seed Q observations,
+its historical 28/30 completeness, baseline adequacy gates and protected test
+separation intact. No engine promotion follows from implementation tests.
+
+
+
 **Research readiness (2026-09-16):** the follow-up qualification remains incomplete
 at 28/30 because frozen Primordia cannot load two breadth slots. The
 [readiness audit](reports/readiness-20260916/report.md) records a separate loader
@@ -104,6 +246,19 @@ read-only checkpoint profile. The [follow-up plan](governance/readiness-follow-u
 keeps baseline adequacy, checkpoint optimization, source requalification and the
 larger scientific stages explicitly gated. Historical producer/results are
 preserved; implementation checks do not close scientific qualification.
+**JEPA experiment branch (updated 2026-09-16):** implementation qualification and
+the full repeated transfer preset are complete: 648 worker cases / 720 fits,
+including all four engines and Contenders, with all 576 neural replays passing.
+The [assessment](research/jepa/ASSESSMENT-20260916.md) records mostly negative
+results and a small Prism low-label tabular signal (+0.88 accuracy points versus
+long supervised across the three seed averages). Masked teacher transfer shows
+no consistent benefit. Preserve the implementation as experimental; do not change
+engine defaults. The next scientific step, if pursued, is a predeclared full-roster
+tabular replication with more datasets/unseen seeds, adequate training and
+compute-accounted controls. Stronger contender coverage and untouched evaluation
+data remain necessary. Native motif transfer, adaptive search and speculative
+mutation world models remain untested. Runtime commands are in README;
+formulation and limitations are in `research/jepa/DESIGN.md`.
 
 
 Documentation consolidation (#23/#26), CodeRabbit selection (#24), the catalog
@@ -1479,7 +1634,6 @@ repaired breadth loader, then run complete all-engine core/breadth matrices with
 fresh seeds and measured work. Preserve historical results and mark any new failed
 matrix incomplete. No large comparison was started by this implementation task.
 
-
 ## Requested Primordia-only comparison — September 21
 
 The user explicitly selected a comprehensive, Primordia-only comparison: all 13
@@ -1495,7 +1649,6 @@ failures and uncertainty explicitly; no automatic engine promotion or access to
 protected tests. Other development in the main working tree remains separate
 from this frozen execution producer.
 
-
 ## Primordia time-budget repair — September 21
 
 User-authorized fix/resume after `full_steady` / language breadth / seed 23101
@@ -1508,7 +1661,6 @@ seconds, with checkpointed invocations capped at 1,740 seconds. No change to
 fit/epoch counts, seeds, model math, replay requirements or paired inference.
 Use the continuation launcher and report; do not treat the original frozen study
 as complete or bypass a retained fit failure.
-
 
 ## Primordia completed-study implementation — October 4
 

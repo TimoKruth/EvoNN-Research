@@ -1,0 +1,436 @@
+{
+  "date": "2026-10-06",
+  "checkouts": [
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-all-engines-20260910",
+      "head": "e1d005a6cfe93056bbd033209130ef2c0197db52",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-all-engines-20260910",
+      "source_sha256": "a4d88181e45731f4390b64b8aa9c92ecfbc30a50acd0253b8f9058b0057f25b7",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-baseline-follow-up-20260916",
+      "head": "2a840ff0530e47e071b38229f226df5b94ae7c98",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-baseline-follow-up-20260916",
+      "source_sha256": "820a63f38cb3e8dd07cd4c0919de5654161a3f937b57d93860a27adfff9ee4e2",
+      "has_history_bundle": false,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-campaign-journal-20260908",
+      "head": "008fc038307d441a90a9eddaa67373463bcf4bfb",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-campaign-journal-20260908",
+      "source_sha256": "78d8d84a4ea1ddaf3992c6064c5f68e8ea0ef8ac5b71040640afd8d37039b41f",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-campaign-validation-20260908",
+      "head": "f3c8d3e86ad7bff99d0d9d04ec12e1a7d27ecd05",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-campaign-validation-20260908",
+      "source_sha256": "ed619382d35bfc88e2919a649a9163ffaaf5109277704e3712460616addf056f",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-checkpoint-json-20260916",
+      "head": "cd5936e863fb510c0eac9c5cc5144c1832372014",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-checkpoint-json-20260916",
+      "source_sha256": "a4edaa423b7147969966d417d86f3c4ae69256a73b58513920687890c3ea5109",
+      "has_history_bundle": false,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-confirmation-20260909",
+      "head": "adcda4fbbad3a2d9086f457c27741ca1f42e8de2",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-confirmation-20260909",
+      "source_sha256": "8a0546f43356faa215078d443594d5b23d81c869c8a3fd9b6a8fcfc3ac77f73a",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-confirmation-v2-20260909",
+      "head": "7da8e769e7cee64ad325bdbd0e45ad07957aa381",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-confirmation-v2-20260909",
+      "source_sha256": "e983d70a4fc0fbb63c97bc9ee6a482ab646ab4c4f158884f677331a4f1cf34a4",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-docs-20260907",
+      "head": "58a7cc79d94e49105468534802783a5eb8e1bde4",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-docs-20260907",
+      "source_sha256": "5c54c4a76af70788b94ceef1ebed01cedf6f41b9d4f18349db6158c3ce865497",
+      "has_history_bundle": false,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-engine-refresh-20260912",
+      "head": "2715213f751f08b5b2b10ab3ddb9b8ef96bf0057",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-engine-refresh-20260912",
+      "source_sha256": "8b1c49b416f050490de39fd973ee450142e2d04af7606f7885bbeb4217018ef0",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-follow-up-final-20260916",
+      "head": "165291aa2242c352c4d4a39035d17ec4f374a856",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-follow-up-final-20260916",
+      "source_sha256": "58040169d30882eb013601cffbdc3b17164e0899cf15385a421b6bf49ac3aa02",
+      "has_history_bundle": false,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-follow-up-producer-20260916",
+      "head": "2f75f4215757b9bf51c2642c7f6ba528504c9b05",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-follow-up-producer-20260916",
+      "source_sha256": "43b4e62ab1bcb9cecc4b56b3b6db08b2e51656c5bb49bc4a2602c226836ea41e",
+      "has_history_bundle": false,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-jepa-experiments",
+      "head": "ae5844bb327f93b5ede534989554a375cc5366f3",
+      "merged_at_inventory": false,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-jepa-experiments",
+      "source_sha256": "216fa3ed3f6a14c78f69acbd459c81442892ffde01d912c06474a26c8a2347be",
+      "has_history_bundle": false,
+      "disposition": "merge retained JEPA commits"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-next-study-20260914",
+      "head": "2715213f751f08b5b2b10ab3ddb9b8ef96bf0057",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-next-study-20260914",
+      "source_sha256": "e4dcac83ad6d4ae93bee5cb5fc631e62d2da86cf756b6dafb3fd4440f2d69ca0",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-next-study-fixed-20260914",
+      "head": "aabc7f913153535f1e53258221201f4e2abb7fef",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-next-study-fixed-20260914",
+      "source_sha256": "f0039fe3c8bc4e9248fab9976539f40b5272d6387c7838ecc14e1d37adf10835",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-next-study-v2-20260914",
+      "head": "2cb4b96e1613c535d03cd21b033adc7de21370a5",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-next-study-v2-20260914",
+      "source_sha256": "d5ada86243e9d70395e9629961326ee5ccd559ff12400b67e7e80968dfa5dc4f",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-p0-attempt-lifecycle",
+      "head": "1450f8cfc8887e6436a1595771d761d97040d087",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-p0-attempt-lifecycle",
+      "source_sha256": "1dac22b4ed09d9ba5c788c5bc647fcd05eb01e97b9f14034edd4df84bb0d32b7",
+      "has_history_bundle": false,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-p0-followup",
+      "head": "41e8e09cfc6c03ada27e2f48123c4042ffddd895",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-p0-followup",
+      "source_sha256": "0ce140c6221ca47b5c91fdd41b535040fd34323bdff10d0542faa78b7890e98c",
+      "has_history_bundle": false,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-p0-series",
+      "head": "a1932b4d285f611bbe671c16984ce3d463929abb",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-p0-series",
+      "source_sha256": "a0857a1a8c3b73d2be49e86f5ecf8b0e5db3aa8c8b7b3dc8320044adb6a7362d",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-performance-20260908",
+      "head": "53a8c915ea97120bce062e1c872d7c836769047f",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-performance-20260908",
+      "source_sha256": "0d2375a99253b24bd210230101f347ea529b980172516fd118678dcbbae6236e",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-performance-validation-20260908",
+      "head": "f41cc2d2cb7e487442a6538b4f570936bf28ea29",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-performance-validation-20260908",
+      "source_sha256": "f77fe6e0b0ea4523f903721477b83b048755e502a0b0889a793f7e6ea1a435f7",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-phase1-20260907",
+      "head": "edc46a0caf8049f42a41d8b5334f3e1672282be0",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-phase1-20260907",
+      "source_sha256": "e0dcb9440a5179993876275425e05908557321540cabcbd68f33ae1775ef8496",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-phase1-validation-20260907",
+      "head": "998acfb7193904f8ffce7a9dae364c59af018d07",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-phase1-validation-20260907",
+      "source_sha256": "5316e41b904f0268695fa56de1996c0cfebc84b4feee522e5c51212a2a0137c9",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-phase2-20260907",
+      "head": "03337bfe38be927843df3900995ddd6917999b5e",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-phase2-20260907",
+      "source_sha256": "0e5e1849ee62b986a7d6a23eaadb2f7aa0b567342982b6fe3c284737856cd59a",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-phase2-validation-20260907",
+      "head": "1828b2813292048197836ac32033e9604690aba7",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-phase2-validation-20260907",
+      "source_sha256": "10fb6bb067dfc220bc05e89355d71711fc553b064ad2fa451a8c8cd21e2413bf",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-phase3-4-20260908",
+      "head": "8c87b2d92f51f4150a7f40abadba493ec10abb92",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-phase3-4-20260908",
+      "source_sha256": "8122b5714286dcc23555341924fb2561dd9293368de7838982bc6edfdf26babb",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-phase3-validation-20260908",
+      "head": "32cd43fdd0a57270c98a84bafdab3d51790a9ffc",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-phase3-validation-20260908",
+      "source_sha256": "3638d04143b6cd2fab93a31d5d76e1ff8fbdee41649eacb496697615dc2790d5",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-phase4-engines-20260908",
+      "head": "48f8a7c192e25261899b74b4f0a71655e5ecc2c9",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-phase4-engines-20260908",
+      "source_sha256": "9d799c6d5ea152f4e75b082e3d7aa7e89882aa8edacf672ec3aaea93bc044a29",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-phase4-final-validation-20260908",
+      "head": "9b793b100a39287d2661fc44413053faef1b0003",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-phase4-final-validation-20260908",
+      "source_sha256": "111ce1abb4b1842cb4ac0b3add8c5d9b6e6f17d0541513230547b45f3efd3184",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-phase4-final-validation-v2-20260908",
+      "head": "a2f0b3b849a40263fb94d7505528cfe08e18c41a",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-phase4-final-validation-v2-20260908",
+      "source_sha256": "b4dd75b302e9c55112f546ba5dc49377c520819378db6fad2d4525c0b0b8c326",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-phase4-final-validation-v3-20260908",
+      "head": "9e5ac0964b72f0ee9d5b938c2a84aa406bfeafb2",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-phase4-final-validation-v3-20260908",
+      "source_sha256": "b93454e376b7f2f11f7f2cd2e25a3003f9282cd2496130d8357dd62f80168dc9",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-phase4-validation-20260908",
+      "head": "c9723e0a3f86c82545ec0d523dbe96ac53ab7a0b",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-phase4-validation-20260908",
+      "source_sha256": "d2b24ce20c59a442b6ce07d795b7635b89bb725e8a51fba4c6bd159e7cea8de4",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-pr-review-20260907",
+      "head": "4d560507e5c36b29177a2a274fb31cd9f79049fa",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-pr-review-20260907",
+      "source_sha256": "282a6a24225c692a785f5d96f2c25ed8e8292059558a6c234078ff47179a754c",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-qualification-readiness-20260916",
+      "head": "f55937b6ddaa3cd55eb6bc72c4f4220ffaa6c28a",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-qualification-readiness-20260916",
+      "source_sha256": "cead1ccde24ce063e2b164cd804d5e1086489a26bcee34e5116bf259bd33bddb",
+      "has_history_bundle": false,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-readiness-pr-20260916",
+      "head": "4340162c28e96f82bbae31bec84590ce45c8c768",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-readiness-pr-20260916",
+      "source_sha256": "f816dc640371bb835aa44cd092f11234fb85ffb6e3a75f399fdca2e0365246c7",
+      "has_history_bundle": false,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-review-config-20260907",
+      "head": "1e41a0fd987733533278facafa8c6b8d2feed042",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-review-config-20260907",
+      "source_sha256": "d46b3b7dc7ab594337bd3dd48e8960e6b1eed5cd5156926eefc292600679c6eb",
+      "has_history_bundle": false,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-topograph-final-check-20260911-130028",
+      "head": "95fd41b6e7674c12cee4492598b54cdfa5a0f89d",
+      "merged_at_inventory": true,
+      "dirty_files": 85,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-topograph-final-check-20260911-130028",
+      "source_sha256": "8c81645e28c9f5cf7fa9b179396f10609c1e76cdc90efe42ec073f6f483ffb17",
+      "has_history_bundle": false,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-topograph-qualification-20260911-124725",
+      "head": "95fd41b6e7674c12cee4492598b54cdfa5a0f89d",
+      "merged_at_inventory": true,
+      "dirty_files": 72,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-topograph-qualification-20260911-124725",
+      "source_sha256": "d1ca78936c130cd5f9e03944cbf9e610d42063cdf2627e3402e4f470fd2d9b75",
+      "has_history_bundle": false,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-training-20260908",
+      "head": "d4848462e1e3afde169cc0b6984040abb687caaa",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-training-20260908",
+      "source_sha256": "204937698bce489a19187d8fb77b1642d83d69bcf6bd080867bb47f518ddf35e",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-training-optimized-20260908",
+      "head": "53a8c915ea97120bce062e1c872d7c836769047f",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/EvoNN-training-optimized-20260908",
+      "source_sha256": "843aad4c12fd58f86306e8d09af4eb7cb2d8612a03bd9a1b89f78b8bb30e3bc3",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-local-checkout-archive-20260907/overnight-checkout",
+      "head": "26efbc89ec58ed5add08bfd343bd671639bfa3c7",
+      "merged_at_inventory": false,
+      "dirty_files": 7,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/overnight-checkout",
+      "source_sha256": "5a214c5db8ee10d5763a14cc024271174732ba820ce58cd89296a781fa7c81eb",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    },
+    {
+      "original": "/Users/timokruth/Projekte/EvoNN-local-checkout-archive-20260907/p0-followup-validation",
+      "head": "1450f8cfc8887e6436a1595771d761d97040d087",
+      "merged_at_inventory": true,
+      "dirty_files": 0,
+      "archive": "/Users/timokruth/Projekte/EvoNN/.artifacts/retired-checkouts-20261006/p0-followup-validation",
+      "source_sha256": "d36cd28a1564b4a11f9a9dc3b15e96de8fc2b790bde257cfa66493ce0d4643c8",
+      "has_history_bundle": true,
+      "disposition": "archived source and evidence; redundant environment removed"
+    }
+  ],
+  "retired_launchagents": [
+    "com.evonn.engine-refresh-20260912.plist",
+    "com.evonn.engine-refresh-continuation-20260914.plist",
+    "com.evonn.guardian.2c9dd85f557b.plist",
+    "com.evonn.guardian.3b4405b3c87b.plist",
+    "com.evonn.hourly.ea21ce50863f.plist",
+    "com.evonn.next-study.20260914.qualification-v2.plist",
+    "com.evonn.next-study.20260914.qualification.plist"
+  ],
+  "excluded": [
+    "Evo Neural Nets predecessor repository",
+    "active Prism finalization and historical producers inside main .artifacts",
+    "non-EvoNN projects"
+  ],
+  "retained_refs": "refs/archive/cleanup-20261006/",
+  "notes": [
+    "All old standalone checkout heads except the JEPA branch and expired overnight automation were already ancestors of main.",
+    "The reference-acceptance branch is patch-equivalent to main. The first-binding audit proposal is superseded by the reviewed canonical v3 freeze; do not overwrite frozen governance evidence.",
+    "The overnight automation fixes a September 7 deadline and is obsolete; archived rather than reactivated.",
+    "The two dirty September 11 Topograph checkouts retain intermediate source states. Final-check source files are byte-identical to main or its historical blobs except documentation; preserve earlier qualification snapshots without reverting later fixes."
+  ]
+}

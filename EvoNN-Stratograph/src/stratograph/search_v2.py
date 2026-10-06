@@ -60,6 +60,11 @@ def observe(search, benchmark, genome, result):
             if position < size:
                 state['reservoir'][position] = entry
         niche = f'{genome.macro_depth}:{round(genome.reuse_ratio, 1)}:{genome.max_cell_depth}'
+        if search.research.version == 3 and search.research.niche_policy == 'representation':
+            execution = genome.execution
+            primitives = ','.join(sorted({n.primitive for c in genome.cells for n in c.nodes}))
+            width_bucket = max(n.width for c in genome.cells for n in c.nodes) // 16
+            niche += f':{execution["temporal"]}:{execution["readout"]}:{width_bucket}:{primitives}'
         if niche not in state['niches'] or entry['quality'] > state['niches'][niche]['quality']:
             state['niches'][niche] = entry
         if len(state['niches']) > size:
@@ -156,12 +161,13 @@ def inherit(search, model, benchmark, namespace):
                     if np.asarray(item['weights'][source]).shape == model.weights[name].shape:
                         remapping[name] = source
                         break
-        all_cells = all(key in remapping for key in model.weights if key.startswith('cell.'))
+        all_cells = all(key in remapping for key in model.weights if key in model.parameter_signatures)
         same_features = all_cells and model.representation_signature(remapping) == mapping['feature_signature']
         exact = item['identity'] == model.genome.genome_id
         copied = 0
         for name, value in model.weights.items():
-            source = (remapping[name] if name in remapping else None) if name.startswith('cell.') else (name if same_features or mode == 'head_diagnostic' else None)
+            representation = name in model.parameter_signatures
+            source = (remapping[name] if name in remapping else None) if representation else (name if same_features or mode == 'head_diagnostic' else None)
             if source is not None and source in item['weights']:
                 old = np.asarray(item['weights'][source], dtype=np.float32)
                 if old.shape == value.shape:
@@ -186,7 +192,7 @@ def remember(search, model, namespace):
 
 
 def telemetry(search):
-    return dict(policy_version=2, selection_policy=search.research.selection,
+    return dict(policy_version=search.research.version, selection_policy=search.research.selection,
                 protected_cycle=list(LANES) if search.research.selection == 'diverse' else [],
                 selection_counts={key: state['selection_counts'] for key, state in search.benchmarks.items()},
                 reservoir_occupancy={key: len(state['reservoir']) for key, state in search.benchmarks.items()},

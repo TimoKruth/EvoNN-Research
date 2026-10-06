@@ -25,6 +25,9 @@ class TrainConfig:
     schedule: str = "cosine"
     timeout: float = 120.0
     protected: bool = False
+    label_smoothing: float = 0.0
+    decay: str = "all"
+    validation_batch_size: int | None = None
 
     def __post_init__(self):
         for value in (self.epochs, self.batch_size, self.patience):
@@ -37,6 +40,12 @@ class TrainConfig:
             raise ValueError("invalid training bounds")
         if not 0 <= self.warmup_fraction < 1 or self.schedule not in {"cosine", "constant"}:
             raise ValueError("invalid schedule")
+        if not math.isfinite(self.label_smoothing) or not 0 <= self.label_smoothing <= 0.2:
+            raise ValueError("label smoothing must lie in [0,0.2]")
+        if self.decay not in {"all", "matrix"}:
+            raise ValueError("unknown weight decay policy")
+        if self.validation_batch_size is not None and (type(self.validation_batch_size) is not int or self.validation_batch_size < 1):
+            raise ValueError("positive validation batch size required")
 
 
 def learning_rate(config, step, total):
@@ -90,7 +99,27 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         shifted = logits - b.array(b.numpy(logits).max(axis=-1, keepdims=True))
         log_probs = shifted - b.log(b.exp(shifted).sum(axis=-1, keepdims=True))
         hot = np.eye(logits.shape[-1], dtype=np.float32)[targets.reshape(-1)]
+        if training and config.label_smoothing:
+            hot = hot * (1 - config.label_smoothing) + config.label_smoothing / logits.shape[-1]
         return -(b.array(hot) * log_probs).sum(axis=-1).mean()
+
+    def validation_loss(parameters):
+        if config.validation_batch_size is None or not model.token_input:
+            return float(b.numpy(loss(parameters, xv, yv)))
+        total_loss = 0.0
+        for start in range(0, len(xv), config.validation_batch_size):
+            if time.monotonic() >= deadline:
+                raise TimeoutError("training wall-clock cap reached")
+            stop = min(len(xv), start + config.validation_batch_size)
+            total_loss += float(b.numpy(loss(parameters, xv[start:stop], yv[start:stop]))) * (stop - start)
+        return total_loss / len(xv)
+
+    def predict(parameters, features):
+        if config.validation_batch_size is None or not model.token_input:
+            return b.numpy(model.forward(parameters, b.array(features), training=False, seed=0))
+        return np.concatenate([b.numpy(model.forward(parameters, b.array(features[start:start + config.validation_batch_size]),
+                                                    training=False, seed=0))
+                               for start in range(0, len(features), config.validation_batch_size)])
 
     moments = {k: np.zeros_like(v) for k, v in model.weights.items()}
     variances = {k: np.zeros_like(v) for k, v in model.weights.items()}
@@ -100,13 +129,16 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
     total = config.epochs * math.ceil(len(x) / config.batch_size)
     initial_weights = {k: v.copy() for k, v in model.weights.items()}
     research = getattr(model.genome, "schema_version", 1) == 2
-    curve = []
+    curve, train_curve = [], []
+    selected_epoch = 0
     if research:
-        best_loss = float(b.numpy(loss({k: b.array(v) for k, v in best.items()}, xv, yv)))
+        best_loss = validation_loss({k: b.array(v) for k, v in best.items()})
         if not math.isfinite(best_loss):
             raise ValueError("nonfinite initial validation loss")
+    initial_validation_loss = best_loss
     for epoch in range(config.epochs):
         order = rng.permutation(len(x))
+        epoch_loss = 0.0
         for start in range(0, len(x), config.batch_size):
             if time.monotonic() >= deadline:
                 raise TimeoutError("training wall-clock cap reached")
@@ -116,6 +148,7 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
             value, grads = b.gradients(lambda p: loss(p, x[indices], y[indices], True, mask_seed), parameters)
             if not math.isfinite(value) or not all(np.isfinite(v).all() for v in grads.values()):
                 raise ValueError("nonfinite loss or gradient")
+            epoch_loss += value * len(indices)
             norm = math.sqrt(sum(float(np.sum(v.astype(np.float64) ** 2)) for v in grads.values()))
             scale = min(1.0, config.clip_norm / max(norm, 1e-12))
             lr = learning_rate(config, updates, total)
@@ -125,19 +158,22 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
                 moments[key] = 0.9 * moments[key] + 0.1 * grad
                 variances[key] = 0.999 * variances[key] + 0.001 * grad * grad
                 m, v = moments[key] / (1 - 0.9**updates), variances[key] / (1 - 0.999**updates)
+                decay = config.weight_decay if config.decay == "all" or (model.weights[key].ndim >= 2 and key != "adapter.position") else 0
                 model.weights[key] = (
-                    model.weights[key] * (1 - lr * config.weight_decay) - lr * m / (np.sqrt(v) + 1e-8)
+                    model.weights[key] * (1 - lr * decay) - lr * m / (np.sqrt(v) + 1e-8)
                 ).astype(np.float32)
             if not all(np.isfinite(v).all() for v in model.weights.values()):
                 raise ValueError("nonfinite optimizer weights")
         parameters = {k: b.array(v) for k, v in model.weights.items()}
-        value = float(b.numpy(loss(parameters, xv, yv)))
+        value = validation_loss(parameters)
         if not math.isfinite(value):
             raise ValueError("nonfinite validation loss")
         epochs_done += 1
         curve.append(value)
+        train_curve.append(epoch_loss / len(x))
         if value < best_loss - 1e-8:
             best_loss, stale = value, 0
+            selected_epoch = epoch + 1
             best = {k: v.copy() for k, v in model.weights.items()}
             best_buffers = deepcopy(model.buffers)
         else:
@@ -148,11 +184,11 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
     model.buffers = best_buffers
     parameters = {k: b.array(v) for k, v in best.items()}
     tick = time.perf_counter()
-    prediction = b.numpy(model.forward(parameters, b.array(xv), training=False, seed=0))
+    prediction = predict(parameters, xv)
     latency = time.perf_counter() - tick
     calibration = {"slope": 1.0, "intercept": 0.0}
     if regression:
-        train_prediction = b.numpy(model.forward(parameters, b.array(x), training=False, seed=0))
+        train_prediction = predict(parameters, x)
         restored = restore_regression_predictions(train_prediction, target_mean, target_std).reshape(-1)
         yc = np.asarray(y_train, dtype=np.float64).reshape(-1)
         if restored.size >= 2 and restored.std() >= 1e-8:
@@ -177,7 +213,10 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         probe = b.numpy(model.forward(parameters, b.array(x[:16]), training=False, seed=0)).reshape((min(16, len(x)), -1))
         projection = np.random.default_rng(0).normal(size=(probe.shape[-1], 1)) / math.sqrt(probe.shape[-1])
         behavior = np.tanh(probe @ projection).reshape(-1)
-        extra = {"validation_curve": curve, "behavior_descriptor": np.pad(behavior, (0, 16-len(behavior))).tolist(),
+        extra = {"validation_curve": curve, "training_curve": train_curve, "selected_epoch": selected_epoch,
+                 "initial_validation_loss": initial_validation_loss,
+                 "training_objective": "smoothed_cross_entropy" if not regression and config.label_smoothing else "mse" if regression else "cross_entropy",
+                 "behavior_descriptor": np.pad(behavior, (0, 16-len(behavior))).tolist(),
                  "behavior_source": "training_probe/v1"}
     return {
         "score": score,

@@ -19,7 +19,8 @@ def invoke(*args):
 
 
 @pytest.mark.parametrize("backend", ["numpy_fallback", "mlx_native"])
-def test_research_real_resume_export_replay_and_policy_tamper(tmp_path, backend):
+@pytest.mark.parametrize("variant", ["open", "next"])
+def test_research_real_resume_export_replay_and_policy_tamper(tmp_path, backend, variant):
     if backend == "mlx_native" and (platform.system() != "Darwin" or platform.machine() != "arm64"):
         pytest.skip("native MLX requires Apple Silicon")
     interruption = (
@@ -28,7 +29,7 @@ def test_research_real_resume_export_replay_and_policy_tamper(tmp_path, backend)
     first = invoke(
         "run",
         "--variant",
-        "open",
+        variant,
         "--pack",
         "tier1_core_smoke",
         "--budget",
@@ -53,6 +54,9 @@ def test_research_real_resume_export_replay_and_policy_tamper(tmp_path, backend)
     run = next((tmp_path / "runs").iterdir())
     changed = invoke("run", "--resume", run, "--variant", "mechanics")
     assert changed.returncode != 0 and "differs from saved run" in changed.stderr
+    if variant == "next":
+        changed = invoke("run", "--resume", run, "--research-options", json.dumps({"allocation": "full"}))
+        assert changed.returncode != 0 and "differs from saved run" in changed.stderr
     resumed = invoke("run", "--resume", run)
     assert resumed.returncode == 0, resumed.stderr
     bundle = read_export(run / "symbiosis")
@@ -83,6 +87,39 @@ def test_research_real_resume_export_replay_and_policy_tamper(tmp_path, backend)
     forged["ancestral_training"]["updates"] += 1
     with pytest.raises(ValueError, match="ancestral"):
         expected_epochs(config, forged, state, telemetry)
+    if variant == "next":
+        forged_config = deepcopy(config)
+        forged_config["research_options"]["label_smoothing"] = 0.0
+        with pytest.raises(ValueError, match="options"):
+            expected_epochs(forged_config, attempts[0], state, telemetry)
+        forged = deepcopy(attempts[0])
+        forged["training_policy"]["patience"] += 1
+        with pytest.raises(ValueError, match="training policy"):
+            expected_epochs(config, forged, state, telemetry)
+        forged = deepcopy(attempts[0])
+        forged["selected_epoch"] = forged["epochs"] + 1
+        with pytest.raises(ValueError, match="selected checkpoint"):
+            expected_epochs(config, forged, state, telemetry)
+
+
+@pytest.mark.parametrize("adapter", ["query", "mixer"])
+def test_next_language_export_and_replay(tmp_path, adapter):
+    backend = "mlx_native" if platform.system() == "Darwin" and platform.machine() == "arm64" else "numpy_fallback"
+    result = invoke("run", "--variant", "next", "--research-options", json.dumps({"adapters": adapter}),
+                    "--pack", "tier_b_core_v2", "--budget", 16, "--epochs", 2,
+                    "--timeout", 220, "--fit-timeout", 30, "--backend", backend,
+                    "--output", tmp_path / "runs", "--cache", tmp_path / "cache")
+    assert result.returncode == 0, result.stderr
+    run = next((tmp_path / "runs").iterdir())
+    bundle = read_export(run / "symbiosis")
+    validate_engine_bundle(bundle, verify_cache=True)
+    assert bundle.results.coverage.ok == 16
+    attempts = artifact_json(bundle, "attempts.json")["attempts"]
+    language = [a for a in attempts if a["benchmark_id"] == "shakespeare_byte_lm"]
+    assert language and all(a["genome"]["input_adapter"] == "token_" + adapter for a in language)
+    replay = invoke("replay", run)
+    assert replay.returncode == 0, replay.stderr
+    assert json.loads(replay.stdout)["status"] == "passed"
 
 
 def test_config_research_variant_is_not_dropped(tmp_path, monkeypatch):

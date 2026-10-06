@@ -47,5 +47,15 @@ def research_diagnostics(attempts):
             screening_rank_check=dict(paired_genotypes=len(paired), comparable_pairs=comparable, reversals=reversals,
                                       status='available' if comparable else 'insufficient_revisited_pairs'),
         )
+        if any(row['genome'].get('execution', {}).get('version') == 3 for row in rows):
+            panels[benchmark]['temporal_research'] = dict(
+                modes=dict(Counter(row['genome']['execution']['temporal'] for row in rows)),
+                selected_epochs=dict(Counter(str(row['selected_epoch']) for row in successful)),
+                initial_checkpoints_retained=sum(row['selected_epoch'] == 0 for row in successful),
+                learned_embedding_fits=sum(row['embedding_weights_changed'] for row in successful),
+                curves=[dict(outcome_id=row['outcome_id'], initial=row['initial_validation_loss'],
+                             validation=row['validation_curve'], training=row['training_curve'],
+                             max_gradient_norm=row['max_gradient_norm_by_epoch']) for row in successful],
+            )
     return dict(schema_version=2, benchmarks=panels, scientific_qualification='pending',
                 interpretation='Descriptive charged-work and revisitation diagnostics. Repeated fits may inherit weights; rank changes do not isolate training duration or prove superiority.')

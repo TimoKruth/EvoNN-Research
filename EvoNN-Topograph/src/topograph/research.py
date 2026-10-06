@@ -3,8 +3,8 @@
 import math
 from typing import Literal
 
-Variant = Literal["legacy", "mechanics", "training", "archive", "broad", "open"]
-VARIANTS = ("legacy", "mechanics", "training", "archive", "broad", "open")
+Variant = Literal["legacy", "mechanics", "training", "archive", "broad", "open", "next"]
+VARIANTS = ("legacy", "mechanics", "training", "archive", "broad", "open", "next")
 
 
 def lookup(mapping, key, default=None):
@@ -21,7 +21,7 @@ def take(mapping, key, default=None):
 def policy(variant):
     if variant not in VARIANTS:
         raise ValueError("unknown Topograph research variant")
-    return {name: variant in (name, "open") for name in ("training", "archive", "broad")}
+    return {name: variant in (name, "open", "next") for name in ("training", "archive", "broad")}
 
 
 def allocate_training(epochs, generation, inheritance, parameters, *, protected=False, variant="open"):
@@ -52,3 +52,17 @@ def runtime_profile(attempts):
         "scope": "Worker phases are nested in roundtrip. Checkpoint timing is optional after a crash; "
         "preparation and final export are outside these stage sums. Timing is diagnostic, not a compute-equivalence claim.",
     }
+
+
+# The file-only consumer independently reconstructs these rules in Shared;
+# search/training policy execution stays owned by Topograph.
+def progressing(curve, selected_epoch):
+    """Recent selected improvement, with a relative noise floor; not a forecast."""
+    return (len(curve) >= 2 and selected_epoch >= len(curve) - 1
+            and min(curve[-2:]) < curve[0] - max(1e-8, abs(curve[0]) * 0.01))
+
+
+def next_allocation(epochs, copied, parameters, protected, settings, source_progress=False):
+    if protected or settings.allocation == "full" or (settings.allocation == "progress" and source_progress):
+        return epochs, "protected_full" if protected else "full" if settings.allocation == "full" else "progress_full"
+    return max(1, math.ceil(epochs * (1 - 0.5 * copied / max(1, parameters)))), "coverage_discount"

@@ -16,7 +16,7 @@ concurrency:
 jobs:
   macos-engines:
     runs-on: macos-15
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -71,6 +71,8 @@ jobs:
         env:
           EVONN_TEST_BACKEND: mlx_native
         run: uv run --locked --all-packages --group dev pytest -q tests/integration/test_phase2_runtime.py tests/integration/test_phase2_failures.py tests/integration/test_search_snapshot_ownership.py tests/integration/test_primordia_breadth.py tests/integration/test_primordia_research_v3.py tests/integration/test_prism_frontier.py tests/integration/test_prism_policy_evidence.py tests/integration/test_prism_routed.py
+      - name: Verify retained JEPA experiments and analysis
+        run: uv run --locked --all-packages --group dev pytest -q tests/integration/test_jepa_pilot.py tests/integration/test_jepa_analysis.py
       - name: Execute and validate MLX runtime probe
         run: |
           uv run --locked --all-packages --group dev python scripts/ci/runtime_probe.py generate \

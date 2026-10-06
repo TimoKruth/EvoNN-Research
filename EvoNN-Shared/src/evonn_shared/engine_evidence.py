@@ -192,9 +192,9 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
             research = config["research"]
             if HierarchyResearchPolicy.model_validate(research).model_dump(mode="json") != research:
                 raise ValueError("noncanonical hierarchy research policy")
-            if research.get("version") != 2 or research.get("evaluator") not in ("proxy", "trainable"):
+            if research.get("version") not in (2, 3) or research.get("evaluator") not in ("proxy", "trainable"):
                 raise ValueError("unsupported Stratograph research policy")
-            expected_fidelity = "hierarchy_features_trained_head_v2" if research["evaluator"] == "proxy" else "end_to_end_hierarchy_v2"
+            expected_fidelity = HierarchyResearchPolicy.model_validate(research).fidelity
             if state["search"].get("research") != research:
                 raise ValueError("hierarchy research policy differs from checkpoint")
         if config.get("evaluator_fidelity") != expected_fidelity or telemetry.get("evaluator_fidelity") != expected_fidelity:
@@ -395,12 +395,41 @@ def validate_engine_bundle(bundle, *, verify_cache=False):
             genome = attempt["genome"]
             if genome.get("schema_version") != 2 or genome["execution"]["evaluator"] != research["evaluator"]:
                 raise ValueError("hierarchy evaluator/genome mismatch")
+            from .hierarchy_policy import HierarchyResearchPolicy
+            if HierarchyResearchPolicy.model_validate(genome['execution']).model_dump(mode='json') != genome['execution']:
+                raise ValueError('noncanonical hierarchy candidate policy')
             mutable = {"head_width", "normalization", "readout", "residual"} if research["evolve_representation"] else set()
+            if research['version'] == 3 and research['evolve_representation']:
+                from .hierarchy_policy import V3_REPRESENTATION_CHOICES
+                mutable.update(V3_REPRESENTATION_CHOICES)
+            if research['version'] == 3 and research['evolve_temporal']:
+                mutable.update(('temporal', 'position', 'embedding_width'))
             if {k: v for k, v in genome["execution"].items() if k not in mutable} != {k: v for k, v in research.items() if k not in mutable}:
                 raise ValueError("hierarchy genome policy drift")
             if attempt["status"] == "ok":
                 if attempt.get("evaluator_fidelity") != config["evaluator_fidelity"]:
                     raise ValueError("hierarchy attempt fidelity differs")
+                if research['version'] == 3:
+                    for name in ('validation_curve', 'training_curve', 'max_gradient_norm_by_epoch'):
+                        curve = attempt[name] if name in attempt else None
+                        if (not isinstance(curve, list) or len(curve) != attempt['epochs']
+                                or any(type(v) not in (int, float) or not math.isfinite(v) for v in curve)):
+                            raise ValueError('invalid hierarchy training diagnostics')
+                    epoch = attempt.get('selected_epoch')
+                    initial = attempt.get('initial_validation_loss')
+                    if research['select_initial']:
+                        if type(initial) not in (int, float) or not math.isfinite(initial):
+                            raise ValueError('missing hierarchy initial checkpoint loss')
+                    elif initial is not None:
+                        raise ValueError('undeclared hierarchy initial checkpoint selection')
+                    if type(epoch) is not int or not (0 if research['select_initial'] else 1) <= epoch <= attempt['epochs']:
+                        raise ValueError('invalid hierarchy selected epoch')
+                    selected_loss = initial if epoch == 0 else attempt['validation_curve'][epoch - 1]
+                    eligible = attempt['validation_curve'] + ([initial] if research['select_initial'] else [])
+                    if (attempt['validation_loss'] != selected_loss or selected_loss > min(eligible) + 1e-8
+                            or attempt.get('temporal_policy') != genome['execution']['temporal']
+                            or type(attempt.get('embedding_weights_changed')) is not bool):
+                        raise ValueError('hierarchy checkpoint selection diagnostics differ')
                 if genome["execution"]["normalization"] == "train_standard":
                     buffers = attempt["buffers"].get("hierarchy_standard_v2")
                     if not isinstance(buffers, list) or len(buffers) != 2 or len(buffers[0]) != len(buffers[1]) or not buffers[0] or any(not math.isfinite(v) for row in buffers for v in row) or any(v < .999e-5 for v in buffers[1]):
