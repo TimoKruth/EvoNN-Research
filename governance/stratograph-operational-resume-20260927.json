@@ -1,0 +1,13 @@
+{
+  "resumed_at": "2026-09-27T19:33:00.325216+02:00",
+  "pid": 60744,
+  "completed_at_resume": 132,
+  "planned": 374,
+  "manifest_sha256": "b10db9c2e94308a0340c0b23640a0b4e0dfe82d5a34fb04314cb23c7e0ae2530",
+  "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-fit-resume-20260922/resume-20260927T193255.log",
+  "audit": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-fit-resume-20260922/operational-resume-20260927T193255",
+  "archived_pause_files": [
+    "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-fit-resume-20260922/study/PAUSE.resumed-20260927T193255"
+  ],
+  "changes": "Operational state only; no producer, protocol, budget, seed, model or completed result change."
+}

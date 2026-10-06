@@ -7,6 +7,13 @@ from evonn_shared.canonical import canonical_sha256
 from evonn_shared.weight_cache import WeightCache
 from .genome import Genome, LayerGene, ConnectionGene, Innovations, seed_genome, OPERATORS
 from .compiler import compile_genome
+from .compiler_v2 import parameter_estimate
+from .genome_v2 import GenomeV2
+
+
+def within_parameter_cap(genome, definition):
+    """Apply the runtime's existing cap before accepting a legacy mutation."""
+    return parameter_estimate(GenomeV2.model_validate(genome.model_dump()), definition) <= 2_000_000
 
 
 def tuples(value):
@@ -343,6 +350,9 @@ class Search:
                 child = crossover(parent, mate, self.rng)
                 op = self.scheduler.choose(self.progress, self.rng)
                 child = mutate(child, self.rng, self.innovations, op)
+                if not within_parameter_cap(child, self.definitions[benchmark]):
+                    child = parent
+                    state["resource_rejections"] = state.get("resource_rejections", 0) + 1
                 operators[child.genome_id] = [op, state["scores"][index]["quality"]]
                 children.append(child.model_dump(mode="json"))
             state.update(
@@ -374,6 +384,7 @@ class Search:
 
     def telemetry(self):
         return {
+            "resource_rejections": {k: s.get("resource_rejections", 0) for k, s in self.benchmarks.items()},
             "schema_version": "1.0.0",
             "system": self.system,
             "topology_size": {

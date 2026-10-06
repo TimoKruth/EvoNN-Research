@@ -48,6 +48,27 @@ def learning_rate(config, step, total):
     return config.learning_rate * (0.01 + 0.99 * (1 + math.cos(math.pi * progress)) / 2)
 
 
+def finite_gradients(backend, forward, parameters, *, deadline):
+    """Recompute only overflowing backward passes in float64 before clipping.
+
+    Forward loss, parameters, minibatch and dropout seed remain unchanged. The
+    ordinary finite path returns the original gradient objects and arithmetic.
+    """
+    value, gradients = backend.gradients(forward, parameters)
+    if not math.isfinite(value):
+        raise ValueError("nonfinite loss or gradient")
+    if all(np.isfinite(v).all() for v in gradients.values()):
+        return value, gradients, False
+    if time.monotonic() >= deadline:
+        raise TimeoutError("training wall-clock cap reached")
+    precise_value, gradients = backend.precise_gradients(forward, parameters)
+    if not math.isfinite(precise_value) or not all(np.isfinite(v).all() for v in gradients.values()):
+        raise ValueError("nonfinite loss or gradient after float64 recovery")
+    if time.monotonic() >= deadline:
+        raise TimeoutError("training wall-clock cap reached")
+    return value, gradients, True
+
+
 def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, seed):
     """Fit the compiled architecture; return best validation weights and measured work.
 
@@ -98,30 +119,46 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
     best = {k: v.copy() for k, v in model.weights.items()}
     best_buffers = deepcopy(model.buffers)
     best_loss, stale, updates, epochs_done = math.inf, 0, 0, 0
+    policy = getattr(model, 'policy', None)
+    v3 = policy is not None and policy.version == 3
+    initial_loss, selected_epoch, curve, train_curve, gradient_norms = None, None, [], [], []
+    if v3 and policy.select_initial:
+        initial_loss = float(b.numpy(loss({k: b.array(v) for k, v in model.weights.items()}, xv, yv)))
+        if not math.isfinite(initial_loss):
+            raise ValueError('nonfinite initial validation loss')
+        best_loss, selected_epoch = initial_loss, 0
+    recovered_batches = 0
     total = config.epochs * math.ceil(len(x) / config.batch_size)
     initial_weights = {k: v.copy() for k, v in model.weights.items()}
     for epoch in range(config.epochs):
         order = rng.permutation(len(x))
+        epoch_loss, examples, epoch_norm = 0., 0, 0.
         for start in range(0, len(x), config.batch_size):
             if time.monotonic() >= deadline:
                 raise TimeoutError("training wall-clock cap reached")
             indices = order[start : start + config.batch_size]
             parameters = {k: b.array(v) for k, v in model.weights.items()}
             mask_seed = int(rng.integers(0, 2**32))
-            value, grads = b.gradients(lambda p: loss(p, x[indices], y[indices], True, mask_seed), parameters)
-            if not math.isfinite(value) or not all(np.isfinite(v).all() for v in grads.values()):
-                raise ValueError("nonfinite loss or gradient")
+            value, grads, recovered = finite_gradients(
+                b, lambda p: loss(p, x[indices], y[indices], True, mask_seed), parameters, deadline=deadline)
+            recovered_batches += int(recovered)
             norm = math.sqrt(sum(float(np.sum(v.astype(np.float64) ** 2)) for v in grads.values()))
+            epoch_loss += value * len(indices)
+            examples += len(indices)
+            epoch_norm = max(epoch_norm, norm)
             scale = min(1.0, config.clip_norm / max(norm, 1e-12))
             lr = learning_rate(config, updates, total)
             updates += 1
             for key, grad in grads.items():
-                grad = grad * scale
+                grad = (grad * scale).astype(np.float32)
                 moments[key] = 0.9 * moments[key] + 0.1 * grad
                 variances[key] = 0.999 * variances[key] + 0.001 * grad * grad
                 m, v = moments[key] / (1 - 0.9**updates), variances[key] / (1 - 0.999**updates)
+                decay = config.weight_decay
+                if v3 and policy.weight_decay_scope == 'matrices' and model.weights[key].ndim < 2:
+                    decay = 0.
                 model.weights[key] = (
-                    model.weights[key] * (1 - lr * config.weight_decay) - lr * m / (np.sqrt(v) + 1e-8)
+                    model.weights[key] * (1 - lr * decay) - lr * m / (np.sqrt(v) + 1e-8)
                 ).astype(np.float32)
             if not all(np.isfinite(v).all() for v in model.weights.values()):
                 raise ValueError("nonfinite optimizer weights")
@@ -130,8 +167,12 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         if not math.isfinite(value):
             raise ValueError("nonfinite validation loss")
         epochs_done += 1
+        curve.append(value)
+        train_curve.append(epoch_loss / max(1, examples))
+        gradient_norms.append(epoch_norm)
         if value < best_loss - 1e-8:
             best_loss, stale = value, 0
+            selected_epoch = epochs_done
             best = {k: v.copy() for k, v in model.weights.items()}
             best_buffers = deepcopy(model.buffers)
         else:
@@ -182,6 +223,8 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         },
     }
 
+    result['gradient_recovery'] = dict(recovered_batches=recovered_batches, backend='numpy_float64',
+                                     trigger='finite_loss_nonfinite_gradient', optimizer_dtype='float32')
     if hasattr(model, 'policy'):
         # Training inputs only: behavioral diversity cannot consume protected labels.
         probe = b.numpy(model.forward(parameters, b.array(x[:16]), training=False, seed=0))
@@ -192,4 +235,11 @@ def fit(model, x_train, y_train, x_validation, y_validation, *, task, config, se
         result['behavior'] = signature.tolist()
         result['evaluator_fidelity'] = model.evaluator_fidelity
         result['hierarchy_weights_changed'] = any(not np.array_equal(best[k], v) for k, v in initial_weights.items() if k.startswith('cell.'))
+    if v3:
+        result.update(initial_validation_loss=initial_loss, selected_epoch=selected_epoch,
+                      validation_curve=curve, training_curve=train_curve,
+                      max_gradient_norm_by_epoch=gradient_norms,
+                      temporal_policy=model.policy.temporal,
+                      embedding_weights_changed=any(not np.array_equal(best[k], v) for k, v in initial_weights.items()
+                                                    if k == 'input.embedding'))
     return result

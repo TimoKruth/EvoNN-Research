@@ -1,0 +1,24 @@
+{
+  "schema": "evonn.topograph-study-resume/v1",
+  "resumed_at": "2026-09-23T07:31:42.814383+00:00",
+  "authorization": "User: resume",
+  "prior_status": {
+    "status": "paused",
+    "updated_at": "2026-09-23T03:58:33.233281+00:00",
+    "pid": 96204,
+    "stage": "screening"
+  },
+  "completed_qualification": 38,
+  "completed_screening": 149,
+  "next": "Revalidate frozen inputs and saved results, finish screening, nominate, then run confirmation.",
+  "study_sha256": "7ebf433b46ecb04202a5dc6bf35618a16d44b2f390e8abd68accf0ac1f3596ba",
+  "controller_sha256": "f2ca5b35fd82b714569e87359d4a404359047b1dae99f06f3e5975aa96e8b7d8",
+  "launcher_pid": 86854,
+  "command": [
+    "/usr/bin/caffeinate",
+    "-i",
+    "-m",
+    "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-study-20260921/producer/.venv/bin/python",
+    "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-study-20260921/supervise.py"
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "created_at": "2026-09-30T12:52:58.766681+02:00",
+  "authorization": "User requested incorporating completed results into a new standard, preferring quality and performance over cost.",
+  "decision": "Promote the exact evolving preset for new Stratograph runs; no untested dropout combination.",
+  "evidence": {
+    "analysis": ".artifacts/stratograph-fit-resume-20260922/study/analysis.json",
+    "sha256": "b21d1c462520fec64bd3a1a489254b195e5edc303925106002e528067e8634f7",
+    "status": "complete",
+    "contrasts": [
+      {
+        "arm": "evolving",
+        "bootstrap_ci95": [
+          0.03766199283193,
+          0.05055260678389309
+        ],
+        "bootstrap_method": "4096 percentile resamples of independent paired seed means; RNG seed 0",
+        "effect_mean": 0.043980626628687056,
+        "holm_pvalue": 0.007323324789454412,
+        "material_gain": true,
+        "materiality": 0.01,
+        "n": 16,
+        "panel": "core",
+        "pvalue": 0.00024411082631514708,
+        "rank_biserial": 1.0,
+        "reference": "v2_reference",
+        "standardized_effect": 3.2289974591758672,
+        "wilcoxon": {
+          "assumption": "independent seed effects symmetric under the null; diagnostic, not causal proof",
+          "method": "two-sided signed-rank permutation, <=8192 permutations",
+          "n": 16,
+          "pvalue": 0.00024411082631514708,
+          "statistic": 0.0,
+          "status": "available"
+        }
+      },
+      {
+        "arm": "evolving",
+        "bootstrap_ci95": [
+          0.19415256191622118,
+          0.21069924216844746
+        ],
+        "bootstrap_method": "4096 percentile resamples of independent paired seed means; RNG seed 0",
+        "effect_mean": 0.20239085448570673,
+        "holm_pvalue": 0.007323324789454412,
+        "material_gain": true,
+        "materiality": 0.01,
+        "n": 16,
+        "panel": "real_text",
+        "pvalue": 0.00024411082631514708,
+        "rank_biserial": 1.0,
+        "reference": "v2_reference",
+        "standardized_effect": 11.781597249078771,
+        "wilcoxon": {
+          "assumption": "independent seed effects symmetric under the null; diagnostic, not causal proof",
+          "method": "two-sided signed-rank permutation, <=8192 permutations",
+          "n": 16,
+          "pvalue": 0.00024411082631514708,
+          "statistic": 0.0,
+          "status": "available"
+        }
+      },
+      {
+        "arm": "evolving",
+        "bootstrap_ci95": [
+          0.08977606431325656,
+          0.4731437172325357
+        ],
+        "bootstrap_method": "4096 percentile resamples of independent paired seed means; RNG seed 0",
+        "effect_mean": 0.26607582476528585,
+        "holm_pvalue": 0.008055657268399853,
+        "material_gain": true,
+        "materiality": 0.01,
+        "n": 16,
+        "panel": "memory",
+        "pvalue": 0.0007323324789454412,
+        "rank_biserial": 0.8970588235294118,
+        "reference": "v2_reference",
+        "standardized_effect": 0.6522561542846788,
+        "wilcoxon": {
+          "assumption": "independent seed effects symmetric under the null; diagnostic, not causal proof",
+          "method": "two-sided signed-rank permutation, <=8192 permutations",
+          "n": 16,
+          "pvalue": 0.0007323324789454412,
+          "statistic": 7.0,
+          "status": "available"
+        }
+      }
+    ]
+  },
+  "defaults": {
+    "research": {
+      "version": 3,
+      "evaluator": "trainable",
+      "normalization": "rms",
+      "evolve_representation": true,
+      "readout": "final",
+      "residual": false,
+      "inheritance": "compatible",
+      "selection": "diverse",
+      "screen_epochs": 0,
+      "archive_size": 32,
+      "max_macro_nodes": 8,
+      "max_cell_nodes": 6,
+      "max_width": 64,
+      "head_width": 16,
+      "temporal": "hybrid",
+      "embedding_width": 32,
+      "position": "relative",
+      "cell_normalization": "rms",
+      "residual_mode": "gated",
+      "merge": "learned",
+      "readout_skip": true,
+      "select_initial": true,
+      "weight_decay_scope": "matrices",
+      "evolve_temporal": true,
+      "dropout": 0.0,
+      "niche_policy": "representation"
+    },
+    "variant": "shared",
+    "schema_version": 1,
+    "pack": "tier1_core",
+    "budget": 128,
+    "seed": 42,
+    "epochs": 12,
+    "population_size": 4,
+    "backend": "mlx_native",
+    "target_device": "cpu",
+    "timeout": 81240.0,
+    "fit_timeout": 600.0
+  },
+  "portable_backend": "numpy_fallback on non-Apple-Silicon hosts",
+  "available_presets": [
+    "standard",
+    "legacy",
+    "v2_reference",
+    "v3_control",
+    "attention_only",
+    "dilated_only",
+    "stabilized_prefix",
+    "attention",
+    "dilated",
+    "hybrid",
+    "hybrid_fresh",
+    "hybrid_dropout",
+    "evolving"
+  ],
+  "compatibility": {
+    "explicit_null": "legacy",
+    "saved_missing_policy": "legacy on resume",
+    "new_campaign_omission": "freeze evolving explicitly",
+    "historical_campaign_omission": "dispatch explicit null; retain historical identity",
+    "matched_campaign_allocations": "unchanged",
+    "frozen_producers_and_results": "unchanged"
+  },
+  "verification": {
+    "policy_equals_frozen_evolving": true,
+    "targeted_tests_passed": 194,
+    "test_runs": [
+      "190 passes in the combined engine/campaign suite; one new test initially used an invalid 4-fit budget for an 8-task pack. Corrected the test allocation to 8.",
+      "Corrected direct-API integration test and three Stratograph failure-accounting tests: 4 passed."
+    ],
+    "lint": "passed for every changed Python path",
+    "diff_whitespace": "passed",
+    "repository_import_boundary_check": "7 existing violations in untouched EvoNN-Compare/src/evonn_compare/prism_continuation.py; none in changed paths"
+  },
+  "scientific_scope": "Within-Stratograph validation-selected gains; not a unique-best, protected-test or cross-engine superiority claim.",
+  "new_comparison_launched": false
+}

@@ -26,6 +26,7 @@ from evonn_shared.run_workspace import create_run_workspace, open_run_workspace,
 from evonn_shared.run_store import open_run_store
 from evonn_shared.telemetry import ArtifactReference
 from evonn_shared.runtime_budget import MAX_ENGINE_EVALUATIONS
+from evonn_shared.topograph_policy import TopographResearchPolicy
 from evonn_shared.runtime_io import (
     encode_snapshot,
     terminal_worker_failure,
@@ -44,7 +45,8 @@ from evonn_shared.runtime_io import (
 from .tensors import Backend
 from .training import TrainConfig, fit
 from .parallel import Evaluator
-from .research import policy, allocate_training, runtime_profile
+from .research import policy, allocate_training, runtime_profile, next_allocation
+from .presets import new_run_policy
 
 
 def select_runtime(search_type, genome_type=None, *, variant="legacy"):
@@ -159,15 +161,29 @@ def run_engine(
     crash_step=1,
     benchmark_pooling=False,
     novelty_weight=0.0,
-    variant="legacy",
+    variant=None,
+    research_options=None,
 ):
+    if resume is not None and variant is None:
+        saved = json.loads(read_document(Path(resume), "config.yaml"))
+        variant = saved.get("variant", "legacy")
+        if research_options is None:
+            research_options = saved.get("research_options")
+    variant, research_options = new_run_policy(variant, research_options)
     search_type, _ = select_runtime(search_type, variant=variant)
     research = variant != "legacy"
     search_options = {"variant": variant} if research else {}
+    settings = TopographResearchPolicy.model_validate({} if research_options is None else research_options) if variant == "next" else None
+    if research_options is not None and settings is None:
+        raise ValueError("research_options require variant next")
+    if settings:
+        search_options["research_options"] = settings.model_dump()
     if research and (benchmark_pooling or novelty_weight):
         raise ValueError("research variants use task-local archive selection; legacy pooling/novelty scalars are unavailable")
-    if not all(math.isfinite(v) and 0 < v <= 1800 for v in (timeout, fit_timeout)):
-        raise ValueError("run and fit limits must be in (0,1800] seconds")
+    if not math.isfinite(timeout) or not 0 < timeout <= 43200:
+        raise ValueError("run limit must be in (0,43200] seconds")
+    if not math.isfinite(fit_timeout) or not 0 < fit_timeout <= 1800:
+        raise ValueError("fit limit must be in (0,1800] seconds")
     if type(seed) is not int or not 0 <= seed < 2**32:
         raise ValueError("seed must be a 32-bit unsigned integer")
     cache_root = Path(".artifacts/dataset-cache") if cache_root is None else cache_root
@@ -210,7 +226,9 @@ def run_engine(
         },
     }
     if research:
-        configuration.update(variant=variant, search_policy_version=2, genome_schema="topograph.genome/v2")
+        configuration.update(variant=variant, search_policy_version=3 if settings else 2, genome_schema="topograph.genome/v2")
+    if settings:
+        configuration["research_options"] = settings.model_dump()
     invocation_start = time.monotonic()
     invocation_started = utc()
     deadline = invocation_start + timeout
@@ -341,7 +359,7 @@ def run_engine(
                     try:
                         if research:
                             from .compiler_v2 import parameter_estimate
-                            if parameter_estimate(genome, definition) > 2_000_000:
+                            if parameter_estimate(genome, definition) > (settings.parameter_cap if settings else 2_000_000):
                                 raise ValueError("compiled candidate exceeds local runtime parameter safety cap")
                         model = search.compile(genome, definition, backend=backend, device=device, seed=model_seed)
                         compiled_parameters = model.parameter_count
@@ -354,6 +372,10 @@ def run_engine(
                             full_epochs, allocated, training_reason = allocate_training(
                                 epochs, generation, inheritance, model.parameter_count,
                                 protected=proposal["protected"], variant=variant)
+                        if settings:
+                            full_epochs = epochs
+                            allocated, training_reason = next_allocation(epochs, inheritance["copied_parameters"],
+                                model.parameter_count, proposal["protected"], settings, inheritance.get("source_progress", False))
                         profile["compile_inherit_seconds"] = time.monotonic() - phase_start
                         phase_start = time.monotonic()
                         training = TrainConfig(
@@ -361,6 +383,9 @@ def run_engine(
                             learning_rate=genome.learning_rate,
                             weight_decay=genome.weight_decay,
                             timeout=min(fit_timeout, max(0.001, deadline - time.monotonic())),
+                            **({"label_smoothing": settings.label_smoothing, "decay": settings.decay,
+                                "patience": settings.patience, "validation_batch_size": settings.validation_batch_size}
+                               if settings else {}),
                         )
                         request = {
                             "benchmark": definition.id,
@@ -448,6 +473,9 @@ def run_engine(
                         attempt.update(proposal=proposal, training_reason=training_reason, profile=profile,
                                        optimizer_state="reset_each_fit", fidelity="trained_dag/v2",
                                        compiled_parameters=compiled_parameters)
+                    if settings:
+                        attempt["training_policy"] = {k: settings.model_dump()[k] for k in
+                                                      ("label_smoothing", "decay", "patience", "validation_batch_size")}
                     snapshot_start = time.monotonic()
                     next_state = {
                         **state,

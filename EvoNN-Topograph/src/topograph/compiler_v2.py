@@ -11,9 +11,11 @@ def parameter_estimate(genome, definition):
     output = definition.output_dim
     incoming = math.prod(definition.input_shape)
     count = 0
-    if genome.input_adapter == "token_attention":
+    if genome.input_adapter in {"token_attention", "token_query", "token_mixer"}:
         width = genome.adapter_width
-        count += output * width + incoming * width + 4 * width**2
+        count += output * width + incoming * width
+        count += (2 * width**2 + genome.adapter_heads * incoming
+                  if genome.input_adapter == "token_mixer" else 4 * width**2)
         incoming = width
     elif genome.input_adapter == "spatial":
         count += 36 + incoming * 4 * genome.adapter_width
@@ -51,7 +53,7 @@ class AdaptedModel(EvolvedModel):
         self.adapter = genome.input_adapter
         self.is_text = task == "language_modeling" and modality == "text"
         width = genome.adapter_width
-        if self.adapter == "token_attention" and not self.is_text:
+        if self.adapter.startswith("token_") and not self.is_text:
             raise ValueError("token adapter requires next-token text input")
         if self.adapter == "spatial" and (modality != "image" or len(input_shape) != 2):
             raise ValueError("spatial adapter requires a two-dimensional image")
@@ -63,10 +65,12 @@ class AdaptedModel(EvolvedModel):
             self.weights["adapter." + name] = (rng.standard_normal(shape) * scale).astype(np.float32)
             self.precisions["adapter." + name] = 32
 
-        if self.adapter == "token_attention":
+        if self.adapter.startswith("token_"):
             parameter("embedding", (output_dim, width), 0.1)
             parameter("position", (math.prod(input_shape), width), 0.01)
-            for part in ("q", "k", "v", "out"):
+            if self.adapter == "token_mixer":
+                parameter("mix", (genome.adapter_heads, math.prod(input_shape)), 0.1)
+            for part in (("v", "out") if self.adapter == "token_mixer" else ("q", "k", "v", "out")):
                 parameter(part, (width, width), 1 / math.sqrt(width))
         else:
             parameter("kernel", (3, 3, 4), 1 / 3)
@@ -75,7 +79,7 @@ class AdaptedModel(EvolvedModel):
     def prepare_input(self, p, x):
         b, width = self.backend, self.genome.adapter_width
         n = x.shape[0]
-        if self.adapter == "token_attention":
+        if self.adapter.startswith("token_"):
             raw = b.numpy(x)
             if (
                 raw.ndim != 2
@@ -88,6 +92,22 @@ class AdaptedModel(EvolvedModel):
                 raise ValueError("integer in-vocabulary context matrix required")
             z = b.gather(p["adapter.embedding"], raw.astype(np.int32)) + p["adapter.position"]
             length, heads = z.shape[1], self.genome.adapter_heads
+            last = b.gather(z, (slice(None), slice(-1, None), slice(None)))
+            if self.adapter == "token_mixer":
+                # Learned lag selection, with independent value channels per head.
+                # Only historical context enters the readout; work is linear in length.
+                v = (z @ p["adapter.v"]).reshape((n, length, heads, width // heads)).transpose((0, 2, 1, 3))
+                mixing = b.softmax(p["adapter.mix"]).reshape((1, heads, 1, length))
+                pooled = (mixing @ v).reshape((n, width))
+                return last.reshape((n, width)) + pooled @ p["adapter.out"]
+            if self.adapter == "token_query":
+                # Exactly the old adapter's last-query readout, without constructing
+                # unused query rows or a quadratic attention matrix.
+                q = (last @ p["adapter.q"]).reshape((n, 1, heads, width // heads)).transpose((0, 2, 1, 3))
+                k, v = [(z @ p["adapter." + part]).reshape((n, length, heads, width // heads)).transpose((0, 2, 1, 3))
+                        for part in ("k", "v")]
+                attended = (b.softmax(q @ k.transpose((0, 1, 3, 2)) / math.sqrt(width // heads)) @ v).reshape((n, width))
+                return last.reshape((n, width)) + attended @ p["adapter.out"]
             q, k, v = [
                 (z @ p["adapter." + part]).reshape((n, length, heads, width // heads)).transpose((0, 2, 1, 3))
                 for part in ("q", "k", "v")

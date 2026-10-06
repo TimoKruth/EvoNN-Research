@@ -102,6 +102,8 @@ def test_real_resume_kill_boundaries_export_and_report(system, tmp_path, monkeyp
         for name in ("config.yaml", "state.json", "attempts.json", "engine_telemetry.json", "dataset_provenance.json")
     }
     if system == "topograph":
+        assert documents["config.yaml"]["variant"] == "next"
+        assert documents["config.yaml"]["research_options"]["adapters"] == "mixer"
         assert documents["config.yaml"]["evaluation_mode"] == "isolated-serial/v1"
         assert (documents["config.yaml"]["supervisor_count"], documents["config.yaml"]["evaluation_process_count"]) == (0, 1)
         historical = deepcopy(documents)
@@ -158,7 +160,14 @@ def test_real_resume_kill_boundaries_export_and_report(system, tmp_path, monkeyp
         resumed = invoke(system, "evolve", "--resume", root)
         assert resumed.returncode == 0, (boundary, resumed.stderr)
         actual = state(root)
-        assert actual["search"] == expected["search"]
+        actual_search, expected_search = deepcopy(actual["search"]), deepcopy(expected["search"])
+        if system == "topograph":
+            # Mixer records wall-clock fit costs in its ancestry ledger. A fresh
+            # completion of the same prefix has identical science, not identical timing.
+            for search_state in (actual_search, expected_search):
+                for entry in search_state["training_ledger"].values():
+                    assert entry.pop("train_seconds") >= 0
+        assert actual_search == expected_search
         assert actual["tip"] == expected["tip"]
         assert [a["metric_value"] for a in actual["attempts"]] == [a["metric_value"] for a in expected["attempts"]]
         with open_run_reader(root, root.name) as reader:

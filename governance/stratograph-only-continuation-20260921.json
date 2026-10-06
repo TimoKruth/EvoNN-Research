@@ -1,0 +1,18 @@
+{
+  "schema_version": "stratograph-only/continuation-launch-v1",
+  "launched_at": "2026-09-21T16:16:04.488128+02:00",
+  "pid": 50991,
+  "study": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-continuation-20260921/study",
+  "status": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-continuation-20260921/study/status.json",
+  "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-continuation-20260921/launch.log",
+  "manifest_sha256": "2d7c6bc52919d622042f3c8581947bf442bc9bcb516c289480185a944b258b06",
+  "controller_sha256": "f3c6cc8e2068ee85140508a7d774587b4357ca2c633752b3566bb8002d59c5fd",
+  "parent_study": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-20260921/study",
+  "parent_manifest_sha256": "8c7f89c79236f2613e41542dc34c7dd46714c50978660ef0a1b6dc703cb9e744",
+  "inherited_runs": 35,
+  "remaining_runs": 339,
+  "retained_charged_attempts": 127,
+  "run_cap_seconds_unfinished": 1800,
+  "validation": "18 tests passed; 35 inherited exports and full epochs verified; replay receipts verified",
+  "amendment": "governance/stratograph-only-continuation-20260921.md"
+}

@@ -41,6 +41,7 @@ from evonn_shared.runtime_io import (
     vars_free_training,
 )
 from .research import ResearchPolicy
+from .presets import UNSET, cli_defaults
 from . import search_v2
 from .artifacts import build_artifacts
 from .tensors import Backend
@@ -123,25 +124,37 @@ def run_engine(
     search_type,
     *,
     pack_name="tier1_core",
-    budget=64,
+    budget=UNSET,
     seed=42,
     output_parent=None,
     cache_root=None,
-    backend="numpy_fallback",
+    backend=UNSET,
     device="cpu",
-    timeout=1200.0,
-    fit_timeout=120.0,
+    timeout=UNSET,
+    fit_timeout=UNSET,
     epochs=12,
     population_size=4,
     variant="shared",
-    research=None,
+    research=UNSET,
     resume=None,
     stop_after=None,
     crash_at=None,
     crash_step=1,
 ):
-    if not all(math.isfinite(v) and 0 < v <= 1800 for v in (timeout, fit_timeout)):
-        raise ValueError("run and fit limits must be in (0,1800] seconds")
+    defaults = cli_defaults()
+    if resume is not None:
+        saved = json.loads(read_document(Path(resume), 'config.yaml'))
+        defaults.update(budget=saved['total'], backend=saved['backend'], timeout=saved['timeout'],
+                        fit_timeout=saved['fit_timeout'], research=saved.get('research'))
+    budget = defaults['budget'] if budget is UNSET else budget
+    backend = defaults['backend'] if backend is UNSET else backend
+    timeout = defaults['timeout'] if timeout is UNSET else timeout
+    fit_timeout = defaults['fit_timeout'] if fit_timeout is UNSET else fit_timeout
+    research = defaults['research'] if research is UNSET else research
+    if not math.isfinite(timeout) or not 0 < timeout <= 86400:
+        raise ValueError("run limit must be in (0,86400] seconds")
+    if not math.isfinite(fit_timeout) or not 0 < fit_timeout <= 1800:
+        raise ValueError("fit limit must be in (0,1800] seconds")
     if type(seed) is not int or not 0 <= seed < 2**32:
         raise ValueError("seed must be a 32-bit unsigned integer")
     cache_root = Path(".artifacts/dataset-cache") if cache_root is None else cache_root

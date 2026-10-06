@@ -1,3 +1,5 @@
+# Explicit historical evaluator; use standard.yaml for the quality default.
+research: null
 schema_version: 1
 pack: tier1_core_smoke
 budget: 16

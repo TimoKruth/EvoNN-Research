@@ -1,0 +1,21 @@
+{
+  "started_at": "2026-09-21T08:59:28.017956+00:00",
+  "pid": 30483,
+  "command": [
+    "/usr/bin/caffeinate",
+    "-i",
+    "/bin/bash",
+    "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-20260921/launch.sh"
+  ],
+  "manifest_sha256": "8c7f89c79236f2613e41542dc34c7dd46714c50978660ef0a1b6dc703cb9e744",
+  "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-20260921/launch.log",
+  "training_authorization": "User: Run it",
+  "status": "launched",
+  "status_at_verification": "running",
+  "active_slot_at_verification": "qualification-tier_b_core_v2-s1799-dilated_only",
+  "completed_runs_at_verification": 3,
+  "failures_at_verification": [],
+  "live_status": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-20260921/study/status.json",
+  "idle_sleep_inhibited_while_running": true,
+  "verified_at": "2026-09-21T09:00:40.500869+00:00"
+}

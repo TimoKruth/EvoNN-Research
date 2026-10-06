@@ -1,0 +1,84 @@
+{
+  "status": "prepared_not_started",
+  "scope": "User-authorized Stratograph-only comparison of all eleven current presets",
+  "protocol": "governance/stratograph-only-study-20260921.md",
+  "workspace": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-20260921/study",
+  "producer": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-20260921/producer",
+  "producer_commit": "c9cf5899f444e5b259f960c72593544f0e5485cf",
+  "source_sha256": "6276d51635f8606318a99270b1bf0a545a2abd9b50fc08e71083e690685ad764",
+  "manifest_sha256": "8c7f89c79236f2613e41542dc34c7dd46714c50978660ef0a1b6dc703cb9e744",
+  "manifest": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-20260921/study/study.json",
+  "arms": [
+    "v2_reference",
+    "v3_control",
+    "attention_only",
+    "dilated_only",
+    "stabilized_prefix",
+    "attention",
+    "dilated",
+    "hybrid",
+    "hybrid_fresh",
+    "hybrid_dropout",
+    "evolving"
+  ],
+  "main_seeds": [
+    1701,
+    1702,
+    1703,
+    1704,
+    1705,
+    1706,
+    1707,
+    1708,
+    1709,
+    1710,
+    1711,
+    1712,
+    1713,
+    1714,
+    1715,
+    1716
+  ],
+  "qualification_seed": 1799,
+  "main_budget_per_pack": 128,
+  "main_runs": 352,
+  "qualification_runs": 22,
+  "total_runs": 374,
+  "total_fits": 45408,
+  "prepared_dataset_splits": 119,
+  "declared_reference_contrasts": 30,
+  "inference": "Pointwise 95% paired-seed bootstrap intervals; Holm correction across all 30 contrasts; validation-only scope.",
+  "training_started": false,
+  "successful_fits": 0,
+  "seed_audit": {
+    "documents_checked": 785,
+    "collisions": [],
+    "scope": "Available project governance, reports and runtime config/campaign/study/protocol/completion files; excludes test temporary directories and external undiscovered repositories"
+  },
+  "validation": {
+    "preflight": {
+      "status": "passed",
+      "planned_runs": 374,
+      "training_started": false,
+      "plan_sha256": "8c7f89c79236f2613e41542dc34c7dd46714c50978660ef0a1b6dc703cb9e744",
+      "prepared_dataset_splits": 119
+    },
+    "focused_runner_tests": 13,
+    "combined_study_presets_campaign_tests": 53,
+    "run_configs_validated": 374,
+    "lint": "passed",
+    "import_boundaries": "passed",
+    "shell_syntax": "passed"
+  },
+  "commands": {
+    "start": "bash /Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-20260921/launch.sh",
+    "preflight": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-20260921/study.sh preflight",
+    "one_run": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-20260921/study.sh run --max-runs 1",
+    "analyze": "/Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-20260921/study.sh analyze",
+    "pause": "touch /Users/timokruth/Projekte/EvoNN/.artifacts/stratograph-only-20260921/study/PAUSE"
+  },
+  "launcher_sha256": {
+    "study.sh": "3e6d8c3eec6f227a47e3b69c8ac03bd7d3a2697181462e734545963d2b7c7826",
+    "launch.sh": "25ab72ddfb78e099505237e4e2f70a14f82493963afc944bf1d8437ae8befd2c"
+  }
+}

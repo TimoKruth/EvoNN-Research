@@ -1,0 +1,44 @@
+{
+  "schema": "evonn.topograph-budget-resume-launch/v1",
+  "launched_at": "2026-09-27T20:22:43.834030+02:00",
+  "authorization": "User: Please resume",
+  "producer_commit": "ae29e89ceac7c07e5d3ce6f2760cf19818f86e1b",
+  "plan_sha256": "204c3379fc3d5b4d38526380de4233ec195a6c170de3042fbda4acde6744816b",
+  "workspace": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-budget-resume-20260927/study",
+  "controller_sha256": "3c02676cb4795c4763806ae082b5b57eb168a7862aa6b18eda2060e27e376151",
+  "pid": 19556,
+  "command": [
+    "/usr/bin/caffeinate",
+    "-i",
+    "-m",
+    "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-budget-resume-20260927/studyctl",
+    "run"
+  ],
+  "inherited_complete_runs": 2,
+  "remaining_runs": 126,
+  "total_run_cap_seconds": 39000,
+  "fit_cap_seconds": 120,
+  "checkpoint_every_fits": 32,
+  "retained_failed_cell": {
+    "campaign": "confirmation/s32801-language_breadth_v1-open",
+    "charged_fits": 180,
+    "failed_fits": 1,
+    "run": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-confirmation-repair-20260923/study/confirmation/s32801-language_breadth_v1-open/runs/language_breadth_v1_b256_s32801_topograph/topograph_20260923T123343_6b76a43f3a",
+    "successful_fits": 179,
+    "successful_training_seconds": 873.3028919196222
+  },
+  "tests": {
+    "frozen_topograph_suite": 111,
+    "controller_regressions": 7,
+    "native_segmented_fits": 8,
+    "native_resume_export_replay": "passed",
+    "preflight": "ready"
+  },
+  "status_path": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-budget-resume-20260927/study/status.json",
+  "resumption_verified": {
+    "at": "2026-09-27T20:23:22.572823+02:00",
+    "active_run": ".artifacts/topograph-budget-resume-20260927/study/confirmation/s32801-language_breadth_v1-open/runs/language_breadth_v1_b256_s32801_topograph/topograph_20260927T182249_16fcaa43da",
+    "worker_requests": 11,
+    "worker_results": 11
+  }
+}

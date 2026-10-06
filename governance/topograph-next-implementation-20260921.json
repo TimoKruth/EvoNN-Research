@@ -1,0 +1,82 @@
+{
+  "date": "2026-09-21",
+  "status": "experimental_implementation",
+  "claim_scope": "contract_validation",
+  "scientific_comparison_launched": false,
+  "historical_results_modified": false,
+  "tests": {
+    "topograph_and_policy": 102,
+    "subprocess_charged_fits": 160,
+    "saved_winner_replays": 40,
+    "integration_and_import_policy": 219,
+    "total_tests": 321,
+    "subprocess_count_scope": "Six export checks in the final 102-test execution; repeated development reruns are not counted as independent evidence."
+  },
+  "test_log_sha256": "183a68d4c2fc656850167eb809dbe4eff1552f8f662c7173325b3bc96dcf80ff",
+  "options_schema": "evonn_shared.topograph_policy.TopographResearchPolicy/version=3",
+  "generated_arm_count": 14,
+  "systems_per_campaign": [
+    "prism",
+    "topograph",
+    "stratograph",
+    "primordia",
+    "contenders"
+  ],
+  "report": "reports/topograph-next-20260921.md",
+  "hosted_ci": "not_run",
+  "integration_test_log_sha256": "ffe40fbd9cfd17e13691ece7aecbfe9d6bd72eec718094b27749be00594c7262",
+  "tested_producer": {
+    "source_sha256": "3e93830cf48c09f535ffc7ad0f6cd16325d50b413542b197e3ab5079be41820e",
+    "code_identity": [
+      "d4ba3ba4342defe094e0b1e6a241fe59c3355166",
+      true
+    ]
+  },
+  "integration_producer": {
+    "source_sha256": "10d4c6ae387bdf3ef3249d5ca3c85b1ab228d51cc81c4b72c29b51574b859bdc",
+    "code_identity": [
+      "d4ba3ba4342defe094e0b1e6a241fe59c3355166",
+      true
+    ]
+  },
+  "isolation": "Topograph changes against committed baseline; concurrent other-engine changes preserved in the working repository. Integration suite preceded the final equivalent allocation-helper relocation; final runtime suite and import-boundary validator include it.",
+  "tested_source_and_test_sha256": {
+    "EvoNN-Compare/src/evonn_compare/campaign.py": "8b47c32ead92c23142a5242b4cf1642f23af9d864734034078e8c006878c8de7",
+    "EvoNN-Compare/src/evonn_compare/evidence.py": "4b9e3779f75fb290ada6d9c320ae705f56f5f0521d1f5a0cc2e15e1d43dbd348",
+    "EvoNN-Compare/tests/test_topograph_policy.py": "d8f6f6e0e49b5b4f48db5be90e9f858bba509eca10b8f70f45b0c5189adee547",
+    "EvoNN-Shared/src/evonn_shared/topograph_policy.py": "a02c01fa4ee7f3f32f396b1a4217824130b2005a79d3c9c823c54a5ad57fbf04",
+    "EvoNN-Topograph/configs/research_next.yaml": "4f6f5cbc71a6a3205113735446e5212ef4da51c3242c62750449d29d80e2c174",
+    "EvoNN-Topograph/src/topograph/__init__.py": "395c175b185c78e4beec14e26a33006e293af09530c1809fc454fd53150d07d6",
+    "EvoNN-Topograph/src/topograph/cli.py": "4f27245991f0abf2ca3822f3cd0f2e159edaa212eda75df0a5b0e66fd72ea78b",
+    "EvoNN-Topograph/src/topograph/compiler.py": "3b79a334326330eb1f2c47f9ce95e7ffa06d0630b0c7e47644d5def9a68cfc00",
+    "EvoNN-Topograph/src/topograph/compiler_v2.py": "6e403c216cfa77cfe6b89e7067ac7faa9e33221d5dda8dd5cfc4b188ac22348c",
+    "EvoNN-Topograph/src/topograph/config.py": "d08426c435524d9ceadae784af94416b6f127e2d6c9462f9dc36bbd67f1e5e03",
+    "EvoNN-Topograph/src/topograph/experiments.py": "26b6ce263d3b3eb18260b004838c92879d2333b840752a708099c1ab29ad6b6d",
+    "EvoNN-Topograph/src/topograph/genome.py": "99608533a91d044c3f901e4ae3f41350603deea66462b8e5bb29131a1c2655a0",
+    "EvoNN-Topograph/src/topograph/genome_v2.py": "b1c6ed3ad1f92689e5b6b4dc5058353e5a0288a1f04944db0efaa7cf6a473637",
+    "EvoNN-Topograph/src/topograph/operators.py": "a2dcdd2435f84294854691b454b4ebde81339c1a5e06432addb8936b31da62cc",
+    "EvoNN-Topograph/src/topograph/parallel.py": "937819ea92e7e175021ad0b916759225a57fec997683c6a112ab32157d0d8222",
+    "EvoNN-Topograph/src/topograph/research.py": "4933e2ca66b5b8e29761ad7d842189168510ad3319b1bad72a039575f3925247",
+    "EvoNN-Topograph/src/topograph/run.py": "94e2fe153f9bb9bf16975c5461eddc528777070b33c273cf5a8d62f2b271865e",
+    "EvoNN-Topograph/src/topograph/search.py": "72f1cdb2cde208127072ce9355c50a2b6879d024eccaf205c068951511954eca",
+    "EvoNN-Topograph/src/topograph/search_v2.py": "476d5aef596187eaf4db194ea38ae8f9058ad5b35bdc8dd020caa3e948ef1285",
+    "EvoNN-Topograph/src/topograph/tensors.py": "06f8cdc8fb82c11ce346a3d54d4b81eb3599027e303e19a71285af23bcb93095",
+    "EvoNN-Topograph/src/topograph/training.py": "42cb59c5f2b248da184b194ce70347b0a727f2f141ddd3ab2baf5cc4ebad20b8",
+    "EvoNN-Topograph/tests/test_import.py": "4b35fb285ebad0649b146b8410c6aeaaa56420c1310dbca5fe9f1d5f78ff54fa",
+    "EvoNN-Topograph/tests/test_next.py": "e09b04dc27794b3cfba35d964d0145b37da31cd331a1f829909fb2a3ec02a392",
+    "EvoNN-Topograph/tests/test_parallel.py": "3e234573099ed18b3ff359be7862fb39f7738caaabac1e6f2d9a1008161b9010",
+    "EvoNN-Topograph/tests/test_research.py": "53b544d7975b878c536ed934cf1911684f00a73c06690b600a53b673c1372b85",
+    "EvoNN-Topograph/tests/test_research_runtime.py": "86d894542b2f053a7ff156cd800ec2c4d9e73d7a3df938900fd728dcaa55a03d",
+    "EvoNN-Topograph/tests/test_runtime.py": "57ae6ceae071cecee580025bfd4a5e28ff4340b2e167b36106b8638f4fd417df"
+  },
+  "workspace_topograph_matches_tested_python_ast": true,
+  "post_test_formatting": "Removed one trailing blank line in topograph/research.py; Python AST unchanged.",
+  "checks": {
+    "ruff": "passed",
+    "lock": "passed",
+    "installed_package_identity": "passed",
+    "whitespace": "passed",
+    "workspace_import_boundaries": "passed",
+    "snapshot_import_boundaries": "passed"
+  }
+}

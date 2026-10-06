@@ -16,6 +16,7 @@ Current capabilities and commands live in [README](README.md); outstanding work
 and acceptance criteria live in [CONSOLIDATED_PLAN](CONSOLIDATED_PLAN.md).
 Historical success is scoped to its recorded revision and evidence class.
 
+
 ## Prism exploration implementation — 2026-09-11
 
 The [implementation receipt](governance/prism-exploration-implementation-20260911.json)
@@ -855,3 +856,216 @@ and 32 passing native winner replays. The separate
 source revisions and the versioned evidence transport. All exports reached L3;
 the recomputed decision remains `needs more seeds`. Historical registry events
 are preserved, with ten new rows appended under `pr36-before`/`pr36-after`.
+
+## Topograph next implementation — 2026-09-21
+
+Added the opt-in `next` policy after the September 16 comparison findings: final-query attention, a positional-mixer alternative, progress-aware training allocation, parameter-aware near-tie selection, local mutations and independent regularization/inheritance controls. The [implementation record](reports/topograph-next-20260921.md) and [receipt](governance/topograph-next-implementation-20260921.json) record the switches, source hashes and contract checks. Fourteen editable all-five-system comparison arms can be generated; no scientific study was launched and no historical protocol/result was replaced. Comparative gains and hosted CI remain unclaimed.
+
+
+## Stratograph temporal research implementation — 2026-09-21
+
+The [v3 implementation report](reports/stratograph-v3-20260921/report.md) records
+opt-in attention, dilated and hybrid shared cells, representation/training
+controls, eleven experiment presets, and full-roster comparison configuration
+generation. A fixed source snapshot passed 980 targeted tests, including 48 v3
+process-isolated fits and eight winner replays across NumPy and MLX. Legacy
+execution and frozen results remain unchanged. Scientific qualification is
+pending; no new engine comparison or superiority claim was made.
+
+
+## Stratograph-only study preparation — 2026-09-21
+
+The user explicitly narrowed the comparison to Stratograph and confirmed all
+eleven current presets. The [preparation receipt](governance/stratograph-only-preparation-20260921.json)
+pins a clean private producer, 119 verified dataset splits, matched main seeds
+1701–1716, disjoint qualification seed 1799 and 30 reference contrasts with
+Holm correction. The prepared matrix contains 22 qualification and 352 main
+runs (45,408 fits). Runner/preparation/analysis controls passed 53 targeted
+tests; every generated run configuration validates. No model training was
+started. Ordinary all-engine campaign admission and historical evidence remain
+unchanged. The scoped protocol does not authorize cross-engine superiority or
+protected-test generalization claims.
+
+
+## Stratograph-only study launch — 2026-09-21
+
+On the user’s explicit “Run it” instruction, the pinned study was launched in
+the background with idle-sleep inhibition. The [launch receipt](governance/stratograph-only-launch-20260921.json)
+records the process, manifest and live status path. The first two qualification
+runs completed their verified exports and winner replays without failures.
+Main execution remains gated on all 22 qualification runs; no result or
+superiority conclusion is available from this launch verification.
+
+
+## Topograph-only comparison preparation — 2026-09-21
+
+The user explicitly selected only Topograph and all 19 available variants/settings.
+Prepared 38 qualification and 152 screening runs in an isolated committed producer;
+confirmation is fixed at 16 fresh seeds and 3–4 arms after immutable nomination.
+The [protocol](governance/topograph-only-study-20260921.md) and
+[preparation receipt](governance/topograph-only-preparation-20260921.json) bind the
+scope exception, seed audit, confidence rules and zero-dispatch preflight. No
+training or scheduler was started, and historical results remain unchanged.
+
+## Stratograph-only continuation after time-cap exhaustion — 2026-09-21
+
+The original study stopped after 35 verified runs when `dilated_only` on language
+breadth, seed 1701, exhausted the 25-minute run cap during attempt 127. On the
+user's explicit resume request, the [amendment](governance/stratograph-only-continuation-20260921.md)
+preserves the original failure and its 127 charged attempts, verifies and inherits
+35 full-epoch completions, and restarts the interrupted cell in a separate study
+with the existing engine maximum of 30 minutes for every unfinished run. The
+engine producer, paired seeds, fit counts and original 30-test family remain
+pinned. The separate controller is hash-bound and does not modify frozen source.
+
+Eighteen continuation and original study tests passed. Preparation revalidated
+all inherited exports and replay receipts, rejecting truncated epochs, evidence
+drift and undiagnosed failures. The [launch receipt](governance/stratograph-only-continuation-20260921.json)
+records the detached continuation with sleep inhibition. Further failures stop
+execution; historical evidence remains incomplete and the amended analysis must
+disclose mixed safety caps and the prior failed-run cost.
+
+## Stratograph full-budget time allowance — 2026-09-21
+
+The first continuation advanced to 39 completed runs, then exhausted its
+30-minute cap on hybrid language breadth, seed 1701, at attempt 107. The user
+explicitly requested “Fix and resume”. The [budget-based amendment](governance/stratograph-only-budget-resume-20260921.md)
+creates a separate clean producer with only two total-run timeout validator
+changes. Every unfinished 128-fit cell now receives 19,800 seconds, derived from
+its 120-second per-fit cap, worker/orchestration overhead and finalization reserve.
+Training, search, model settings, paired seeds and the statistical family remain
+unchanged. All 39 full-epoch completions retain their original provenance; both
+historical failed runs and their combined 234 charged attempts remain recorded.
+
+The patched producer passed 87 engine and native extended-timeout integration
+checks, including checkpoint resume, full epoch export validation and winner
+replay. Eighteen focused limit/controller checks cover finite bounds, retained
+failures, incomplete epoch rejection, budget-derived dispatch deadlines and
+blocking confidence claims with missing pairs. Ruff and the seven-package import
+boundary policy pass. The new controller and producer diff are independently
+bound in the continuation manifest; historical producer source is unchanged.
+
+The [launch receipt](governance/stratograph-only-budget-resume-20260921.json)
+records restart at 20:01 CEST. Live process verification observed the new hybrid
+language-breadth worker at seed 1701 under the budget-derived allowance, with
+39 inherited completions and no new failure at launch verification.
+
+
+## Stratograph backward-overflow repair and resume — 2026-09-22
+
+The budget continuation stopped after 87 completed runs. Attempt 101 of
+`attention_only`, language breadth, seed 1703, reproduced finite forward loss but
+nonfinite float32 gradients at update 67. On “Fix and resume please”, a separate
+producer added one host-float64 backward recovery before existing global clipping
+and the float32 optimizer; normal finite arithmetic and all model/search settings
+remain unchanged. The [amendment](governance/stratograph-stability-resume-20260922.md)
+records all source versions, 87 inherited full-epoch completions and three failed
+runs totaling 362 charged attempts. Recovery is bounded by the existing fit
+clock, and metadata explicitly identifies the host precision fallback.
+
+The exact previously failing request passed in an isolated worker: 12 epochs,
+768 updates, 232 recovered batches, approximately 62 seconds within its 120-second
+cap. An ordinary saved fit produced exactly equal weights, scores, training and
+validation curves and gradient norms with zero recoveries. The repaired frozen
+producer passed 94 engine/gradient tests and its import-boundary policy; five
+continuation controller tests and Ruff also passed. The live workspace policy
+currently reports unrelated dynamic-import violations in Prism continuation code;
+that separate work was not modified. Historical evidence and diagnostic trials
+remain available. The [launch receipt](governance/stratograph-stability-resume-20260922.json)
+records restart at 12:34 CEST, beginning again with the interrupted cell.
+
+## Stratograph per-fit allowance repair — 2026-09-22
+
+The numerical continuation reached 105 completions before evolving language
+breadth, seed 1704, exceeded its 120-second fit deadline on Aesop attempt 121.
+The user explicitly requested “fix and resume”. The
+[fit-time amendment](governance/stratograph-fit-resume-20260922.md) grants every
+unfinished fit 600 seconds and derives an 81,240-second whole-run ceiling for
+128 fits, preserving the same epochs, seeds, model/search policies, gradient
+recovery and statistical family. A clean descendant producer changes only the
+two total-run validators, whose maximum now supports the declared fit allowance.
+Ordinary defaults and per-fit maximum are unchanged.
+
+The exact saved timed-out request completed all 12 epochs and 768 updates in
+approximately 70 seconds under current load with zero gradient recoveries. This
+verifies completion under the amended configuration; it does not attribute the
+previous timeout to a deterministic model runtime. Nine limit checks, five
+controller checks and a native export/resume/replay integration check passed.
+Ruff and the frozen producer's seven-package import policy also passed. Completed
+full-epoch runs retain their original source identities, and all four failed runs
+remain charged separately (490 attempts). Diagnostic work is stored separately.
+
+The [launch receipt](governance/stratograph-fit-resume-20260922.json) records the
+new detached continuation at 20:21 CEST with idle-sleep prevention. It inherits
+105 validated completions and restarts the interrupted evolving cell; 269 declared
+runs remain. Current status is under `.artifacts/stratograph-fit-resume-20260922/`.
+
+
+## Stratograph operational resume after resolved drift check — 2026-09-27
+
+On the user's “Please resume”, the frozen producer, dependency versions, host,
+execution environment, datasets and receipts passed current preflight unchanged.
+The September 23 drift stop occurred before dispatch of attention/core seed 1706:
+no run or dispatch directory existed and no fit was charged. The precise field
+that differed at the historical stop was not logged and remains unknown.
+
+Under exclusive leases, the complete prior status and original failure were
+archived, a resolution was added to `resolved_operational_failures`, and only the
+resolved execution blocker and requested pause were cleared. No evidence, source,
+protocol, seed, budget or model setting changed. The
+[resume receipt](governance/stratograph-operational-resume-20260927.json) records the
+19:33 CEST launch with 132 completed runs and the full preflight/audit paths.
+
+## Topograph mixer integration and all-engine launch — 2026-09-29
+
+The within-Topograph continuation completed all 128 confirmation runs, including
+export validation and saved-winner replay. Mixer passed its predefined aggregate
+criterion against repaired legacy, open and next; delayed-copy performance
+regressed. The final report remains at
+`.artifacts/topograph-budget-resume-20260927/study/report.json`.
+
+On the user's instruction to integrate the winning parts and compare other
+engines, the exact confirmed policy gained reusable CLI/config presets. Existing
+model math, historical defaults and replay identities remain unchanged. The
+[new protocol](governance/topograph-cross-engine-20260929.md) includes all four
+engines and required Contenders on every pack/budget/seed, with 10 qualification
+runs then 160 main runs at 128 fits across 16 fresh seeds and two packs. Memory
+receives separate multiplicity-corrected inference alongside aggregate quality.
+The maintained controls are explicitly named; unfinished experimental variants
+are not treated as proven winners or ruled inferior.
+
+Implementation verification passed 163 Topograph/campaign checks, 19 preset and
+controller checks in the isolated environment, lint and every frozen dataset
+preflight. Clean producer `7db7a68173916030c2682800a7fa65bb36dfc1d4` was launched
+at 14:56 CEST through a Standard-priority launchd job with caffeinate. The
+[launch receipt](governance/topograph-cross-engine-launch-20260929.json) binds
+the source, protocol and scheduler. Qualification gates all main runs; failures
+are retained and stop dispatch. This launch is not a completed comparison or a
+cross-engine performance claim. Final outputs will be in
+`.artifacts/topograph-cross-engine-20260929/study/report.json` and `report.md`.
+
+### Explicit default promotion after launch
+
+The user subsequently requested mixer as the default and legacy only through
+explicit selection. Fresh CLI runs, omitted-variant configurations, the direct
+run API and newly prepared campaigns now resolve to the confirmed mixer policy.
+Explicit `next` still selects the diverse-adapter control; `--preset legacy`
+selects legacy. Resume/replay keeps saved policy identity, including historical
+legacy configs without a variant. New campaign manifests record the mixer
+settings; old manifests retain their legacy interpretation. The running frozen
+producer and completed evidence were not edited. This changes the operational
+default, not the statistical scope or known memory-task limitation.
+
+## 2026-09-30 — Stratograph eleven-preset confidence study completed
+
+All 374 planned runs (22 qualification, 352 main) completed, followed by the frozen controller analysis. The final report has no missing cells. An independent read checked all 374 export-document and replay receipt hashes; all 30 recomputed paired effects, bootstrap intervals and Holm p-values exactly match the official report.
+
+The [results interpretation](governance/stratograph-results-20260930.md) records 17 material-gain contrasts: attention and evolving improve all three panels; hybrid dropout has the strongest observed real-text mean; pure dilation and stabilized prefix regress severely on delayed copy. The report preserves mixed-producer/time-cap limitations, 490 historical charged failed-run attempts, validation-selection scope and the absence of confirmatory nonreference or cross-engine comparisons. No defaults were changed and no follow-up training was launched.
+
+## 2026-09-30 — User-requested quality-first Stratograph standard
+
+Promoted the exact evolving policy from the completed eleven-preset study for fresh CLI runs, RunConfig objects and direct run_engine calls. Defaults now use 128 fits, 12 full epochs, native MLX CPU on Apple Silicon, 600 seconds per fit and an 81,240-second total safety allowance. The tested policy retains compatible inheritance, representation/temporal evolution and zero dropout. Added standard.yaml and named selection of all eleven presets plus explicit legacy.
+
+New campaigns freeze evolving when the Stratograph policy is omitted, preserving declared matched allocations. Explicit null and historical manifests dispatch legacy explicitly. Saved run policies and changed allocation defaults restore on resume; the frozen producers and results are untouched. Historical smoke/core YAML files now pin research: null.
+
+Verification: the default policy and allocation exactly match the completed evolving arm. 194 distinct targeted engine/campaign/failure-accounting checks passed, including native export/replay and legacy/direct-API resume; lint and whitespace checks passed. The repository import check still reports seven pre-existing violations in the untouched Prism continuation file. See the [promotion receipt](governance/stratograph-standard-20260930.json). No new comparison was launched.

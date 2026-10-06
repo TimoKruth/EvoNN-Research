@@ -1,9 +1,42 @@
 """File-only consumer validation of Topograph's additive research evidence."""
 
 import math
+from typing import Literal
+from pydantic import BaseModel, ConfigDict, Field
 from .canonical import canonical_sha256
 
-VARIANTS = {"mechanics", "training", "archive", "broad", "open"}
+VARIANTS = {"mechanics", "training", "archive", "broad", "open", "next"}
+
+
+class TopographResearchPolicy(BaseModel):
+    """Frozen, independently switchable hypotheses; no measured gain is implied."""
+
+    model_config = ConfigDict(extra="forbid", strict=True, allow_inf_nan=False)
+    version: Literal[3] = 3
+    adapters: Literal["diverse", "query", "mixer", "legacy"] = "diverse"
+    allocation: Literal["progress", "full", "coverage"] = "progress"
+    selection: Literal["cost_aware", "quality"] = "cost_aware"
+    mutation_scale: Literal["local", "broad"] = "local"
+    inheritance: Literal["enabled", "disabled"] = "enabled"
+    crossover_probability: float = Field(default=0.1, ge=0, le=1)
+    quality_tolerance: float = Field(default=0.01, ge=0, le=0.1)
+    parameter_cap: int = Field(default=500_000, ge=10_000, le=2_000_000)
+    label_smoothing: float = Field(default=0.05, ge=0, le=0.2)
+    decay: Literal["matrix", "all"] = "matrix"
+    patience: int = Field(default=3, ge=1, le=100)
+    validation_batch_size: int = Field(default=128, ge=1, le=4096)
+
+
+def expected_progress(curve, selected_epoch):
+    """Recent selected improvement, with a relative noise floor; not a forecast."""
+    return (len(curve) >= 2 and selected_epoch >= len(curve) - 1
+            and min(curve[-2:]) < curve[0] - max(1e-8, abs(curve[0]) * 0.01))
+
+
+def expected_next_allocation(epochs, copied, parameters, protected, settings, source_progress=False):
+    if protected or settings.allocation == "full" or (settings.allocation == "progress" and source_progress):
+        return epochs, "protected_full" if protected else "full" if settings.allocation == "full" else "progress_full"
+    return max(1, math.ceil(epochs * (1 - 0.5 * copied / max(1, parameters)))), "coverage_discount"
 
 
 def lookup(mapping, key, default=None):
@@ -16,12 +49,17 @@ def expected_epochs(config, attempt, state, telemetry):
         if attempt["genome"].get("schema_version", 1) != 1:
             raise ValueError("Topograph v2 genome requires a versioned research policy")
         return None
+    settings = TopographResearchPolicy.model_validate(config.get("research_options", {})) if variant == "next" else None
+    if settings and (config.get("research_options") != settings.model_dump()
+                     or state["search"].get("research_options") != settings.model_dump()
+                     or telemetry.get("research", {}).get("options") != settings.model_dump()):
+        raise ValueError("Topograph research options disagreement")
     if (
         variant not in VARIANTS
-        or config.get("search_policy_version") != 2
+        or config.get("search_policy_version") != (3 if settings else 2)
         or config.get("genome_schema") != "topograph.genome/v2"
         or state["search"].get("variant") != variant
-        or state["search"].get("research_schema") != 2
+        or state["search"].get("research_schema") != (3 if settings else 2)
         or telemetry.get("research", {}).get("variant") != variant
         or config["benchmark_pooling"]
         or config["novelty_weight"]
@@ -62,7 +100,25 @@ def expected_epochs(config, attempt, state, telemetry):
         raise ValueError("Topograph compiled/measured parameter count mismatch")
     if proposal["fresh"] and attempt["inheritance"]["mode"] != "none":
         raise ValueError("Topograph fresh control inherited weights")
-    if variant in {"training", "open"}:
+    if settings:
+        if attempt["full_epochs"] != config["epochs"]:
+            raise ValueError("Topograph next training cap mismatch")
+        if (attempt["status"] == "ok" and parameters > settings.parameter_cap) or (settings.inheritance == "disabled" and copied):
+            raise ValueError("Topograph resource or inheritance policy mismatch")
+        if attempt.get("training_policy") != {k: settings.model_dump()[k] for k in
+                                              ("label_smoothing", "decay", "patience", "validation_batch_size")}:
+            raise ValueError("Topograph training policy disagreement")
+        ancestor_ids = attempt["inheritance"].get("ancestor_attempts", [])
+        prior = next((a for a in state["attempts"] if ancestor_ids and a["outcome_id"] == ancestor_ids[-1]), {})
+        progress = expected_progress(prior.get("validation_curve", []), prior.get("selected_epoch", 0))
+        if attempt["inheritance"].get("source_progress", False) != progress:
+            raise ValueError("Topograph source progress disagrees with charged ancestor")
+        allocated, reason = expected_next_allocation(config["epochs"], copied, parameters, proposal["protected"], settings, progress)
+        if attempt["training_reason"] != reason and attempt["status"] == "ok":
+            raise ValueError("Topograph allocation reason mismatch")
+        if attempt["status"] == "ok" and proposal["protected"] and attempt["epochs"] != allocated:
+            raise ValueError("Topograph protected candidate did not receive its allocation")
+    elif variant in {"training", "open"}:
         if attempt["full_epochs"] != config["epochs"]:
             raise ValueError("Topograph research training cap mismatch")
         ratio = 1 if proposal["protected"] else 1 - 0.5 * copied / max(1, parameters)
@@ -85,6 +141,15 @@ def expected_epochs(config, attempt, state, telemetry):
             or attempt.get("behavior_source") != "training_probe/v1"
         ):
             raise ValueError("invalid Topograph learning curve or training-only behavior descriptor")
+        if settings:
+            selected, train_curve = attempt.get("selected_epoch"), attempt.get("training_curve")
+            initial = attempt.get("initial_validation_loss")
+            if (type(selected) is not int or not 0 <= selected <= attempt["epochs"]
+                    or not isinstance(train_curve, list) or len(train_curve) != attempt["epochs"]
+                    or any(type(v) not in (int, float) or not math.isfinite(v) for v in train_curve)
+                    or type(initial) not in (int, float) or not math.isfinite(initial)
+                    or attempt["validation_loss"] != ([initial] + curve)[selected]):
+                raise ValueError("invalid Topograph selected checkpoint or training curve")
     history = {a["outcome_id"]: a for a in state["attempts"]}
     ancestry = sorted(set(attempt["inheritance"].get("ancestor_attempts", []) + [attempt["outcome_id"]]))
     if any(

@@ -1,0 +1,86 @@
+{
+  "schema": "evonn.topograph-cross-engine-launch/v1",
+  "launched_at": "2026-09-29T12:56:16.690700+00:00",
+  "authorization": "User requested integrating the winning parts and comparing against other engines",
+  "producer_commit": "7db7a68173916030c2682800a7fa65bb36dfc1d4",
+  "producer_tree": "b3d4b897f087add0236efcc3b0f728ed2c0cb346",
+  "producer": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-cross-engine-20260929/producer",
+  "workspace": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-cross-engine-20260929/study",
+  "study_sha256": "bfc9b528a93a68dd7199beb92dfbf4cfc9113c28dc6f3bfa6f920d9fe047c17a",
+  "protocol": "governance/topograph-cross-engine-20260929.md",
+  "systems": [
+    "prism",
+    "topograph",
+    "stratograph",
+    "primordia",
+    "contenders"
+  ],
+  "topograph_preset": "mixer",
+  "qualification_runs": 10,
+  "comparison_runs": 160,
+  "total_fit_budget": 20640,
+  "main_fit_budget": 128,
+  "main_seeds": [
+    53001,
+    53002,
+    53003,
+    53004,
+    53005,
+    53006,
+    53007,
+    53008,
+    53009,
+    53010,
+    53011,
+    53012,
+    53013,
+    53014,
+    53015,
+    53016
+  ],
+  "scheduler": {
+    "label": "com.evonn.topograph-cross-engine-20260929",
+    "plist": "/Users/timokruth/Library/LaunchAgents/com.evonn.topograph-cross-engine-20260929.plist",
+    "process_type": "Standard",
+    "keep_alive": false,
+    "plist_sha256": "3f5aae9cf328d1b6500a3d9113b5b4a1b93403de490e8063f5f5395760fb242c"
+  },
+  "tests": {
+    "targeted": 44,
+    "broader_topograph_campaign": 163,
+    "frozen_preset_controller": 19,
+    "ruff": "passed",
+    "all_campaign_data_preflights": "passed"
+  },
+  "status_path": "/Users/timokruth/Projekte/EvoNN/.artifacts/topograph-cross-engine-20260929/study/status.json",
+  "initial_execution_verified": {
+    "at": "2026-09-29T12:59:02.896538+00:00",
+    "status": {
+      "status": "running",
+      "updated_at": "2026-09-29T12:58:44.842399+00:00",
+      "completed": 3,
+      "declared": 170,
+      "stage": "qualification",
+      "active": "qualification/s52901-language_breadth_v1",
+      "engine": "stratograph",
+      "budget": 16
+    },
+    "verified": [
+      {
+        "campaign": "qualification/s52901-language_breadth_v1",
+        "system": "topograph",
+        "status": "passed"
+      },
+      {
+        "campaign": "qualification/s52901-language_breadth_v1",
+        "system": "primordia",
+        "status": "passed"
+      },
+      {
+        "campaign": "qualification/s52901-language_breadth_v1",
+        "system": "contenders",
+        "status": "passed"
+      }
+    ]
+  }
+}

@@ -68,6 +68,8 @@ def mutate(genome, rng, *, motif_bank=(), operation=None):
         operations += ['clone', 'share']
     if motif_bank and genome.variant != 'no-motif-bias':
         operations += ['motif']
+    if policy.version == 3 and policy.evolve_temporal:
+        operations += ['temporal']
     if not policy.evolve_representation:
         operations.remove('representation')
         operations.remove('head')
@@ -75,6 +77,14 @@ def mutate(genome, rng, *, motif_bank=(), operation=None):
     if op not in operations:
         raise ValueError('operator is unavailable for this variant')
     cell = rng.choice(genome.cells)
+    if op == 'temporal':
+        execution = dict(genome.execution)
+        choices = {'temporal': ['prefix', 'attention', 'dilated', 'hybrid'],
+                   'position': ['none', 'sinusoidal', 'relative'],
+                   'embedding_width': [0, 8, 16, 32, 64]}
+        field = rng.choice(sorted(choices))
+        execution[field] = rng.choice([v for v in choices[field] if v != execution[field]])
+        return _construct(genome, execution=execution), op
     if op in ('activation', 'specialize'):
         return specialize(genome, cell.id, rng), op
     if op == 'collapse':
@@ -129,9 +139,13 @@ def mutate(genome, rng, *, motif_bank=(), operation=None):
         if op == 'head':
             execution['head_width'] = rng.randint(4, 64)
         else:
-            field = rng.choice(['normalization', 'residual', 'readout'])
-            execution[field] = rng.choice({'normalization': ['none', 'train_standard', 'rms'],
-                                           'residual': [False, True], 'readout': ['final', 'all', 'input_final']}[field])
+            choices = {'normalization': ['none', 'train_standard', 'rms'],
+                       'residual': [False, True], 'readout': ['final', 'all', 'input_final']}
+            if policy.version == 3:
+                from evonn_shared.hierarchy_policy import V3_REPRESENTATION_CHOICES
+                choices.update(V3_REPRESENTATION_CHOICES)
+            field = rng.choice(list(choices))
+            execution[field] = rng.choice(choices[field])
         return _construct(genome, execution=execution), op
     elif op == 'optimizer':
         return _construct(genome, learning_rate=10 ** rng.uniform(-4, -1.3), weight_decay=rng.uniform(0, .1)), op

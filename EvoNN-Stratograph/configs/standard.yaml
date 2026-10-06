@@ -1,0 +1,40 @@
+# Quality-first standard: exact evolving policy from the completed 16-seed study.
+# Native Apple Silicon configuration; use --backend numpy_fallback elsewhere.
+research:
+  version: 3
+  evaluator: trainable
+  normalization: rms
+  evolve_representation: true
+  readout: final
+  residual: false
+  inheritance: compatible
+  selection: diverse
+  screen_epochs: 0
+  archive_size: 32
+  max_macro_nodes: 8
+  max_cell_nodes: 6
+  max_width: 64
+  head_width: 16
+  temporal: hybrid
+  embedding_width: 32
+  position: relative
+  cell_normalization: rms
+  residual_mode: gated
+  merge: learned
+  readout_skip: true
+  select_initial: true
+  weight_decay_scope: matrices
+  evolve_temporal: true
+  dropout: 0.0
+  niche_policy: representation
+variant: shared
+schema_version: 1
+pack: tier_b_core_v2
+budget: 128
+seed: 42
+epochs: 12
+population_size: 4
+backend: mlx_native
+target_device: cpu
+timeout: 81240.0
+fit_timeout: 600.0
