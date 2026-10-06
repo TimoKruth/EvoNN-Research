@@ -1,11 +1,11 @@
 {
-  "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-primordia-release-20261004/primordia-dependencies.tar.gz",
+  "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-prism-release-20261006/prism-dependencies.tar.gz",
   "descriptor": {
     "schema_version": 1,
-    "archive_sha256": "7aa03c278bd88abdb390f429cb784d1777860824d89967b4277f85b83e20acdb",
-    "archive_size_bytes": 109876080,
-    "index_sha256": "71719282594dc3016ac4e8eb390a33d8c19447212c0697db87ed5b2560c0aa86",
-    "transport_manifest_sha256": "0d2a0671afbcc8df2854ac24b6c2efdb901c037dc378734cbe6d54e23300847c",
+    "archive_sha256": "60da24f074a41dc82c90d350918ee26027f120f061629e178ed4b7319f563f17",
+    "archive_size_bytes": 127867683,
+    "index_sha256": "a310b4476cbfbe7afcbbbf2fe28e3d8571e863cd79901180dc6dac5b58fe1ab6",
+    "transport_manifest_sha256": "077ca87fb00aaf174198a31e411e79231feb41e43448eb1ea8b496ed8a588c96",
     "run_ids": [
       "contenders_20260908T130048_80d3ce4b375c",
       "contenders_20260908T180234_3b4ee464a852",
@@ -17,6 +17,8 @@
       "contenders_20260916T085052_19f974badffd",
       "contenders_20261004T210649_d8b1430bdd11",
       "contenders_20261004T210904_4a5682f25b1b",
+      "contenders_20261006T062440_c183b87c4cd6",
+      "contenders_20261006T062522_b004c85386ee",
       "primordia_20260908T125740_387fcbee29",
       "primordia_20260908T175220_62ee2fefb9",
       "primordia_20260908T175337_0de17f115a",
@@ -29,6 +31,8 @@
       "primordia_20260916T085200_d4a7488a1a",
       "primordia_20261004T210815_d8caba999b",
       "primordia_20261004T211024_22e5d9fa94",
+      "primordia_20261006T062607_3d1deea666",
+      "primordia_20261006T062642_8e9aecc7d2",
       "prism_20260908T125832_129983a9d4",
       "prism_20260908T175231_f787d48282",
       "prism_20260908T175404_43bdca6eeb",
@@ -41,6 +45,8 @@
       "prism_20260916T085125_ba547fad87",
       "prism_20261004T210730_9dc85e4d44",
       "prism_20261004T210939_872e260c6b",
+      "prism_20261006T062523_fe82603454",
+      "prism_20261006T062602_77298fad5c",
       "stratograph_20260908T125705_ba14d39ecc",
       "stratograph_20260908T175129_c771d22d7c",
       "stratograph_20260908T175257_16224a1363",
@@ -53,6 +59,8 @@
       "stratograph_20260916T085148_5ea2ace251",
       "stratograph_20261004T210803_5fb57a1d8d",
       "stratograph_20261004T211012_0c457758d1",
+      "stratograph_20261006T062555_092babec4e",
+      "stratograph_20261006T062630_765ee28660",
       "topograph_20260908T125911_3d6bcd8164",
       "topograph_20260908T175243_860c1f4042",
       "topograph_20260908T175450_930b686cef",
@@ -64,13 +72,15 @@
       "topograph_20260916T084735_1de91bfd48",
       "topograph_20260916T085136_bed1f9c8df",
       "topograph_20261004T210748_8584498aae",
-      "topograph_20261004T210957_7451145391"
+      "topograph_20261004T210957_7451145391",
+      "topograph_20261006T062539_fe6acd100c",
+      "topograph_20261006T062615_84a4f2a0ef"
     ]
   },
   "registry_snapshot": {
-    "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-primordia-release-20261004/primordia-registry.tar.gz",
-    "archive_sha256": "81ba037032a5e6fe462f019134a0450ad96d0d2d6934c81d08cfc0f5683ad5cb",
-    "archive_size_bytes": 11491237,
-    "index_sha256": "71719282594dc3016ac4e8eb390a33d8c19447212c0697db87ed5b2560c0aa86"
+    "url": "https://github.com/TimoKruth/EvoNN-Research/releases/download/evidence-prism-release-20261006/prism-registry.tar.gz",
+    "archive_sha256": "9cc7a26e3c84e39cdf61888939a5ff3483bf76aee24f811ca52d47146d386a08",
+    "archive_size_bytes": 13247045,
+    "index_sha256": "a310b4476cbfbe7afcbbbf2fe28e3d8571e863cd79901180dc6dac5b58fe1ab6"
   }
 }
