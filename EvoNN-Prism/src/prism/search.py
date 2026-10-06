@@ -8,6 +8,7 @@ from .genome import ModelGenome, compatible_families, mutate, crossover, GROUPS
 from .compiler import compile_genome
 from .research import policy
 from .weight_cache import PrismWeightCache as WeightCache
+from .frontier import founder, refine, represent, representation_gene
 
 
 def tuples(value):
@@ -22,11 +23,11 @@ class Search:
             raise ValueError("family diversity requires at least two population members")
         self.rng = Random(seed)
         self.variant = (state.get("variant", "legacy") if state else "open") if variant is None else variant
-        self.policy = policy(self.variant)
+        self.policies = {d.id: policy(self.variant, task=d.task_kind.value) for d in definitions}
         saved_fixed = state.get("fixed_genomes") if state else None
         self.fixed_genomes = deepcopy(saved_fixed if fixed_genomes is None else fixed_genomes)
         if self.fixed_genomes is not None:
-            if not self.policy["training"] or set(self.fixed_genomes) != {d.id for d in definitions}:
+            if not all(p["training"] for p in self.policies.values()) or set(self.fixed_genomes) != {d.id for d in definitions}:
                 raise ValueError("fixed architectures require training/open variant and the complete benchmark pack")
             self.fixed_genomes = {key: ModelGenome.model_validate(value).model_dump(mode="json")
                                   for key, value in self.fixed_genomes.items()}
@@ -48,6 +49,7 @@ class Search:
             self.cache = WeightCache(2 * population_size * len(definitions), state["cache"])
         else:
             for d in definitions:
+                flags = self.policies[d.id]
                 allowed = self.allowed(d)
                 if not allowed:
                     raise ValueError(f"no compatible family for {d.id}")
@@ -57,6 +59,12 @@ class Search:
                     )
                     for i in range(population_size)
                 ]
+                if flags["search"]:
+                    population = [founder(allowed[i % len(allowed)], self.rng,
+                                          representation=flags["representation"]).model_dump(mode="json")
+                                  for i in range(population_size)]
+                elif flags["representation"]:
+                    population = [represent(ModelGenome.model_validate(g)).model_dump(mode="json") for g in population]
                 self.benchmarks[d.id] = {
                     "population": population,
                     "cursor": 0,
@@ -80,8 +88,9 @@ class Search:
                 state["population"] = [deepcopy(self.fixed_genomes[key]) for _ in range(self.size)]
 
     def allowed(self, definition):
+        flags = self.policies[definition.id]
         families = compatible_families(definition.input_modality.value, definition.task_kind.value)
-        return families if self.policy["broad"] else [family for family in families if family != "composite"]
+        return families if flags["broad"] else [family for family in families if family != "composite"]
 
     def proposal(self, benchmark, genome):
         state = self.benchmarks[benchmark]
@@ -107,6 +116,46 @@ class Search:
             definition.task_kind.value,
             **options,
         )
+
+    def compile_candidate(self, genome, definition, **options):
+        """Constrain an evolved proposal before spending a fit; never resample it."""
+        original = genome
+        model = self.compile(genome, definition, **options)
+        original_count = model.parameter_count
+        if original_count <= 2_000_000:
+            return genome, model
+        if self.fixed_genomes is not None:
+            raise ValueError("fixed architecture exceeds local runtime parameter safety cap")
+        while model.parameter_count > 2_000_000:
+            values = genome.model_dump(mode="json")
+            values["hidden_layers"] = [max(4, 3 * w // 4) for w in genome.hidden_layers]
+            if genome.family in {"composite", "attention", "sparse_attention", "causal_transformer"}:
+                divisor = genome.num_heads * (2 if genome.position_encoding == "rope" else 1)
+                values["embedding_dim"] = max(divisor, ((3 * genome.embedding_dim // 4) // divisor) * divisor, 4)
+            reduced = ModelGenome.model_validate(values)
+            if reduced == genome:
+                raise ValueError("minimum architecture exceeds local runtime parameter safety cap")
+            genome = reduced
+            model = self.compile(genome, definition, **options)
+        state = self.benchmarks[definition.id]
+        proposal = self.proposal(definition.id, original)
+        changed = [k for k,v in original.model_dump().items() if v != genome.model_dump()[k]]
+        proposal["changed_fields"] = sorted(set(proposal["changed_fields"] + changed))
+        proposal["runtime_constraint"] = {
+            "policy": "shrink_widths_v1", "parameter_limit": 2_000_000,
+            "original_genome": original.model_dump(mode="json"),
+            "original_genome_id": original.genome_id, "original_parameters": original_count,
+            "effective_parameters": model.parameter_count, "original_operator": proposal["operator"],
+        }
+        proposal["operator"] = "runtime_constraint"
+        for mapping in ("parents", "operators"):
+            if original.genome_id in state[mapping]:
+                state[mapping][genome.genome_id] = deepcopy(state[mapping][original.genome_id])
+        if genome.genome_id in state["operators"]:
+            state["operators"][genome.genome_id] = ("runtime_constraint", state["operators"][genome.genome_id][1])
+        state["proposals"][genome.genome_id] = proposal
+        state["population"][state["cursor"]] = genome.model_dump(mode="json")
+        return genome, model
 
     def inherit(self, model, benchmark, namespace):
         g, state = model.genome, self.benchmarks[benchmark]
@@ -141,6 +190,7 @@ class Search:
                        getattr(model, "optimizer_state", None))
 
     def observe(self, benchmark, genome, result):
+        flags = self.policies[benchmark]
         state = self.benchmarks[benchmark]
         quality = result["score"] if result["status"] == "ok" else -1e30
         entry = {
@@ -167,7 +217,7 @@ class Search:
         state["evaluated"] += 1
         state["cursor"] += 1
         if result["status"] == "ok":
-            if self.policy["archive"]:
+            if flags["archive"]:
                 # Reservoir sampling admits weak successes independently of quality.
                 state["reservoir_seen"] += 1
                 capacity = 4 * self.size
@@ -223,12 +273,13 @@ class Search:
             self._reproduce(benchmark)
 
     def _reproduce(self, benchmark):
+        flags = self.policies[benchmark]
         if self.fixed_genomes is not None:
             state = self.benchmarks[benchmark]
             state.update(population=[deepcopy(self.fixed_genomes[benchmark]) for _ in range(self.size)],
                          cursor=0, generation=state["generation"] + 1, scores=[])
             return
-        if self.policy["archive"]:
+        if flags["archive"]:
             return self._reproduce_open(benchmark)
         state, definition = self.benchmarks[benchmark], self.definitions[benchmark]
         allowed = self.allowed(definition)
@@ -253,13 +304,13 @@ class Search:
                     self.rng,
                     self.rng.choice(["uniform", "splice"]),
                     task=definition.task_kind.value,
-                    broad=self.policy["broad"],
+                    broad=flags["broad"],
                 )
                 op = "crossover"
                 if child.genome_id == parent.genome_id:
-                    child, op = mutate(child, self.rng, allowed, task=definition.task_kind.value, broad=self.policy["broad"])
+                    child, op = mutate(child, self.rng, allowed, task=definition.task_kind.value, broad=flags["broad"])
             else:
-                child, op = mutate(parent, self.rng, allowed, task=definition.task_kind.value, broad=self.policy["broad"])
+                child, op = mutate(parent, self.rng, allowed, task=definition.task_kind.value, broad=flags["broad"])
             # Preserve a second architectural niche, cycling underrepresented families.
             if slot == 1 and len(allowed) > 1:
                 present = {v["family"] for v in children}
@@ -289,7 +340,8 @@ class Search:
         )
 
     def convert_family(self, genome, family, definition):
-        data = {**genome.model_dump(), "family": family, "residual": False, "blocks": []}
+        data = {**genome.model_dump(), "family": family, "residual": False, "blocks": [],
+                "readout": "mean", "input_skip": False, "pre_norm": False}
         if family == "composite":
             data["blocks"] = [{"kind": "dense"}, {"kind": "gated", "skip_from": 0}]
         if definition.task_kind.value == "language_modeling" and data["norm_type"] == "batch":
@@ -297,11 +349,24 @@ class Search:
         return ModelGenome.model_validate(data)
 
     def _reproduce_open(self, benchmark):
+        flags = self.policies[benchmark]
         state, definition = self.benchmarks[benchmark], self.definitions[benchmark]
         allowed, task = self.allowed(definition), definition.task_kind.value
         pool = sorted(state["scores"], key=lambda e: (-e["quality"], e["identity"]))
         children, parents, operators, proposals = [pool[0]["genome"]], {}, {}, {}
         champion = ModelGenome.model_validate(children[0])
+        if flags["search"]:
+            # A stale winner remains in the archive. Spend its next slot on a
+            # local alternative, with periodic charged continuations retained.
+            history = state["history"][champion.genome_id] if champion.genome_id in state["history"] else {}
+            if not history.get("needs_more_training", True) and state["generation"] % 4 != 3:
+                child, op = self._refine(benchmark, champion)
+                children[0] = child.model_dump(mode="json")
+                parents[child.genome_id] = [champion.genome_id]
+                operators[child.genome_id] = [op, pool[0]["quality"]]
+                proposals[child.genome_id] = {"origin": "plateau_refinement", "operator": op,
+                    "parents": [champion.genome_id], "protected": False,
+                    "changed_fields": [k for k, v in child.model_dump().items() if champion.model_dump()[k] != v]}
         proposals[champion.genome_id] = {"origin": "continuation", "operator": "continue",
             "parents": [champion.genome_id], "changed_fields": [],
             "protected": state["generation"] % 4 == 3}
@@ -323,31 +388,46 @@ class Search:
                     if family in state["nursery"]:
                         del state["nursery"][family]
             else:
-                lane = self.rng.randrange(4)
-                candidates = (state["reservoir"] if lane == 0 else list(state["descriptors"].values())
-                              if lane == 1 else pool if lane == 2 else [])
-                a = self.rng.choice(candidates) if candidates else None
-                origin = ("reservoir", "descriptor_archive", "population", "fresh")[lane] if a else "fresh"
+                if flags["search"] and slot == 2:
+                    candidates = [entry for entry in (state["elite"], *state["niches"].values()) if entry is not None]
+                    a = max(self.rng.sample(candidates, min(3, len(candidates))), key=lambda e: e["quality"]) if candidates else None
+                    origin = "quality_archive" if a else "fresh"
+                else:
+                    lane = self.rng.randrange(4)
+                    candidates = (state["reservoir"] if lane == 0 else list(state["descriptors"].values())
+                                  if lane == 1 else pool if lane == 2 else [])
+                    a = self.rng.choice(candidates) if candidates else None
+                    origin = ("reservoir", "descriptor_archive", "population", "fresh")[lane] if a else "fresh"
                 family = a["genome"]["family"] if a else self.rng.choice(allowed)
             if a is None:
                 parent = None
                 child = ModelGenome(family=family, hidden_layers=(self.rng.choice([8, 16, 24, 32]),))
+                if flags["search"]:
+                    child = founder(family, self.rng, representation=flags["representation"])
+                elif flags["representation"]:
+                    child = represent(child)
                 op, parent_ids, baseline = "seed", [], -1e30
             else:
                 parent = ModelGenome.model_validate(a["genome"])
                 context_key = f"{benchmark}:{parent.family}:crossover"
                 context = self.context_stats[context_key] if context_key in self.context_stats else {"ema": .5}
-                if not protected and self.rng.random() < .2 + .6 * context["ema"]:
+                if flags["search"] and self.rng.random() < .7:
+                    child, op = self._refine(benchmark, parent)
+                    parent_ids = [a["identity"]]
+                elif flags["representation"] and representation_gene(parent) and self.rng.random() < .25:
+                    child, op = represent(parent, toggle=True), representation_gene(parent)
+                    parent_ids = [a["identity"]]
+                elif not protected and self.rng.random() < .2 + .6 * context["ema"]:
                     second = self.rng.choice(pool)
                     child = crossover(parent, ModelGenome.model_validate(second["genome"]), self.rng,
-                                      task=task, broad=self.policy["broad"])
+                                      task=task, broad=flags["broad"])
                     op, parent_ids = "crossover", [a["identity"], second["identity"]]
                     if child.genome_id == parent.genome_id:
-                        child, op = mutate(parent, self.rng, allowed, task=task, broad=self.policy["broad"])
+                        child, op = mutate(parent, self.rng, allowed, task=task, broad=flags["broad"])
                         parent_ids = [a["identity"]]
                 else:
                     child, op = mutate(parent, self.rng, allowed, family_locked=protected,
-                                       task=task, broad=self.policy["broad"])
+                                       task=task, broad=flags["broad"])
                     parent_ids = [a["identity"]]
                 baseline = a["quality"]
             identities = {ModelGenome.model_validate(g).genome_id for g in children}
@@ -365,7 +445,17 @@ class Search:
         state.update(population=children, cursor=0, generation=state["generation"] + 1, scores=[],
                      parents=parents, operators=operators, proposals=proposals)
 
+    def _refine(self, benchmark, parent):
+        flags = self.policies[benchmark]
+        definition = self.definitions[benchmark]
+        prefix = f"{benchmark}:{parent.family}:"
+        stats = {key.removeprefix(prefix): value for key, value in self.context_stats.items() if key.startswith(prefix)}
+        return refine(parent, self.rng, self.allowed(definition), task=definition.task_kind.value,
+                      representation=flags["representation"], stats=stats)
+
     def telemetry(self):
+        flags = {key: any(p[key] for p in self.policies.values()) for key in
+                 ("search", "representation", "regularized", "averaged", "calibrated")}
         return {
             "schema_version": "1.0.0",
             "system": self.system,
@@ -382,6 +472,9 @@ class Search:
             "promotion_screen": "disabled",
             "evaluation_cache_hits": 0,
             "research_variant": self.variant,
+            **({"resolved_policies": deepcopy(self.policies)} if self.variant.endswith("_v3") else {}),
+            "experimental_components": {key: flags[key] for key in
+                                        ("search", "representation", "regularized", "averaged", "calibrated")},
             "search_mode": "fixed_architectures" if self.fixed_genomes is not None else "adaptive",
             "context_operator_success": self.context_stats,
             "parent_origins": {k: s["parent_origins"] for k, s in self.benchmarks.items()},

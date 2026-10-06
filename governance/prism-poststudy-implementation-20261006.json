@@ -1,0 +1,48 @@
+{
+  "schema_version": "evonn.prism-poststudy-implementation/v1",
+  "recorded_at": "2026-10-06T04:52:47.005845+00:00",
+  "source_sha256": "f72b0b23c03678800f3c131b877eca1f88445f361bf393bb8d69acb2efe3ec22",
+  "working_tree": "uncommitted implementation; unrelated existing changes preserved",
+  "results_summary": "reports/prism-confidence-20260921/results-summary.json",
+  "results_summary_sha256": "17e2a843049134c3067ed3db3d9f665b49cbe2dd666a6a22d848e5b1fc96d042",
+  "variants": [
+    "routed_v3",
+    "lean_v3",
+    "aligned_v3"
+  ],
+  "default": "open",
+  "quality_claim": "new post-study hypotheses; no confirmed improvement or promotion",
+  "followup_study_launched": false,
+  "checks": [
+    {
+      "suite": "Prism package plus policy/followup/frontier planner tests",
+      "passed": 137
+    },
+    {
+      "suite": "Prism followup, historical confidence and continuation tests",
+      "passed": 23,
+      "note": "includes five followup tests also counted in the package/planner invocation"
+    },
+    {
+      "suite": "new variants native MLX CPU CLI recovery, exports, policy tampering and replay",
+      "passed": 3
+    },
+    {
+      "suite": "new variants NumPy fallback CLI recovery, exports, policy tampering and replay",
+      "passed": 3
+    },
+    {
+      "suite": "historical frontier recovery/replay and all v2 evidence-validation cases on MLX CPU",
+      "passed": 19
+    },
+    {
+      "suite": "frozen producer parity",
+      "status": "passed",
+      "details": "all 11 original variants; 144 synthetic observations each across regression/image/language; identical candidate sequence, final search state and telemetry"
+    },
+    {
+      "suite": "ruff, git diff whitespace, uv lock check, package identity, three YAML templates",
+      "status": "passed"
+    }
+  ]
+}

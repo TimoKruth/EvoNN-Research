@@ -1,0 +1,15 @@
+# Post-study hypothesis; open remains the historical default.
+schema_version: 1
+pack: tier_b_core_v2
+budget: 64
+seed: 22601
+epochs: 12
+population_size: 4
+backend: mlx_native
+target_device: cpu
+timeout: 43200
+fit_timeout: 1800
+variant: aligned_v3
+inheritance_policy: enabled
+optimizer_policy: restart
+optimizer_backend: numpy

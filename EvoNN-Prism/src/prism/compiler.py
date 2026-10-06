@@ -75,7 +75,10 @@ class FamilyModel:
             else:  # pointwise embedding network remains causal
                 linear(name, incoming, width)
                 incoming = width
-        linear("head", incoming, output_dim)
+        linear("head", incoming * (5 if g.readout == "spatial_pyramid" else 1), output_dim)
+        if g.input_skip:
+            # Zero initialization preserves the nonlinear model at construction.
+            self.weights["input_skip.w"] = np.zeros((math.prod(input_shape), output_dim), np.float32)
 
     @property
     def parameter_count(self):
@@ -122,14 +125,15 @@ class FamilyModel:
 
         if family in {"mlp", "sparse_mlp", "moe_mlp"}:
             x = x.reshape((x.shape[0], -1))
-        elif "conv2d" in family:
+        raw_input = x
+        if "conv2d" in family:
             shape = self.input_shape if len(self.input_shape) == 3 else (*self.input_shape, 1)
             x = x.reshape((x.shape[0], *shape))
         elif "conv1d" in family:
             x = x.reshape((x.shape[0], self.input_shape[0], -1))
-        elif self.token_input:
+        elif self.token_input and family not in {"mlp", "sparse_mlp", "moe_mlp"}:
             x = b.gather(p["embedding"], b.numpy(x).astype(np.int64))
-        else:
+        elif family not in {"mlp", "sparse_mlp", "moe_mlp"}:
             x = linear("input", x.reshape((x.shape[0], self.input_shape[0], -1)))
         if family in {"attention", "sparse_attention", "causal_transformer"} and g.position_encoding == "sinusoidal":
             positions = np.arange(x.shape[1])[:, None]
@@ -201,9 +205,10 @@ class FamilyModel:
                 n, length, width = x.shape
                 h, d = g.num_heads, width // g.num_heads
                 kvh = g.kv_heads if family == "causal_transformer" else h
-                q = linear(name + ".q", x).reshape((n, length, h, d)).transpose((0, 2, 1, 3))
-                k = linear(name + ".k", x).reshape((n, length, kvh, d)).transpose((0, 2, 1, 3))
-                v = linear(name + ".v", x).reshape((n, length, kvh, d)).transpose((0, 2, 1, 3))
+                source = b.norm(x, g.norm_type) if g.pre_norm else x
+                q = linear(name + ".q", source).reshape((n, length, h, d)).transpose((0, 2, 1, 3))
+                k = linear(name + ".k", source).reshape((n, length, kvh, d)).transpose((0, 2, 1, 3))
+                v = linear(name + ".v", source).reshape((n, length, kvh, d)).transpose((0, 2, 1, 3))
                 if g.position_encoding == "rope":
                     angle = np.arange(length)[:, None] / (10000 ** (np.arange(0, d, 2) / d))
 
@@ -225,7 +230,13 @@ class FamilyModel:
                     logits = logits + b.array(np.triu(np.full((length, length), -1e9), 1))
                 attended = (b.softmax(logits) @ v).transpose((0, 2, 1, 3)).reshape((n, length, width))
                 x = x + linear(name + ".out", attended)
-                x = finish(x + linear(name + ".ff2", b.activate(linear(name + ".ff1", x), g.activation)))
+                if g.pre_norm:
+                    update = linear(name + ".ff2", b.activate(linear(name + ".ff1", b.norm(x, g.norm_type)), g.activation))
+                    if training and g.dropout:
+                        update = update * b.array((rng.random(update.shape) >= g.dropout) / (1 - g.dropout))
+                    x = x + update
+                else:
+                    x = finish(x + linear(name + ".ff2", b.activate(linear(name + ".ff1", x), g.activation)))
                 if family == "sparse_attention":
                     x = sparse(x)
             else:
@@ -237,9 +248,21 @@ class FamilyModel:
                     x = sparse(x)
         if return_features:
             return x
-        if x.ndim > 2 and self.task != "language_modeling":
+        if g.pre_norm:
+            x = b.norm(x, g.norm_type)
+        if g.readout == "spatial_pyramid":
+            # Global mean plus four ordered spatial cells retains coarse position.
+            # Overlapping boundary cells also support one-pixel spatial dimensions.
+            height, width = x.shape[1:3]
+            regions = [x.mean(axis=(1, 2))]
+            for y0, y1 in ((0, (height + 1) // 2), (height // 2, height)):
+                for x0, x1 in ((0, (width + 1) // 2), (width // 2, width)):
+                    regions.append(x[:, y0:y1, x0:x1].mean(axis=(1, 2)))
+            x = b.concatenate(regions)
+        elif x.ndim > 2 and self.task != "language_modeling":
             x = x.mean(axis=tuple(range(1, x.ndim - 1)))
-        return linear("head", x)
+        result = linear("head", x)
+        return result + raw_input @ p["input_skip.w"] if g.input_skip else result
 
 
 def compile_genome(

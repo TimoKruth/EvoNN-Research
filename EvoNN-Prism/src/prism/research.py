@@ -1,26 +1,16 @@
 """Versioned experimental policies; resource bounds remain run-level contracts."""
 
 import math
-from typing import Literal
 from evonn_shared.canonical import canonical_sha256
+from evonn_shared.prism_policy import PrismVariant, PRISM_VARIANTS, prism_policy_flags as policy
 
-Variant = Literal["legacy", "archive", "training", "broad", "open"]
-VARIANTS = ("legacy", "archive", "training", "broad", "open")
-
-
-def policy(variant):
-    if variant not in VARIANTS:
-        raise ValueError("unknown Prism research variant")
-    return {
-        "archive": variant in {"archive", "open"},
-        "training": variant in {"training", "open"},
-        "broad": variant in {"broad", "open"},
-    }
+Variant = PrismVariant
+VARIANTS = PRISM_VARIANTS
 
 
-def allocate_training(epochs, generation, inheritance, parameters, *, protected=False, variant="open"):
+def allocate_training(epochs, generation, inheritance, parameters, *, protected=False, variant="open", task=None):
     """Coverage is a discount ceiling, never proof that transferred weights help."""
-    if not policy(variant)["training"]:
+    if not policy(variant, task=task)["training"]:
         full = max(1, math.ceil(epochs * (0.5 if generation == 0 else 1)))
         ratio = {"exact": .3, "partial": .6, "none": 1.0}[inheritance["mode"]]
         return full, max(1, math.ceil(full * ratio)), "legacy_inheritance_discount"
@@ -45,6 +35,8 @@ def summarize_attempts(attempts):
                 "fits": 0, "new_genomes": 0, "revisited_genomes": 0, "family_fits": {},
                 "protected_fits": 0, "fresh_initializations": 0, "optimizer_updates": 0,
                 "train_seconds": 0.0, "seen": set(), "architectures": set(),
+                "proposal_origins": {}, "selected_weight_sources": {}, "selection_metrics": {},
+                "allocated_epochs": 0, "completed_epochs": 0,
             }
         panel = panels[benchmark]
         identity = attempt["genome_id"]
@@ -59,6 +51,12 @@ def summarize_attempts(attempts):
         panel["fresh_initializations"] += attempt["inheritance"]["mode"] == "none"
         panel["optimizer_updates"] += attempt.get("updates", 0)
         panel["train_seconds"] += attempt.get("train_seconds", 0.0)
+        panel["allocated_epochs"] += attempt.get("allocated_epochs", 0)
+        panel["completed_epochs"] += attempt.get("epochs", 0)
+        for key, value in (("proposal_origins", attempt.get("proposal", {}).get("origin", "unrecorded")),
+                           ("selected_weight_sources", attempt.get("selected_weight_source", "unrecorded")),
+                           ("selection_metrics", attempt.get("selection_metric", "unrecorded"))):
+            panel[key][value] = (panel[key][value] if value in panel[key] else 0) + 1
     return {key: {**{k: v for k, v in panel.items() if k not in {"seen", "architectures"}},
                   "distinct_executed_architectures": len(panel["architectures"])} for key, panel in panels.items()}
 
@@ -83,6 +81,10 @@ def architecture_identity(genome):
         fields.update({"num_experts", "moe_top_k"})
     if family in {"mlp", "sparse_mlp"}:
         fields.add("residual")
+    # Omit neutral extension fields to retain historical architecture identities.
+    for key, default in {"readout": "mean", "input_skip": False, "pre_norm": False}.items():
+        if genome.model_dump()[key] != default:
+            fields.add(key)
     return canonical_sha256(genome.model_dump(mode="json", include=fields),
                             schema_version="prism.executed-architecture/v1", digest_field=None)
 

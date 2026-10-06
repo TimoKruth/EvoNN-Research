@@ -1,0 +1,48 @@
+{
+  "schema_version": "evonn.prism-confidence-repair-launch/v1",
+  "launched_at": "2026-09-21T14:16:13.107919+00:00",
+  "authorization": "User: fix it and restart or resume if possible",
+  "status_at_launch": "launched; automatic preflight then qualification and gated main",
+  "launchd_service": "gui/501/com.evonn.prism-confidence-repair-20260921",
+  "launch_configuration": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-repair-20260921/launch.plist",
+  "study": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-repair-20260921/study",
+  "study_sha256": "869bda55f92af2ae8477c3db1c7a9d899d23a552d16f527c5b5d07f8c3fe54bc",
+  "producer_commit": "f5915a224b886cccfa4a0c767d4f5fc09a2b97d7",
+  "source_sha256": "7927e11ed89b052be9cb784b31ee502195f97ebf50a34e4d09917bb7fbdb2c48",
+  "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-repair-20260921/run.log",
+  "replacement": {
+    "authorization": "User requested: fix it and restart or resume if possible",
+    "historical_evidence": "Original producer, manifests, run artifacts, failure logs and audit remain unchanged.",
+    "original_main_dispatches": 0,
+    "original_study_sha256": "765af9582c2aec08e1a4bf71572336a50abd37dcd32b32809c1d049db1b7771f",
+    "prepared_at": "2026-09-21T14:13:59.083716+00:00",
+    "reason": "Correct Prism v2 export validation to use its existing archive and full-training policies.",
+    "replaces": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-20260921/study",
+    "seed_accounting": "Retain the original audited seeds and unchanged design. Qualification is repeated; no original results are adopted. Main seeds remain unexecuted. This is a replacement, not independent confirmation of the failed qualification."
+  },
+  "validation": {
+    "targeted_tests": 54,
+    "test_seconds": 70.21,
+    "native_backend": "mlx_native",
+    "all_campaign_preflights": "passed",
+    "lint": "passed",
+    "original_failed_export": "passes corrected validator, all 32 fits successful"
+  },
+  "planned_qualification_runs": 22,
+  "planned_main_runs": 990,
+  "all_variants": [
+    "legacy",
+    "archive",
+    "training",
+    "broad",
+    "open",
+    "search_v2",
+    "representation_v2",
+    "regularized_v2",
+    "averaged_v2",
+    "calibrated_v2",
+    "frontier_v2"
+  ],
+  "automatic_restart_on_failure": false,
+  "original_evidence": "preserved unchanged; no results adopted"
+}

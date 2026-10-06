@@ -1,0 +1,143 @@
+{
+  "schema_version": "evonn.prism-confidence-preparation/v1",
+  "prepared_on": "2026-09-21",
+  "status": "ready_for_qualification",
+  "authorization": "Explicit user request: only Prism; all eleven variants. Study-specific full-engine roster exception.",
+  "training_started": false,
+  "producer": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-20260921/producer",
+  "producer_commit": "8b8c3db80774be628e1dc97971cdd446a71c348a",
+  "source_sha256": "d4964dcaa293ce822efc31067b25150cd74cd437dfc8c77c9d0730ad6ce1de54",
+  "study": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-20260921/study",
+  "study_sha256": "765af9582c2aec08e1a4bf71572336a50abd37dcd32b32809c1d049db1b7771f",
+  "variants": [
+    "legacy",
+    "archive",
+    "training",
+    "broad",
+    "open",
+    "search_v2",
+    "representation_v2",
+    "regularized_v2",
+    "averaged_v2",
+    "calibrated_v2",
+    "frontier_v2"
+  ],
+  "main_seeds": [
+    21601,
+    21602,
+    21603,
+    21604,
+    21605,
+    21606,
+    21607,
+    21608,
+    21609,
+    21610,
+    21611,
+    21612,
+    21613,
+    21614,
+    21615,
+    21616,
+    21617,
+    21618,
+    21619,
+    21620,
+    21621,
+    21622,
+    21623,
+    21624,
+    21625,
+    21626,
+    21627,
+    21628,
+    21629,
+    21630
+  ],
+  "qualification_seed": 21600,
+  "campaign_manifests": 55,
+  "qualification_runs": 22,
+  "main_runs": 990,
+  "total_runs": 1012,
+  "total_fit_attempts": 169664,
+  "primary_hypotheses": 110,
+  "familywise_alpha": 0.05,
+  "unique_dataset_splits": 217,
+  "seed_audit_documents": 232,
+  "power_sensitivity": {
+    "assumption": "independent Gaussian paired effects; sensitivity, not promised power; ignores materiality filter",
+    "first_holm_threshold": 0.00045454545454545455,
+    "hypotheses": 110,
+    "n": 30,
+    "sensitivity": [
+      {
+        "paired_mean_over_sd": 0.5,
+        "power_at_conservative_first_holm_threshold": 0.13625
+      },
+      {
+        "paired_mean_over_sd": 0.75,
+        "power_at_conservative_first_holm_threshold": 0.5349
+      },
+      {
+        "paired_mean_over_sd": 1.0,
+        "power_at_conservative_first_holm_threshold": 0.89445
+      },
+      {
+        "paired_mean_over_sd": 1.25,
+        "power_at_conservative_first_holm_threshold": 0.9934
+      },
+      {
+        "paired_mean_over_sd": 1.5,
+        "power_at_conservative_first_holm_threshold": 0.9999
+      }
+    ],
+    "simulations_per_effect": 20000,
+    "two_sided_minimum_p": 1.862645149230957e-09
+  },
+  "checks": {
+    "full_source_environment_data_preflight": "passed",
+    "producer_clean": true,
+    "prism_campaign_policy_regression_tests": {
+      "passed": 151,
+      "seconds": 88.8
+    },
+    "final_study_tests": {
+      "passed": 12,
+      "seconds": 23.23
+    },
+    "statistical_selfcheck": {
+      "status": "passed",
+      "scope": "synthetic statistical self-check; no model fits or observed study scores",
+      "hypotheses": 110,
+      "seed_pairs": 30,
+      "checks": [
+        "complete all-pair Holm family",
+        "exact known-tail probability with tied ranks",
+        "unique leader must beat every other arm"
+      ]
+    },
+    "lint": "passed",
+    "import_boundaries": "passed",
+    "shell_syntax_and_run_help": "passed",
+    "study_dispatches": 0
+  },
+  "commands": {
+    "qualification": ".artifacts/prism-confidence-20260921/run.sh --qualification-only",
+    "full_or_resume": ".artifacts/prism-confidence-20260921/run.sh",
+    "bounded_batch": ".artifacts/prism-confidence-20260921/run.sh --max-runs 11",
+    "preflight": ".artifacts/prism-confidence-20260921/check.sh",
+    "analyze": ".artifacts/prism-confidence-20260921/analyze.sh"
+  },
+  "limits": [
+    "Substantial multi-day study; previous open core timings extrapolate to about 49 hours for core slots alone.",
+    "No new model study fits, scheduler or external messages started.",
+    "Inference is within Prism and validation-selected; no protected-test, external-engine or contender claim.",
+    "95% bootstrap intervals are descriptive, not simultaneous.",
+    "Small effects can remain inconclusive; no forced winner or default promotion."
+  ],
+  "study_files_sha256": {
+    "EvoNN-Compare/src/evonn_compare/prism_confidence.py": "b37874b3f0ce0d0cd807128e20e056ba87ea50986737a02c54917b905ff2585d",
+    "EvoNN-Compare/src/evonn_compare/prism_confidence_stats.py": "ddf0ea98703e80ec0d590a67aaaf2ebe8625b1048125708910d50eeb2f887cda",
+    "EvoNN-Compare/tests/test_prism_confidence.py": "6f37c839609c9e03622b367d0111767cf66f00b9324e8adafca5447e008c24b5"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "evonn.prism-budget-continuation-launch/v1",
+  "launched_at": "2026-09-21T20:42:58.378231+00:00",
+  "authorization": "User: fix and resume",
+  "service": "gui/501/com.evonn.prism-confidence-budget-resume-20260921",
+  "study": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-budget-resume-20260921/study",
+  "amendment_sha256": "7aa4537b8490b6f8a0f8370861681cdfc941c92bf3b3931934d000aef33e1bd0",
+  "producer_commit": "3991748b39b5ccd0fe1ffd2cc828d927f680b7a2",
+  "source_sha256": "1681e4fde5fbeadce2d7827283f3a84847897cfe091b1e5bcb9ade5919b2118c",
+  "controller_sha256": "3806e027c6c3bd148236e12160e19e6d2aa19b803cb76f73aee6e34011103031",
+  "inherited_qualification": 22,
+  "inherited_main": 30,
+  "remaining_main": 960,
+  "retained_extra_attempts": 98,
+  "safety_caps_seconds": {
+    "128": 19800,
+    "256": 39000
+  },
+  "fit_timeout_seconds": 120,
+  "tests_passed": 23,
+  "native_smoke_fits": 16,
+  "status_file": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-budget-resume-20260921/study/status.json",
+  "log": "/Users/timokruth/Projekte/EvoNN/.artifacts/prism-confidence-budget-resume-20260921/run.log",
+  "historical_evidence": "Preserved unchanged; interrupted cell restarted separately.",
+  "interpretation": "Amended fixed-fit within-Prism comparison with mixed run safety caps and producer versions. Historical studies remain incomplete. No equal-wall-time, other-engine or protected-test claim."
+}

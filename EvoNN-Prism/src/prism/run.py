@@ -148,11 +148,11 @@ def run_engine(
     crash_at=None,
     crash_step=1,
 ):
-    research = policy(variant)
     if inheritance_policy not in {"enabled", "disabled"} or optimizer_policy not in {"restart", "continue"} or optimizer_backend not in {"numpy", "native"}:
         raise ValueError("invalid inheritance or optimizer policy")
-    if not all(math.isfinite(v) and 0 < v <= 1800 for v in (timeout, fit_timeout)):
-        raise ValueError("run and fit limits must be in (0,1800] seconds")
+    if not (math.isfinite(timeout) and 0 < timeout <= 43200
+            and math.isfinite(fit_timeout) and 0 < fit_timeout <= 1800):
+        raise ValueError("run limit must be in (0,43200] and fit limit in (0,1800] seconds")
     if type(seed) is not int or not 0 <= seed < 2**32:
         raise ValueError("seed must be a 32-bit unsigned integer")
     cache_root = Path(".artifacts/dataset-cache") if cache_root is None else cache_root
@@ -165,8 +165,9 @@ def run_engine(
     if type(budget) is not int or not 1 <= budget <= MAX_ENGINE_EVALUATIONS or budget % len(pack.benchmarks):
         raise ValueError("budget must be in [1,256] and divisible across the pack")
     definitions = [get_benchmark(name, shared_root=root) for name in pack.benchmarks]
+    policies = {d.id: policy(variant, task=d.task_kind.value) for d in definitions}
     if fixed_genomes is not None:
-        if not research["training"] or set(fixed_genomes) != set(pack.benchmarks):
+        if not all(p["training"] for p in policies.values()) or set(fixed_genomes) != set(pack.benchmarks):
             raise ValueError("fixed architectures require training/open variant and the complete benchmark pack")
         fixed_genomes = {key: ModelGenome.model_validate(value).model_dump(mode="json") for key, value in fixed_genomes.items()}
     if prior_discovery is not None:
@@ -294,6 +295,7 @@ def run_engine(
                         search = search_type(definitions, seed=seed, population_size=population_size, state=state["search"], variant=variant)
                     counts = {d.id: sum(a["benchmark_id"] == d.id for a in state["attempts"]) for d in definitions}
                     definition = min(definitions, key=lambda d: (counts[d.id], d.id))
+                    research = policies[definition.id]
                     genome = search.candidate(definition.id)
                     proposal = search.proposal(definition.id, genome)
                     proposal_started = time.monotonic()
@@ -318,10 +320,11 @@ def run_engine(
                     compiled_parameters = 0
                     inheritance = {"mode": "none", "source": None, "copied_parameters": 0}
                     full_epochs, allocated, allocation_reason = allocate_training(
-                        epochs, generation, inheritance, 0, protected=proposal["protected"], variant=variant)
+                        epochs, generation, inheritance, 0, protected=proposal["protected"], variant=variant, task=definition.task_kind.value)
                     directory = create_artifact_directory(workspace.root / f"attempt_{step:06d}")
                     try:
-                        model = search.compile(genome, definition, backend=backend, device=device, seed=model_seed)
+                        genome, model = search.compile_candidate(genome, definition, backend=backend, device=device, seed=model_seed)
+                        proposal = search.proposal(definition.id, genome)
                         compiled_parameters = model.parameter_count
                         if model.parameter_count > 2_000_000:
                             raise ValueError("compiled candidate exceeds local runtime parameter safety cap")
@@ -330,7 +333,7 @@ def run_engine(
                             inheritance = search.inherit(model, definition.id, namespace)
                         full_epochs, allocated, allocation_reason = allocate_training(
                             epochs, generation, inheritance, model.parameter_count,
-                            protected=proposal["protected"], variant=variant)
+                            protected=proposal["protected"], variant=variant, task=definition.task_kind.value)
                         training = TrainConfig(
                             epochs=allocated,
                             learning_rate=genome.learning_rate,
@@ -340,6 +343,12 @@ def run_engine(
                             minimum_epochs=allocated if research["training"] and proposal["protected"] else 1,
                             native_optimizer=optimizer_backend == "native",
                             optimizer_policy=optimizer_policy,
+                            label_smoothing=(.02 if definition.task_kind.value == "language_modeling" else .05)
+                                            if research["regularized"] and definition.task_kind.value != "regression" else 0.,
+                            decay_policy="matrix" if research["regularized"] else "all",
+                            ema_decay=.9 if research["averaged"] else 0.,
+                            calibrated_selection=research["calibrated"],
+                            classification_selection=research.get("aligned", False),
                         )
                         request = {
                             "benchmark": definition.id,
@@ -412,6 +421,7 @@ def run_engine(
                         "directory": directory.name,
                         "proposal": proposal,
                         "allocation_reason": allocation_reason,
+                        **({"resolved_policy": research} if variant.endswith("_v3") else {}),
                         "compiled_parameter_count": compiled_parameters,
                         "lineage_updates": inheritance.get("source_updates", 0) + result.get("updates", 0),
                         **result,
