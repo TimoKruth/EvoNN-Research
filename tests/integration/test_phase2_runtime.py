@@ -225,7 +225,14 @@ def test_resume_after_reproduction_and_trained_inheritance(system, tmp_path):
     resumed = invoke(system, "evolve", "--resume", interrupted)
     assert resumed.returncode == 0, resumed.stderr
     expected, actual = state(baseline), state(interrupted)
-    assert actual["search"] == expected["search"]
+    # Independent continuations measure different elapsed training times. Keep
+    # the entire deterministic search/ancestry ledger comparison, excluding only
+    # its observed wall-clock field; export validation checks each ledger total.
+    searches = [deepcopy(row["search"]) for row in (actual, expected)]
+    for search in searches:
+        for row in search.get("training_ledger", {}).values():
+            assert row.pop("train_seconds") >= 0
+    assert searches[0] == searches[1]
     assert actual["tip"] == expected["tip"]
     assert [a["metric_value"] for a in actual["attempts"]] == [a["metric_value"] for a in expected["attempts"]]
     assert any(a["inheritance"]["mode"] != "none" for a in actual["attempts"])
