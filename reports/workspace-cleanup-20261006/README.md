@@ -16,7 +16,8 @@ The substantive uncommitted Topograph mixer and Stratograph temporal/default,
 study-controller, recovery and result work is committed in this integration.
 The three previously unmerged JEPA commits are merged with their full history,
 including the repeated exploratory analysis. JEPA stays opt-in and does not
-change engine defaults. Prism finalization is owned by a separate active session.
+change engine defaults. Prism finalization was merged independently in PR #43; this consolidation preserves
+that implementation and its evidence.
 The predecessor `Evo Neural Nets` and unrelated projects remain untouched.
 
 The dirty September 11 validation checkouts are intermediate snapshots, not new
@@ -31,8 +32,9 @@ archived rather than reactivated. See [inventory and exact source hashes](invent
 
 The exact before/after revisions run Prism, Topograph, Stratograph, Primordia and
 Contenders on `tier_b_core_v2`, budget 16, seed 24606 and two epochs: ten completed
-runs / 160 fits. The registry retains its 58 existing records and appends ten
-new records. The four-engine paired analysis is `contract_validation` and returns
+runs / 160 fits. After PR #43 merged, the refreshed registry retains all 68 main records and the
+ten earlier consolidation records, then appends ten runs against the combined
+revisions, for 88 records. The earlier release archives remain unchanged. The four-engine paired analysis is `contract_validation` and returns
 **needs more seeds**. Operational defaults intentionally differ; this small
 single-seed check cannot establish a scientific gain. Frozen study results and
 their original limitations remain authoritative. The source declaration pins
