@@ -590,6 +590,60 @@ uv run --locked --all-packages evonn-compare fair-matrix \
 The preset selects 16 evaluations per system. Each invocation caps five minutes;
 this command starts a short qualification, not the larger repeated campaign.
 
+## Experimental JEPA pilots
+
+`evonn-compare jepa` provides separate fixed-architecture experiments for masked
+latent prediction and frozen representation transfer. Every arm includes Prism,
+Topograph, trainable-v2 Stratograph, Primordia and a raw-feature Contenders pool.
+The four basic arms are short supervised, longer supervised, masked reconstruction
+and EMA-JEPA with variance/covariance regularization. The transfer preset adds
+full-input distillation and masked prediction of the same frozen Prism teacher.
+These are custom feasibility objectives, not reproductions of T-JEPA or LeJEPA.
+
+Prepare and run the small complete qualification (no downloads):
+
+```sh
+uv sync --all-packages --group dev --frozen
+uv run evonn-compare jepa plan --spec research/jepa/smoke.json \
+  --workspace .artifacts/jepa-smoke
+uv run evonn-compare jepa run .artifacts/jepa-smoke --max-cases 5
+uv run evonn-compare jepa run .artifacts/jepa-smoke
+uv run evonn-compare jepa report .artifacts/jepa-smoke
+```
+
+The smoke preset is **90 worker cases / 108 fits**, including both regressors in
+Contenders; two optimizer steps per phase establish execution only. `local.json`
+prepares **432 worker cases / 480 fits**, and `transfer.json` prepares **648 worker
+cases / 720 fits**; these use two fixed candidates, 64 updates per phase, two
+classification tasks, three seeds and 10%/100% training-label fractions. Planning
+performs no fits. The latter presets use MLX CPU; set `backend` to
+`numpy_fallback` for Linux/portability before freezing the plan. JSON specs reject
+missing engines/controls and unknown fields. Reuse a run command to continue
+pending cases; `--session-timeout` is bounded to 1–1800 seconds. Source/dependency
+changes require a fresh workspace. Failures stop the run and remain visible.
+
+`report.md` and `report.json` contain all candidates, quality/occlusion metrics,
+representation diagnostics and paired treatment/control deltas. Receipts record
+updates, encoder forward work, timings, initial-weight identities, saved-weight
+replay and teacher provenance. Equal updates are not equal compute. Teacher
+training is `reported_prior`; no native motif-transfer proof follows. New
+`jepa_pilot_*` train/validation datasets and a disclosed small contender pool are
+not canonical benchmark exports, protected-test evidence or L3/L4 promotion.
+See [the experiment design](research/jepa/DESIGN.md) for objective details and
+limitations, and the consolidated plan for acceptance and follow-on work.
+
+The [2026-09-16 repeated evaluation](research/jepa/ASSESSMENT-20260916.md) completed
+the full transfer preset: 720 fits with all 576 neural replays passing. Results
+are mostly negative, with a small Prism low-label tabular signal and no consistent
+masked-transfer benefit. All seed-level contrasts and costs are retained in the
+[tables](research/jepa/repeated-20260916.md) and JSON companion. Regenerate the
+summary from a complete local workspace with:
+
+```sh
+uv run python research/jepa/analyze.py .artifacts/jepa-repeated-20260916 \
+  --output research/jepa/repeated-20260916
+```
+
 ## Architecture and authority
 
 The seven uv workspace packages are Shared, Contenders, Compare, Prism,

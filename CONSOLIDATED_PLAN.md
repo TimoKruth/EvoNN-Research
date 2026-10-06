@@ -177,6 +177,19 @@ read-only checkpoint profile. The [follow-up plan](governance/readiness-follow-u
 keeps baseline adequacy, checkpoint optimization, source requalification and the
 larger scientific stages explicitly gated. Historical producer/results are
 preserved; implementation checks do not close scientific qualification.
+**JEPA experiment branch (updated 2026-09-16):** implementation qualification and
+the full repeated transfer preset are complete: 648 worker cases / 720 fits,
+including all four engines and Contenders, with all 576 neural replays passing.
+The [assessment](research/jepa/ASSESSMENT-20260916.md) records mostly negative
+results and a small Prism low-label tabular signal (+0.88 accuracy points versus
+long supervised across the three seed averages). Masked teacher transfer shows
+no consistent benefit. Preserve the implementation as experimental; do not change
+engine defaults. The next scientific step, if pursued, is a predeclared full-roster
+tabular replication with more datasets/unseen seeds, adequate training and
+compute-accounted controls. Stronger contender coverage and untouched evaluation
+data remain necessary. Native motif transfer, adaptive search and speculative
+mutation world models remain untested. Runtime commands are in README;
+formulation and limitations are in `research/jepa/DESIGN.md`.
 
 
 Documentation consolidation (#23/#26), CodeRabbit selection (#24), the catalog
